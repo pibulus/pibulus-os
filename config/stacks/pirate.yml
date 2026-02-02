@@ -1,41 +1,55 @@
 services:
-  # 1. FILEBROWSER (Your Personal Cloud)
-  filebrowser:
-    image: filebrowser/filebrowser:s6
-    container_name: filebrowser
+  # --- MEDIA CENTER ---
+  jellyfin:
+    image: jellyfin/jellyfin
+    container_name: jellyfin
+    network_mode: "host"
+    volumes:
+      - /home/pibulus/.config/jellyfin:/config
+      - /home/pibulus/.cache/jellyfin:/cache
+      - /media/pibulus/passport/media:/media
+    restart: unless-stopped
+
+  navidrome:
+    image: deluan/navidrome:latest
+    container_name: navidrome
     user: 1000:1000
     ports:
-      - "8080:8080"
+      - "4533:4533"
+    environment:
+      ND_SCANSCHEDULE: 1h
+      ND_LOGLEVEL: info
+      ND_MUSICFOLDER: /music
     volumes:
-      - /media/pibulus:/srv # It can see ALL your drives
-      - /opt/filebrowser/database.db:/database.db
-      - /opt/filebrowser/filebrowser.json:/.filebrowser.json
-    restart: always
+      - /home/pibulus/.config/navidrome:/data
+      - /media/pibulus/passport/music:/music
+    restart: unless-stopped
 
-  # 2. SLSKD (Soulseek Web Client)
+  kavita:
+    image: jvmilazz0/kavita:latest
+    container_name: kavita
+    ports:
+      - "5000:5000"
+    volumes:
+      - /media/pibulus/passport/Books:/manga
+      - /home/pibulus/.config/kavita:/kavita/config
+    restart: unless-stopped
+
+  # --- DOWNLOAD TOOLS ---
   slskd:
     image: slskd/slskd
     container_name: slskd
     user: 1000:1000
     ports:
-      - "5030:5030" # Web Interface
-      - "5031:5031" # Soulseek Network Port
+      - "5030:5030"
+      - "5031:5031"
     environment:
       - SLSKD_REMOTE_CONFIGURATION=true
     volumes:
-      - /media/pibulus/passport/Soulseek:/app/downloads # Downloads go here
+      - /media/pibulus/passport/Soulseek:/app/downloads
       - /opt/slskd:/app/config
     restart: always
-# 3. PUBLIC WEB HOST (Nginx)
-  web_host:
-    image: nginx:alpine
-    container_name: web_host
-    ports:
-      - "8090:80"
-    volumes:
-      - /media/pibulus/passport/www/html:/usr/share/nginx/html:ro
-    restart: always
-# 4. ICLOUD DOWNLOADER (The Heist)
+
   icloudpd:
     image: boredazfcuk/icloudpd
     container_name: icloudpd
@@ -45,8 +59,30 @@ services:
       - apple_id=pibulus@gmail.com
       - authentication_type=2FA
       - notification_days=7
-      - synchronisation_interval=86400 # Runs once a day
+      - synchronisation_interval=86400
     volumes:
       - /opt/icloudpd:/config
-      - /media/pibulus/passport/immich/upload/icloud:/home/user/iCloud # Downloads straight to Immich
+      - /media/pibulus/passport/immich/upload/icloud:/home/user/iCloud
+    restart: always
+
+  # --- SYSTEM TOOLS ---
+  filebrowser:
+    image: filebrowser/filebrowser:s6
+    container_name: filebrowser
+    user: 1000:1000
+    ports:
+      - "8080:8080"
+    volumes:
+      - /media/pibulus:/srv
+      - /opt/filebrowser/database.db:/database.db
+      - /opt/filebrowser/filebrowser.json:/.filebrowser.json
+    restart: always
+
+  web_host:
+    image: nginx:alpine
+    container_name: web_host
+    ports:
+      - "8090:80"
+    volumes:
+      - /media/pibulus/passport/www/html:/usr/share/nginx/html:ro
     restart: always
