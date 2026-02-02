@@ -1,0 +1,52 @@
+title: PABLO_DECK_v4
+color: slate
+theme: dark
+
+background:
+  color: "#050505"
+
+# --- THE LAYOUT ---
+layout:
+  Media:
+    style: row
+    columns:
+      small: 1
+      medium: 2
+      large: 4
+      xlarge: 4
+  
+  Tools:
+    style: row
+    columns: 4
+
+  Social_Grid:
+    style: row
+    columns: 4
+
+headerStyle: clean
+cardStyle: glass
+
+# --- COMMAND LINE SEARCH ---
+# This changes the search bar to look like a terminal input
+showSearch: true
+search:
+  provider: duckduckgo
+  target: _blank
+  focus: true # Auto-focuses the bar when you load the page
+
+# --- PROVIDERS ---
+providers:
+  docker:
+    mode: socket
+    socket: /var/run/docker.sock
+
+# --- WIDGETS ---
+# Docker sees the MOUNT point, not the host path. 
+# We are going to verify the mount in the next step.
+widgets:
+  - resources:
+      cpu: true
+      memory: true
+      disk: 
+        - /media/pibulus/MEMBOT
+        - /media/pibulus/passport

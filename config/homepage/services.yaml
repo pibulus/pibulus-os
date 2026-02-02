@@ -1,0 +1,75 @@
+- Media:
+    - Navidrome:
+        icon: navidrome.png
+        href: http://pibulus.local:4533
+        description: AUDIO_DB
+
+    - Jellyfin:
+        icon: jellyfin.png
+        href: http://pibulus.local:8096
+        description: VIDEO_UPLINK
+
+    - Kavita:
+        icon: kavita.png
+        href: http://pibulus.local:5000
+        description: LIBRARY_ARCHIVE
+
+- Tools:
+    - Stremio:
+        icon: stremio.png
+        href: https://web.stremio.com/
+        description: TORRENT_STREAM
+        # Stremio is a client, so we link to the web player.
+        # It will work perfectly if you have the Stremio Service running or just use Torrentio.
+
+- Pirate:
+    - Pirate_Ops:
+    - Soulseek:
+        icon: soulseek.png
+        href: http://pibulus.local:5030
+        description: P2P_NETWORK
+
+    - Cloud_Drive:
+        icon: filebrowser.png
+        href: http://pibulus.local:8080
+        description: FILE_SYSTEM
+
+
+- Social_Grid:
+    - Github:
+        icon: github-dark.png
+        href: https://github.com/pibulus
+        description: CODE_VAULT
+
+    - Reddit:
+        icon: reddit.png
+        href: https://fmhy.net/
+        description: PIRATE_AHOY
+
+- Dev_Ops:
+    - Immich_Vault:
+        icon: immich.png
+        href: http://pibulus.local:2283
+        description: PHOTOS_AI_CORE
+        widget:
+          type: immich
+          url: http://pibulus.local:2283
+          key: YOUR_IMMICH_API_KEY # Get this from Immich Settings > API Keys later
+
+    - iCloud_Link:
+        icon: apple.png
+        href: https://www.icloud.com
+        description: SYNC_ACTIVE
+        # Just a link for now, reminds you the sync script is running
+
+- My_Projects:
+    - Project_Index:
+        icon: nginx.png
+        href: http://pibulus.local:8090
+        description: ALL_DEPLOYMENTS
+    
+    # Example of a specific project link
+    - Stargram:
+        icon: code.png
+        href: http://pibulus.local:8090/stargram
+        description: HOROSCOPE_APP
