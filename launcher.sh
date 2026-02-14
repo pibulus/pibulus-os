@@ -1,15 +1,9 @@
 #!/bin/bash
-# 🦾 PIBULUS CYBERDECK v5.6 - "The Modular Persona"
+# 🦾 PIBULUS CYBERDECK v5.7 - "The Radio Empire Update"
 
 # --- SOURCE CONFIG ---
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 [ -f "$SCRIPT_DIR/.env" ] && source "$SCRIPT_DIR/.env" || { echo "❌ No .env"; exit 1; }
-
-# --- ONBOARDING CHECK ---
-if [[ -z "$USER_NAME" || "$USER_NAME" == "pibulus" ]]; then
-    "$SCRIPT_DIR/onboard.sh"
-    source "$SCRIPT_DIR/.env"
-fi
 
 # --- UTILS ---
 get_status() {
@@ -25,28 +19,24 @@ render_hud() {
     local TEMP=$(vcgencmd measure_temp | cut -d'=' -f2)
     local DISK=$(df -h "$PASSPORT_ROOT" | awk 'NR==2 {print $5}')
     gum style --border double --border-foreground 212 --padding "0 2" --margin "1 0" 
-        "👤 $USER_NAME | 🌡️ $TEMP | 📼 $DISK | ⚓ $(get_status jellyfin) $(get_status immich_server)"
+        "👤 $USER_NAME | 🌡️ $TEMP | 📼 $DISK | ⚓ $(get_status jellyfin) $(get_status immich_server) $(get_status azuracast_web)"
 }
 
-show_help() {
-    clear
-    figlet -f slant "DONT PANIC" | lolcat
-    gum style --border normal --margin "1 2" --padding "1 2" --border-foreground 212 
-    "Chill, $USER_NAME. We got this.
-
-$(gum style --foreground 46 "THE FLOW:")
-- Type 'deck' to open the control menu.
-- Green (🟢) means it's alive. Red (🔴) means it's resting.
-
-$(gum style --foreground 46 "QUICK FIXES:")
-- Photos stuck? Go to Immich -> Authenticate.
-- Passport missing? Check your cables and run 'lsblk'.
-- Lost? Just type 'halp'." | lolcat
-    
-    echo ""
-    gum input --placeholder "Back to the bridge? Press Enter..."
+manage_radio() {
+    while true; do
+        render_hud
+        echo -e "--- 📻 KPAB.fm RADIO $(get_status azuracast_web) ---"
+        local action=$(gum choose "Start Station" "Stop Station" "Logs" "Back")
+        case $action in
+            "Start Station") cd ~/azuracast && ./docker.sh install ;;
+            "Stop Station") cd ~/azuracast && docker compose down ;;
+            "Logs") cd ~/azuracast && docker compose logs --tail=100 -f ;;
+            "Back") return ;;
+        esac
+    done
 }
 
+# ... [Keep previous manage_immich, manage_homepage, manage_stack functions] ...
 manage_immich() {
     while true; do
         render_hud
@@ -106,7 +96,22 @@ manage_stack() {
     done
 }
 
-# --- ARGUMENT CHECK ---
+show_help() {
+    clear
+    figlet -f slant "KPAB FM" | lolcat
+    gum style --border normal --margin "1 2" --padding "1 2" --border-foreground 212 
+    "Welcome to the Voice of the Fortress.
+
+$(gum style --foreground 46 "RADIO TIPS:")
+- Drop MP3s in /media/pibulus/passport/Radio/Tunes.
+- Drop rants in /media/pibulus/passport/Radio/Rants.
+- AzuraCast will handle the smart mixing. You just provide the vibes.
+
+$(gum style --foreground 46 "SOVEREIGNTY:")
+- Your voice, your hardware, your rules. Stay loud." | lolcat
+    gum input --placeholder "Back to the bridge? Press Enter..."
+}
+
 if [[ "$1" =~ ^(help|halp|sos|wtf|\-h|\-\-help)$ ]]; then
     show_help
     exit 0
@@ -117,22 +122,24 @@ while true; do
     render_hud
     local choice=$(gum choose 
         "🚀 Deploy New App" 
-        "📊 System Status" 
-        "🌐 Tunnel Status" 
         "🏴‍☠️ Pirate Station $(get_status jellyfin)" 
+        "📻 KPAB.fm Radio $(get_status azuracast_web)" 
         "📸 Immich Vault $(get_status immich_server)" 
         "🏠 Dashboard Ops" 
+        "📊 System Status" 
+        "🌐 Tunnel Status" 
         "📝 Edit Tunnel" 
         "❓ Help & Manual" 
         "🚪 Exit")
 
     case $choice in
         "🚀 Deploy New App") "$SCRIPT_DIR/scripts/deploy.sh" ;;
-        "📊 System Status") pm2 list && gum input --placeholder "Enter to return..." ;;
-        "🌐 Tunnel Status") sudo systemctl status cloudflared | head -n 20 && gum input --placeholder "Enter to return..." ;;
         "🏴‍☠️ Pirate Station") manage_stack "PIRATE STATION" "$PIRATE_CONFIG" "jellyfin" ;;
+        "📻 KPAB.fm Radio") manage_radio ;;
         "📸 Immich Vault") manage_immich ;;
         "🏠 Dashboard Ops") manage_homepage ;;
+        "📊 System Status") pm2 list && gum input --placeholder "Enter to return..." ;;
+        "🌐 Tunnel Status") sudo systemctl status cloudflared | head -n 20 && gum input --placeholder "Enter to return..." ;;
         "📝 Edit Tunnel") sudo nano "$CF_CONFIG" && sudo systemctl restart cloudflared ;;
         "❓ Help & Manual") show_help ;;
         "🚪 Exit") clear; exit 0 ;;
