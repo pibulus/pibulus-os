@@ -1,5 +1,5 @@
 #!/bin/bash
-# 🦾 PIBULUS CYBERDECK v6.0 - "The Tactile Update"
+# 🦾 PIBULUS CYBERDECK v6.1 - "The Broadcast Empire Update"
 
 # --- SOURCE CONFIG ---
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
@@ -7,6 +7,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 # --- LOAD MODULES ---
 source "$SCRIPT_DIR/modules/audio_feedback.sh"
+source "$SCRIPT_DIR/modules/media_puller.sh"
 
 # --- ONBOARDING ---
 if [[ -z "$USER_NAME" || "$USER_NAME" == "pibulus" ]]; then
@@ -31,14 +32,10 @@ render_hud() {
         "👤 $USER_NAME | 🌡️ $TEMP | 📼 $DISK | ⚓ $(get_status jellyfin) $(get_status immich_server) $(get_status azuracast_web)"
 }
 
-# --- WRAPPER FOR GUM CHOOSE ---
-# Plays a sound when a choice is made
 tactile_choose() {
     local choice=$(gum choose "$@")
-    if [ ! -z "$choice" ]; then
-        play_tone "click"
-        echo "$choice"
-    fi
+    [ ! -z "$choice" ] && play_tone "click"
+    echo "$choice"
 }
 
 manage_radio() {
@@ -62,8 +59,8 @@ manage_immich() {
         local action=$(tactile_choose "Start/Update" "Stop" "Logs" "🔐 Authenticate iCloud" "Back")
         case $action in
             "Start/Update") play_tone "confirm"; gum spin --title "Booting..." -- docker compose -f "$IMMICH_CONFIG" up -d ;;
-            "Stop") play_tone "confirm"; docker compose -f "$IMMICH_CONFIG" down ;;
-            "Logs") play_tone "confirm"; docker compose -f "$IMMICH_CONFIG" logs --tail=100 -f ;;
+            "Stop") docker compose -f "$IMMICH_CONFIG" down ;;
+            "Logs") docker compose -f "$IMMICH_CONFIG" logs --tail=100 -f ;;
             "🔐 Authenticate iCloud") play_tone "confirm"; docker exec -it icloudpd sync-icloud.sh --Initialise ;;
             "Back") return ;;
         esac
@@ -107,9 +104,9 @@ manage_stack() {
         local action=$(tactile_choose "Start/Update" "Stop" "Restart" "Logs" "Back")
         case $action in
             "Start/Update") play_tone "confirm"; docker compose -f "$file" up -d ;;
-            "Stop") play_tone "confirm"; docker compose -f "$file" down ;;
-            "Restart") play_tone "confirm"; docker compose -f "$file" restart ;;
-            "Logs") play_tone "confirm"; docker compose -f "$file" logs --tail=100 -f ;;
+            "Stop") docker compose -f "$file" down ;;
+            "Restart") docker compose -f "$file" restart ;;
+            "Logs") docker compose -f "$file" logs --tail=100 -f ;;
             "Back") return ;;
         esac
     done
@@ -120,16 +117,17 @@ show_help() {
     play_tone "startup"
     figlet -f slant "PIBULUS" | lolcat
     gum style --border normal --margin "1 2" --padding "1 2" --border-foreground 212 
-    "Welcome to the Tactile Interface.
+    "Welcome to the Broadcast Empire.
 
-$(gum style --foreground 46 "FEEDBACK:")
-- Every click has a sound.
-- Every action has a confirmation tone.
-- If it's silent, check your speakers.
+$(gum style --foreground 46 "SCALABILITY:")
+- 12 listeners? Your Pi is chilling.
+- 1200? Your NBN can handle it.
+- 12000? We'll add a CDN relay later.
 
-$(gum style --foreground 46 "RADIO:")
-- Drop files in /Radio/The_Bucket.
-- Tune in at http://pibulus.local:8080." | lolcat
+$(gum style --foreground 46 "INTERACTIVITY:")
+- Use 'Media Puller' to grab URLs directly into the bucket.
+- AzuraCast has 'Song Requests' built-in.
+- Audiences can see 'Now Playing' at kpab.fm." | lolcat
     gum input --placeholder "Press Enter..."
 }
 
@@ -138,32 +136,32 @@ if [[ "$1" =~ ^(help|halp|sos|wtf|\-h|\-\-help)$ ]]; then
     exit 0
 fi
 
-# --- STARTUP SOUND ---
 play_tone "startup"
 
-# --- THE MAIN DECK ---
 while true; do
     render_hud
     local choice=$(tactile_choose 
         "🚀 Deploy New App" 
-        "📊 System Status" 
-        "🌐 Tunnel Status" 
+        "📥 Media Puller (URL Drop)" 
         "🏴‍☠️ Pirate Station $(get_status jellyfin)" 
         "📻 KPAB.fm Radio $(get_status azuracast_web)" 
         "📸 Immich Vault $(get_status immich_server)" 
         "🏠 Dashboard Ops" 
+        "📊 System Status" 
+        "🌐 Tunnel Status" 
         "📝 Edit Tunnel" 
         "❓ Help & Manual" 
         "🚪 Exit")
 
     case $choice in
         "🚀 Deploy New App") play_tone "confirm"; "$SCRIPT_DIR/scripts/deploy.sh" ;;
-        "📊 System Status") play_tone "confirm"; pm2 list && gum input --placeholder "Enter to return..." ;;
-        "🌐 Tunnel Status") play_tone "confirm"; sudo systemctl status cloudflared | head -n 20 && gum input --placeholder "Enter to return..." ;;
+        "📥 Media Puller (URL Drop)") pull_media ;;
         "🏴‍☠️ Pirate Station") manage_stack "PIRATE STATION" "$PIRATE_CONFIG" "jellyfin" ;;
         "📻 KPAB.fm Radio") manage_radio ;;
         "📸 Immich Vault") manage_immich ;;
         "🏠 Dashboard Ops") manage_homepage ;;
+        "📊 System Status") pm2 list && gum input --placeholder "Enter to return..." ;;
+        "🌐 Tunnel Status") sudo systemctl status cloudflared | head -n 20 && gum input --placeholder "Enter to return..." ;;
         "📝 Edit Tunnel") play_tone "confirm"; sudo nano "$CF_CONFIG" && sudo systemctl restart cloudflared ;;
         "❓ Help & Manual") show_help ;;
         "🚪 Exit") play_tone "click"; clear; exit 0 ;;
