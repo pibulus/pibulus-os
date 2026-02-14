@@ -14,6 +14,11 @@
         href: http://pibulus.local:8000
         description: 24/7 PIRATE BROADCAST
 
+    - Text Dimension:
+        icon: terminal.png
+        href: http://pibulus.local:7681
+        description: RETRO BBS & TEXT ADVENTURES
+
     - Library:
         icon: kavita.png
         href: http://pibulus.local:5000
