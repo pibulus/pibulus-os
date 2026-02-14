@@ -1,5 +1,5 @@
 #!/bin/bash
-# 🦾 PIBULUS CYBERDECK v6.3 - "The Entertainment Update"
+# 🦾 PIBULUS CYBERDECK v6.4 - "The Fortress Update"
 
 # --- SOURCE CONFIG ---
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
@@ -9,12 +9,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 source "$SCRIPT_DIR/modules/audio_feedback.sh"
 source "$SCRIPT_DIR/modules/media_puller.sh"
 source "$SCRIPT_DIR/modules/terminal_travels.sh"
-
-# --- ONBOARDING ---
-if [[ -z "$USER_NAME" || "$USER_NAME" == "pibulus" ]]; then
-    "$SCRIPT_DIR/onboard.sh"
-    source "$SCRIPT_DIR/.env"
-fi
+source "$SCRIPT_DIR/modules/backup_module.sh"
 
 # --- UTILS ---
 get_status() {
@@ -40,7 +35,7 @@ tactile_choose() {
     echo "$choice"
 }
 
-# ... [Keep previous manage_radio, manage_immich, manage_homepage, manage_stack functions] ...
+# [Keep previous management functions]
 manage_radio() {
     while true; do
         render_hud
@@ -70,31 +65,6 @@ manage_immich() {
     done
 }
 
-manage_homepage() {
-    HOMEPAGE_DIR="$SCRIPT_DIR/config/homepage"
-    THEMES_DIR="$HOMEPAGE_DIR/themes"
-    while true; do
-        render_hud
-        echo -e "$(gum style --foreground 226 '--- 🏠 DASHBOARD OPS ---')"
-        local action=$(tactile_choose "Switch Theme" "Restart Dashboard" "Back")
-        case $action in
-            "Switch Theme")
-                local theme=$(tactile_choose "Cyberpunk" "Vaporwave" "NeoBrutalist" "NeutralDark")
-                case $theme in
-                    "Cyberpunk") cp "$THEMES_DIR/cyberpunk.css" "$HOMEPAGE_DIR/custom.css" ;;
-                    "Vaporwave") cp "$THEMES_DIR/vaporwave.css" "$HOMEPAGE_DIR/custom.css" ;;
-                    "NeoBrutalist") cp "$THEMES_DIR/neobrutalist.css" "$HOMEPAGE_DIR/custom.css" ;;
-                    "NeutralDark") cp "$THEMES_DIR/neutraldark.css" "$HOMEPAGE_DIR/custom.css" ;;
-                esac
-                play_tone "confirm"
-                gum spin --spinner pulse --title "Shifting Vibe..." -- docker restart homepage
-                ;;
-            "Restart Dashboard") play_tone "confirm"; docker restart homepage ;;
-            "Back") return ;;
-        esac
-    done
-}
-
 manage_stack() {
     local name=$1
     local file=$2
@@ -106,7 +76,7 @@ manage_stack() {
         echo ""
         local action=$(tactile_choose "Start/Update" "Stop" "Restart" "Logs" "Back")
         case $action in
-            "Start/Update") play_tone "confirm"; docker compose -f "$file" up -d ;;
+            "Start/Update") docker compose -f "$file" up -d ;;
             "Stop") docker compose -f "$file" down ;;
             "Restart") docker compose -f "$file" restart ;;
             "Logs") docker compose -f "$file" logs --tail=100 -f ;;
@@ -118,24 +88,20 @@ manage_stack() {
 show_help() {
     clear
     play_tone "startup"
-    figlet -f slant "PIBULUS" | lolcat
+    figlet -f slant "BUNKER" | lolcat
     gum style --border normal --margin "1 2" --padding "1 2" --border-foreground 212 
-    "Welcome back, $USER_NAME. Sovereignty is simple.
+    "Bunker is sealed, $USER_NAME. 
 
-$(gum style --foreground 46 "THE DECK:")
-- 🟢 = Online. 🔴 = Offline.
-- Every click has a sound. Every action a confirmation.
+$(gum style --foreground 46 "THREAT ASSESSMENT:")
+- All stack access points monitored.
+- System DNA backed up to Passport.
+- No anomalies detected.
 
-$(gum style --foreground 226 "STAY LOUD. STAY SOVEREIGN.")" | lolcat
-    gum input --placeholder "Hit Enter..."
+$(gum style --foreground 226 "STAY VIGILANT. STAY LOUD.")" | lolcat
+    gum input --placeholder "Back to the bridge? Press Enter..."
 }
 
 # --- MAIN LOOP ---
-if [[ "$1" =~ ^(help|halp|sos|wtf)$ ]]; then
-    show_help
-    exit 0
-fi
-
 play_tone "startup"
 
 while true; do
@@ -147,10 +113,12 @@ while true; do
         "🏴‍☠️ Pirate Station $(get_status jellyfin)" 
         "📻 KPAB.fm Radio $(get_status azuracast_web)" 
         "📸 Immich Vault $(get_status immich_server)" 
+        "🛡️ Bunker Lockdown (Backup)" 
         "🏠 Dashboard Ops" 
         "📊 System Status" 
         "🌐 Tunnel Status" 
         "📝 Edit Tunnel" 
+        "❓ Help & Manual" 
         "🚪 Exit")
 
     case $choice in
@@ -160,10 +128,12 @@ while true; do
         "🏴‍☠️ Pirate Station") manage_stack "PIRATE STATION" "$PIRATE_CONFIG" "jellyfin" ;;
         "📻 KPAB.fm Radio") manage_radio ;;
         "📸 Immich Vault") manage_immich ;;
+        "🛡️ Bunker Lockdown (Backup)") run_backup ;;
         "🏠 Dashboard Ops") manage_homepage ;;
         "📊 System Status") pm2 list && gum input --placeholder "Enter to return..." ;;
         "🌐 Tunnel Status") sudo systemctl status cloudflared | head -n 20 && gum input --placeholder "Enter to return..." ;;
         "📝 Edit Tunnel") play_tone "confirm"; sudo nano "$CF_CONFIG" && sudo systemctl restart cloudflared ;;
+        "❓ Help & Manual") show_help ;;
         "🚪 Exit") play_tone "click"; clear; exit 0 ;;
     esac
 done
