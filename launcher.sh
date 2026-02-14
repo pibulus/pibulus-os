@@ -1,5 +1,6 @@
 #!/bin/bash
-# 🦾 PIBULUS CYBERDECK v3.0 - Saturday Night Special
+# 🦾 PIBULUS CYBERDECK v5.1 - "The Ergonomic Update"
+# Optimized for cognitive ease and cyberpunk aesthetics.
 
 # --- CONFIGURATION ---
 PIRATE_CONFIG="$HOME/pibulus-os/config/stacks/pirate.yml"
@@ -7,96 +8,92 @@ IMMICH_CONFIG="$HOME/pibulus-os/config/stacks/immich.yml"
 TUNNEL_CONFIG="/etc/cloudflared/config.yml"
 
 # --- COLORS ---
-CYAN='\033[0;36m'
-MAGENTA='\033[0;35m'
-GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
-RED='\033[0;31m'
-NC='\033[0m'
+CYAN='#00FFFF'
+MAGENTA='#FF00FF'
+YELLOW='#FFFF00'
+GREEN='#00FF00'
 
-# --- FUNCTIONS ---
-get_vitals() {
-    TEMP=$(vcgencmd measure_temp | cut -d'=' -f2)
-    DISK=$(df -h /media/pibulus/passport | awk 'NR==2 {print $5}')
-    SD=$(df -h / | awk 'NR==2 {print $5}')
-    echo -e "${MAGENTA}🔥 CPU: $TEMP  📼 Passport: $DISK  💾 SD: $SD${NC}"
+# --- HUD (Head-Up Display) ---
+render_hud() {
+    clear
+    local TEMP=$(vcgencmd measure_temp | cut -d'=' -f2)
+    local DISK=$(df -h /media/pibulus/passport | awk 'NR==2 {print $5}')
+    local SD=$(df -h / | awk 'NR==2 {print $5}')
+    
+    # Create a nice HUD box
+    gum style 
+        --border double 
+        --border-foreground 212 
+        --padding "0 2" 
+        --margin "1 0" 
+        "🌡️ CPU: $TEMP  |  📼 PASSPORT: $DISK  |  💾 SD: $SD"
 }
 
 show_help() {
     clear
     figlet -f slant "PIBULUS OS" | lolcat
-    echo -e "${CYAN}Welcome to the Cyberdeck Manual, Chummer.${NC}" | lolcat
-    echo ""
-    gum style --border normal --margin "1 2" --padding "1 2" --border-foreground 212 "This deck is a modular stack system. Use the numbers to navigate.
+    gum style --border normal --margin "1 2" --padding "1 2" --border-foreground 212 
+    "Welcome, Chummer. This deck is your gateway to the digital estate.
+
+$(gum style --foreground 46 "THE STACKS:")
+- $(gum style --foreground 226 "Pirate Station:") Your media heart. Jellyfin & Navidrome.
+- $(gum style --foreground 226 "Immich Vault:") AI Photo archive + iCloud bridge.
+
+$(gum style --foreground 46 "QUICK TIPS:")
+- iCloud not syncing? Use the bridge command in the manual.
+- Passport drive is your 'Gold Record'. Protect it.
+- Everything is modular. If it breaks, we fix it in the YAML." | lolcat
     
-${GREEN}COMMANDS:${NC}
-- ${YELLOW}deck:${NC} Re-opens this main menu.
-- ${YELLOW}docker ps:${NC} See what's alive.
-- ${YELLOW}lsblk:${NC} Check if the Passport drive is mounted.
-
-${GREEN}TASKS:${NC}
-- ${MAGENTA}iCloud Sync:${NC} Run 'docker exec -it icloudpd sync-icloud.sh --Initialise'
-- ${MAGENTA}Media:${NC} Drop files in /media/pibulus/passport/Music or Movies.
-
-${RED}REMEMBER:${NC} Infrastructure is code. Stacks live in ~/pibulus-os/config/stacks/" | lolcat
     echo ""
-    gum spin --spinner dot --title "Returning to Mainframe..." -- sleep 3
+    gum input --placeholder "Press Enter to return to the mainframe..."
 }
 
 manage_stack() {
     local name=$1
     local file=$2
-    clear
-    echo -e "${YELLOW}--- MANAGING $name ---${NC}"
-    if [ ! -f "$file" ]; then
-        echo -e "${RED}Error: Config file not found at $file${NC}"
-        read -p "Press Enter to return..."
-        return
-    fi
-    docker compose -f "$file" ps
-    echo "------------------------------------------------"
-    echo " (U)p/Start  (D)own/Stop  (R)estart  (L)ogs  (B)ack"
-    read -p " Command: " cmd
-    case $cmd in
-        [Uu]*) docker compose -f "$file" up -d ;;
-        [Dd]*) docker compose -f "$file" down ;;
-        [Rr]*) docker compose -f "$file" restart ;;
-        [Ll]*) docker compose -f "$file" logs --tail=50 -f ;;
-        *) return ;;
-    esac
+    while true; do
+        render_hud
+        echo -e "--- 🛠️  MANAGING $name ---"
+        docker compose -f "$file" ps --format "table {{.Name}}	{{.Status}}" | gum style --foreground 212
+        
+        echo ""
+        local action=$(gum choose "Start/Update" "Stop" "Restart" "Logs" "Back")
+        
+        case $action in
+            "Start/Update") gum spin --spinner dot --title "Deploying..." -- docker compose -f "$file" up -d ;;
+            "Stop") gum spin --spinner dot --title "Halting..." -- docker compose -f "$file" down ;;
+            "Restart") gum spin --spinner dot --title "Cycling..." -- docker compose -f "$file" restart ;;
+            "Logs") docker compose -f "$file" logs --tail=100 -f ;;
+            "Back") return ;;
+        esac
+    done
 }
 
 # --- THE MAIN DECK ---
 while true; do
-    clear
-    echo -e "${CYAN}┌──────────────────────────────────────────┐${NC}"
-    echo -e "${CYAN}│     🐙  Q U I C K C A T . C L U B        │${NC}"
-    echo -e "${CYAN}│     MEXI-AUSTRALIAN CYBERDECK v3.0       │${NC}"
-    echo -e "${CYAN}└──────────────────────────────────────────┘${NC}"
-    get_vitals
-    echo -e "--------------------------------------------"
-    echo -e " 1. 🚀 ${GREEN}Deploy New App${NC} (Wizard)"
-    echo -e " 2. 📊 ${GREEN}System Status${NC} (PM2)"
-    echo -e " 3. 🌐 ${GREEN}Tunnel Status${NC} (Cloudflare)"
-    echo -e " 4. 🏴‍☠️  ${YELLOW}Pirate Station${NC} (Jellyfin/Navi)"
-    echo -e " 5. 📸  ${YELLOW}Immich${NC} (Photos)"
-    echo -e " 6. 🏠 ${YELLOW}Dashboard${NC} (Homepage)"
-    echo -e " 7. 📝 ${RED}Edit Tunnel Config${NC}"
-    echo -e " 8. ❓ ${CYAN}Help & Manual${NC}"
-    echo -e " 9. 🚪 Exit"
-    echo -e "--------------------------------------------"
-    read -p " Select Protocol: " choice
+    render_hud
+    
+    # The selection menu - Arrows + Enter (Low Cognitive Load)
+    local choice=$(gum choose 
+        "🚀 Deploy New App" 
+        "📊 System Status" 
+        "🌐 Tunnel Status" 
+        "🏴‍☠️ Pirate Station" 
+        "📸 Immich Vault" 
+        "🏠 Restart Dashboard" 
+        "📝 Edit Tunnel" 
+        "❓ Help & Manual" 
+        "🚪 Exit")
 
     case $choice in
-        1) ~/pibulus-os/scripts/deploy.sh ; read -p "Press Enter..." ;;
-        2) pm2 list ; read -p "Press Enter..." ;;
-        3) sudo systemctl status cloudflared ; read -p "Press Enter..." ;;
-        4) manage_stack "PIRATE STATION" "$PIRATE_CONFIG" ;;
-        5) manage_stack "IMMICH" "$IMMICH_CONFIG" ;;
-        6) echo "Restarting Dashboard..."; docker restart homepage ; sleep 2 ;;
-        7) sudo nano "$TUNNEL_CONFIG" && sudo systemctl restart cloudflared ;;
-        8) show_help ;;
-        9) clear ; exit 0 ;;
-        *) echo "Invalid Protocol." ; sleep 1 ;;
+        "🚀 Deploy New App") ~/pibulus-os/scripts/deploy.sh ;;
+        "📊 System Status") pm2 list && gum input --placeholder "Enter to return..." ;;
+        "🌐 Tunnel Status") sudo systemctl status cloudflared | head -n 20 && gum input --placeholder "Enter to return..." ;;
+        "🏴‍☠️ Pirate Station") manage_stack "PIRATE STATION" "$PIRATE_CONFIG" ;;
+        "📸 Immich Vault") manage_stack "IMMICH" "$IMMICH_CONFIG" ;;
+        "🏠 Restart Dashboard") gum spin --spinner pulse --title "Cycling Homepage..." -- docker restart homepage ;;
+        "📝 Edit Tunnel") sudo nano "$TUNNEL_CONFIG" && sudo systemctl restart cloudflared ;;
+        "❓ Help & Manual") show_help ;;
+        "🚪 Exit") clear; exit 0 ;;
     esac
 done
