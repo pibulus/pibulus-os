@@ -1,6 +1,5 @@
 #!/bin/bash
-# 🦾 PIBULUS CYBERDECK v6.2 - "The Final Frontier"
-# Final Pass: Flair, Power, and Sovereignty.
+# 🦾 PIBULUS CYBERDECK v6.3 - "The Entertainment Update"
 
 # --- SOURCE CONFIG ---
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
@@ -9,6 +8,13 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 # --- LOAD MODULES ---
 source "$SCRIPT_DIR/modules/audio_feedback.sh"
 source "$SCRIPT_DIR/modules/media_puller.sh"
+source "$SCRIPT_DIR/modules/terminal_travels.sh"
+
+# --- ONBOARDING ---
+if [[ -z "$USER_NAME" || "$USER_NAME" == "pibulus" ]]; then
+    "$SCRIPT_DIR/onboard.sh"
+    source "$SCRIPT_DIR/.env"
+fi
 
 # --- UTILS ---
 get_status() {
@@ -24,14 +30,7 @@ render_hud() {
     local TEMP=$(vcgencmd measure_temp | cut -d'=' -f2)
     local DISK=$(df -h "$PASSPORT_ROOT" | awk 'NR==2 {print $5}')
     local LOAD=$(uptime | awk -F'load average:' '{ print $2 }' | cut -d',' -f1)
-    
-    # High-Flair HUD
-    gum style 
-        --border double 
-        --border-foreground 212 
-        --padding "0 2" 
-        --margin "1 0" 
-        --align center 
+    gum style --border double --border-foreground 212 --padding "0 2" --margin "1 0" --align center 
         "👤 $USER_NAME  |  🌡️ $TEMP  |  📼 $DISK  |  ⚡ LOAD: $LOAD"
 }
 
@@ -41,7 +40,7 @@ tactile_choose() {
     echo "$choice"
 }
 
-# --- STACK MANAGEMENT ---
+# ... [Keep previous manage_radio, manage_immich, manage_homepage, manage_stack functions] ...
 manage_radio() {
     while true; do
         render_hud
@@ -63,8 +62,8 @@ manage_immich() {
         local action=$(tactile_choose "Start/Update" "Stop" "Logs" "🔐 Authenticate iCloud" "Back")
         case $action in
             "Start/Update") play_tone "confirm"; gum spin --title "Booting..." -- docker compose -f "$IMMICH_CONFIG" up -d ;;
-            "Stop") play_tone "confirm"; docker compose -f "$IMMICH_CONFIG" down ;;
-            "Logs") play_tone "confirm"; docker compose -f "$IMMICH_CONFIG" logs --tail=100 -f ;;
+            "Stop") docker compose -f "$IMMICH_CONFIG" down ;;
+            "Logs") docker compose -f "$IMMICH_CONFIG" logs --tail=100 -f ;;
             "🔐 Authenticate iCloud") play_tone "confirm"; docker exec -it icloudpd sync-icloud.sh --Initialise ;;
             "Back") return ;;
         esac
@@ -108,15 +107,14 @@ manage_stack() {
         local action=$(tactile_choose "Start/Update" "Stop" "Restart" "Logs" "Back")
         case $action in
             "Start/Update") play_tone "confirm"; docker compose -f "$file" up -d ;;
-            "Stop") play_tone "confirm"; docker compose -f "$file" down ;;
-            "Restart") play_tone "confirm"; docker compose -f "$file" restart ;;
-            "Logs") play_tone "confirm"; docker compose -f "$file" logs --tail=100 -f ;;
+            "Stop") docker compose -f "$file" down ;;
+            "Restart") docker compose -f "$file" restart ;;
+            "Logs") docker compose -f "$file" logs --tail=100 -f ;;
             "Back") return ;;
         esac
     done
 }
 
-# --- THE HELP SCREEN ---
 show_help() {
     clear
     play_tone "startup"
@@ -128,13 +126,8 @@ $(gum style --foreground 46 "THE DECK:")
 - 🟢 = Online. 🔴 = Offline.
 - Every click has a sound. Every action a confirmation.
 
-$(gum style --foreground 46 "THE EMPIRE:")
-- 🏴‍☠️ Pirate Station: Movies & Music.
-- 📻 KPAB.fm: Your voice, your rules.
-- 📸 Immich: Your history, unmonitored.
-
 $(gum style --foreground 226 "STAY LOUD. STAY SOVEREIGN.")" | lolcat
-    gum input --placeholder "Hit Enter to return to the bridge..."
+    gum input --placeholder "Hit Enter..."
 }
 
 # --- MAIN LOOP ---
@@ -150,6 +143,7 @@ while true; do
     local choice=$(tactile_choose 
         "🚀 Deploy New App" 
         "📥 Media Puller" 
+        "🕹️ Terminal Travels (BBS)" 
         "🏴‍☠️ Pirate Station $(get_status jellyfin)" 
         "📻 KPAB.fm Radio $(get_status azuracast_web)" 
         "📸 Immich Vault $(get_status immich_server)" 
@@ -157,12 +151,12 @@ while true; do
         "📊 System Status" 
         "🌐 Tunnel Status" 
         "📝 Edit Tunnel" 
-        "❓ Help & Manual" 
         "🚪 Exit")
 
     case $choice in
         "🚀 Deploy New App") play_tone "confirm"; "$SCRIPT_DIR/scripts/deploy.sh" ;;
         "📥 Media Puller") pull_media ;;
+        "🕹️ Terminal Travels (BBS)") play_games ;;
         "🏴‍☠️ Pirate Station") manage_stack "PIRATE STATION" "$PIRATE_CONFIG" "jellyfin" ;;
         "📻 KPAB.fm Radio") manage_radio ;;
         "📸 Immich Vault") manage_immich ;;
@@ -170,7 +164,6 @@ while true; do
         "📊 System Status") pm2 list && gum input --placeholder "Enter to return..." ;;
         "🌐 Tunnel Status") sudo systemctl status cloudflared | head -n 20 && gum input --placeholder "Enter to return..." ;;
         "📝 Edit Tunnel") play_tone "confirm"; sudo nano "$CF_CONFIG" && sudo systemctl restart cloudflared ;;
-        "❓ Help & Manual") show_help ;;
         "🚪 Exit") play_tone "click"; clear; exit 0 ;;
     esac
 done
