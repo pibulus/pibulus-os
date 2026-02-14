@@ -1,5 +1,5 @@
 services:
-  # --- MEDIA CENTER ---
+  # --- THE PIRATE BROADCASTER ---
   jellyfin:
     image: jellyfin/jellyfin
     container_name: jellyfin
@@ -10,13 +10,35 @@ services:
       - /media/pibulus/passport/media:/media
       - /media/pibulus/passport/Music:/media/music
       - /media/pibulus/passport/Books:/media/books
-      - /media/pibulus/passport/Games:/media/games
       - /media/pibulus/passport/Movies:/media/movies
       - /media/pibulus/passport/Shows:/media/shows
-    environment:
-      - TZ=Australia/Melbourne
     restart: unless-stopped
 
+  ersatztv:
+    image: jasonmcnew/ersatztv:latest-vaapi
+    container_name: ersatztv
+    user: 1000:1000
+    ports:
+      - "8000:8000"
+    volumes:
+      - /home/pibulus/.config/ersatztv:/config
+      - /media/pibulus/passport/Movies:/media/movies:ro
+      - /media/pibulus/passport/Shows:/media/shows:ro
+    restart: unless-stopped
+
+  overseerr:
+    image: sctx/overseerr:latest
+    container_name: overseerr
+    ports:
+      - "5055:5055"
+    environment:
+      - LOG_LEVEL=info
+      - TZ=Australia/Melbourne
+    volumes:
+      - /home/pibulus/.config/overseerr:/app/config
+    restart: unless-stopped
+
+  # --- THE UTILITIES ---
   navidrome:
     image: deluan/navidrome:latest
     container_name: navidrome
@@ -27,7 +49,6 @@ services:
       ND_SCANSCHEDULE: 1h
       ND_LOGLEVEL: info
       ND_MUSICFOLDER: /music
-      ND_DEFAULTALBUMLIST: random
     volumes:
       - /home/pibulus/.config/navidrome:/data
       - /media/pibulus/passport/music:/music
@@ -43,7 +64,6 @@ services:
       - /home/pibulus/.config/kavita:/kavita/config
     restart: unless-stopped
 
-  # --- DOWNLOAD TOOLS ---
   slskd:
     image: slskd/slskd
     container_name: slskd
@@ -51,30 +71,11 @@ services:
     ports:
       - "5030:5030"
       - "5031:5031"
-    environment:
-      - SLSKD_REMOTE_CONFIGURATION=true
     volumes:
       - /media/pibulus/passport/Soulseek:/app/downloads
       - /opt/slskd:/app/config
     restart: always
 
-  icloudpd:
-    image: boredazfcuk/icloudpd
-    container_name: icloudpd
-    environment:
-      - user=pibulus
-      - group=pibulus
-      - apple_id=pibulus@gmail.com
-      - authentication_type=2FA
-      - notification_days=7
-      - synchronisation_interval=86400
-      - timezone=Australia/Melbourne
-    volumes:
-      - /opt/icloudpd:/config
-      - /media/pibulus/passport/immich/upload/icloud:/home/user/iCloud
-    restart: always
-
-  # --- SYSTEM TOOLS ---
   filebrowser:
     image: filebrowser/filebrowser:s6
     container_name: filebrowser
@@ -82,7 +83,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - /media/pibulus:/srv
+      - /media/pibulus/passport:/srv
       - /opt/filebrowser/database.db:/database.db
       - /opt/filebrowser/filebrowser.json:/.filebrowser.json
     restart: always
