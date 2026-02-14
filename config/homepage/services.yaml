@@ -19,6 +19,11 @@
         href: http://pibulus.local:7681
         description: CLASSIC IF & ZORK
 
+    - Game of the Week:
+        icon: controller.png
+        href: http://pibulus.local:8086
+        description: FEATURED: NORMY'S BEACH BABE-O-RAMA
+
     - Library:
         icon: kavita.png
         href: http://pibulus.local:5000
