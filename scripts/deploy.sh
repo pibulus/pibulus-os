@@ -1,59 +1,98 @@
 #!/bin/bash
-# ♂️ PIBULUS DEPLOY WIZARD v4.0
+# 🚀 PIBULUS DEPLOY WIZARD v5.0 - Stylish Edition
 # "The Cyberdeck App Launcher"
 
 WEB_ROOT="/media/pibulus/passport/www/html"
-APPS_ROOT="/media/pibulus/passport/www/apps"
 CF_CONFIG="/etc/cloudflared/config.yml"
-TUNNEL_NAME="pibulus-tunnel"
 
-# --- COLORS ---
-GREEN='\033[0;32m'
-RED='\033[0;31m'
-CYAN='\033[0;36m'
-NC='\033[0m'
+# Ensure directories exist
+mkdir -p "$WEB_ROOT"
 
-echo -e "${CYAN}------------------------------------------------${NC}"
-echo -e "${CYAN}🚀 PIBULUS CYBERDECK DEPLOYER v4.0${NC}"
-echo -e "${CYAN}------------------------------------------------${NC}"
+clear
+figlet -f slant "DEPLOYER" | lolcat
+echo -e "Welcome to the Cyberdeck Deployment Wizard." | lolcat
 
 # 1. GET INPUT
-read -p "🔗 Paste the GitHub URL: " REPO_URL
-[ -z "$REPO_URL" ] && { echo -e "${RED}Error: URL required.${NC}"; exit 1; }
+REPO_URL=$(gum input --placeholder "🔗 Paste GitHub URL...")
+[ -z "$REPO_URL" ] && { gum style --foreground 196 "Error: URL required."; exit 1; }
 
 DEFAULT_NAME=$(basename "$REPO_URL" .git)
-read -p "🏷️  Name this app (default: $DEFAULT_NAME): " APP_NAME
+APP_NAME=$(gum input --placeholder "📦 Name this app (default: $DEFAULT_NAME)..." --value "$DEFAULT_NAME")
 APP_NAME=${APP_NAME:-$DEFAULT_NAME}
 
 # 2. CLONE
 TEMP_DIR="/tmp/$APP_NAME-deploy"
 rm -rf "$TEMP_DIR"
-git clone "$REPO_URL" "$TEMP_DIR" || { echo -e "${RED}Clone failed.${NC}"; exit 1; }
+gum spin --spinner dot --title "Cloning repository..." -- git clone "$REPO_URL" "$TEMP_DIR"
+
+if [ ! -d "$TEMP_DIR" ]; then
+    gum style --foreground 196 "❌ Clone failed."
+    exit 1
+fi
+
 cd "$TEMP_DIR" || exit
 
-# 3. TYPE DETECTION & DEPLOYMENT (Logic remains same as your v3.1)
-# ... [Keeping your Deno/Svelte logic here as it was solid] ...
+# 3. TYPE DETECTION
+gum style --foreground 212 "🔍 Detecting project type..."
+TYPE="Static"
+if [ -f "deno.json" ] || [ -f "deno.jsonc" ]; then
+    TYPE="Deno"
+elif [ -f "package.json" ]; then
+    TYPE="Node/Svelte"
+elif [ -f "index.html" ]; then
+    TYPE="Static HTML"
+fi
 
-# 4. SMART CLOUDFLARE AUTOMATION
-read -p "🌐 Do you have a domain for this? (y/n): " HAS_DOMAIN
-if [[ "$HAS_DOMAIN" == "y" ]]; then
-    read -p "🌍 Enter Domain (e.g., bone-soup.quickcat.club): " DOMAIN
-    
+gum style --border normal --padding "1 2" --border-foreground 57 "Detected Type: $TYPE"
+
+# 4. DEPLOYMENT LOGIC
+case $TYPE in
+    "Static HTML"|"Static")
+        gum spin --spinner bouncer --title "Deploying Static Site..." -- mkdir -p "$WEB_ROOT/$APP_NAME" && cp -r . "$WEB_ROOT/$APP_NAME"
+        LOCAL_URL="http://web_host:80/$APP_NAME"
+        ;;
+    "Node/Svelte")
+        gum style --foreground 220 "⚠️ Node/Svelte detected. Building static output..."
+        if gum confirm "Run 'npm install && npm run build'?"; then
+            gum spin --spinner pulse --title "Building..." -- npm install && npm run build
+            # Assuming SvelteKit/Vite standard 'build' or 'dist'
+            BUILD_DIR="build"
+            [ -d "dist" ] && BUILD_DIR="dist"
+            gum spin --spinner bouncer --title "Copying build to web root..." -- cp -r "$BUILD_DIR"/* "$WEB_ROOT/$APP_NAME"
+            LOCAL_URL="http://web_host:80/$APP_NAME"
+        else
+            gum style --foreground 196 "Aborted." ; exit 1
+        fi
+        ;;
+    *)
+        gum style --foreground 196 "Unsupported type for auto-deploy. Manual intervention needed."
+        exit 1
+        ;;
+esac
+
+# 5. CLOUDFLARE AUTOMATION
+DOMAIN=$(gum input --placeholder "🌐 Enter Domain (e.g., $APP_NAME.quickcat.club)...")
+
+if [ ! -z "$DOMAIN" ]; then
     # Check for Marker
     if ! grep -q "# -- INSERT NEW APPS HERE --" "$CF_CONFIG"; then
-        echo -e "${RED}⚠️  Marker missing in config.yml! Adding manually...${NC}"
-        sudo sed -i '/service: http_status:404/i # -- INSERT NEW APPS HERE --\n' "$CF_CONFIG"
+        gum style --foreground 208 "⚠️ Marker missing in config.yml! Adding..."
+        sudo sed -i '/service: http_status:404/i # -- INSERT NEW APPS HERE --
+' "$CF_CONFIG"
     fi
 
     # Inject new hostname
     if sudo grep -q "$DOMAIN" "$CF_CONFIG"; then
-        echo "ℹ️  Domain already exists in tunnel config."
+        gum style --foreground 220 "ℹ️ Domain already exists in tunnel config."
     else
-        sudo sed -i "/# -- INSERT NEW APPS HERE --/a \  - hostname: $DOMAIN\n    service: $LOCAL_URL" "$CF_CONFIG"
-        echo -e "${GREEN}✅ Added $DOMAIN to Tunnel Config.${NC}"
+        sudo sed -i "/# -- INSERT NEW APPS HERE --/a \  - hostname: $DOMAIN
+    service: $LOCAL_URL" "$CF_CONFIG"
+        gum style --foreground 46 "✅ Added $DOMAIN to Tunnel Config."
     fi
 
-    echo "🔄 Restarting Tunnel..."
-    sudo systemctl restart cloudflared
-    echo -e "${GREEN}🎉 DEPLOYED! Visit: https://$DOMAIN${NC}"
+    gum spin --spinner moon --title "Restarting Tunnel..." -- sudo systemctl restart cloudflared
+    gum style --foreground 46 "🚀 DEPLOYED! Visit: https://$DOMAIN"
 fi
+
+# Cleanup
+rm -rf "$TEMP_DIR"
