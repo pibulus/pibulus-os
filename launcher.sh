@@ -1,6 +1,5 @@
 #!/bin/bash
-# 👾 PIBULUS CYBERDECK v3.0 - Saturday Night Special
-# alias deck="~/pibulus-os/launcher.sh"
+# 🦾 PIBULUS CYBERDECK v3.0 - Saturday Night Special
 
 # --- CONFIGURATION ---
 PIRATE_CONFIG="$HOME/pibulus-os/config/stacks/pirate.yml"
@@ -18,11 +17,9 @@ NC='\033[0m'
 # --- FUNCTIONS ---
 get_vitals() {
     TEMP=$(vcgencmd measure_temp | cut -d'=' -f2)
-    # Checking the 5.5TB Passport specifically
     DISK=$(df -h /media/pibulus/passport | awk 'NR==2 {print $5}')
-    # Checking the SD Card (the "/" partition)
     SD=$(df -h / | awk 'NR==2 {print $5}')
-    echo -e "${MAGENTA}🔥 CPU: $TEMP  💾 Passport: $DISK  📟 SD: $SD${NC}"
+    echo -e "${MAGENTA}🔥 CPU: $TEMP  📼 Passport: $DISK  💾 SD: $SD${NC}"
 }
 
 manage_stack() {
@@ -52,18 +49,18 @@ manage_stack() {
 while true; do
     clear
     echo -e "${CYAN}┌──────────────────────────────────────────┐${NC}"
-    echo -e "${CYAN}│     🐱  Q U I C K C A T . C L U B        │${NC}"
+    echo -e "${CYAN}│     🐙  Q U I C K C A T . C L U B        │${NC}"
     echo -e "${CYAN}│     MEXI-AUSTRALIAN CYBERDECK v3.0       │${NC}"
     echo -e "${CYAN}└──────────────────────────────────────────┘${NC}"
     get_vitals
     echo -e "--------------------------------------------"
     echo -e " 1. 🚀 ${GREEN}Deploy New App${NC} (Wizard)"
     echo -e " 2. 📊 ${GREEN}System Status${NC} (PM2)"
-    echo -e " 3. 📡 ${GREEN}Tunnel Status${NC} (Cloudflare)"
+    echo -e " 3. 🌐 ${GREEN}Tunnel Status${NC} (Cloudflare)"
     echo -e " 4. 🏴‍☠️  ${YELLOW}Pirate Station${NC} (Jellyfin/Navi)"
-    echo -e " 5. 🖼️   ${YELLOW}Immich${NC} (Photos)"
+    echo -e " 5. 📸  ${YELLOW}Immich${NC} (Photos)"
     echo -e " 6. 🏠 ${YELLOW}Dashboard${NC} (Homepage)"
-    echo -e " 7. 🛠️  ${RED}Edit Tunnel Config${NC}"
+    echo -e " 7. 📝 ${RED}Edit Tunnel Config${NC}"
     echo -e " 8. 🚪 Exit"
     echo -e "--------------------------------------------"
     read -p " Select Protocol: " choice

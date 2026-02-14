@@ -8,6 +8,13 @@ services:
       - /home/pibulus/.config/jellyfin:/config
       - /home/pibulus/.cache/jellyfin:/cache
       - /media/pibulus/passport/media:/media
+      - /media/pibulus/passport/Music:/media/music
+      - /media/pibulus/passport/Books:/media/books
+      - /media/pibulus/passport/Games:/media/games
+      - /media/pibulus/passport/Movies:/media/movies
+      - /media/pibulus/passport/Shows:/media/shows
+    environment:
+      - TZ=Australia/Melbourne
     restart: unless-stopped
 
   navidrome:
@@ -55,12 +62,13 @@ services:
     image: boredazfcuk/icloudpd
     container_name: icloudpd
     environment:
-      - user=1000
-      - group=1000
+      - user=pibulus
+      - group=pibulus
       - apple_id=pibulus@gmail.com
       - authentication_type=2FA
       - notification_days=7
       - synchronisation_interval=86400
+      - timezone=Australia/Melbourne
     volumes:
       - /opt/icloudpd:/config
       - /media/pibulus/passport/immich/upload/icloud:/home/user/iCloud
