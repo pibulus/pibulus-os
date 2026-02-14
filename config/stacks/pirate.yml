@@ -49,6 +49,22 @@ services:
     command: ttyd -W /arcade/terminal-travels
     restart: unless-stopped
 
+  # --- THE CONSOLE EMULATOR ---
+  emulatorjs:
+    image: lscr.io/linuxserver/emulatorjs:latest
+    container_name: emulatorjs
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Australia/Melbourne
+    volumes:
+      - /home/pibulus/.config/emulatorjs:/config
+      - /media/pibulus/passport/roms:/data
+    ports:
+      - "8085:80"
+      - "3005:3000"
+    restart: unless-stopped
+
   # --- THE UTILITIES ---
   navidrome:
     image: deluan/navidrome:latest
