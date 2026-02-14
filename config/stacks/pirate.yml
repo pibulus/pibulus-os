@@ -15,7 +15,7 @@ services:
     restart: unless-stopped
 
   ersatztv:
-    image: jasonmcnew/ersatztv:latest-vaapi
+    image: jasongdove/ersatztv:latest
     container_name: ersatztv
     user: 1000:1000
     ports:
