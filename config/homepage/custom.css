@@ -1,100 +1,78 @@
-/* IMPORT THE HACKER FONT */
+/* IMPORT THE HACKER FONT (Keep this, it's the brand!) */
 @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
-/* --- 1. THE SLATE KILLER (Crucial) --- */
-/* This finds any element trying to be 'slate' and forces it to be transparent or black */
-[class*="bg-slate-"], 
-[class*="dark:bg-slate-"],
-body, html, #__next {
-    background-color: #050505 !important; /* MATCHES THE GRID BACKGROUND */
-    background-image: none !important;
-}
-
-/* --- 2. THE GRID BACKGROUND --- */
+/* --- 1. THE GLASS BACKGROUND --- */
+/* We remove the forced black/grid so the Unsplash image shows */
 body {
-    background-image: 
-        linear-gradient(rgba(0, 255, 100, 0.1) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 255, 100, 0.1) 1px, transparent 1px) !important;
-    background-size: 40px 40px !important;
-    background-attachment: fixed !important;
+    background-color: #050505;
     font-family: 'VT323', monospace !important;
-    color: #fcee0a !important; /* Default Text Yellow */
+    color: #eee !important;
 }
 
-/* --- 3. THE CARDS (Toypunk Blocks) --- */
-.services .service {
-    /* Force the card background to be BLACK, ignoring slate */
-    background-color: #000000 !important;
+/* --- 2. THE LUSH CARDS (Glassmorphism) --- */
+.services .service, .widget-card {
+    /* 50% Transparent Black */
+    background: rgba(0, 0, 0, 0.6) !important;
     
-    /* TOYPUNK BORDERS */
-    border: 4px solid #00ffea !important; /* Neon Cyan */
-    border-radius: 0px !important;
+    /* The Blur Effect */
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
     
-    /* THE SHADOW */
-    box-shadow: 8px 8px 0px #ff00ff !important; /* Hot Pink Hard Shadow */
+    /* Soft Neon Border */
+    border: 1px solid rgba(0, 255, 234, 0.3) !important;
+    border-radius: 12px !important; /* Rounded corners */
     
-    /* Layout */
-    min-height: 120px !important;
-    transition: transform 0.1s ease !important;
+    /* Soft Glow Shadow instead of Hard Pixel Shadow */
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5) !important;
+    
+    transition: all 0.2s ease-in-out !important;
 }
 
-/* --- 4. TEXT OVERRIDES --- */
+/* --- 3. HOVER EFFECTS --- */
+.services .service:hover {
+    background: rgba(0, 255, 234, 0.1) !important; /* Slight Cyan tint */
+    border-color: #00ffea !important;
+    transform: translateY(-5px) !important;
+    box-shadow: 0 0 20px rgba(0, 255, 234, 0.4) !important; /* Glowing aura */
+}
+
+/* --- 4. TEXT STYLING --- */
 .service-name {
-    color: #ff9900 !important; /* Safety Orange Title */
-    font-size: 28px !important;
+    color: #00ffea !important; /* Cyan Title */
+    font-size: 24px !important;
+    text-shadow: 0 0 5px rgba(0, 255, 234, 0.5);
     text-transform: uppercase;
-    text-shadow: 2px 2px 0px #000;
 }
 
 .service-description {
-    color: #00ffea !important; /* Cyan Description */
-    font-size: 18px !important;
+    color: #bbb !important;
+    font-size: 16px !important;
 }
 
-/* --- 5. INTERACTION --- */
-.services .service:hover {
-    transform: translate(4px, 4px) !important;
-    box-shadow: 0px 0px 0px transparent !important;
-    border-color: #ff9900 !important; /* Border turns Orange */
-}
-
-/* --- 6. HIDE UI JUNK --- */
-/* Hides the search bar and the footer */
+/* --- 5. HIDE UI JUNK --- */
 .search-bar-container, footer, .settings-widget {
     display: none !important;
 }
 
-/* --- BOOKMARK TRANSFORMER --- */
-/* This targets the bottom lists (Github, Reddit) and turns them into buttons */
+/* --- 6. THE RADIO BUTTON (SomaFM) --- */
+/* Making the bottom links look like cool pills */
 .bookmark {
-    background: #000 !important;
-    border: 2px solid var(--neon-cyan) !important; /* Cyan Borders */
-    border-radius: 0px !important;
-    padding: 10px !important;
-    margin: 5px !important;
-    box-shadow: 4px 4px 0px var(--neon-pink) !important; /* Pink Shadows */
-    transition: all 0.1s !important;
-    color: var(--neon-yellow) !important;
-    font-weight: bold;
-    text-align: center;
+    background: rgba(255, 0, 255, 0.2) !important; /* Pink Glass */
+    border: 1px solid rgba(255, 0, 255, 0.4) !important;
+    border-radius: 50px !important; /* Pill shape */
+    backdrop-filter: blur(5px);
+    transition: all 0.2s;
 }
 
-/* Hover Effect for Bookmarks */
 .bookmark:hover {
-    transform: translate(2px, 2px) !important;
-    box-shadow: 0px 0px 0px transparent !important;
-    border-color: var(--neon-orange) !important;
-    background: #111 !important;
+    background: rgba(255, 0, 255, 0.4) !important;
+    box-shadow: 0 0 15px rgba(255, 0, 255, 0.6);
+    transform: scale(1.05);
 }
 
-/* Make the text bigger */
 .bookmark-text {
     font-family: 'VT323', monospace !important;
     font-size: 20px !important;
-    text-transform: uppercase;
+    color: #fff !important;
 }
-
-/* HIDE THE URL (Clean look) */
-.bookmark-href {
-    display: none !important;
-}
+.bookmark-href { display: none !important; }

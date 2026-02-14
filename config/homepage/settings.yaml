@@ -2,8 +2,8 @@ title: PABLO_DECK_v4
 color: slate
 theme: dark
 
-background:
-  color: "#050505"
+
+background: https://images.unsplash.com/photo-1550745165-9bc0b252726f
 
 # --- THE LAYOUT ---
 layout:

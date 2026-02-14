@@ -1,12 +1,10 @@
----
-# For configuration options and examples, please see:
-# https://gethomepage.dev/configs/info-widgets/
-
+- datetime:
+    format:
+      timeStyle: short
 - resources:
     cpu: true
     memory: true
-    disk: /
-
-- search:
-    provider: duckduckgo
-    target: _blank
+    disk: /media/pibulus/passport
+- greeting:
+    text: "Welcome back!."
+    image: "https://quickcat.club/logo.png" # Point this to your new logo!
