@@ -1,9 +1,15 @@
 #!/bin/bash
-# 🦾 PIBULUS CYBERDECK v5.5 - "The ADHD Safety Net"
+# 🦾 PIBULUS CYBERDECK v5.6 - "The Modular Persona"
 
 # --- SOURCE CONFIG ---
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 [ -f "$SCRIPT_DIR/.env" ] && source "$SCRIPT_DIR/.env" || { echo "❌ No .env"; exit 1; }
+
+# --- ONBOARDING CHECK ---
+if [[ -z "$USER_NAME" || "$USER_NAME" == "pibulus" ]]; then
+    "$SCRIPT_DIR/onboard.sh"
+    source "$SCRIPT_DIR/.env"
+fi
 
 # --- UTILS ---
 get_status() {
@@ -19,40 +25,28 @@ render_hud() {
     local TEMP=$(vcgencmd measure_temp | cut -d'=' -f2)
     local DISK=$(df -h "$PASSPORT_ROOT" | awk 'NR==2 {print $5}')
     gum style --border double --border-foreground 212 --padding "0 2" --margin "1 0" 
-        "🌡️ CPU: $TEMP  |  📼 PASSPORT: $DISK  |  ⚓ STACKS: $(get_status jellyfin) $(get_status immich_server)"
+        "👤 $USER_NAME | 🌡️ $TEMP | 📼 $DISK | ⚓ $(get_status jellyfin) $(get_status immich_server)"
 }
 
 show_help() {
     clear
     figlet -f slant "DONT PANIC" | lolcat
     gum style --border normal --margin "1 2" --padding "1 2" --border-foreground 212 
-    "It's okay. We all forget. Here is the cheat sheet.
+    "Chill, $USER_NAME. We got this.
 
-$(gum style --foreground 46 "THE ONE COMMAND:")
-- $(gum style --foreground 226 "deck") -> Type this to open the main menu. Everything is there.
+$(gum style --foreground 46 "THE FLOW:")
+- Type 'deck' to open the control menu.
+- Green (🟢) means it's alive. Red (🔴) means it's resting.
 
-$(gum style --foreground 46 "I WANT TO...")
-- $(gum style --foreground 226 "See my photos?") -> Run 'deck', pick 'Immich'.
-- $(gum style --foreground 226 "Fix iCloud?") -> Run 'deck', pick 'Immich', then 'Authenticate'.
-- $(gum style --foreground 226 "Add movies?") -> Put files in /media/pibulus/passport/Movies.
-- $(gum style --foreground 226 "Check if it's broken?") -> Look for 🔴 lights in the menu.
-
-$(gum style --foreground 46 "EMERGENCY:")
-- If the menu freezes: Press 'Ctrl+C'
-- If the Pi freezes: Unplug it (brutal but effective).
-- If you are lost: Type 'halp' again." | lolcat
+$(gum style --foreground 46 "QUICK FIXES:")
+- Photos stuck? Go to Immich -> Authenticate.
+- Passport missing? Check your cables and run 'lsblk'.
+- Lost? Just type 'halp'." | lolcat
     
     echo ""
-    gum input --placeholder "Feeling better? Press Enter to fly..."
+    gum input --placeholder "Back to the bridge? Press Enter..."
 }
 
-# --- ARGUMENT CHECK (The Safety Net) ---
-if [[ "$1" =~ ^(help|halp|sos|wtf|\-h|\-\-help)$ ]]; then
-    show_help
-    exit 0
-fi
-
-# ... [Rest of the functions: manage_immich, manage_stack, etc.] ...
 manage_immich() {
     while true; do
         render_hud
@@ -69,7 +63,6 @@ manage_immich() {
 }
 
 manage_homepage() {
-    # Re-sourcing themes logic from v5.3
     HOMEPAGE_DIR="$SCRIPT_DIR/config/homepage"
     THEMES_DIR="$HOMEPAGE_DIR/themes"
     while true; do
@@ -112,6 +105,12 @@ manage_stack() {
         esac
     done
 }
+
+# --- ARGUMENT CHECK ---
+if [[ "$1" =~ ^(help|halp|sos|wtf|\-h|\-\-help)$ ]]; then
+    show_help
+    exit 0
+fi
 
 # --- THE MAIN DECK ---
 while true; do
