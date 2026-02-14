@@ -2,7 +2,7 @@
     - The Cinema:
         icon: jellyfin.png
         href: http://pibulus.local:8096
-        description: MOVIES & SHOWS (Use 'Guest' to enter)
+        description: MOVIES & SHOWS (Use 'Guest')
 
     - The Jukebox:
         icon: navidrome.png
@@ -14,10 +14,10 @@
         href: http://pibulus.local:8000
         description: 24/7 PIRATE BROADCAST
 
-    - Text Dimension:
+    - Text Adventures:
         icon: terminal.png
         href: http://pibulus.local:7681
-        description: RETRO BBS & TEXT ADVENTURES
+        description: CLASSIC IF & ZORK
 
     - Library:
         icon: kavita.png
