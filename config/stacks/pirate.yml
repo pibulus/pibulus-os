@@ -38,7 +38,7 @@ services:
       - /home/pibulus/.config/overseerr:/app/config
     restart: unless-stopped
 
-  # --- THE RETRO ARCADE ---
+  # --- THE RETRO ARCADE (TEXT) ---
   arcade:
     image: tsl0922/ttyd:latest
     container_name: cyber_arcade
@@ -49,21 +49,37 @@ services:
     command: ttyd -W /arcade/terminal-travels
     restart: unless-stopped
 
-  # --- THE CONSOLE EMULATOR ---
-  emulatorjs:
-    image: lscr.io/linuxserver/emulatorjs:latest
-    container_name: emulatorjs
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Australia/Melbourne
-    volumes:
-      - /home/pibulus/.config/emulatorjs:/config
-      - /media/pibulus/passport/roms:/data
-    ports:
-      - "8085:80"
-      - "3005:3000"
+  # --- THE CONSOLE EMULATOR (ROMM) ---
+  romm:
+    image: rommapp/romm:latest
+    container_name: romm
     restart: unless-stopped
+    environment:
+      - DB_HOST=romm_db
+      - DB_NAME=romm
+      - DB_USER=romm
+      - DB_PASS=romm_pass
+      - ROMM_AUTH_SECRET=pibulus_secret_key
+    ports:
+      - "8086:8080"
+    volumes:
+      - /media/pibulus/passport/roms:/roms
+      - /home/pibulus/.config/romm/resources:/romm/resources
+      - /home/pibulus/.config/romm/assets:/romm/assets
+    depends_on:
+      - romm_db
+
+  romm_db:
+    image: mariadb:latest
+    container_name: romm_db
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=romm_pass
+      - MYSQL_DATABASE=romm
+      - MYSQL_USER=romm
+      - MYSQL_PASSWORD=romm_pass
+    volumes:
+      - /home/pibulus/.config/romm/mysql:/var/lib/mysql
 
   # --- THE UTILITIES ---
   navidrome:
@@ -80,28 +96,6 @@ services:
       - /home/pibulus/.config/navidrome:/data
       - /media/pibulus/passport/music:/music
     restart: unless-stopped
-
-  kavita:
-    image: jvmilazz0/kavita:latest
-    container_name: kavita
-    ports:
-      - "5000:5000"
-    volumes:
-      - /media/pibulus/passport/Books:/manga
-      - /home/pibulus/.config/kavita:/kavita/config
-    restart: unless-stopped
-
-  slskd:
-    image: slskd/slskd
-    container_name: slskd
-    user: 1000:1000
-    ports:
-      - "5030:5030"
-      - "5031:5031"
-    volumes:
-      - /media/pibulus/passport/Soulseek:/app/downloads
-      - /opt/slskd:/app/config
-    restart: always
 
   filebrowser:
     image: filebrowser/filebrowser:s6
