@@ -4,10 +4,10 @@
         href: http://pibulus.local:8096
         description: MOVIES & SHOWS (Use 'Guest' to enter)
 
-    - GrooveFM Radio:
+    - The Jukebox:
         icon: navidrome.png
         href: http://pibulus.local:4533
-        description: HI-FI AUDIO STREAM
+        description: HI-FI AUDIO COLLECTION
 
     - KPAB-TV:
         icon: stremio.png
