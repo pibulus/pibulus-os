@@ -1,20 +1,19 @@
 #!/bin/bash
-# 🚀 PIBULUS DEPLOY WIZARD v5.3 - "The DNS Whisperer"
+# 🚀 PIBULUS DEPLOY WIZARD v5.4 - "The DNS Whisperer"
 
 # --- SOURCE CONFIG ---
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 PARENT_DIR="$(dirname "$SCRIPT_DIR")"
 [ -f "$PARENT_DIR/.env" ] && source "$PARENT_DIR/.env" || { echo "❌ No .env"; exit 1; }
 
-# Tunnel Info from config
-TUNNEL_ID="c79eb8a2-9791-4ece-8b54-bc9d0e6d01cd"
-CNAME_TARGET="$TUNNEL_ID.cfargotunnel.com"
+# Modular DNS target
+CNAME_TARGET="${TUNNEL_ID:-c79eb8a2-9791-4ece-8b54-bc9d0e6d01cd}.cfargotunnel.com"
 
 mkdir -p "$WEB_ROOT"
 
 clear
 figlet -f slant "DEPLOYER" | lolcat
-echo -e "Another brick in the digital wall. Let's go." | lolcat
+echo -e "Digital sovereignty starts here. Let's build." | lolcat
 
 # 1. GET INPUT
 REPO_URL=$(gum input --placeholder "🔗 Paste GitHub URL...")
@@ -57,7 +56,7 @@ case $TYPE in
 esac
 
 # 5. CLOUDFLARE
-DOMAIN=$(gum input --placeholder "🌐 Enter Domain (e.g., $APP_NAME.quickcat.club)...")
+DOMAIN=$(gum input --placeholder "🌐 Domain name (e.g., $APP_NAME.quickcat.club)...")
 
 if [ ! -z "$DOMAIN" ]; then
     # Stitch into config
@@ -71,17 +70,13 @@ if [ ! -z "$DOMAIN" ]; then
     clear
     figlet -f slant "SUCCESS" | lolcat
     gum style --border double --margin "1 2" --padding "1 2" --border-foreground 46 
-    "$(gum style --foreground 46 "🚀 APP DEPLOYED LOCALLY!")
+    "$(gum style --foreground 46 "🚀 APP LIVE AT:") https://$DOMAIN
 
-$(gum style --foreground 226 "DNS ACTION REQUIRED (Porkbun):")
-1. Log into Porkbun.com
-2. Go to DNS for '$(echo $DOMAIN | cut -d. -f2-)'
-3. Add a $(gum style --foreground 212 "CNAME") record:
-   - Host: $(echo $DOMAIN | cut -d. -f1)
-   - Answer: $(gum style --foreground 212 "$CNAME_TARGET")
-
-$(gum style --foreground 46 "URL:") https://$DOMAIN"
+$(gum style --foreground 226 "DNS ACTION (Porkbun):")
+Add a CNAME record:
+- Host: $(echo $DOMAIN | cut -d. -f1)
+- Answer: $CNAME_TARGET"
 fi
 
 rm -rf "$TEMP_DIR"
-gum input --placeholder "Press Enter to return to the deck..."
+gum input --placeholder "Press Enter to return..."
