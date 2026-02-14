@@ -22,6 +22,27 @@ get_vitals() {
     echo -e "${MAGENTA}🔥 CPU: $TEMP  📼 Passport: $DISK  💾 SD: $SD${NC}"
 }
 
+show_help() {
+    clear
+    figlet -f slant "PIBULUS OS" | lolcat
+    echo -e "${CYAN}Welcome to the Cyberdeck Manual, Chummer.${NC}" | lolcat
+    echo ""
+    gum style --border normal --margin "1 2" --padding "1 2" --border-foreground 212 "This deck is a modular stack system. Use the numbers to navigate.
+    
+${GREEN}COMMANDS:${NC}
+- ${YELLOW}deck:${NC} Re-opens this main menu.
+- ${YELLOW}docker ps:${NC} See what's alive.
+- ${YELLOW}lsblk:${NC} Check if the Passport drive is mounted.
+
+${GREEN}TASKS:${NC}
+- ${MAGENTA}iCloud Sync:${NC} Run 'docker exec -it icloudpd sync-icloud.sh --Initialise'
+- ${MAGENTA}Media:${NC} Drop files in /media/pibulus/passport/Music or Movies.
+
+${RED}REMEMBER:${NC} Infrastructure is code. Stacks live in ~/pibulus-os/config/stacks/" | lolcat
+    echo ""
+    gum spin --spinner dot --title "Returning to Mainframe..." -- sleep 3
+}
+
 manage_stack() {
     local name=$1
     local file=$2
@@ -61,7 +82,8 @@ while true; do
     echo -e " 5. 📸  ${YELLOW}Immich${NC} (Photos)"
     echo -e " 6. 🏠 ${YELLOW}Dashboard${NC} (Homepage)"
     echo -e " 7. 📝 ${RED}Edit Tunnel Config${NC}"
-    echo -e " 8. 🚪 Exit"
+    echo -e " 8. ❓ ${CYAN}Help & Manual${NC}"
+    echo -e " 9. 🚪 Exit"
     echo -e "--------------------------------------------"
     read -p " Select Protocol: " choice
 
@@ -73,7 +95,8 @@ while true; do
         5) manage_stack "IMMICH" "$IMMICH_CONFIG" ;;
         6) echo "Restarting Dashboard..."; docker restart homepage ; sleep 2 ;;
         7) sudo nano "$TUNNEL_CONFIG" && sudo systemctl restart cloudflared ;;
-        8) clear ; exit 0 ;;
+        8) show_help ;;
+        9) clear ; exit 0 ;;
         *) echo "Invalid Protocol." ; sleep 1 ;;
     esac
 done
