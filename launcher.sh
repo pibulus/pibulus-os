@@ -1,26 +1,28 @@
 #!/bin/bash
-# 🦾 PIBULUS CYBERDECK v5.1 - "The Ergonomic Update"
-# Optimized for cognitive ease and cyberpunk aesthetics.
+# 🦾 PIBULUS CYBERDECK v5.2 - "The Sovereign Update"
+# Agnostic. Modular. Robust.
 
-# --- CONFIGURATION ---
-PIRATE_CONFIG="$HOME/pibulus-os/config/stacks/pirate.yml"
-IMMICH_CONFIG="$HOME/pibulus-os/config/stacks/immich.yml"
-TUNNEL_CONFIG="/etc/cloudflared/config.yml"
+# --- SOURCE CONFIG ---
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+if [ -f "$SCRIPT_DIR/.env" ]; then
+    source "$SCRIPT_DIR/.env"
+else
+    echo "❌ Missing .env file. Run setup or create one."
+    exit 1
+fi
 
-# --- COLORS ---
-CYAN='#00FFFF'
-MAGENTA='#FF00FF'
-YELLOW='#FFFF00'
-GREEN='#00FF00'
+# Paths from .env (or defaults)
+PIRATE_CONFIG="$SCRIPT_DIR/config/stacks/pirate.yml"
+IMMICH_CONFIG="$SCRIPT_DIR/config/stacks/immich.yml"
+TUNNEL_CONFIG="${CF_CONFIG:-/etc/cloudflared/config.yml}"
 
-# --- HUD (Head-Up Display) ---
+# --- HUD ---
 render_hud() {
     clear
     local TEMP=$(vcgencmd measure_temp | cut -d'=' -f2)
-    local DISK=$(df -h /media/pibulus/passport | awk 'NR==2 {print $5}')
+    local DISK=$(df -h "$PASSPORT_ROOT" | awk 'NR==2 {print $5}')
     local SD=$(df -h / | awk 'NR==2 {print $5}')
     
-    # Create a nice HUD box
     gum style 
         --border double 
         --border-foreground 212 
@@ -33,19 +35,19 @@ show_help() {
     clear
     figlet -f slant "PIBULUS OS" | lolcat
     gum style --border normal --margin "1 2" --padding "1 2" --border-foreground 212 
-    "Welcome, Chummer. This deck is your gateway to the digital estate.
+    "Sovereignty looks good on you. Here's the manual.
 
 $(gum style --foreground 46 "THE STACKS:")
-- $(gum style --foreground 226 "Pirate Station:") Your media heart. Jellyfin & Navidrome.
-- $(gum style --foreground 226 "Immich Vault:") AI Photo archive + iCloud bridge.
+- $(gum style --foreground 226 "Pirate Station:") Media heart. (Jellyfin/Navidrome)
+- $(gum style --foreground 226 "Immich Vault:") Photo archive + iCloud bridge.
 
-$(gum style --foreground 46 "QUICK TIPS:")
-- iCloud not syncing? Use the bridge command in the manual.
-- Passport drive is your 'Gold Record'. Protect it.
-- Everything is modular. If it breaks, we fix it in the YAML." | lolcat
+$(gum style --foreground 46 "SOVEREIGN TIPS:")
+- This deck reads from ~/pibulus-os/.env. Change the paths there, and the deck follows.
+- No deck? No problem. Use 'docker compose' directly. The scripts are just shortcuts.
+- Keep your Passport drive healthy. It's your history. 😉" | lolcat
     
     echo ""
-    gum input --placeholder "Press Enter to return to the mainframe..."
+    gum input --placeholder "Hit Enter to return to the mainframe..."
 }
 
 manage_stack() {
@@ -72,8 +74,6 @@ manage_stack() {
 # --- THE MAIN DECK ---
 while true; do
     render_hud
-    
-    # The selection menu - Arrows + Enter (Low Cognitive Load)
     local choice=$(gum choose 
         "🚀 Deploy New App" 
         "📊 System Status" 
@@ -86,7 +86,7 @@ while true; do
         "🚪 Exit")
 
     case $choice in
-        "🚀 Deploy New App") ~/pibulus-os/scripts/deploy.sh ;;
+        "🚀 Deploy New App") "$SCRIPT_DIR/scripts/deploy.sh" ;;
         "📊 System Status") pm2 list && gum input --placeholder "Enter to return..." ;;
         "🌐 Tunnel Status") sudo systemctl status cloudflared | head -n 20 && gum input --placeholder "Enter to return..." ;;
         "🏴‍☠️ Pirate Station") manage_stack "PIRATE STATION" "$PIRATE_CONFIG" ;;
