@@ -1,26 +1,24 @@
 #!/bin/bash
-# 🚀 PIBULUS DEPLOY WIZARD v5.2 - Sovereign Edition
+# 🚀 PIBULUS DEPLOY WIZARD v5.3 - "The DNS Whisperer"
 
 # --- SOURCE CONFIG ---
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 PARENT_DIR="$(dirname "$SCRIPT_DIR")"
-if [ -f "$PARENT_DIR/.env" ]; then
-    source "$PARENT_DIR/.env"
-else
-    # Fallbacks if called standalone
-    WEB_ROOT="${WEB_ROOT:-/media/pibulus/passport/www/html}"
-    CF_CONFIG="${CF_CONFIG:-/etc/cloudflared/config.yml}"
-fi
+[ -f "$PARENT_DIR/.env" ] && source "$PARENT_DIR/.env" || { echo "❌ No .env"; exit 1; }
+
+# Tunnel Info from config
+TUNNEL_ID="c79eb8a2-9791-4ece-8b54-bc9d0e6d01cd"
+CNAME_TARGET="$TUNNEL_ID.cfargotunnel.com"
 
 mkdir -p "$WEB_ROOT"
 
 clear
 figlet -f slant "DEPLOYER" | lolcat
-echo -e "Digital sovereignty starts here. Let's build something." | lolcat
+echo -e "Another brick in the digital wall. Let's go." | lolcat
 
 # 1. GET INPUT
 REPO_URL=$(gum input --placeholder "🔗 Paste GitHub URL...")
-[ -z "$REPO_URL" ] && { gum style --foreground 196 "Error: URL required."; exit 1; }
+[ -z "$REPO_URL" ] && { exit 1; }
 
 DEFAULT_NAME=$(basename "$REPO_URL" .git)
 APP_NAME=$(gum input --placeholder "📦 Name this app (default: $DEFAULT_NAME)..." --value "$DEFAULT_NAME")
@@ -29,69 +27,61 @@ APP_NAME=${APP_NAME:-$DEFAULT_NAME}
 # 2. CLONE
 TEMP_DIR="/tmp/$APP_NAME-deploy"
 rm -rf "$TEMP_DIR"
-gum spin --spinner dot --title "Pulling source from the ether..." -- git clone "$REPO_URL" "$TEMP_DIR"
-
-if [ ! -d "$TEMP_DIR" ]; then
-    gum style --foreground 196 "❌ Clone failed. Check the URL."
-    exit 1
-fi
-
+gum spin --spinner dot --title "Pulling source..." -- git clone "$REPO_URL" "$TEMP_DIR"
+[ ! -d "$TEMP_DIR" ] && { gum style --foreground 196 "❌ Clone failed."; exit 1; }
 cd "$TEMP_DIR" || exit
 
 # 3. TYPE DETECTION
-gum style --foreground 212 "🔍 Sniffing out the project type..."
+gum style --foreground 212 "🔍 Sniffing type..."
 TYPE="Static"
-if [ -f "deno.json" ] || [ -f "deno.jsonc" ]; then
-    TYPE="Deno"
-elif [ -f "package.json" ]; then
-    TYPE="Node/Svelte"
-elif [ -f "index.html" ]; then
-    TYPE="Static HTML"
-fi
+[ -f "package.json" ] && TYPE="Node/Svelte"
+[ -f "index.html" ] && TYPE="Static HTML"
 
-gum style --border normal --padding "1 2" --border-foreground 57 "Detected: $TYPE"
-
-# 4. DEPLOYMENT LOGIC
+# 4. DEPLOYMENT
 case $TYPE in
     "Static HTML"|"Static")
-        gum spin --spinner bouncer --title "Shipping static assets..." -- mkdir -p "$WEB_ROOT/$APP_NAME" && cp -r . "$WEB_ROOT/$APP_NAME"
+        mkdir -p "$WEB_ROOT/$APP_NAME" && cp -r . "$WEB_ROOT/$APP_NAME"
         LOCAL_URL="http://web_host:80/$APP_NAME"
         ;;
     "Node/Svelte")
-        gum style --foreground 220 "⚠️ Node/Svelte detected. Building for production..."
-        if gum confirm "Run the build pipeline?"; then
-            gum spin --spinner pulse --title "Grinding gears (npm build)..." -- npm install && npm run build
+        if gum confirm "Svelte detected. Run build?"; then
+            gum spin --spinner pulse --title "Building..." -- npm install && npm run build
             BUILD_DIR="build"
             [ -d "dist" ] && BUILD_DIR="dist"
-            gum spin --spinner bouncer --title "Injecting build into web root..." -- cp -r "$BUILD_DIR"/* "$WEB_ROOT/$APP_NAME"
+            cp -r "$BUILD_DIR"/* "$WEB_ROOT/$APP_NAME"
             LOCAL_URL="http://web_host:80/$APP_NAME"
         else
-            gum style --foreground 196 "Deployment aborted by user." ; exit 1
+            exit 1
         fi
-        ;;
-    *)
-        gum style --foreground 196 "Manual intervention required for this project type."
-        exit 1
         ;;
 esac
 
-# 5. CLOUDFLARE AUTOMATION
-DOMAIN=$(gum input --placeholder "🌐 Domain name (e.g., $APP_NAME.quickcat.club)...")
+# 5. CLOUDFLARE
+DOMAIN=$(gum input --placeholder "🌐 Enter Domain (e.g., $APP_NAME.quickcat.club)...")
 
 if [ ! -z "$DOMAIN" ]; then
-    # Inject new hostname
-    if sudo grep -q "$DOMAIN" "$CF_CONFIG"; then
-        gum style --foreground 220 "ℹ️ Domain already exists. Skipping config update."
-    else
+    # Stitch into config
+    if ! sudo grep -q "$DOMAIN" "$CF_CONFIG"; then
         sudo sed -i "/# -- INSERT NEW APPS HERE --/a \  - hostname: $DOMAIN
     service: $LOCAL_URL" "$CF_CONFIG"
-        gum style --foreground 46 "✅ $DOMAIN wired into the tunnel."
+        gum spin --spinner moon --title "Restarting Tunnel..." -- sudo systemctl restart cloudflared
     fi
 
-    gum spin --spinner moon --title "Restarting the tunnel..." -- sudo systemctl restart cloudflared
-    gum style --foreground 46 "🚀 LIVE! Visit: https://$DOMAIN"
+    # THE FINAL SUCCESS HUD
+    clear
+    figlet -f slant "SUCCESS" | lolcat
+    gum style --border double --margin "1 2" --padding "1 2" --border-foreground 46 
+    "$(gum style --foreground 46 "🚀 APP DEPLOYED LOCALLY!")
+
+$(gum style --foreground 226 "DNS ACTION REQUIRED (Porkbun):")
+1. Log into Porkbun.com
+2. Go to DNS for '$(echo $DOMAIN | cut -d. -f2-)'
+3. Add a $(gum style --foreground 212 "CNAME") record:
+   - Host: $(echo $DOMAIN | cut -d. -f1)
+   - Answer: $(gum style --foreground 212 "$CNAME_TARGET")
+
+$(gum style --foreground 46 "URL:") https://$DOMAIN"
 fi
 
-# Cleanup
 rm -rf "$TEMP_DIR"
 gum input --placeholder "Press Enter to return to the deck..."
