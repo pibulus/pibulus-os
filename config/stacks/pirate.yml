@@ -38,6 +38,17 @@ services:
       - /home/pibulus/.config/overseerr:/app/config
     restart: unless-stopped
 
+  # --- THE RETRO ARCADE ---
+  arcade:
+    image: tsl0922/ttyd:latest
+    container_name: cyber_arcade
+    ports:
+      - "7681:7681"
+    volumes:
+      - /home/pibulus/Projects/active/experiments/terminal-travels:/arcade
+    command: ttyd -W /arcade/terminal-travels
+    restart: unless-stopped
+
   # --- THE UTILITIES ---
   navidrome:
     image: deluan/navidrome:latest
