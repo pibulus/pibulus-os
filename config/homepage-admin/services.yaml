@@ -1,0 +1,47 @@
+- Media_Station:
+    - The Cinema:
+        icon: jellyfin.png
+        href: http://pibulus.local:8096
+        description: MOVIES & SHOWS
+
+    - GrooveFM Radio:
+        icon: navidrome.png
+        href: http://pibulus.local:4533
+        description: HI-FI AUDIO STREAM
+
+    - KPAB-TV:
+        icon: stremio.png
+        href: http://pibulus.local:8000
+        description: 24/7 PIRATE BROADCAST
+
+    - Library:
+        icon: kavita.png
+        href: http://pibulus.local:5000
+        description: BOOKS & ARCHIVES
+
+- Captains_Tools:
+    - Immich Vault:
+        icon: immich.png
+        href: http://pibulus.local:2283
+        description: PHOTO ARCHIVE (SYNCING)
+
+    - Soulseek:
+        icon: soulseek.png
+        href: http://pibulus.local:5030
+        description: P2P NETWORK
+
+    - File Browser:
+        icon: filebrowser.png
+        href: http://pibulus.local:8080
+        description: FULL DISK ACCESS
+
+- Infrastructure:
+    - Tunnel Manager:
+        icon: cloudflare.png
+        href: https://dash.cloudflare.com
+        description: CLOUDFLARE BACKEND
+
+    - Port Map:
+        icon: list.png
+        href: http://pibulus.local:8090/ports.sh
+        description: INTERNAL ROUTING

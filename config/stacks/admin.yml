@@ -1,0 +1,11 @@
+services:
+  homepage-admin:
+    image: ghcr.io/gethomepage/homepage:latest
+    container_name: homepage_admin
+    ports:
+      - "8081:3000"
+    volumes:
+      - /home/pibulus/pibulus-os/config/homepage-admin:/app/config
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /media/pibulus:/media/pibulus
+    restart: always

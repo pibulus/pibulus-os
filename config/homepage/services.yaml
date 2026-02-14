@@ -1,49 +1,32 @@
 - Media_Station:
-    - Navidrome:
-        icon: navidrome.png
-        href: http://pibulus.local:4533
-        description: AUDIO_DB
-
-    - Jellyfin:
+    - The Cinema:
         icon: jellyfin.png
         href: http://pibulus.local:8096
-        description: VIDEO_UPLINK
+        description: MOVIES & SHOWS (Use 'Guest' to enter)
 
-    - Kavita:
+    - GrooveFM Radio:
+        icon: navidrome.png
+        href: http://pibulus.local:4533
+        description: HI-FI AUDIO STREAM
+
+    - KPAB-TV:
+        icon: stremio.png
+        href: http://pibulus.local:8000
+        description: 24/7 PIRATE BROADCAST
+
+    - Library:
         icon: kavita.png
         href: http://pibulus.local:5000
-        description: LIBRARY_ARCHIVE
+        description: BOOKS & ARCHIVES
 
-    - Stremio:
-        icon: stremio.png
-        href: https://web.stremio.com/
-        description: TORRENT_STREAM
-
-- Pibulus_Ops:
-    - Soulseek:
-        icon: soulseek.png
-        href: http://pibulus.local:5030
-        description: P2P_NETWORK
-
-    - Cloud_Drive:
+- Community:
+    - File Drop:
         icon: filebrowser.png
         href: http://pibulus.local:8080
-        description: FILE_SYSTEM
+        description: UPLOAD YOUR MEDIA HERE
 
-    - Immich_Vault:
-        icon: immich.png
-        href: http://pibulus.local:2283
-        description: PHOTOS_AI_CORE
-        # WIDGET REMOVED until you get the API Key setup!
-        # This fixes the red error bar.
-
-- Deployments:
-    - Project_Index:
-        icon: nginx.png
-        href: http://pibulus.local:8090
-        description: ALL_DEPLOYMENTS
-    
+- Labs:
     - Stargram:
         icon: code.png
         href: http://pibulus.local:8090/stargram
-        description: HOROSCOPE_APP
+        description: HOROSCOPE APP v1.0

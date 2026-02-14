@@ -1,0 +1,78 @@
+/* IMPORT THE HACKER FONT (Keep this, it's the brand!) */
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+/* --- 1. THE GLASS BACKGROUND --- */
+/* We remove the forced black/grid so the Unsplash image shows */
+body {
+    background-color: #050505;
+    font-family: 'VT323', monospace !important;
+    color: #eee !important;
+}
+
+/* --- 2. THE LUSH CARDS (Glassmorphism) --- */
+.services .service, .widget-card {
+    /* 50% Transparent Black */
+    background: rgba(0, 0, 0, 0.6) !important;
+    
+    /* The Blur Effect */
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    
+    /* Soft Neon Border */
+    border: 1px solid rgba(0, 255, 234, 0.3) !important;
+    border-radius: 12px !important; /* Rounded corners */
+    
+    /* Soft Glow Shadow instead of Hard Pixel Shadow */
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5) !important;
+    
+    transition: all 0.2s ease-in-out !important;
+}
+
+/* --- 3. HOVER EFFECTS --- */
+.services .service:hover {
+    background: rgba(0, 255, 234, 0.1) !important; /* Slight Cyan tint */
+    border-color: #00ffea !important;
+    transform: translateY(-5px) !important;
+    box-shadow: 0 0 20px rgba(0, 255, 234, 0.4) !important; /* Glowing aura */
+}
+
+/* --- 4. TEXT STYLING --- */
+.service-name {
+    color: #00ffea !important; /* Cyan Title */
+    font-size: 24px !important;
+    text-shadow: 0 0 5px rgba(0, 255, 234, 0.5);
+    text-transform: uppercase;
+}
+
+.service-description {
+    color: #bbb !important;
+    font-size: 16px !important;
+}
+
+/* --- 5. HIDE UI JUNK --- */
+.search-bar-container, footer, .settings-widget {
+    display: none !important;
+}
+
+/* --- 6. THE RADIO BUTTON (SomaFM) --- */
+/* Making the bottom links look like cool pills */
+.bookmark {
+    background: rgba(255, 0, 255, 0.2) !important; /* Pink Glass */
+    border: 1px solid rgba(255, 0, 255, 0.4) !important;
+    border-radius: 50px !important; /* Pill shape */
+    backdrop-filter: blur(5px);
+    transition: all 0.2s;
+}
+
+.bookmark:hover {
+    background: rgba(255, 0, 255, 0.4) !important;
+    box-shadow: 0 0 15px rgba(255, 0, 255, 0.6);
+    transform: scale(1.05);
+}
+
+.bookmark-text {
+    font-family: 'VT323', monospace !important;
+    font-size: 20px !important;
+    color: #fff !important;
+}
+.bookmark-href { display: none !important; }
