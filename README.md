@@ -34,3 +34,8 @@ Drop your files into the corresponding folders on the Passport drive (`/media/pi
 
 ## 🛠️ Maintenance
 The system is designed to be "infrastructure-as-code". All configurations live in `~/pibulus-os/config/stacks/`. If you want to change a service, edit its `.yml` file and run `deck` -> `(U)p/Start` to apply changes.
+
+## 📌 PINNED IDEAS
+-  **PartyKit Chat:** Modular chat with funny names (jungle_panda) and glowing orbs.
+-  **Hybrid Transcoding:** Connect the i7/1080ti to handle 4K video for the Pi.
+-  **Voice-to-Bucket:** Record audio on iPhone directly into the Radio Bucket.
