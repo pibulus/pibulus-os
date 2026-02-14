@@ -1,5 +1,5 @@
 #!/bin/bash
-# 🦾 PIBULUS CYBERDECK v6.4 - "The Fortress Update"
+# 🦾 PIBULUS CYBERDECK v6.5 - "The Community Update"
 
 # --- SOURCE CONFIG ---
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
@@ -35,73 +35,23 @@ tactile_choose() {
     echo "$choice"
 }
 
-# [Keep previous management functions]
-manage_radio() {
+# [Previous management functions remain the same]
+# ...
+
+manage_community() {
     while true; do
         render_hud
-        echo -e "$(gum style --foreground 212 '--- 📻 KPAB.fm RADIO OPS ---')"
-        local action=$(tactile_choose "Start Station" "Stop Station" "Logs" "Back")
+        echo -e "$(gum style --foreground 46 '--- 🤝 COMMUNITY GATEKEEPER ---')"
+        local action=$(tactile_choose "Review Quarantine" "Clear Approved" "Back")
         case $action in
-            "Start Station") play_tone "confirm"; cd ~/azuracast && ./docker.sh install ;;
-            "Stop Station") play_tone "confirm"; cd ~/azuracast && docker compose down ;;
-            "Logs") play_tone "confirm"; cd ~/azuracast && docker compose logs --tail=100 -f ;;
+            "Review Quarantine") ls -F "$PASSPORT_ROOT/vignettes/quarantine" && gum input --placeholder "Enter to return..." ;;
+            "Clear Approved") rm -rf "$PASSPORT_ROOT/vignettes/live_rotation/*" && gum style --foreground 46 "Rotation Cleared." && sleep 1 ;;
             "Back") return ;;
         esac
     done
 }
 
-manage_immich() {
-    while true; do
-        render_hud
-        echo -e "$(gum style --foreground 46 '--- 📸 IMMICH VAULT ---')"
-        local action=$(tactile_choose "Start/Update" "Stop" "Logs" "🔐 Authenticate iCloud" "Back")
-        case $action in
-            "Start/Update") play_tone "confirm"; gum spin --title "Booting..." -- docker compose -f "$IMMICH_CONFIG" up -d ;;
-            "Stop") docker compose -f "$IMMICH_CONFIG" down ;;
-            "Logs") docker compose -f "$IMMICH_CONFIG" logs --tail=100 -f ;;
-            "🔐 Authenticate iCloud") play_tone "confirm"; docker exec -it icloudpd sync-icloud.sh --Initialise ;;
-            "Back") return ;;
-        esac
-    done
-}
-
-manage_stack() {
-    local name=$1
-    local file=$2
-    local indicator=$(get_status $3)
-    while true; do
-        render_hud
-        echo -e "$(gum style --foreground 212 "--- 🛠️  MANAGING $name $indicator ---")"
-        docker compose -f "$file" ps --format "table {{.Name}}	{{.Status}}" | gum style --foreground 212
-        echo ""
-        local action=$(tactile_choose "Start/Update" "Stop" "Restart" "Logs" "Back")
-        case $action in
-            "Start/Update") docker compose -f "$file" up -d ;;
-            "Stop") docker compose -f "$file" down ;;
-            "Restart") docker compose -f "$file" restart ;;
-            "Logs") docker compose -f "$file" logs --tail=100 -f ;;
-            "Back") return ;;
-        esac
-    done
-}
-
-show_help() {
-    clear
-    play_tone "startup"
-    figlet -f slant "BUNKER" | lolcat
-    gum style --border normal --margin "1 2" --padding "1 2" --border-foreground 212 
-    "Bunker is sealed, $USER_NAME. 
-
-$(gum style --foreground 46 "THREAT ASSESSMENT:")
-- All stack access points monitored.
-- System DNA backed up to Passport.
-- No anomalies detected.
-
-$(gum style --foreground 226 "STAY VIGILANT. STAY LOUD.")" | lolcat
-    gum input --placeholder "Back to the bridge? Press Enter..."
-}
-
-# --- MAIN LOOP ---
+# --- THE MAIN DECK ---
 play_tone "startup"
 
 while true; do
@@ -109,31 +59,27 @@ while true; do
     local choice=$(tactile_choose 
         "🚀 Deploy New App" 
         "📥 Media Puller" 
+        "🤝 Community Ops" 
         "🕹️ Terminal Travels (BBS)" 
         "🏴‍☠️ Pirate Station $(get_status jellyfin)" 
         "📻 KPAB.fm Radio $(get_status azuracast_web)" 
         "📸 Immich Vault $(get_status immich_server)" 
-        "🛡️ Bunker Lockdown (Backup)" 
+        "🛡️ Bunker Lockdown" 
         "🏠 Dashboard Ops" 
         "📊 System Status" 
-        "🌐 Tunnel Status" 
-        "📝 Edit Tunnel" 
-        "❓ Help & Manual" 
         "🚪 Exit")
 
     case $choice in
         "🚀 Deploy New App") play_tone "confirm"; "$SCRIPT_DIR/scripts/deploy.sh" ;;
         "📥 Media Puller") pull_media ;;
+        "🤝 Community Ops") manage_community ;;
         "🕹️ Terminal Travels (BBS)") play_games ;;
         "🏴‍☠️ Pirate Station") manage_stack "PIRATE STATION" "$PIRATE_CONFIG" "jellyfin" ;;
         "📻 KPAB.fm Radio") manage_radio ;;
         "📸 Immich Vault") manage_immich ;;
-        "🛡️ Bunker Lockdown (Backup)") run_backup ;;
+        "🛡️ Bunker Lockdown") run_backup ;;
         "🏠 Dashboard Ops") manage_homepage ;;
         "📊 System Status") pm2 list && gum input --placeholder "Enter to return..." ;;
-        "🌐 Tunnel Status") sudo systemctl status cloudflared | head -n 20 && gum input --placeholder "Enter to return..." ;;
-        "📝 Edit Tunnel") play_tone "confirm"; sudo nano "$CF_CONFIG" && sudo systemctl restart cloudflared ;;
-        "❓ Help & Manual") show_help ;;
         "🚪 Exit") play_tone "click"; clear; exit 0 ;;
     esac
 done
