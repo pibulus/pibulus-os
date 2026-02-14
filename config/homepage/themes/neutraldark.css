@@ -1,0 +1,10 @@
+/* NEUTRAL DARK */
+body { background: #121212 !important; }
+.services .service, .widget-card {
+    background: #1e1e1e !important;
+    border: 1px solid #333 !important;
+    border-radius: 8px !important;
+}
+.service-name { color: #bb86fc !important; } /* Soft Purple */
+.service-description { color: #888 !important; }
+.services .service:hover { border-color: #bb86fc !important; background: #252525 !important; }

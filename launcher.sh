@@ -1,20 +1,20 @@
 #!/bin/bash
-# 🦾 PIBULUS CYBERDECK v5.2 - "The Sovereign Update"
-# Agnostic. Modular. Robust.
+# 🦾 PIBULUS CYBERDECK v5.3 - "The Aesthetic Update"
 
 # --- SOURCE CONFIG ---
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 if [ -f "$SCRIPT_DIR/.env" ]; then
     source "$SCRIPT_DIR/.env"
 else
-    echo "❌ Missing .env file. Run setup or create one."
+    echo "❌ Missing .env file."
     exit 1
 fi
 
-# Paths from .env (or defaults)
+# Paths
 PIRATE_CONFIG="$SCRIPT_DIR/config/stacks/pirate.yml"
 IMMICH_CONFIG="$SCRIPT_DIR/config/stacks/immich.yml"
-TUNNEL_CONFIG="${CF_CONFIG:-/etc/cloudflared/config.yml}"
+HOMEPAGE_DIR="$SCRIPT_DIR/config/homepage"
+THEMES_DIR="$HOMEPAGE_DIR/themes"
 
 # --- HUD ---
 render_hud() {
@@ -31,23 +31,29 @@ render_hud() {
         "🌡️ CPU: $TEMP  |  📼 PASSPORT: $DISK  |  💾 SD: $SD"
 }
 
-show_help() {
-    clear
-    figlet -f slant "PIBULUS OS" | lolcat
-    gum style --border normal --margin "1 2" --padding "1 2" --border-foreground 212 
-    "Sovereignty looks good on you. Here's the manual.
-
-$(gum style --foreground 46 "THE STACKS:")
-- $(gum style --foreground 226 "Pirate Station:") Media heart. (Jellyfin/Navidrome)
-- $(gum style --foreground 226 "Immich Vault:") Photo archive + iCloud bridge.
-
-$(gum style --foreground 46 "SOVEREIGN TIPS:")
-- This deck reads from ~/pibulus-os/.env. Change the paths there, and the deck follows.
-- No deck? No problem. Use 'docker compose' directly. The scripts are just shortcuts.
-- Keep your Passport drive healthy. It's your history. 😉" | lolcat
-    
-    echo ""
-    gum input --placeholder "Hit Enter to return to the mainframe..."
+manage_homepage() {
+    while true; do
+        render_hud
+        echo -e "--- 🏠 DASHBOARD OPS ---"
+        local action=$(gum choose "Switch Theme" "Restart Dashboard" "Back")
+        
+        case $action in
+            "Switch Theme")
+                local theme=$(gum choose "Cyberpunk" "Vaporwave" "NeoBrutalist" "NeutralDark")
+                case $theme in
+                    "Cyberpunk") cp "$THEMES_DIR/cyberpunk.css" "$HOMEPAGE_DIR/custom.css" ;;
+                    "Vaporwave") cp "$THEMES_DIR/vaporwave.css" "$HOMEPAGE_DIR/custom.css" ;;
+                    "NeoBrutalist") cp "$THEMES_DIR/neobrutalist.css" "$HOMEPAGE_DIR/custom.css" ;;
+                    "NeutralDark") cp "$THEMES_DIR/neutraldark.css" "$HOMEPAGE_DIR/custom.css" ;;
+                esac
+                gum spin --spinner pulse --title "Applying $theme style..." -- docker restart homepage
+                ;;
+            "Restart Dashboard")
+                gum spin --spinner pulse --title "Cycling Homepage..." -- docker restart homepage
+                ;;
+            "Back") return ;;
+        esac
+    done
 }
 
 manage_stack() {
@@ -80,7 +86,7 @@ while true; do
         "🌐 Tunnel Status" 
         "🏴‍☠️ Pirate Station" 
         "📸 Immich Vault" 
-        "🏠 Restart Dashboard" 
+        "🏠 Dashboard Ops" 
         "📝 Edit Tunnel" 
         "❓ Help & Manual" 
         "🚪 Exit")
@@ -91,9 +97,9 @@ while true; do
         "🌐 Tunnel Status") sudo systemctl status cloudflared | head -n 20 && gum input --placeholder "Enter to return..." ;;
         "🏴‍☠️ Pirate Station") manage_stack "PIRATE STATION" "$PIRATE_CONFIG" ;;
         "📸 Immich Vault") manage_stack "IMMICH" "$IMMICH_CONFIG" ;;
-        "🏠 Restart Dashboard") gum spin --spinner pulse --title "Cycling Homepage..." -- docker restart homepage ;;
-        "📝 Edit Tunnel") sudo nano "$TUNNEL_CONFIG" && sudo systemctl restart cloudflared ;;
-        "❓ Help & Manual") show_help ;;
+        "🏠 Dashboard Ops") manage_homepage ;;
+        "📝 Edit Tunnel") sudo nano "$CF_CONFIG" && sudo systemctl restart cloudflared ;;
+        "❓ Help & Manual") "$SCRIPT_DIR/launcher.sh" --help ;; # Just a placeholder
         "🚪 Exit") clear; exit 0 ;;
     esac
 done
