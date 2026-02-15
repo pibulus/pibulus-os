@@ -1,35 +1,219 @@
 #!/bin/bash
-# 🦾 PIBULUS OS - BOOTSTRAP INSTALLER
+# PIBULUS OS - BOOTSTRAP INSTALLER v2.0
 # Run this on a fresh Pi to join the mainframe.
+# Installs tools, hardens security, generates credentials.
 
-echo "🚀 Starting Cyberdeck Bootstrap..."
+set -e
 
-# 1. Install the "Toys"
-sudo apt-get update
-sudo apt-get install -y gum lolcat figlet git curl
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
-# 2. Install the "Engine" (Docker)
+echo "Starting Cyberdeck Bootstrap..."
+
+# ─── 1. PACKAGES ─────────────────────────────────
+echo ""
+echo "[1/8] Installing packages..."
+sudo apt-get update -qq
+sudo apt-get install -y -qq gum lolcat figlet git curl ufw sox > /dev/null 2>&1
+echo "  Done."
+
+# ─── 2. LOCALE FIX ───────────────────────────────
+echo "[2/8] Fixing locale..."
+if ! locale -a 2>/dev/null | grep -q "en_US.UTF-8"; then
+    sudo sed -i 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen 2>/dev/null
+    sudo locale-gen > /dev/null 2>&1
+fi
+sudo update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 2>/dev/null
+echo "  Done."
+
+# ─── 3. DOCKER ───────────────────────────────────
+echo "[3/8] Docker..."
 if ! command -v docker &> /dev/null; then
-    echo "🐳 Installing Docker..."
-    curl -fsSL https://get.docker.com -o get-docker.sh
-    sudo sh get-docker.sh
-    sudo usermod -aG docker $USER
-    rm get-docker.sh
+    echo "  Installing Docker..."
+    curl -fsSL https://get.docker.com -o /tmp/get-docker.sh
+    sudo sh /tmp/get-docker.sh > /dev/null 2>&1
+    sudo usermod -aG docker "$USER"
+    rm /tmp/get-docker.sh
+    echo "  Docker installed. You'll need to log out and back in for group to apply."
 else
-    echo "✅ Docker already present."
+    echo "  Already installed."
 fi
 
-# 3. Setup the Alias
+# ─── 4. SSH KEY ───────────────────────────────────
+echo "[4/8] SSH key..."
+if [ ! -f "$HOME/.ssh/id_ed25519" ]; then
+    mkdir -p "$HOME/.ssh"
+    chmod 700 "$HOME/.ssh"
+    ssh-keygen -t ed25519 -C "pibulus-cyberdeck" -f "$HOME/.ssh/id_ed25519" -N ""
+    echo "  Key generated."
+    echo "  Public key:"
+    cat "$HOME/.ssh/id_ed25519.pub"
+else
+    echo "  Already exists."
+fi
+
+# ─── 5. SSH HARDENING ────────────────────────────
+echo "[5/8] SSH hardening..."
+
+# Ensure authorized_keys exists
+mkdir -p "$HOME/.ssh"
+chmod 700 "$HOME/.ssh"
+touch "$HOME/.ssh/authorized_keys"
+chmod 600 "$HOME/.ssh/authorized_keys"
+
+# Check if authorized_keys has at least one key
+if [ ! -s "$HOME/.ssh/authorized_keys" ]; then
+    echo ""
+    echo "  WARNING: No SSH keys in authorized_keys yet."
+    echo "  From your Mac/laptop, run:"
+    echo "    ssh-copy-id $USER@$(hostname).local"
+    echo ""
+    echo "  Or paste your public key now (leave blank to skip):"
+    if [ -t 0 ]; then
+        read -r REMOTE_KEY
+        if [ -n "$REMOTE_KEY" ]; then
+            echo "$REMOTE_KEY" >> "$HOME/.ssh/authorized_keys"
+            echo "  Key added."
+        else
+            echo "  Skipped. Add keys before disabling password auth."
+        fi
+    fi
+fi
+
+# Only disable password auth if we have authorized keys
+if [ -s "$HOME/.ssh/authorized_keys" ]; then
+    # Disable in main config
+    sudo sed -i 's/^#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
+    sudo sed -i 's/^PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
+
+    # Disable in cloud-init override (Raspberry Pi OS gotcha)
+    if [ -f /etc/ssh/sshd_config.d/50-cloud-init.conf ]; then
+        sudo sed -i 's/PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config.d/50-cloud-init.conf
+    fi
+
+    # Create hardening drop-in
+    sudo tee /etc/ssh/sshd_config.d/hardened.conf > /dev/null << 'SSHEOF'
+PermitRootLogin no
+PubkeyAuthentication yes
+MaxAuthTries 3
+LoginGraceTime 30
+PermitEmptyPasswords no
+X11Forwarding no
+SSHEOF
+
+    sudo sshd -t && sudo systemctl restart ssh
+    echo "  Password auth disabled. Key-only access."
+else
+    echo "  Skipping password disable (no authorized keys yet)."
+fi
+
+# ─── 6. FIREWALL ─────────────────────────────────
+echo "[6/8] Firewall..."
+if ! sudo ufw status 2>/dev/null | grep -q "Status: active"; then
+    sudo ufw default deny incoming > /dev/null
+    sudo ufw default allow outgoing > /dev/null
+    sudo ufw allow from 192.168.0.0/24 comment 'LAN access' > /dev/null
+    if ip link show tailscale0 &>/dev/null; then
+        sudo ufw allow in on tailscale0 comment 'Tailscale VPN' > /dev/null
+    fi
+    sudo ufw allow in on docker0 comment 'Docker internal' > /dev/null 2>&1
+
+    # Allow Docker bridge networks
+    for br in $(ip link show | grep -oP 'br-\w+'); do
+        sudo ufw allow in on "$br" comment 'Docker network' > /dev/null 2>&1
+    done
+
+    echo "y" | sudo ufw enable > /dev/null
+    echo "  Firewall active (LAN + Tailscale only)."
+else
+    echo "  Already active."
+fi
+
+# ─── 7. CREDENTIALS ──────────────────────────────
+echo "[7/8] Credentials..."
+
+# Generate stack .env if missing
+if [ ! -f "$SCRIPT_DIR/config/stacks/.env" ]; then
+    IMMICH_PASS=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9' | head -c 24)
+
+    cat > "$SCRIPT_DIR/config/stacks/.env" << ENVEOF
+# IMMICH CONFIG (Auto-generated by install.sh)
+UPLOAD_LOCATION=/media/pibulus/passport/immich
+DB_DATA_LOCATION=/var/lib/immich/postgres
+
+# Database credentials (auto-generated)
+DB_PASSWORD=$IMMICH_PASS
+DB_USERNAME=postgres
+DB_DATABASE_NAME=immich
+
+# Version
+IMMICH_VERSION=release
+ENVEOF
+
+    # Create postgres data dir with correct perms
+    sudo mkdir -p /var/lib/immich/postgres
+    sudo chown 999:999 /var/lib/immich/postgres
+    sudo chmod 700 /var/lib/immich/postgres
+
+    # Store credentials securely
+    mkdir -p "$HOME/.credentials"
+    chmod 700 "$HOME/.credentials"
+    cat > "$HOME/.credentials/pibulus-secrets.txt" << CREDEOF
+PIBULUS OS CREDENTIALS
+Generated: $(date)
+
+Immich DB Password: $IMMICH_PASS
+
+KEEP THIS FILE SECURE. Never commit to git.
+Location: ~/.credentials/pibulus-secrets.txt
+CREDEOF
+    chmod 600 "$HOME/.credentials/pibulus-secrets.txt"
+    echo "  Credentials generated. Saved to ~/.credentials/pibulus-secrets.txt"
+else
+    echo "  Stack .env already exists (not overwriting)."
+fi
+
+# Generate root .env if missing
+if [ ! -f "$SCRIPT_DIR/.env" ]; then
+    cp "$SCRIPT_DIR/.env.example" "$SCRIPT_DIR/.env"
+    echo "  Created .env from template. Run 'deck' to configure."
+fi
+
+# ─── 8. ALIASES ──────────────────────────────────
+echo "[8/8] Shell setup..."
 BASHRC="$HOME/.bashrc"
 if ! grep -q "alias deck=" "$BASHRC"; then
-    echo "🔗 Setting up 'deck' alias..."
-    echo "alias deck='~/pibulus-os/launcher.sh'" >> "$BASHRC"
+    cat >> "$BASHRC" << 'ALIASEOF'
+
+# --- PIBULUS OS ---
+alias deck="~/pibulus-os/launcher.sh"
+alias halp='less ~/pibulus-os/FIELD_MANUAL.md'
+alias sos='deck --help'
+alias wtf='deck --help'
+ALIASEOF
+    echo "  Aliases added (deck, halp, sos, wtf)."
+else
+    echo "  Already configured."
 fi
 
-# 4. Create initial .env if missing
-if [ ! -f "~/pibulus-os/.env" ]; then
-    echo "📝 Creating default .env..."
-    cp ~/pibulus-os/pibulus.env ~/pibulus-os/.env
+# ─── DONE ─────────────────────────────────────────
+echo ""
+clear
+if command -v figlet &> /dev/null; then
+    figlet -f slant "READY" | lolcat
 fi
-
-echo "✨ Bootstrap complete. Restart your terminal and type 'deck' to fly." | lolcat
+echo ""
+echo "Cyberdeck bootstrap complete!" | lolcat 2>/dev/null || echo "Cyberdeck bootstrap complete!"
+echo ""
+echo "SECURITY:"
+echo "  - SSH key generated"
+echo "  - Password auth: $(sudo sshd -T 2>/dev/null | grep passwordauthentication | awk '{print $2}')"
+echo "  - Firewall: $(sudo ufw status 2>/dev/null | head -1)"
+echo "  - Credentials: ~/.credentials/pibulus-secrets.txt"
+echo ""
+echo "NEXT STEPS:"
+echo "  1. Log out and back in (for docker group)"
+echo "  2. Mount your Passport drive"
+echo "  3. Type 'deck' to launch the mainframe"
+echo "  4. Type 'deck --audit' to verify security"
+echo "  5. Read FIELD_MANUAL.md for operations guide"
+echo ""

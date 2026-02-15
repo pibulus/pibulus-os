@@ -2,11 +2,16 @@
 # 🦾 PIBULUS OS - ONBOARDING
 # The first handshake.
 
+# Safety: bail if not interactive (prevents USER_NAME corruption)
+if [ ! -t 0 ]; then
+    exit 0
+fi
+
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 ENV_FILE="$SCRIPT_DIR/.env"
 
 # Ensure .env exists
-[ ! -f "$ENV_FILE" ] && cp "$SCRIPT_DIR/pibulus.env" "$ENV_FILE"
+[ ! -f "$ENV_FILE" ] && cp "$SCRIPT_DIR/.env.example" "$ENV_FILE"
 
 # Source current config
 source "$ENV_FILE"

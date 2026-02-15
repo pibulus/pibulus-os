@@ -1,0 +1,21 @@
+# Secrets & credentials
+.env
+config/stacks/.env
+*.credentials
+.credentials/
+
+# iCloud sync config (contains auth tokens)
+config/stacks/icloudpd_config/
+
+# OS & editor
+.DS_Store
+*.swp
+*.swo
+*~
+.vscode/
+
+# Docker runtime
+docker-compose.override.yml
+
+# Backups (too large for git)
+*.tar.gz

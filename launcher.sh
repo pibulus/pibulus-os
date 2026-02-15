@@ -10,6 +10,7 @@ source "$SCRIPT_DIR/modules/audio_feedback.sh"
 source "$SCRIPT_DIR/modules/media_puller.sh"
 source "$SCRIPT_DIR/modules/terminal_travels.sh"
 source "$SCRIPT_DIR/modules/backup_module.sh"
+source "$SCRIPT_DIR/modules/audit_module.sh"
 
 # --- UTILS ---
 get_status() {
@@ -50,6 +51,16 @@ manage_community() {
         esac
     done
 }
+
+# --- HANDLE FLAGS ---
+if [[ "$1" =~ ^(--audit|-a|audit)$ ]]; then
+    run_audit
+    exit 0
+fi
+if [[ "$1" =~ ^(--manual|-m|manual)$ ]]; then
+    less "$SCRIPT_DIR/FIELD_MANUAL.md"
+    exit 0
+fi
 
 # --- THE MAIN DECK ---
 play_tone "startup"

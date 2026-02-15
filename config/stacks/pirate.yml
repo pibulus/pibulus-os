@@ -100,7 +100,7 @@ services:
   filebrowser:
     image: filebrowser/filebrowser:s6
     container_name: filebrowser
-    user: 1000:1000
+    #user: 1000:1000
     ports:
       - "8080:8080"
     volumes:
