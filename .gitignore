@@ -19,3 +19,4 @@ docker-compose.override.yml
 
 # Backups (too large for git)
 *.tar.gz
+.env
