@@ -1,42 +1,43 @@
-- Media_Station:
+# QUICKCAT.CLUB - The Guest Experience
+# Clean, inviting, mysterious. No admin stuff.
+
+- Watch:
     - The Cinema:
         icon: jellyfin.png
         href: http://pibulus.local:8096
-        description: MOVIES & SHOWS (Use 'Guest')
+        description: Movies & shows. Hit 'Guest' to enter.
 
+- Listen:
     - The Jukebox:
         icon: navidrome.png
         href: http://pibulus.local:4533
-        description: HI-FI AUDIO COLLECTION
+        description: Hi-fi music collection
 
-    - KPAB-TV:
-        icon: stremio.png
-        href: http://pibulus.local:8000
-        description: 24/7 PIRATE BROADCAST
-
-    - Text Adventures:
-        icon: terminal.png
-        href: http://pibulus.local:7681
-        description: CLASSIC IF & ZORK
-
-    - Game of the Week:
-        icon: controller.png
-        href: http://pibulus.local:8086
-        description: FEATURED: NORMY'S BEACH BABE-O-RAMA
-
+- Read:
     - Library:
         icon: kavita.png
         href: http://pibulus.local:5000
-        description: BOOKS & ARCHIVES
+        description: Books & comics
 
-- Community:
+- Play:
+    - Text Adventures:
+        icon: si-windowsterminal-#00ff41
+        href: http://pibulus.local:7681
+        description: Zork & classic interactive fiction
+
+    - Arcade:
+        icon: si-retroarch-#ff00ff
+        href: http://pibulus.local:8086
+        description: Retro game collection
+
+- Share:
     - File Drop:
         icon: filebrowser.png
         href: http://pibulus.local:8080
-        description: UPLOAD YOUR MEDIA HERE
+        description: Upload & browse files
 
-- Labs:
+- Lab:
     - Stargram:
-        icon: code.png
+        icon: si-constellation-#9370DB
         href: http://pibulus.local:8090/stargram
-        description: HOROSCOPE APP v1.0
+        description: Horoscope app v1.0

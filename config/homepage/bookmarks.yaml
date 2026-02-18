@@ -1,12 +1,7 @@
-- Social:
-    - Github:
-        icon: github-dark.png
-        href: https://github.com/pibulus
-    - Reddit:
-        icon: reddit.png
-        href: https://reddit.com
-
-- Chill_Vibes:
-    - Groove Salad (SomaFM):
-        icon: music.png
-        href: https://somafm.com/player/#/now-playing/groovesalad
+- Connect:
+    - GitHub:
+        - icon: si-github-#ffffff
+          href: https://github.com/pibulus
+    - SomaFM Radio:
+        - icon: si-musicbrainz-#ff00ff
+          href: https://somafm.com/player/#/now-playing/groovesalad

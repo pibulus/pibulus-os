@@ -9,25 +9,29 @@ services:
       - /home/pibulus/.cache/jellyfin:/cache
       - /media/pibulus/passport/media:/media
       - /media/pibulus/passport/Music:/media/music
+      - /media/pibulus/passport/Books:/media/books
       - /media/pibulus/passport/Movies:/media/movies
       - /media/pibulus/passport/Shows:/media/shows
-      - /media/pibulus/passport/Audiobooks:/media/audiobooks
-      - /media/pibulus/passport/Palestine:/media/palestine
     restart: unless-stopped
 
   ersatztv:
     image: jasongdove/ersatztv:latest
     container_name: ersatztv
     user: 1000:1000
+    ports:
+      - "8000:8000"
+    volumes:
       - /home/pibulus/.config/ersatztv:/config
       - /media/pibulus/passport/Movies:/media/movies:ro
       - /media/pibulus/passport/Shows:/media/shows:ro
-      - /media/pibulus/passport/Palestine:/media/palestine:ro
     restart: unless-stopped
 
   overseerr:
     image: sctx/overseerr:latest
     container_name: overseerr
+    ports:
+      - "5055:5055"
+    environment:
       - LOG_LEVEL=info
       - TZ=Australia/Melbourne
     volumes:
@@ -38,6 +42,9 @@ services:
   arcade:
     image: tsl0922/ttyd:latest
     container_name: cyber_arcade
+    ports:
+      - "7681:7681"
+    volumes:
       - /home/pibulus/Projects/active/experiments/terminal-travels:/arcade
     command: ttyd -W /arcade/terminal-travels
     restart: unless-stopped
@@ -53,6 +60,9 @@ services:
       - DB_USER=romm
       - DB_PASS=romm_pass
       - ROMM_AUTH_SECRET=pibulus_secret_key
+    ports:
+      - "8086:8080"
+    volumes:
       - /media/pibulus/passport/roms:/roms
       - /home/pibulus/.config/romm/resources:/romm/resources
       - /home/pibulus/.config/romm/assets:/romm/assets
@@ -71,45 +81,29 @@ services:
     volumes:
       - /home/pibulus/.config/romm/mysql:/var/lib/mysql
 
-  # --- THE LIBRARY ---
-  kavita:
-    image: jvmilazz0/kavita:latest
-    container_name: kavita
-      - /home/pibulus/.config/kavita:/kavita/config
-      - /media/pibulus/passport/Comics:/comics
-      - /media/pibulus/passport/Ebooks/Assorted:/ebooks-assorted
-      - /media/pibulus/passport/Ebooks/Calibre-Library:/ebooks-calibre
-    restart: unless-stopped
-
-  # --- THE MUSIC NETWORK ---
+  # --- THE UTILITIES ---
   navidrome:
     image: deluan/navidrome:latest
     container_name: navidrome
     user: 1000:1000
+    ports:
+      - "4533:4533"
+    environment:
       ND_SCANSCHEDULE: 1h
       ND_LOGLEVEL: info
       ND_MUSICFOLDER: /music
     volumes:
       - /home/pibulus/.config/navidrome:/data
-      - "/media/pibulus/passport/Music/MusicBee/Music:/music/Library"
-      - "/media/pibulus/passport/Music/Soulseek Downloads/complete:/music/Soulseek"
+      - /media/pibulus/passport/music:/music
     restart: unless-stopped
 
-  slskd:
-    image: slskd/slskd
-    container_name: slskd
-    network_mode: "service:gluetun"
-    environment:
-      - SLSKD_REMOTE_CONFIGURATION=true
-    volumes:
-      - /opt/slskd:/app/config
-      - /media/pibulus/passport/Soulseek:/app/downloads
-    restart: unless-stopped
-
-  # --- THE UTILITIES ---
   filebrowser:
     image: filebrowser/filebrowser:s6
     container_name: filebrowser
+    #user: 1000:1000
+    ports:
+      - "8080:8080"
+    volumes:
       - /media/pibulus/passport:/srv
       - /opt/filebrowser/database.db:/database.db
       - /opt/filebrowser/filebrowser.json:/.filebrowser.json
@@ -118,20 +112,9 @@ services:
   web_host:
     image: nginx:alpine
     container_name: web_host
+    ports:
+      - "8090:80"
+    volumes:
       - /home/pibulus/pibulus-os/config/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
       - /media/pibulus/passport/www/html:/usr/share/nginx/html:ro
     restart: always
-
-  # --- THE VPN SHIELD (PUREVPN) ---
-  gluetun:
-    image: qmcgaw/gluetun
-    container_name: gluetun
-    cap_add:
-      - NET_ADMIN
-    environment:
-      - VPN_SERVICE_PROVIDER=purevpn
-      - VPN_TYPE=openvpn
-      - OPENVPN_USER=${PUREVPN_USER}
-      - OPENVPN_PASSWORD=${PUREVPN_PASSWORD}
-      - SERVER_REGIONS=Australia
-    restart: unless-stopped

@@ -12,7 +12,7 @@ body {
 /* --- 2. THE LUSH CARDS (Glassmorphism) --- */
 .services .service, .widget-card {
     /* 50% Transparent Black */
-    background: rgba(0, 0, 0, 0.6) !important;
+    background: rgba(0, 0, 0, 0.82) !important;
     
     /* The Blur Effect */
     backdrop-filter: blur(12px) !important;

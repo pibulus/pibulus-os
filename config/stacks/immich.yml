@@ -6,6 +6,7 @@ services:
     image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - /media/pibulus/passport/immich/upload/icloud:/usr/src/app/external/icloud:ro
       - /etc/localtime:/etc/localtime:ro
     env_file:
       - .env

@@ -1,12 +1,44 @@
-- Social:
-    - Github:
-        icon: github-dark.png
-        href: https://github.com/pibulus
-    - Reddit:
-        icon: reddit.png
-        href: https://reddit.com
+- Admin:
+    - GitHub:
+        - icon: si-github-#ffffff
+          href: https://github.com/pibulus
+    - SomaFM Radio:
+        - icon: si-musicbrainz-#ff00ff
+          href: https://somafm.com/player/#/now-playing/groovesalad
+    - FMHY:
+        - icon: mdi-link-variant-#00ffea
+          href: https://fmhy.net/
 
-- Chill_Vibes:
-    - Groove Salad (SomaFM):
-        icon: music.png
-        href: https://somafm.com/player/#/now-playing/groovesalad
+- Movies & TV:
+    - Stremio:
+        - icon: si-plex-#e5a00d
+          href: https://www.stremio.com/
+          description: Streaming app + addons
+    - 1337x:
+        - icon: si-thepiratebay-#7b1fa2
+          href: https://1337x.to/
+          description: Top torrent indexer
+    - YTS:
+        - icon: si-yts
+          href: https://yts.mx/
+          description: Quality movie torrents
+
+- Books & Comics:
+    - Annas Archive:
+        - icon: si-archive
+          href: https://annas-archive.se/
+          description: The mega-library
+    - GetComics:
+        - icon: mdi-book-variant
+          href: https://getcomics.org/
+          description: Comic downloads
+    - Library Genesis:
+        - icon: mdi-book-open-variant
+          href: https://libgen.li/
+          description: Classic book repository
+
+- Privacy:
+    - PrivacyGuides:
+        - icon: mdi-shield-lock
+          href: https://www.privacyguides.org/
+          description: Privacy tools & guides

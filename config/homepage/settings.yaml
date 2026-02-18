@@ -1,52 +1,32 @@
-title: PABLO_DECK_v4
-color: slate
+title: QUICKCAT.CLUB
 theme: dark
+color: slate
 
+background:
+  image: https://images.unsplash.com/photo-1550745165-9bc0b252726f
+  opacity: 30
 
-background: https://images.unsplash.com/photo-1550745165-9bc0b252726f
-
-# --- THE LAYOUT ---
 layout:
-  Media:
+  Watch:
     style: row
-    columns:
-      small: 1
-      medium: 2
-      large: 4
-      xlarge: 4
-  
-  Tools:
+    columns: 1
+  Listen:
     style: row
-    columns: 4
-
-  Social_Grid:
+    columns: 1
+  Read:
     style: row
-    columns: 4
+    columns: 1
+  Play:
+    style: row
+    columns: 2
+  Share:
+    style: row
+    columns: 1
+  Lab:
+    style: row
+    columns: 1
 
 headerStyle: clean
 cardStyle: glass
 
-# --- COMMAND LINE SEARCH ---
-# This changes the search bar to look like a terminal input
-showSearch: true
-search:
-  provider: duckduckgo
-  target: _blank
-  focus: true # Auto-focuses the bar when you load the page
-
-# --- PROVIDERS ---
-providers:
-  docker:
-    mode: socket
-    socket: /var/run/docker.sock
-
-# --- WIDGETS ---
-# Docker sees the MOUNT point, not the host path. 
-# We are going to verify the mount in the next step.
-widgets:
-  - resources:
-      cpu: true
-      memory: true
-      disk: 
-        - /media/pibulus/MEMBOT
-        - /media/pibulus/passport
+showSearch: false

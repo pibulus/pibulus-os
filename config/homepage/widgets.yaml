@@ -1,10 +1,6 @@
+- greeting:
+    text: Welcome to the quickcat club.
 - datetime:
     format:
+      dateStyle: long
       timeStyle: short
-- resources:
-    cpu: true
-    memory: true
-    disk: /media/pibulus/passport
-- greeting:
-    text: "Welcome back!."
-    image: "https://quickcat.club/logo.png" # Point this to your new logo!
