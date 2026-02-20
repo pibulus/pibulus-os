@@ -1,15 +1,48 @@
 #!/bin/bash
-# 🦾 PIBULUS OS - WELCOME
-# Greeting the human.
-
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-[ -f "$SCRIPT_DIR/.env" ] && source "$SCRIPT_DIR/.env"
+# 🤖 BISHOP - CYBERDECK GREETING v4.0 (PIBULUS EDITION)
 
 clear
-if command -v figlet &> /dev/null; then
-    figlet -f slant "PIBULUS" | lolcat
-    echo "🦜 Welcome back, ${USER_NAME:-Captain}." | lolcat
-    echo "🎮 Type 'deck' to take control."
-    echo "🆘 Type 'halp' if you stuck."
-    echo ""
-fi
+# Main Banner
+figlet -f slant "PIBULUS" | lolcat
+echo -e "$(gum style --foreground 212 "[ SYNTHETIC OPERATIVE BISHOP ACTIVE ]")"
+echo ""
+
+# Data Gathering
+TEMP=$(vcgencmd measure_temp | cut -d'=' -f2)
+DISK=$(df -h /media/pibulus/passport | awk 'NR==2 {print $5}')
+RAM=$(free -h | awk '/Mem:/ {print $3 " / " $2}')
+IP=$(hostname -I | awk '{print $1}')
+UP=$(uptime -p | sed 's/up //')
+TIME=$(date '+%H:%M:%S')
+
+# Horizontal Stats Strip
+gum join --horizontal \
+    "$(gum style --border normal --padding "0 2" --border-foreground 46 --foreground 46 "🌡️ $TEMP")" \
+    "$(gum style --border normal --padding "0 2" --border-foreground 51 --foreground 51 "📼 DISK $DISK")" \
+    "$(gum style --border normal --padding "0 2" --border-foreground 226 --foreground 226 "🧠 RAM $RAM")" \
+    "$(gum style --border normal --padding "0 2" --border-foreground 212 --foreground 212 "⏲️  $TIME")"
+
+echo ""
+echo -e "🐾 $(gum style --foreground 46 "STATUS: SYSTEM NOMINAL")  |  📡 IP: $IP  |  🆙 UP: $UP"
+echo -e "🤖 $(gum style --foreground 212 "OBJECTIVE:") $(cat ~/pibulus-os/mission-control/tasks.json | grep -oP ""task": "K[^"]+" | tail -n 1)"
+echo "----------------------------------------------------------------------"
+
+# Service Map (Multi-column)
+echo -e "🌐 $(gum style --foreground 51 "Live Service Map:")"
+docker ps --format "{{.Names}}\t{{.Ports}}" | grep -v "NAMES" | while read line; do
+    name=$(echo $line | awk '{print $1}')
+    port=$(echo $line | grep -oE '[0-9]+->' | cut -d'-' -f1 | head -n 1)
+    if [ \! -z "$port" ]; then
+        printf "   %-15s -> http://%s:%-5s  " "$name" "$IP" "$port"
+        # Add a newline every 2 items to keep it horizontal but readable
+        ((count++))
+        if (( count % 2 == 0 )); then echo ""; fi
+    fi
+done
+echo ""
+
+echo ""
+# Command Bar
+gum style --foreground 212 --bold "COMMANDS:"
+echo -e "  $(gum style --foreground 46 "deck") (Console)  |  $(gum style --foreground 51 "help") (Field Manual)  |  $(gum style --foreground 196 "bunker") (Lockdown)"
+echo ""

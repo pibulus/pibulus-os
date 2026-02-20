@@ -1,27 +1,51 @@
 #!/bin/bash
-# 📥 MEDIA PULLER MODULE v1.1
-# Uses yt-dlp to grab media from the ether.
+# 📥 DIGITAL SCAVENGER MODULE v2.0
+# Integrated with Soulseek (slskd) and yt-dlp.
 
 pull_media() {
-    clear
-    figlet -f slant "PULLER" | lolcat
-    echo "Where should we stash this, Captain?" | lolcat
-    
-    local target=$(gum choose "Radio/Tunes" "Radio/Rants" "Radio/Jingles" "Movies" "The_Bucket")
-    local url=$(gum input --placeholder "🔗 Paste the URL (YouTube, SoundCloud, etc.)...")
-    
-    if [ ! -z "$url" ]; then
-        case $target in
-            "Radio/Tunes") DEST="$PASSPORT_ROOT/Radio/Tunes" ;;
-            "Radio/Rants") DEST="$PASSPORT_ROOT/Radio/Rants" ;;
-            "Radio/Jingles") DEST="$PASSPORT_ROOT/Radio/Jingles" ;;
-            "Movies") DEST="$PASSPORT_ROOT/Movies" ;;
-            "The_Bucket") DEST="$PASSPORT_ROOT/Radio/The_Bucket" ;;
-        esac
+    while true; do
+        render_hud
+        echo -e "$(gum style --foreground 51 '--- 📥 DIGITAL SCAVENGER ---')"
+        local action=$(tactile_choose "🎵 Soulseek (slskd)" "📹 Grab Video (yt-dlp)" "📻 Grab Audio (yt-dlp)" "Back")
         
-        play_tone "confirm"
-        gum spin --spinner moon --title "Extracting from the ether..." -- yt-dlp -x --audio-format mp3 -o "$DEST/%(title)s.%(ext)s" "$url"
-        gum style --foreground 46 "✅ Pulled into $target"
-        sleep 2
-    fi
+        case $action in
+            "🎵 Soulseek (slskd)")
+                echo -e "$(gum style --foreground 226 'Soulseek Web Interface: http://pibulus.local:5030')"
+                echo -e "$(gum style --foreground 46 'Stashing in: /media/pibulus/passport/Soulseek')"
+                gum input --placeholder "Press Enter to return..."
+                ;;
+                
+            "📹 Grab Video (yt-dlp)")
+                local url=$(gum input --placeholder "🔗 Paste Video URL (YouTube, etc.)...")
+                if [ ! -z "$url" ]; then
+                    local target=$(gum choose "Movies" "Shows" "Palestine" "The_Bucket")
+                    DEST="$PASSPORT_ROOT/$target"
+                    play_tone "confirm"
+                    gum spin --spinner moon --title "Sucking bits from the ether..." -- \
+                        yt-dlp -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best' \
+                        -o "$DEST/%(title)s.%(ext)s" "$url"
+                    gum style --foreground 46 "✅ Captured to $target"
+                    sleep 2
+                fi
+                ;;
+                
+            "📻 Grab Audio (yt-dlp)")
+                local url=$(gum input --placeholder "🔗 Paste Audio URL (SoundCloud, YouTube, etc.)...")
+                if [ ! -z "$url" ]; then
+                    local target=$(gum choose "Radio/Tunes" "Radio/Rants" "Radio/Jingles" "Music/Inbox")
+                    DEST="$PASSPORT_ROOT/$target"
+                    play_tone "confirm"
+                    gum spin --spinner moon --title "Extracting frequencies..." -- \
+                        yt-dlp -x --audio-format mp3 --audio-quality 0 \
+                        -o "$DEST/%(title)s.%(ext)s" "$url"
+                    gum style --foreground 46 "✅ Captured to $target"
+                    sleep 2
+                fi
+                ;;
+                
+            "Back")
+                return
+                ;;
+        esac
+    done
 }

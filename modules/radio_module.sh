@@ -1,4 +1,4 @@
-#!/bin/bash
+#\!/bin/bash
 # 📻 PIBULUS RADIO MODULE v1.0
 # KPAB.fm Control Center
 
@@ -6,7 +6,13 @@ manage_radio() {
     while true; do
         render_hud
         echo -e "$(gum style --foreground 212 '--- 📻 KPAB.fm RADIO OPS ---')"
-        local action=$(tactile_choose "Station Status" "Restart AzuraCast" "View Logs" "Back")
+        local action=$(tactile_choose \
+            "Station Status" \
+            "Restart AzuraCast" \
+            "📊 Audio Visualizer (cava)" \
+            "📥 Start Track Drop" \
+            "View Logs" \
+            "Back")
         
         case $action in
             "Station Status")
@@ -19,12 +25,12 @@ manage_radio() {
                     sleep 2
                 fi
                 ;;
+            "📊 Audio Visualizer (cava)") cava ;;
+            "📥 Start Track Drop") ~/pibulus-os/scripts/start_drop.sh ;;
             "View Logs")
                 docker logs --tail 50 azuracast_web | less
                 ;;
-            "Back")
-                return
-                ;;
+            "Back") return ;;
         esac
     done
 }

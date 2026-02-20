@@ -1,47 +1,28 @@
-# 🦾 PIBULUS OS: THE SOVEREIGN MANIFESTO
-### "Homesteading the Digital Frontier"
+# 🐾 QUICK CAT CLUB - CYBERDECK v6.5
+### Self-hosted sanctuary for the Melbourne scene.
 
-This is not a server. It is a **Cyberdeck**—a portable, modular, and unkillable piece of personal infrastructure. Built on a Raspberry Pi 5, powered by Docker, and anchored to a 5.5TB Passport drive.
+This is a high-density Raspberry Pi 5 node designed for media preservation, private social networking, and SIGINT research.
 
----
+## 🚀 CORE SERVICES
+- **Broadcasting:** KPAB.fm (AzuraCast) + Quick Cat TV (ErsatzTV).
+- **Library:** Kavita (Ebooks) + Wikipedia (Offline) + Immich (Photos).
+- **Music:** Navidrome + Soulseek (slskd) via VPN Shield.
+- **Social:** Gitea (Local Git) + Memos (Microblog) + The Lounge (IRC).
+- **SIGINT:** Aircraft Tracking (readsb) + Pager Decoding + World Radio.
 
-## ⚓ THE STACKS (Modular Architecture)
-The system is partitioned into independent "Stacks". If one burns, the others keep breathing.
+## ⌨️ KEY COMMANDS
+- `deck`: Launch the main command center.
+- `halp`: View the Field Manual.
+- `bunker`: Emergency lockdown protocol.
 
-- 🏴‍☠️ **PIRATE STATION:** The media heart. (Jellyfin, Navidrome, Kavita).
-- 📸 **IMMICH VAULT:** AI-powered history. Automatic iCloud syncing.
-- 📻 **KPAB.fm:** Your own radio station with smart scheduling and "The Bucket".
-- 📺 **QUICKCAT.tv:** Personal 24/7 broadcast television.
-- 🏠 **HOMEPAGE:** Dual-dashboard system (Public vs. Captain).
+## 🛡️ SECURITY POSTURE
+- **Fail2Ban:** Active SSH protection.
+- **Nginx Hardening:** Rate limiting and connection throttling enabled.
+- **Privacy:** Randomized MAC addresses and Quad9 encrypted DNS.
+- **Redundancy:** Automated "Golden Image" system in Vault Ops.
 
----
-
-## 🎮 COMMAND & CONTROL
-The deck is designed for **Cognitive Ergonomics**:
-- Type `deck` to launch the mainframe.
-- Type `halp` if you forget where you are.
-- Every click has a sound. Every action has a confirmation.
-
----
-
-## 🛠️ THE GOLDEN RULES
-1. **Infrastructure is Code:** All configs live in `~/pibulus-os/config/stacks/`. Edit the YAML, restart the stack, win.
-2. **The Passport is Sacred:** Your 5.5TB drive is your "Gold Record". Back it up.
-3. **Stay Modular:** Use the `.env` file for all paths. Never hardcode.
+## 🤝 CONTRIBUTION (The Democratic Pirate)
+To add tracks or rants to the radio station, connect to the **pibulus-deck** Wi-Fi and visit `http://pibulus.local:8888`.
 
 ---
-
-## 🚀 GETTING AROUND
-- **Add Music:** Drop files in `/Radio/Tunes` or `/Music`.
-- **Broadcast:** Go to `http://pibulus.local:8000` to paint your TV schedule.
-- **Ship an App:** Use the `Deploy New App` wizard in the menu. Just paste a GitHub URL.
-
----
-
-## 📌 FUTURE RIGS (Phase 2)
-- [ ] **PartyKit Chat:** Modular hanging space with "funny name" shuffler.
-- [ ] **The Heavy Lifter:** Bridging the i7/1080ti for 4K transcoding.
-- [ ] **Haptic Feedback:** Physical dashboard integration.
-
----
-*Built with care, cheek, and a bit of neon.* ⚓️🚀
+*Created by the Quick Cat Club. Stay modular. Stay hidden.*

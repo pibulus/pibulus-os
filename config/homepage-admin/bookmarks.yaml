@@ -42,3 +42,16 @@
         - icon: mdi-shield-lock
           href: https://www.privacyguides.org/
           description: Privacy tools & guides
+
+          href: /mission-control/memory
+          description: Searchable Ledger & Glossary
+    - The Office:
+        - icon: mdi-office-building-#ffff00
+          href: /mission-control/office
+          description: Virtual Sub-Agent View
+
+- Mission Control:
+    - AI Ops Dashboard:
+        - icon: mdi-robot-#ff00ff
+          href: http://pibulus.local/mission-control/
+          description: Live AI Tasks, Memory & Office

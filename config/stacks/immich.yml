@@ -24,7 +24,7 @@ services:
       - model-cache:/cache
     env_file:
       - .env
-    restart: always
+    restart: "no"
 
   redis:
     container_name: immich_redis

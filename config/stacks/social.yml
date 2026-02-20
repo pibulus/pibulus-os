@@ -1,0 +1,35 @@
+name: social
+
+services:
+  gitea:
+    image: gitea/gitea:latest
+    container_name: gitea
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      - GITEA__database__DB_TYPE=sqlite3
+    restart: always
+    volumes:
+      - /home/pibulus/.config/gitea:/data
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "3001:3000"
+      - "2222:22"
+
+  memos:
+    image: ghcr.io/usememos/memos:latest
+    container_name: memos
+    restart: always
+    volumes:
+      - /home/pibulus/.config/memos:/var/opt/memos
+    ports:
+      - "5230:5230"
+
+  irc:
+    image: thelounge/thelounge:latest
+    container_name: irc
+    restart: always
+    volumes:
+      - /home/pibulus/.config/thelounge:/var/opt/thelounge
+    ports:
+      - "9000:9000"

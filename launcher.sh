@@ -1,5 +1,6 @@
-#\!/bin/bash
-# 🦾 PIBULUS CYBERDECK v6.6 - "The Fixup"
+#!/bin/bash
+# 🐾 QUICK CAT CLUB - CYBERDECK v6.7
+# The Final Polish.
 
 # --- TERMINAL SAFETY ---
 case "$TERM" in
@@ -21,6 +22,10 @@ source "$SCRIPT_DIR/modules/radio_module.sh"
 source "$SCRIPT_DIR/modules/eject_module.sh"
 source "$SCRIPT_DIR/modules/bunker_module.sh"
 source "$SCRIPT_DIR/modules/vault_module.sh"
+source "$SCRIPT_DIR/modules/sigint_module.sh"
+source "$SCRIPT_DIR/modules/games_module.sh"
+source "$SCRIPT_DIR/modules/grey_hat_module.sh"
+source "$SCRIPT_DIR/modules/mission_control_module.sh"
 
 # --- UTILS ---
 get_status() {
@@ -33,11 +38,16 @@ get_status() {
 
 render_hud() {
     clear
-    local TEMP=$(vcgencmd measure_temp | cut -d= -f2)
-    local DISK=$(df -h "$PASSPORT_ROOT" | awk NR==2 {print })
-    local VPN=$(get_status gluetun); [ "$VPN" == "🟢" ] && VPN="🔒 VPN" || VPN="🔓 CLR"; local PWR=$(vcgencmd get_throttled | cut -d"=" -f2);
+    local TEMP=$(vcgencmd measure_temp | cut -d'=' -f2)
+    local DISK=$(df -h "$PASSPORT_ROOT" | awk 'NR==2 {print $5}')
+    local VPN=$(get_status gluetun)
+    [ "$VPN" == "🟢" ] && VPN="🔒 VPN" || VPN="🔓 CLR"
+    local PWR_HEX=$(vcgencmd get_throttled | cut -d'=' -f2)
+    [ "$PWR_HEX" == "0x0" ] && PWR="⚡ OK" || PWR="⚠️ VOLT"
+    local LOAD=$(uptime | awk -F'load average:' '{ print $2 }' | cut -d',' -f1)
+    
     gum style --border double --border-foreground 212 --padding "0 2" --margin "1 0" --align center \
-        "🐾 $USER_NAME  |  🌡️ $TEMP  |  📼 $DISK  |  ⚡ $PWR  |  $VPN  |  🧵 LOAD: $LOAD"
+        "🐾 $USER_NAME  |  🌡️ $TEMP  |  📼 $DISK  |  $PWR  |  $VPN  |  🧵 LOAD: $LOAD"
 }
 
 tactile_choose() {
@@ -46,67 +56,50 @@ tactile_choose() {
     echo "$choice"
 }
 
-manage_community() {
-    while true; do
-        render_hud
-        echo -e "$(gum style --foreground 46 --- 🤝 COMMUNITY GATEKEEPER ---)"
-        local action=$(tactile_choose "Review Quarantine" "Clear Approved" "Back")
-        case $action in
-            "Review Quarantine") ls -F "$PASSPORT_ROOT/vignettes/quarantine" && gum input --placeholder "Enter to return..." ;;
-            "Clear Approved") rm -rf "$PASSPORT_ROOT/vignettes/live_rotation/*" && gum style --foreground 46 "Rotation Cleared." && sleep 1 ;;
-            "Back") return ;;
-        esac
-    done
-}
-
-# --- HANDLE FLAGS ---
-if [[ "$1" =~ ^(--audit|-a|audit)$ ]]; then
-    run_audit
-    exit 0
-fi
-if [[ "$1" =~ ^(--manual|-m|manual)$ ]]; then
-    less "$SCRIPT_DIR/FIELD_MANUAL.md"
-    exit 0
-fi
-
-# --- THE MAIN DECK ---
+# --- THE MAIN LOOP ---
 play_tone "startup"
 
-main_loop() {
-    while true; do
-        render_hud
-        local choice=$(tactile_choose \
-            "🚀 Deploy New App" \
-            "📥 Media Puller" \
-            "🧠 Knowledge Vault $(tmux has-session -t knowledge-vault 2>/dev/null && echo 🟢 || echo 🔴)" \
-            "🤝 Community Ops" \
-            "🕹️ Terminal Travels (BBS)" \
-            "🏴‍☠️ Pirate Station $(get_status jellyfin)" \
-            "📻 KPAB.fm Radio $(get_status azuracast_web)" \
-            "📸 Immich Vault $(get_status immich_server)" \
-            "🛡️ Bunker Lockdown" \
-            "🏠 Dashboard Ops" \
-            "📊 System Status" \
-        "⏏️ Safe Eject") safe_eject ;;
-            "⏏️ Safe Eject" "🚪 Exit")
+while true; do
+    render_hud
+    local choice=$(tactile_choose \
+        "🚀 Deploy New App" \
+        "📥 Media Scavenger" \
+        "📚 Vault Navigator" \
+        "🧠 Knowledge Vault $(tmux has-session -t knowledge-vault 2>/dev/null && echo "🟢" || echo "🔴")" \
+        "🤝 Community Ops" \
+        "🕹️ Terminal Arcade" \
+        "🏴‍☠️ Pirate Station $(get_status jellyfin)" \
+        "📻 KPAB.fm Radio $(get_status azuracast_web)" \
+        "📝 Quick Memos $(get_status memos)" \
+        "💀 Grey Hat Ops" \
+        "📡 SIGINT Ops" \
+        "📀 Vault Ops" \
+        "🏠 Dashboard Ops" \
+        "🕵️ Stealth Toggle" \
+        "🔒 Lock Bunker" \
+        "⏏️ Safe Eject" \
+        "📊 System Status" \
+        "🚪 Exit")
 
-        case $choice in
-            "🚀 Deploy New App") play_tone "confirm"; "$SCRIPT_DIR/scripts/deploy.sh" ;;
-            "📥 Media Puller") pull_media ;;
-            "🧠 Knowledge Vault"*) manage_knowledge_vault ;;
-            "🤝 Community Ops") manage_community ;;
-            "🕹️ Terminal Travels (BBS)") play_games ;;
-            "🏴‍☠️ Pirate Station"*) manage_stack "PIRATE STATION" "$PIRATE_CONFIG" "jellyfin" ;;
-            "📻 KPAB.fm Radio"*) manage_radio ;;
-            "📸 Immich Vault"*) manage_immich ;;
-            "🛡️ Bunker Lockdown") run_bunker_lockdown ;;
+    case $choice in
+        "🚀 Deploy New App") play_tone "confirm"; "$SCRIPT_DIR/scripts/deploy.sh" ;;
+        "📥 Media Scavenger") pull_media ;;
+        "📚 Vault Navigator") manage_knowledge_vault ;;
+        "🧠 Knowledge Vault"*) bash "$SCRIPT_DIR/modules/knowledge_vault_module.sh" ;;
+        "🤝 Community Ops") manage_community ;;
+        "🕹️ Terminal Arcade") manage_games ;;
+        "🏴‍☠️ Pirate Station"*) manage_stack "PIRATE STATION" "$PIRATE_CONFIG" "jellyfin" ;;
+        "📻 KPAB.fm Radio"*) manage_radio ;;
+        "📝 Quick Memos"*) echo "Memos at http://pibulus.local:5230"; gum input --placeholder "Press Enter to return..." ;;
+        "🤖 Mission Control") manage_mission_control ;;
+        "🤖 Mission Control" "💀 Grey Hat Ops") manage_grey_hat ;;
+        "📡 SIGINT Ops") manage_sigint ;;
         "📀 Vault Ops") manage_vault ;;
-            "📀 Vault Ops" "🏠 Dashboard Ops") manage_homepage ;;
-            "📊 System Status") pm2 list && gum input --placeholder "Enter to return..." ;;
+        "🏠 Dashboard Ops") manage_homepage ;;
+        "🕵️ Stealth Toggle") "$SCRIPT_DIR/scripts/set_stealth.sh" public ;;
+        "🔒 Lock Bunker") "$SCRIPT_DIR/scripts/set_stealth.sh" bunker ;;
         "⏏️ Safe Eject") safe_eject ;;
-            "⏏️ Safe Eject" "🚪 Exit") play_tone "click"; clear; exit 0 ;;
-        esac
-    done
-}
-
-main_loop
+        "📊 System Status") pm2 list && gum input --placeholder "Press Enter to return..." ;;
+        "🚪 Exit") play_tone "click"; clear; exit 0 ;;
+    esac
+done
