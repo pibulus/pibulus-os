@@ -1,5 +1,5 @@
 #!/bin/bash
-# 🤖 BISHOP - CYBERDECK GREETING v4.0 (PIBULUS EDITION)
+# 🤖 BISHOP - CYBERDECK GREETING v4.1 (DYNAMIC)
 
 clear
 # Main Banner
@@ -24,17 +24,17 @@ gum join --horizontal \
 
 echo ""
 echo -e "🐾 $(gum style --foreground 46 "STATUS: SYSTEM NOMINAL")  |  📡 IP: $IP  |  🆙 UP: $UP"
-echo -e "🤖 $(gum style --foreground 212 "OBJECTIVE:") $(cat ~/pibulus-os/mission-control/tasks.json | grep -oP ""task": "K[^"]+" | tail -n 1)"
 echo "----------------------------------------------------------------------"
 
 # Service Map (Multi-column)
 echo -e "🌐 $(gum style --foreground 51 "Live Service Map:")"
 docker ps --format "{{.Names}}\t{{.Ports}}" | grep -v "NAMES" | while read line; do
     name=$(echo $line | awk '{print $1}')
-    port=$(echo $line | grep -oE '[0-9]+->' | cut -d'-' -f1 | head -n 1)
+    # Extract the public-facing port (e.g., the 8090 in 0.0.0.0:8090->80/tcp)
+    port=$(echo $line | grep -oE '[0-9.]+:[0-9]+->' | cut -d':' -f2 | cut -d'-' -f1 | head -n 1)
+    
     if [ \! -z "$port" ]; then
         printf "   %-15s -> http://%s:%-5s  " "$name" "$IP" "$port"
-        # Add a newline every 2 items to keep it horizontal but readable
         ((count++))
         if (( count % 2 == 0 )); then echo ""; fi
     fi

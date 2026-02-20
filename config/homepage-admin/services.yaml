@@ -5,32 +5,54 @@
     - Jellyfin:
         icon: jellyfin.png
         href: http://pibulus.local:8096
-        description: Movies & shows
+        description: Movies, shows, audiobooks
         server: my-docker
         container: jellyfin
 
     - Navidrome:
         icon: navidrome.png
         href: http://pibulus.local:4533
-        description: Music library (171 artists)
+        description: Music streaming
         server: my-docker
         container: navidrome
 
     - Kavita:
         icon: kavita.png
         href: http://pibulus.local:5000
-        description: Books & comics (343 titles)
+        description: Comics & ebooks
         server: my-docker
         container: kavita
 
-- Downloads:
-    - Soulseek:
-        icon: mdi-music-note-bluetooth-#ff00ff
-        href: http://pibulus.local:5030
-        description: P2P music network
+    - AzuraCast:
+        icon: azuracast.png
+        href: http://pibulus.local:8500
+        description: Pirate radio station
         server: my-docker
-        container: slskd
+        container: azuracast
 
+- Social:
+    - Gitea:
+        icon: gitea.png
+        href: http://pibulus.local:3001
+        description: Git server
+        server: my-docker
+        container: gitea
+
+    - Memos:
+        icon: memos.png
+        href: http://pibulus.local:5230
+        description: Notes & journal
+        server: my-docker
+        container: memos
+
+    - IRC:
+        icon: thelounge.png
+        href: http://pibulus.local:9000
+        description: The Lounge IRC client
+        server: my-docker
+        container: irc
+
+- Tools:
     - File Browser:
         icon: filebrowser.png
         href: http://pibulus.local:8080
@@ -38,32 +60,68 @@
         server: my-docker
         container: filebrowser
 
+    - Overseerr:
+        icon: overseerr.png
+        href: http://pibulus.local:5055
+        description: Media requests
+        server: my-docker
+        container: overseerr
+
+    - Web Terminal:
+        icon: mdi-console-#00ffea
+        href: http://pibulus.local:7682
+        description: Deck launcher in browser
+        server: my-docker
+        container: web_terminal
+
+- Fun:
+    - Text Adventures:
+        icon: mdi-sword-cross-#ff00ff
+        href: http://pibulus.local:7681
+        description: 58 interactive fiction games
+        server: my-docker
+        container: cyber_arcade
+
+    - Web Host:
+        icon: nginx.png
+        href: http://pibulus.local:8090
+        description: quickcat.club landing page
+        server: my-docker
+        container: web_host
+
 - Photos:
     - Immich:
         icon: immich.png
         href: http://pibulus.local:2283
-        description: Photo vault & AI tagging
+        description: Photo vault (private)
         server: my-docker
         container: immich_server
 
-    - iCloud Sync:
-        icon: mdi-apple-icloud
-        href: "#"
-        description: Auto-syncing iCloud photos
+- Offline (start manually):
+    - RomM:
+        icon: mdi-controller-classic-#ff6b6b
+        href: http://pibulus.local:8086
+        description: ROM manager
         server: my-docker
-        container: icloudpd
+        container: romm
 
-- Deploy:
-    - Web Host:
-        icon: nginx.png
-        href: http://pibulus.local:8090
-        description: Deployed apps (nginx)
+    - ErsatzTV:
+        icon: mdi-television-classic-#a78bfa
+        href: http://pibulus.local:8001
+        description: Custom TV station
         server: my-docker
-        container: web_host
+        container: ersatztv
 
-    - Guest Homepage:
-        icon: mdi-cat-#00ffea
-        href: http://pibulus.local
-        description: QUICKCAT.CLUB guest view
+    - EmulatorJS:
+        icon: mdi-gamepad-variant-#fbbf24
+        href: http://pibulus.local:8085
+        description: Browser retro gaming
         server: my-docker
-        container: homepage
+        container: emulatorjs
+
+    - Soulseek:
+        icon: mdi-music-note-bluetooth-#ff00ff
+        href: http://pibulus.local:5030
+        description: P2P music (needs VPN)
+        server: my-docker
+        container: slskd

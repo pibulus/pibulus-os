@@ -26,6 +26,7 @@ source "$SCRIPT_DIR/modules/sigint_module.sh"
 source "$SCRIPT_DIR/modules/games_module.sh"
 source "$SCRIPT_DIR/modules/grey_hat_module.sh"
 source "$SCRIPT_DIR/modules/mission_control_module.sh"
+source "$SCRIPT_DIR/modules/librarian_module.sh"
 
 # --- UTILS ---
 get_status() {
@@ -91,7 +92,7 @@ while true; do
         "🏴‍☠️ Pirate Station"*) manage_stack "PIRATE STATION" "$PIRATE_CONFIG" "jellyfin" ;;
         "📻 KPAB.fm Radio"*) manage_radio ;;
         "📝 Quick Memos"*) echo "Memos at http://pibulus.local:5230"; gum input --placeholder "Press Enter to return..." ;;
-        "🤖 Mission Control") manage_mission_control ;;
+        "🤖 Mission Control" "🧠 Ask Bishop") manage_mission_control ;;
         "🤖 Mission Control" "💀 Grey Hat Ops") manage_grey_hat ;;
         "📡 SIGINT Ops") manage_sigint ;;
         "📀 Vault Ops") manage_vault ;;
@@ -99,7 +100,8 @@ while true; do
         "🕵️ Stealth Toggle") "$SCRIPT_DIR/scripts/set_stealth.sh" public ;;
         "🔒 Lock Bunker") "$SCRIPT_DIR/scripts/set_stealth.sh" bunker ;;
         "⏏️ Safe Eject") safe_eject ;;
-        "📊 System Status") pm2 list && gum input --placeholder "Press Enter to return..." ;;
+        "🧹 Flush RAM") ~/pibulus-os/scripts/flush_ram.sh ;;
+        "🧹 Flush RAM" "📊 System Status") pm2 list && gum input --placeholder "Press Enter to return..." ;;
         "🚪 Exit") play_tone "click"; clear; exit 0 ;;
     esac
 done

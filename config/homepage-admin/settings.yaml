@@ -9,16 +9,22 @@ background:
 layout:
   Media:
     style: row
+    columns: 4
+  Social:
+    style: row
     columns: 3
-  Downloads:
+  Tools:
+    style: row
+    columns: 3
+  Fun:
     style: row
     columns: 2
   Photos:
     style: row
-    columns: 2
-  Deploy:
+    columns: 1
+  Offline (start manually):
     style: row
-    columns: 2
+    columns: 4
 
 headerStyle: clean
 cardStyle: glass
