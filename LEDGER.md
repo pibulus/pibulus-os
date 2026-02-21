@@ -17,3 +17,8 @@
 - **Identity:** Rebranded login experience to 'PIBULUS' with 'BISHOP' operative.
 - **UX:** Streamlined welcome dashboard with horizontal layout and live port map.
 - **Stability:** Stopped RAM-heavy containers (Immich ML, etc.) to rescue Swap memory.
+
+## [2026-02-22] - RADIO STATION INTEGRATION
+- **Domain:** Configured Nginx to serve 'kpab.fm' alongside 'quickcat.club'.
+- **Content:** Created dedicated Lush landing page for KPAB.fm with live audio player.
+- **Redundancy:** Synchronized new configs with Passport drive.

@@ -12,19 +12,19 @@
 - Installed OpenClaw v2026.2.17 (running as openclaw-gateway, ~420MB RAM)
 - Wired up all media services to their actual content directories
 - Fixed 5 broken deck launcher scripts (menu syntax errors)
-- Fixed romm env var rename (ROMM_AUTH_SECRET -> ROMM_AUTH_SECRET_KEY)
-- Fixed gluetun region (Australia -> Victoria)
+- Fixed romm env var rename (ROMM_AUTH_SECRET → ROMM_AUTH_SECRET_KEY)
+- Fixed gluetun region (Australia → Victoria)
 - Set up Cloudflare Tunnel subdomains for all media services
 - Added 5 CNAME records via Cloudflare API
 - Stored Cloudflare API token + static IP in ~/.config/api_keys on Mac
 - Removed hexbloop.app from tunnel config
-- Fixed emulatorjs port conflict (3000 -> 3002, was clashing with gitea)
+- Fixed emulatorjs port conflict (3000 → 3002, was clashing with gitea)
 - Fixed gluetun/emulatorjs restart policies to "no" (prevent crash-loops)
 - Added Soulseek download path to Navidrome (was missing new downloads)
 - Removed ghost lowercase folders from passport (music/, roms/, media/)
 - Removed stale Jellyfin /media mount
 - Rebuilt Homepage admin dashboard (was missing most services)
-- Fixed tv.quickcat.club port (8000 -> 8001 for ErsatzTV)
+- Fixed tv.quickcat.club port (8000 → 8001 for ErsatzTV)
 
 ### Live subdomains
 | URL | Service | Status |
@@ -42,10 +42,10 @@
 - [ ] **Navidrome**: May need account creation + library scan trigger
 - [ ] **Immich ML**: Run face detection pass then stop ML container to free ~2GB RAM
 - [ ] **Gluetun/Soulseek**: Add PureVPN credentials to .env file, then start gluetun
-- [ ] **EmulatorJS**: Not created yet. `docker compose -f pirate.yml up -d emulatorjs`
+- [ ] **EmulatorJS**: Not created yet. Run  when ready
 - [ ] **ErsatzTV**: Was crash-looping (.NET error). Needs investigation before starting
 - [ ] **icloudpd**: Needs Apple ID configuration (run init script)
-- [ ] **OpenClaw onboard**: Run `openclaw onboard` to connect messaging + API key
+- [ ] **OpenClaw onboard**: Run  to connect messaging + API key
 - [ ] **Security**: Consider basic auth on public subdomains, review exposed ports
 - [ ] **Tailscale**: Works for Jellyfin (host network) but Docker bridge services may need firewall rules
 
@@ -101,6 +101,7 @@
 | ~/pibulus-os/config/homepage-admin/ | Dashboard config |
 | ~/pibulus-os/launcher.sh | deck TUI main menu |
 | ~/pibulus-os/modules/*.sh | deck sub-menus |
+| ~/.config/api_keys (on Mac) | Cloudflare token, static IP |
 
 ### RAM budget (4GB total)
 - System + kernel: ~800MB
@@ -115,12 +116,22 @@
 
 ### If everything is broken and you have no AI
 1. Power cycle the Pi (pull USB-C, wait 5 sec, replug)
-2. SSH in: `ssh pibulus@pibulus.local` (password: meringue)
-3. Check what's running: `docker ps`
-4. Check RAM: `free -h`
-5. If swap is 2.0/2.0: stop heavy containers: `docker stop immich_machine_learning romm ersatztv`
-6. Restart media: `cd ~/pibulus-os/config/stacks && docker compose -f pirate.yml up -d jellyfin navidrome kavita web_host`
-7. Restart radio: `cd ~/azuracast && docker compose up -d`
-8. Check subdomains: `curl -I https://watch.quickcat.club`
-9. Cloudflared config: `/etc/cloudflared/config.yml`
-10. Restart tunnel: `sudo systemctl restart cloudflared`
+2. SSH in: Linux pibulus 6.12.47+rpt-rpi-2712 #1 SMP PREEMPT Debian 1:6.12.47-1+rpt1 (2025-09-16) aarch64 (password: meringue)
+3. Check what's running: 
+4. Check RAM: 
+5. If swap is 2.0/2.0: stop heavy containers: 
+6. Restart specific services: 
+7. Restart AzuraCast: 
+8. Check subdomains: HTTP/2 302 
+date: Sat, 21 Feb 2026 07:19:14 GMT
+location: web/
+server: cloudflare
+cf-cache-status: DYNAMIC
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=zr1Lircg%2BV6Y2WyOJZIFKjWOOQICCD%2FVIxGTINtE5MY4wf4V1SkBWh5XD969usIfBISnvXEztn4k%2BFIsFugqgQGmIb3%2F4RSj0oAO%2BfMc7AoEdp1S%2FLBgf65pPTH4P7c%3D"}]}
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+cf-ray: 9d14796dddf9e697-MEL
+alt-svc: h3=":443"; ma=86400
+
+9. Cloudflared config: 
+10. Restart tunnel: 
+

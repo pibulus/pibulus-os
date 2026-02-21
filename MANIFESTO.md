@@ -11,7 +11,7 @@ This is a modular, high-redundancy digital command center. It is designed to be 
 
 ## CORE CAPABILITIES
 1. **Media Piracy:** Legally-owned media preservation via Soulseek (slskd) and Immich.
-2. **Broadcasting:** KPAB.fm (Radio) and ErsatzTV (TV Channel).
+2. **Broadcasting:** KPAB.fm (Primary Domain Registered) and ErsatzTV (TV Channel).
 3. **Anonymity:** Randomized MAC addresses, Quad9 Private DNS, and VPN Shielding.
 4. **Resilience:** "Golden Image" system for instant recovery.
 
