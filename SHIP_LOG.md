@@ -135,3 +135,52 @@ alt-svc: h3=":443"; ma=86400
 9. Cloudflared config: 
 10. Restart tunnel: 
 
+
+## [2026-02-25] - THE GREAT INFRASTRUCTURE AUDIT
+
+### Network Architecture Overhaul
+- **Two-Door System:** Separated public (`quickcat.club`) from private (`pibulus.local`) access
+  - `pibulus.local` → PIBULUS DECK (admin dashboard, no auth, LAN only)
+  - `quickcat.club` → Clean public page (media links via tunnel subdomains)
+  - `deck.quickcat.club` → Admin deck remotely, basic auth protected (pibulus / Church0fTheSubgeniu5!)
+- **Port Fix:** web_host nginx moved from :8090 → :80 (pibulus.local works without port number now)
+- **Tunnel Rewrite:** All `*.quickcat.club` subdomains use proper tunnel routing, no more `quickcat.club:8096` style links
+
+### KPAB.FM Radio Fix
+- **Root Cause:** Stream URL had stale `/radio/8000/radio.mp3` path (old AzuraCast proxy format)
+- **Fix:** `kpab.fm` + `www.kpab.fm` now route to AzuraCast web UI (port 8500) for full public player
+- **CSS:** Uploaded cyberdeck CSS (`kpab-cyberdeck.css`) into AzuraCast station branding via API
+- **Stream:** `radio.quickcat.club` → Icecast on port 8000, mount at `/radio.mp3`
+
+### Jellyfin Reset & Library Cleanup
+- **Account:** Deleted "Newt" admin, made "pibulus" sole admin, password cleared for fresh setup
+- **Shows Library:** Reorganized 72 show folders - stripped torrent cruft from 37 names, merged 7 split-season shows (Rick and Morty 6→1, Mike Tyson Mysteries 3→1, The Boys 3→1, House of the Dragon 2→1, Noisey 2→1, PEN15 2→1, Infinity Train 2→1)
+- **Note:** `Metalocalypse_old` kept as safety net, delete after confirming main folder has everything
+
+### Navidrome Reset & Config
+- **Account Reset:** Cleared old user, fresh admin `pibulus`/`meringue` + guest `guest`/`quickcat`
+- **Config Deployed:** `~/.config/navidrome/navidrome.toml` with Dark theme, 80% volume, sharing enabled, 30-day sessions, full string search, welcome message
+- **725 albums, 9022 songs** across Library + Soulseek directories
+
+### Pages Deployed
+- `/media/pibulus/passport/www/html/index.html` - Public quickcat.club (clean, tunnel-subdomain links only)
+- `/media/pibulus/passport/www/html/deck/index.html` - PIBULUS DECK (full admin, all local service links)
+- `/media/pibulus/passport/www/html/kpab/index.html` - KPAB.FM static fallback (fixed stream URL)
+
+### Service Port Map (Current)
+```
+nginx (homepage/deck)  : 80     | web_host container
+navidrome              : 4533   | music.quickcat.club
+jellyfin               : 8096   | watch.quickcat.club (host network)
+kavita                 : 5000   | read.quickcat.club
+azuracast (web UI)     : 8500   | kpab.fm
+azuracast (icecast)    : 8000   | radio.quickcat.club
+filebrowser            : 8080   |
+homepage-admin         : 8081   |
+overseerr              : 5055   |
+gitea                  : 3001   |
+memos                  : 5230   |
+web_terminal           : 7682   |
+cyber_arcade           : 7681   |
+irc                    : 9000   |
+```

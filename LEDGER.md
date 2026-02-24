@@ -22,3 +22,11 @@
 - **Domain:** Configured Nginx to serve 'kpab.fm' alongside 'quickcat.club'.
 - **Content:** Created dedicated Lush landing page for KPAB.fm with live audio player.
 - **Redundancy:** Synchronized new configs with Passport drive.
+
+## [2026-02-22] - THE BROADCAST ERA BEGINS
+- **Domain Acquisition:** Purchased 'kpab.fm' - the permanent home for Brunswick Pirate Radio.
+- **Nginx Multi-Site:** Configured the deck to host two separate worlds: 'quickcat.club' (Guest Home) and 'kpab.fm' (Radio Landing Page).
+- **Lush Web UI:** Deployed a dedicated radio player page for KPAB.fm with live stream integration.
+- **Radio Lab Expansion:** Created 'antenna_calc.sh' to prepare for physical FM transmission using the TR508 hardware.
+- **Identity Lock:** Updated BISHOP welcome dashboard to proudly display the new broadcast identity.
+- **Hardware Strategy:** Finalized specs for the 0.5W FM transmitter and Nooelec SDR integration.
