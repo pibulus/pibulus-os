@@ -30,3 +30,12 @@
 - **Radio Lab Expansion:** Created 'antenna_calc.sh' to prepare for physical FM transmission using the TR508 hardware.
 - **Identity Lock:** Updated BISHOP welcome dashboard to proudly display the new broadcast identity.
 - **Hardware Strategy:** Finalized specs for the 0.5W FM transmitter and Nooelec SDR integration.
+
+## [2026-02-25] - SOULSEEK RESURRECTION & DOCS OVERHAUL
+- **slskd:** Rebuilt standalone (removed VPN dependency). Updated to v0.24.4.
+- **slskd API:** Confirmed full REST API access - search, download, transfer management all working via CLI.
+- **AzuraCast Fix:** Recovered from SSL lockout (base_url was set to https, always_use_ssl=true). Reset via CLI.
+- **Welcome Script:** v4.2 - added port override map (azuracast=8500, jellyfin=8096), hides noise containers.
+- **PureVPN:** Credentials configured in .env but Gluetun TLS failing (stale server list). slskd runs direct for now.
+- **AI Handbook:** Complete rewrite with full API docs, port map, path reference, and operational notes.
+- **Music Downloads:** Queued first batch - King Gizzard, Butthole Surfers, Slayer, Cake (7 FLAC albums).
