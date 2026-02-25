@@ -119,9 +119,14 @@ services:
   slskd:
     image: slskd/slskd
     container_name: slskd
-    network_mode: "service:gluetun"
+    ports:
+      - "5030:5030"
+      - "50300:50300"
     environment:
       - SLSKD_REMOTE_CONFIGURATION=true
+      - SLSKD_SLSK_USERNAME=pibulus
+      - SLSKD_SLSK_PASSWORD=meringue
+      - SLSKD_SLSK_LISTEN_PORT=50300
     volumes:
       - /opt/slskd:/app/config
       - /media/pibulus/passport/Soulseek:/app/downloads
@@ -162,9 +167,6 @@ services:
       - OPENVPN_USER=${PUREVPN_USER}
       - OPENVPN_PASSWORD=${PUREVPN_PASSWORD}
       - SERVER_REGIONS=Victoria
-    ports:
-      - "5030:5030" # Soulseek Web
-      - "5031:5031" # Soulseek P2P
     restart: "no"
 
   emulatorjs:

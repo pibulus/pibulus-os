@@ -1,5 +1,5 @@
 #!/bin/bash
-# 🤖 BISHOP - CYBERDECK GREETING v4.1 (DYNAMIC)
+# 🤖 BISHOP - CYBERDECK GREETING v4.2 (DYNAMIC)
 
 clear
 # Main Banner
@@ -26,14 +26,31 @@ echo ""
 echo -e "🐾 $(gum style --foreground 46 "STATUS: SYSTEM NOMINAL")  |  📡 IP: $IP  |  🆙 UP: $UP"
 echo "----------------------------------------------------------------------"
 
+# Port overrides for services where auto-detect picks wrong port
+# (AzuraCast grabs SFTP 2022 instead of web 8500, Jellyfin binds oddly)
+declare -A PORT_OVERRIDE=(
+    ["azuracast"]="8500"
+    ["jellyfin"]="8096"
+)
+
+# Services to hide (not web-facing or not useful to show)
+HIDE_PATTERN="updater|_db|icloudpd"
+
 # Service Map (Multi-column)
 echo -e "🌐 $(gum style --foreground 51 "Live Service Map:")"
-docker ps --format "{{.Names}}\t{{.Ports}}" | grep -v "NAMES" | while read line; do
+count=0
+docker ps --format "{{.Names}}\t{{.Ports}}" | grep -v "NAMES" | grep -vE "$HIDE_PATTERN" | while read line; do
     name=$(echo $line | awk '{print $1}')
-    # Extract the public-facing port (e.g., the 8090 in 0.0.0.0:8090->80/tcp)
-    port=$(echo $line | grep -oE '[0-9.]+:[0-9]+->' | cut -d':' -f2 | cut -d'-' -f1 | head -n 1)
-    
-    if [ \! -z "$port" ]; then
+
+    # Check for port override first
+    if [[ -n "${PORT_OVERRIDE[$name]}" ]]; then
+        port="${PORT_OVERRIDE[$name]}"
+    else
+        # Extract the public-facing port (e.g., the 8090 in 0.0.0.0:8090->80/tcp)
+        port=$(echo $line | grep -oE '0\.0\.0\.0:[0-9]+->' | cut -d':' -f2 | cut -d'-' -f1 | head -n 1)
+    fi
+
+    if [ ! -z "$port" ]; then
         printf "   %-15s -> http://%s:%-5s  " "$name" "$IP" "$port"
         ((count++))
         if (( count % 2 == 0 )); then echo ""; fi
