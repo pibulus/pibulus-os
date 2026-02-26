@@ -14,10 +14,15 @@
         description: Hi-fi music collection
 
 - Read:
-    - Library:
+    - Comics:
         icon: kavita.png
         href: http://pibulus.local:5000
-        description: Books & comics
+        description: Comics & graphic novels
+
+    - Books:
+        icon: calibre-web.png
+        href: http://pibulus.local:8083
+        description: Book library
 
 - Play:
     - Text Adventures:

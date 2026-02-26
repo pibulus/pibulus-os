@@ -85,17 +85,36 @@ services:
     volumes:
       - /home/pibulus/.config/romm/mysql:/var/lib/mysql
 
-  # --- THE LIBRARY ---
+  # --- THE LIBRARY (COMICS/MANGA ONLY) ---
   kavita:
     image: jvmilazz0/kavita:latest
     container_name: kavita
     ports:
       - "5000:5000"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
     volumes:
       - /home/pibulus/.config/kavita:/kavita/config
       - /media/pibulus/passport/Comics:/comics
-      - /media/pibulus/passport/Ebooks/Assorted:/ebooks-assorted
-      - /media/pibulus/passport/Ebooks/Calibre-Library:/ebooks-calibre
+    restart: unless-stopped
+
+  # --- THE BOOK LIBRARY ---
+  calibre-web:
+    image: lscr.io/linuxserver/calibre-web:latest
+    container_name: calibre-web
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Australia/Melbourne
+      - DOCKER_MODS=linuxserver/mods:universal-calibre  # enables ebook conversion
+    ports:
+      - "8083:8083"
+    volumes:
+      - /home/pibulus/.config/calibre-web:/config
+      - /media/pibulus/passport/Ebooks/Calibre-Library:/books
     restart: unless-stopped
 
   # --- THE MUSIC NETWORK ---
@@ -122,6 +141,11 @@ services:
     ports:
       - "5030:5030"
       - "50300:50300"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 1024M
     environment:
       - SLSKD_REMOTE_CONFIGURATION=true
       - SLSKD_SLSK_USERNAME=pibulus
