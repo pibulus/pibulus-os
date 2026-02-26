@@ -13,7 +13,7 @@ Type `deck` to launch the mainframe. Type `halp` if lost.
 | 2283 | Immich | — | AI photo vault (local only) |
 | 3001 | Gitea | — | Local Git server |
 | 4533 | Navidrome | music.quickcat.club | Hi-fi music streaming |
-| 5000 | Kavita | read.quickcat.club | Comics & graphic novels |
+| 5000 | Kavita | comics.quickcat.club | Comics & graphic novels |
 | 5030 | slskd | — | Soulseek P2P (local only) |
 | 5055 | Overseerr | — | Media requests |
 | 5230 | Memos | — | Private microblogging |
@@ -22,7 +22,7 @@ Type `deck` to launch the mainframe. Type `halp` if lost.
 | 8000 | AzuraCast (stream) | radio.quickcat.club | Icecast audio stream |
 | 8080 | Filebrowser | — | Passport drive browser |
 | 8081 | Homepage Admin | — | Admin dashboard |
-| 8083 | Calibre-Web | — | Book library (local only) |
+| 8083 | Calibre-Web | read.quickcat.club | Book library |
 | 8096 | Jellyfin | watch.quickcat.club | Movies & shows |
 | 8500 | AzuraCast (UI) | kpab.fm | Radio admin |
 | 9000 | IRC (The Lounge) | — | Chat client |

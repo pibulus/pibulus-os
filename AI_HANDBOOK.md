@@ -32,8 +32,8 @@ All compose files in `~/pibulus-os/config/stacks/`:
 |------|---------|----------------|-------|
 | 80 | nginx (homepage/deck) | quickcat.club / deck.quickcat.club | Basic auth on deck |
 | 4533 | Navidrome | music.quickcat.club | Music streaming, Subsonic API |
-| 5000 | Kavita | read.quickcat.club | Comics & graphic novels only |
-| 8083 | Calibre-Web | (local only) | Book library — points at Calibre dir |
+| 5000 | Kavita | comics.quickcat.club | Comics & graphic novels only |
+| 8083 | Calibre-Web | read.quickcat.club | Book library — points at Calibre dir |
 | 5030 | slskd | (local only) | Soulseek P2P - web UI + API |
 | 5055 | Overseerr | (local only) | Media requests |
 | 5230 | Memos | (local only) | Microblogging |
@@ -150,7 +150,8 @@ Config at `/etc/cloudflared/config.yml`. Tunnel ID: `c79eb8a2-9791-4ece-8b54-bc9
 | radio.quickcat.club | localhost:8000 |
 | music.quickcat.club | localhost:4533 |
 | watch.quickcat.club | localhost:8096 |
-| read.quickcat.club | localhost:5000 |
+| read.quickcat.club | localhost:8083 |
+| comics.quickcat.club | localhost:5000 |
 | tv.quickcat.club | localhost:8001 |
 
 ## VPN (GLUETUN)
