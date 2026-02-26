@@ -184,3 +184,34 @@ web_terminal           : 7682   |
 cyber_arcade           : 7681   |
 irc                    : 9000   |
 ```
+
+---
+## 2026-02-27 - Media Library Overhaul + kpab.fm Music Fills
+
+### Shipped
+- **Calibre-Web** added on port 8083 for proper book browsing (author pages, sane UX)
+- **Kavita** stripped to comics-only - no more series of 1 book weirdness
+- **Homepage** updated: Library split into Comics + Books with correct links
+- **kpab.fm downloader**:  - 10 genre batches, 139 albums queued via slskd API
+  - Batches: uk_bangers, uk_grime, aus, hiphop, garage, hardcore, shoegaze, electronic, cool_indie, krautrock
+  - ~26/35 first run FLAC, including: Fontaines x3, Idles x2, Bob Vylan, Shame x2, Tropical Fuck Storm x2, Drones x2, Sampa x2, Hiatus Kaiyote, Genesis Owusu, Civic, Cable Ties, The Chats...
+- **Kavita DB** configured: DarkPink theme default, dashboard = Newly Added + On Deck only, sidenav = Comics + All Series only
+- **Comics library** populated: ~25GB of graphic novels transferred from Mac (Locke & Key, Watchmen, Sandman, Preacher, Saga, From Hell, Maus, Berserk, Akira + dozens more)
+- **slskd API** pattern documented in TOOLS.md - search→/responses endpoint, queue as array not object
+
+### Key learnings
+- slskd queue endpoint needs array payload  not 
+- slskd search results at  not on main search object
+- Kavita DB at  (root owned, stop container before swap)
+- Swap hitting 1.8/2GB with full stack running - immich_ml must stay stopped
+
+### Still needs doing (from previous session)
+- [ ] Calibre-Web first-time setup: http://pibulus.local:8083 → library path = /books, admin/admin123
+- [ ] Kavita: Add Comics library in Admin → Libraries → /comics
+- [ ] Jellyfin: Complete setup wizard, add libraries
+- [ ] Gluetun/PureVPN: Add credentials to .env before starting
+- [ ] icloudpd: Needs Apple ID config (currently unhealthy)
+- [ ] ErsatzTV: Was crash-looping, needs investigation
+- [ ] Immich ML: Run face detection pass then stop to free RAM
+- [ ] kpab.fm: Run remaining batches (garage, hardcore, shoegaze, electronic, hiphop, krautrock)
+- [ ] Sleaford Mods + black midi: Not on Soulseek atm, retry later

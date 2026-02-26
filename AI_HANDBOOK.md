@@ -32,7 +32,8 @@ All compose files in `~/pibulus-os/config/stacks/`:
 |------|---------|----------------|-------|
 | 80 | nginx (homepage/deck) | quickcat.club / deck.quickcat.club | Basic auth on deck |
 | 4533 | Navidrome | music.quickcat.club | Music streaming, Subsonic API |
-| 5000 | Kavita | read.quickcat.club | Ebooks & Comics |
+| 5000 | Kavita | read.quickcat.club | Comics & graphic novels only |
+| 8083 | Calibre-Web | (local only) | Book library — points at Calibre dir |
 | 5030 | slskd | (local only) | Soulseek P2P - web UI + API |
 | 5055 | Overseerr | (local only) | Media requests |
 | 5230 | Memos | (local only) | Microblogging |
@@ -44,6 +45,27 @@ All compose files in `~/pibulus-os/config/stacks/`:
 | 8096 | Jellyfin | watch.quickcat.club | Video streaming (host network) |
 | 8500 | AzuraCast (Web UI) | kpab.fm / www.kpab.fm | Radio admin at /login |
 | 9000 | The Lounge | (local only) | IRC client |
+
+## CALIBRE-WEB
+- **Container:** `calibre-web` (port 8083)
+- **Library:** `/media/pibulus/passport/Ebooks/Calibre-Library` (mounted as `/books`)
+- **Config:** `/home/pibulus/.config/calibre-web/`
+- **Default creds:** admin / admin123 (change after first login)
+- **Stack:** pirate.yml
+
+## KAVITA (Comics only)
+- **Container:** `kavita` (port 5000)
+- **Comics path:** `/media/pibulus/passport/Comics` (mounted as `/comics`)
+- **Config/DB:** `/home/pibulus/.config/kavita/kavita.db` (root owned — stop container before editing)
+- **Theme:** DarkPink (default for all users)
+- **Note:** DB surgery via sqlite3 locally then scp back + `sudo cp`
+
+## KPAB.FM MUSIC DOWNLOADER
+- **Script:** `/home/pibulus/kpab_downloader.py`
+- **Usage:** `python3 -u ~/kpab_downloader.py --list` / `--batch aus` / `--batch all`
+- **Batches:** uk_bangers, uk_grime, aus, hiphop, garage, hardcore, shoegaze, electronic, cool_indie, krautrock
+- **Run in tmux:** `tmux new-session -d -s kpab 'python3 -u ~/kpab_downloader.py --batch garage > /tmp/kpab.log 2>&1'`
+- **Vibe rule:** Pirate radio. YES: garage/post-punk/grime/krautrock/shoegaze/underground hip-hop/Australian bands. NO: Dylan/ABBA/Queen/Fleetwood Mac/prog wank.
 
 ## SOULSEEK (slskd)
 - **Container:** `slskd` (standalone, no VPN)
