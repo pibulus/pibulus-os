@@ -68,6 +68,8 @@ All compose files in `~/pibulus-os/config/stacks/`:
 - **Vibe rule:** Pirate radio. YES: garage/post-punk/grime/krautrock/shoegaze/underground hip-hop/Australian bands. NO: Dylan/ABBA/Queen/Fleetwood Mac/prog wank.
 
 ## SOULSEEK (slskd)
+- **Two download dirs:**  (new, slskd) +  (legacy, 100GB)
+- AzuraCast sees both via override mount (My_Library + Soulseek_New)
 - **Container:** `slskd` (standalone, no VPN)
 - **Web UI:** `http://pibulus.local:5030` (login: slskd/slskd)
 - **API:** Full REST API at `http://localhost:5030/api/v0/`
@@ -81,6 +83,7 @@ All compose files in `~/pibulus-os/config/stacks/`:
 - **Note:** Soulseek throttles searches - one at a time. Wait for completion before next search.
 
 ## AZURACAST (KPAB.FM)
+- **IMPORTANT:** docker-compose.yml was stripped to minimal ports (8000, 8200-8216, 8500, 8443, 2022). Old compose had 100+ ports (8000-8496) that stole ports from Jellyfin/Calibre/Filebrowser.
 - **Admin:** `http://pibulus.local:8500/login` (email: pibulus@gmail.com)
 - **CLI:** `docker exec azuracast azuracast_cli <command>`
   - `azuracast:account:list` - List users

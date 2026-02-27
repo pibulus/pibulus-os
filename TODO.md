@@ -18,12 +18,17 @@
 - [ ] **ErsatzTV** — was crash-looping (.NET arm64 error), needs investigation before starting. tv.quickcat.club currently 404s
 - [ ] **Immich ML** — run face detection pass then stop container to free ~2GB RAM
 - [ ] **Sleaford Mods + black midi** — not on Soulseek right now, retry batches later
-- [ ] **AzuraCast port cleanup** — review if hundreds of Icecast relay ports are needed or can be trimmed
 - [ ] **OpenClaw** — run `openclaw onboard` to connect messaging + API key if not done
 - [ ] **Security review** — basic auth on any other public subdomains? Review what's exposed
 
 ## ✅ Recently Done
 
+- [x] AzuraCast stripped from ~100 ports to 9 ports — fixed port conflicts with Jellyfin/Calibre/Filebrowser
+- [x] Calibre library: 430 Assorted books imported (964 total). Junk culled.
+- [x] AzuraCast now sees both Soulseek dirs (My_Library + Soulseek_New)
+- [x] Filebrowser port fix (8080->80 internal)
+- [x] Docker disk cleanup: removed unused images (calibre:latest 4.7GB, gluetun), freed ~8GB on root
+- [x] Immich ML stopped to save RAM (~500MB)
 - [x] Kavita crash-loop fixed (ServerSetting enum fields CoverImageSize/PdfRenderResolution needed named values not numeric)
 - [x] read.quickcat.club → Calibre-Web (8083), comics.quickcat.club → Kavita (5000)
 

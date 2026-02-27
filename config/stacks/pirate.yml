@@ -161,7 +161,7 @@ services:
     image: filebrowser/filebrowser:s6
     container_name: filebrowser
     ports:
-      - "8080:8080"
+      - "8080:80"
     volumes:
       - /media/pibulus/passport:/srv
       - /opt/filebrowser/database.db:/database.db
