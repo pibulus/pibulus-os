@@ -22,8 +22,6 @@
 
 | Stack | File | Services |
 |-------|------|----------|
-| **Pirate** | config/stacks/pirate.yml | Jellyfin, Navidrome, Kavita, Calibre-Web, slskd, Overseerr, Filebrowser, Gluetun |
-| **Social** | config/stacks/social.yml | Gitea, Memos, IRC (The Lounge) |
 | **Admin** | config/stacks/admin.yml | Homepage, Web Terminal |
 | **Immich** | config/stacks/immich.yml | Photo vault + ML (stopped by default) |
 | **AzuraCast** | ~/azuracast/docker-compose.yml | Radio engine (its own stack) |

@@ -10,13 +10,9 @@ Type `deck` to launch the mainframe. Type `halp` if lost.
 | Port | Service | Public URL | Notes |
 |------|---------|-----------|-------|
 | 80 | Nginx (web_host) | quickcat.club / deck.quickcat.club | deck requires basic auth |
-| 2222 | Gitea SSH | — | Git over SSH |
-| 3001 | Gitea | — | Local Git server |
 | 4533 | Navidrome | music.quickcat.club | Hi-fi music streaming |
 | 5000 | Kavita | comics.quickcat.club | Comics & graphic novels |
 | 5030 | slskd | — | Soulseek P2P (local only) |
-| 5055 | Overseerr | — | Media requests |
-| 5230 | Memos | — | Private microblogging |
 | 7682 | Web Terminal | — | Browser shell |
 | 8000 | AzuraCast (Icecast) | kpab.fm (via nginx proxy) | Audio stream |
 | 8080 | Filebrowser | — | Passport drive browser |
@@ -49,7 +45,6 @@ Type `deck` to launch the mainframe. Type `halp` if lost.
 
 ### LAN Only (pibulus.local)
 - pibulus.local — full deck, no auth needed
-- Filebrowser, Gitea, Overseerr, slskd, Memos, IRC
 
 ---
 
@@ -104,8 +99,6 @@ Recovery: Fresh OS → clone pibulus-os repo → extract golden image from Passp
 ## 📦 STACK OVERVIEW
 
 5 compose stacks in `~/pibulus-os/config/stacks/`:
-- **pirate.yml** — Jellyfin, Navidrome, Kavita, Calibre-Web, slskd, Overseerr, Filebrowser, Gluetun
-- **social.yml** — Gitea, Memos, IRC
 - **admin.yml** — Homepage + Web Terminal
 - **immich.yml** — Photos + ML (stopped by default to save RAM)
 - **~/azuracast/** — Radio (its own compose)
@@ -164,7 +157,6 @@ Standalone containers:
 
 ### Known Gaps
 - Passport drive not LUKS encrypted (physical theft risk)
-- Gitea needs 2FA enabled
 - rpcbind running (port 111) — disable if NFS not needed
 - Guestbook is client-side only (no persistence backend yet)
 
