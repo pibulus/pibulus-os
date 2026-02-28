@@ -155,31 +155,7 @@
     .card.solidarity:hover { border-color: rgba(85,204,85,0.7); box-shadow: 0 0 20px rgba(85,204,85,0.12), 0 8px 24px rgba(0,0,0,0.5); }
     .card.solidarity::before { background: linear-gradient(90deg, transparent, #55cc55, transparent); }
 
-    /* GUESTBOOK */
-    .guestbook {
-      background: var(--card-bg); border: 1px solid var(--card-border);
-      border-radius: 2px; padding: 1.5rem; backdrop-filter: blur(12px);
-    }
-    .guestbook-messages {
-      max-height: 240px; overflow-y: auto; margin-bottom: 1rem;
-      text-align: left; color: var(--dim); font-size: 1.05rem;
-    }
-    .guestbook-form { display: flex; gap: 0.75rem; flex-wrap: wrap; }
-    .guestbook-form input, .guestbook-form button {
-      background: rgba(255,255,255,0.05); border: 1px solid var(--card-border);
-      color: var(--text); padding: 0.6rem 0.85rem; font-family: 'VT323', monospace; font-size: 1.1rem;
-    }
-    .guestbook-form input:focus { outline: none; border-color: var(--cyan); }
-    .guestbook-form input[placeholder="handle"] { width: 130px; color: var(--cyan); }
-    .guestbook-form input[placeholder="leave a message..."] { flex: 1; min-width: 160px; }
-    .guestbook-form button {
-      color: var(--cyan); border-color: var(--cyan); cursor: pointer;
-      transition: background 0.2s, box-shadow 0.2s; letter-spacing: 2px;
-    }
-    .guestbook-form button:hover { background: rgba(0,255,234,0.1); box-shadow: 0 0 12px rgba(0,255,234,0.2); }
-
     @media (max-width: 480px) {
-      .guestbook-form input[placeholder="handle"] { width: 100%; }
     }
 
     /* FOOTER */
@@ -271,7 +247,7 @@
       <span class="section-label">[ EXPLORE ]</span>
     </div>
 
-    <div class="grid grid-3">
+    <div class="grid grid-2">
       <a class="card fun" href="https://kpab.fm" target="_blank" rel="noopener">
         <span class="card-emoji">&#x1F4FB;</span>
         <span class="card-label">KPAB.FM</span>
@@ -286,6 +262,11 @@
         <span class="card-emoji">&#x1F3AE;</span>
         <span class="card-label">RETRO</span>
         <span class="card-desc">mega drive + more</span>
+      </a>
+      <a class="card fun" href="/drop/">
+        <span class="card-emoji">&#x1F4E6;</span>
+        <span class="card-label">DROP ZONE</span>
+        <span class="card-desc">upload to the collection</span>
       </a>
     </div>
 
@@ -378,42 +359,11 @@
       </details>
     </div>
 
-    <!-- BBS GUESTBOOK -->
-    <div class="section-divider">
-      <span class="section-label">[ BBS GUESTBOOK ]</span>
-    </div>
 
-    <div class="guestbook">
-      <div class="guestbook-messages" id="messages">
-        <div><span style="color:var(--magenta)">[SYSTEM]</span> Initializing message board...</div>
-        <div><span style="color:var(--magenta)">[SYSTEM]</span> Welcome to the Quick Cat Club.</div>
-      </div>
-      <div class="guestbook-form">
-        <input type="text" id="gb-name" placeholder="handle" maxlength="20">
-        <input type="text" id="gb-msg" placeholder="leave a message..." maxlength="200" onkeydown="if(event.key==='Enter')addMessage()">
-        <button onclick="addMessage()">SEND</button>
-      </div>
-    </div>
-
-    <footer>
+        <footer>
       <p class="footer-text"><span>QUICK CAT CLUB</span> &mdash; self-hosted &amp; sovereign</p>
     </footer>
 
   </div>
-
-  <script>
-    function addMessage() {
-      const name = document.getElementById('gb-name').value.trim() || 'anonymous';
-      const msg = document.getElementById('gb-msg').value.trim();
-      if (!msg) return;
-      const board = document.getElementById('messages');
-      const time = new Date().toLocaleTimeString();
-      const entry = document.createElement('div');
-      entry.innerHTML = '<span style="color:var(--magenta)">[' + time + ']</span> <span style="color:var(--cyan)">' + name.replace(/</g, '&lt;') + ':</span> ' + msg.replace(/</g, '&lt;');
-      board.appendChild(entry);
-      document.getElementById('gb-msg').value = '';
-      board.scrollTop = board.scrollHeight;
-    }
-  </script>
 </body>
 </html>
