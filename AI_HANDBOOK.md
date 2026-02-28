@@ -166,3 +166,10 @@ Config at `/etc/cloudflared/config.yml`. Tunnel ID: `c79eb8a2-9791-4ece-8b54-bc9
 ## GOLDEN IMAGE
 Backup script creates compressed archive of `~/pibulus-os/` to Passport drive.
 Recovery: Fresh OS install -> clone repo -> extract golden image.
+
+## MEDIA ORGANIZATION (SHOWS)
+- **Primary Path:** `/media/pibulus/passport/Shows`
+- **Naming Rule:** Clean, simple titles (e.g., `Better Call Saul`, not `Better.Call.Saul.S01.1080p...`).
+- **Structure:** `Show Title/Season X/Episode.mkv`.
+- **Consolidation:** Avoid split season folders in the root. Always merge into a single show directory.
+- **Jellyfin:** Host network mode (port 8096). Rescans automatically on file changes.

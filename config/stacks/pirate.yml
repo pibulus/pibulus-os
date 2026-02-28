@@ -94,8 +94,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.50'
-          memory: 512M
+          cpus: '1.0'
+          memory: 1024M
     volumes:
       - /home/pibulus/.config/kavita:/kavita/config
       - /media/pibulus/passport/Comics:/comics
@@ -131,7 +131,6 @@ services:
     volumes:
       - /home/pibulus/.config/navidrome:/data
       - "/media/pibulus/passport/Music/MusicBee/Music:/music/Library"
-      - "/media/pibulus/passport/Music/Soulseek Downloads/complete:/music/Soulseek-Legacy"
       - /media/pibulus/passport/Soulseek:/music/Soulseek
     restart: unless-stopped
 

@@ -242,3 +242,17 @@ irc                    : 9000   |
 - Font sizes bumped 18px→20px, --dim brightened #666→#888 for legibility
 - ErsatzTV confirmed broken on arm64 - removed image (saved 1.1GB)
 - Immich, Overseerr brought back online
+
+### 2026-02-28 17:45 - MEDIA CONSOLIDATION & HYGIENE
+- **Shows Folder Cleanup:** Bulk renamed and consolidated over 100+ shows on the Passport drive.
+- **Root Cause Found:** Complex "scene" folder names and split season folders were confusing Jellyfin's scanner.
+- **Fixes Applied:**
+  - Consolidated `Mr Pickles`, `Red Dwarf`, `Better Call Saul`, `Smiling Friends`, `The Legend of Vox Machina`, and `The Wire` into clean multi-season structures.
+  - Simplified 50+ complex folder names (Garfield, Aeon Flux, ALF, Breaking Bad, etc.).
+  - Merged duplicate show folders (`NewsRadio`, `Over the Garden Wall`, `Deadwood`, `The Wire`).
+  - Deleted redundant `Metalocalypse_old` and other stale directories.
+- **Dashboard Audit:** Verified links and ports on `pibulus.deck` (local) and `quickcat.club` (public). All services (`Jellyfin`, `Navidrome`, `Kavita`, `Memos`, etc.) are correctly routed.
+- **Documentation:** Updated `AI_HANDBOOK.md` with media organization rules and clean structure guidelines.
+- **Status:** All services nominal. Jellyfin library significantly expanded.
+
+**Commit:** Show consolidation, dashboard audit, and AI handbook update.
