@@ -28,32 +28,6 @@ source "$SCRIPT_DIR/modules/grey_hat_module.sh"
 source "$SCRIPT_DIR/modules/mission_control_module.sh"
 source "$SCRIPT_DIR/modules/librarian_module.sh"
 
-# --- HELP FLAG ---
-if [[ "$1" == "--help" || "$1" == "-h" || "$1" == "help" ]]; then
-    echo "🐾 PIBULUS CYBERDECK v6.7"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "Usage: deck [command]"
-    echo ""
-    echo "  (no args)    Launch TUI menu"
-    echo "  --help, -h   Show this help"
-    echo "  radio        Quick-launch KPAB.fm module"
-    echo "  games        Quick-launch Terminal Arcade"
-    echo "  status       System status snapshot"
-    echo "  deploy       Deploy a new app"
-    echo ""
-    echo "Aliases: help, halp, sos, wtf"
-    echo "Config:  ~/pibulus-os/.env"
-    echo "Modules: ~/pibulus-os/modules/"
-    exit 0
-fi
-
-# --- QUICK COMMANDS ---
-case "$1" in
-    radio)  manage_radio; exit 0 ;;
-    games)  manage_games; exit 0 ;;
-    status) vcgencmd measure_temp; free -h; df -h / /media/pibulus/passport; docker ps --format "table {{.Names}}	{{.Status}}" | head -25; exit 0 ;;
-    deploy) play_tone "confirm"; "$SCRIPT_DIR/scripts/deploy.sh"; exit 0 ;;
-esac
 # --- UTILS ---
 get_status() {
     if [ "$(docker ps -q -f name=$1)" ]; then
@@ -118,14 +92,16 @@ while true; do
         "🏴‍☠️ Pirate Station"*) manage_stack "PIRATE STATION" "$PIRATE_CONFIG" "jellyfin" ;;
         "📻 KPAB.fm Radio"*) manage_radio ;;
         "📝 Quick Memos"*) echo "Memos at http://pibulus.local:5230"; gum input --placeholder "Press Enter to return..." ;;
-        "💀 Grey Hat Ops") manage_grey_hat ;;
+        "🤖 Mission Control" "🧠 Ask Bishop") manage_mission_control ;;
+        "🤖 Mission Control" "💀 Grey Hat Ops") manage_grey_hat ;;
         "📡 SIGINT Ops") manage_sigint ;;
         "📀 Vault Ops") manage_vault ;;
         "🏠 Dashboard Ops") manage_homepage ;;
         "🕵️ Stealth Toggle") "$SCRIPT_DIR/scripts/set_stealth.sh" public ;;
         "🔒 Lock Bunker") "$SCRIPT_DIR/scripts/set_stealth.sh" bunker ;;
         "⏏️ Safe Eject") safe_eject ;;
-        "📊 System Status") ~/pibulus-os/scripts/flush_ram.sh; docker ps --format "table {{.Names}}\t{{.Status}}" | head -25; gum input --placeholder "Press Enter to return..." ;;
+        "🧹 Flush RAM") ~/pibulus-os/scripts/flush_ram.sh ;;
+        "🧹 Flush RAM" "📊 System Status") pm2 list && gum input --placeholder "Press Enter to return..." ;;
         "🚪 Exit") play_tone "click"; clear; exit 0 ;;
     esac
 done
