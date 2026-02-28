@@ -186,6 +186,40 @@
     footer { text-align: center; margin-top: 3.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(0,255,234,0.15); }
     .footer-text { color: var(--dim-soft); font-size: 1rem; letter-spacing: 3px; }
     .footer-text span { color: var(--cyan); }
+
+    /* FAQ */
+    .faq { display: flex; flex-direction: column; gap: 2px; }
+    .faq details {
+      background: var(--card-bg);
+      border: 1px solid rgba(0,255,234,0.15);
+      border-radius: 2px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .faq summary {
+      padding: 1rem 1.25rem;
+      cursor: pointer;
+      color: var(--cyan);
+      font-size: 1.3rem;
+      letter-spacing: 1px;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      transition: background 0.15s;
+    }
+    .faq summary:hover { background: rgba(0,255,234,0.03); }
+    .faq summary::before { content: '+'; color: var(--magenta); font-size: 1.5rem; flex-shrink: 0; width: 1.2em; text-align: center; }
+    .faq details[open] summary::before { content: '\2212'; }
+    .faq summary::-webkit-details-marker { display: none; }
+    .faq details p {
+      padding: 0 1.25rem 1rem 3rem;
+      color: var(--dim);
+      font-size: 1.1rem;
+      line-height: 1.5;
+    }
+    .faq details p a { color: var(--cyan); text-decoration: none; }
+    .faq details p a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -237,16 +271,39 @@
       <span class="section-label">[ EXPLORE ]</span>
     </div>
 
-    <div class="grid grid-2">
+    <div class="grid grid-3">
+      <a class="card fun" href="https://kpab.fm" target="_blank" rel="noopener">
+        <span class="card-emoji">&#x1F4FB;</span>
+        <span class="card-label">KPAB.FM</span>
+        <span class="card-desc">pirate radio + requests</span>
+      </a>
       <a class="card fun" href="/arcade/">
         <span class="card-emoji">&#128377;</span>
         <span class="card-label">ARCADE</span>
         <span class="card-desc">text adventures</span>
       </a>
-      <a class="card fun" href="https://radio.quickcat.club" target="_blank" rel="noopener">
-        <span class="card-emoji">&#127897;</span>
-        <span class="card-label">LIVE STREAM</span>
-        <span class="card-desc">icecast audio</span>
+      <a class="card fun" href="/arcade/retro/">
+        <span class="card-emoji">&#x1F3AE;</span>
+        <span class="card-label">RETRO</span>
+        <span class="card-desc">mega drive + more</span>
+      </a>
+    </div>
+
+    <!-- KNOWLEDGE -->
+    <div class="section-divider">
+      <span class="section-label">[ KNOWLEDGE ]</span>
+    </div>
+
+    <div class="grid grid-2">
+      <a class="card" href="/wiki/">
+        <span class="card-emoji">&#x1F4DA;</span>
+        <span class="card-label">WIKIPEDIA</span>
+        <span class="card-desc">offline encyclopedia</span>
+      </a>
+      <a class="card" href="https://memos.quickcat.club" target="_blank" rel="noopener">
+        <span class="card-emoji">&#x1F4DD;</span>
+        <span class="card-label">NOTES</span>
+        <span class="card-desc">community memos</span>
       </a>
     </div>
 
@@ -271,6 +328,38 @@
         <span class="card-label">COMICS</span>
         <span class="card-desc">Joe Sacco &amp; more</span>
       </a>
+    </div>
+
+    <!-- FAQ -->
+    <div class="section-divider">
+      <span class="section-label">[ FAQ ]</span>
+    </div>
+
+    <div class="faq">
+      <details>
+        <summary>What is this place?</summary>
+        <p>Quick Cat Club is a self-hosted community server running on a Raspberry Pi 5 in Brunswick, Melbourne. It hosts pirate radio, a library, comics, movies, retro games, and an offline copy of Wikipedia. Everything runs locally &mdash; no cloud, no tracking, no subscriptions.</p>
+      </details>
+      <details>
+        <summary>How do I listen to the radio?</summary>
+        <p>Visit <a href="https://kpab.fm">kpab.fm</a> and hit play. You can also search and request songs from 4,000+ tracks. The station runs 24/7 on auto-DJ.</p>
+      </details>
+      <details>
+        <summary>How do I get access to books/movies/comics?</summary>
+        <p>These are friend-tier services. If you know Pablo, ask for the login. If you're connecting via the KPAB-Hotspot wifi, the public stuff (radio, arcade, Wikipedia) is open to everyone.</p>
+      </details>
+      <details>
+        <summary>Can I upload files?</summary>
+        <p>Not yet publicly, but it's coming. If you have music or books to contribute, talk to Pablo directly.</p>
+      </details>
+      <details>
+        <summary>Will this server go down?</summary>
+        <p>Probably! It's a 4GB Raspberry Pi doing the work of ten servers. If it's down, it'll be back. That's the punk ethos &mdash; imperfect, alive, and yours.</p>
+      </details>
+      <details>
+        <summary>Can I run something like this myself?</summary>
+        <p>Absolutely. This whole setup is open and documented. A Pi 5, a hard drive, and some Docker containers. The code lives at the Quick Cat Club GitHub. Ask Pablo for the link.</p>
+      </details>
     </div>
 
     <!-- BBS GUESTBOOK -->
