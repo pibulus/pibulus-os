@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>the wall - quickcat.club</title>
+  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #050505;
+      --cyan: #00ffea;
+      --magenta: #ff00ff;
+      --text: #e0e0e0;
+      --dim: #666;
+      --panel: #0a0a0a;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'VT323', monospace;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
+      pointer-events: none; z-index: 999;
+    }
+    .container {
+      max-width: 720px; margin: 0 auto; padding: 1.5rem 1rem;
+      display: flex; flex-direction: column; align-items: center; gap: 16px;
+    }
+    .back { color: var(--dim); text-decoration: none; font-size: 1rem; align-self: flex-start; }
+    .back:hover { color: var(--cyan); }
+    h1 {
+      font-size: clamp(2rem, 6vw, 3rem);
+      color: var(--magenta);
+      text-shadow: 0 0 10px rgba(255,0,255,0.4);
+      letter-spacing: 4px; text-align: center;
+    }
+    .sub { color: var(--dim); font-size: 1rem; text-align: center; letter-spacing: 2px; }
+
+    /* CANVAS */
+    .wall-frame {
+      border: 2px solid rgba(0,255,234,0.2);
+      background: #000;
+      position: relative;
+      touch-action: none;
+      cursor: crosshair;
+      image-rendering: pixelated;
+    }
+    canvas {
+      display: block;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+
+    /* PALETTE */
+    .palette {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      justify-content: center;
+      padding: 8px;
+    }
+    .swatch {
+      width: 32px; height: 32px;
+      border: 2px solid #222;
+      cursor: pointer;
+      transition: transform 0.1s, border-color 0.1s;
+    }
+    .swatch:hover { transform: scale(1.15); }
+    .swatch.active { border-color: #fff; transform: scale(1.2); box-shadow: 0 0 8px rgba(255,255,255,0.3); }
+
+    /* STATS */
+    .stats {
+      font-size: 0.85rem; color: var(--dim); letter-spacing: 2px; text-align: center;
+    }
+    .stats span { color: var(--cyan); }
+
+    /* COOLDOWN */
+    .cooldown-bar {
+      width: 100%; max-width: 300px; height: 4px;
+      background: #111; border-radius: 2px; overflow: hidden;
+    }
+    .cooldown-fill {
+      height: 100%; background: var(--cyan);
+      transition: width 0.1s linear;
+      box-shadow: 0 0 6px var(--cyan);
+    }
+    .cooldown-text { font-size: 0.8rem; color: var(--dim); }
+
+    footer { color: #333; font-size: 0.8rem; letter-spacing: 2px; text-align: center; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="/" class="back">&larr; quickcat.club</a>
+    <h1>the wall</h1>
+    <p class="sub">leave a mark. one pixel at a time.</p>
+
+    <div class="wall-frame">
+      <canvas id="wall" width="64" height="64"></canvas>
+    </div>
+
+    <div class="palette" id="palette"></div>
+
+    <div class="cooldown-bar"><div class="cooldown-fill" id="cooldownFill" style="width:100%"></div></div>
+    <div class="cooldown-text" id="cooldownText">ready</div>
+
+    <div class="stats">
+      <span id="pixelCount">0</span> pixels placed by <span id="visitorCount">0</span> visitors
+    </div>
+
+    <footer>no accounts. no text. just colour.</footer>
+  </div>
+
+  <script>
+    const GRID = 64;
+    const PIXEL_SIZE = Math.min(Math.floor((window.innerWidth - 32) / GRID), 8);
+    const COOLDOWN_MS = 2000; // 2 second cooldown between pixels
+    const STORAGE_KEY = 'qcc_wall';
+    const VISITOR_KEY = 'qcc_wall_visitor';
+
+    const PALETTE = [
+      '#ff0000','#ff6600','#ffcc00','#33cc33','#00cccc',
+      '#0066ff','#9933ff','#ff00ff','#ff6699','#ffffff',
+      '#cccccc','#666666','#333333','#000000',
+      '#00ffea','#ffff00'
+    ];
+
+    const canvas = document.getElementById('wall');
+    const ctx = canvas.getContext('2d');
+    canvas.width = GRID * PIXEL_SIZE;
+    canvas.height = GRID * PIXEL_SIZE;
+    canvas.style.width = canvas.width + 'px';
+    canvas.style.height = canvas.height + 'px';
+
+    let selectedColor = PALETTE[0];
+    let lastPlace = 0;
+    let grid = new Array(GRID * GRID).fill(null);
+    let pixelCount = 0;
+    let visitors = new Set();
+
+    // Build palette
+    const palEl = document.getElementById('palette');
+    PALETTE.forEach((c, i) => {
+      const s = document.createElement('div');
+      s.className = 'swatch' + (i === 0 ? ' active' : '');
+      s.style.background = c;
+      s.onclick = () => {
+        document.querySelectorAll('.swatch').forEach(x => x.classList.remove('active'));
+        s.classList.add('active');
+        selectedColor = c;
+      };
+      palEl.appendChild(s);
+    });
+
+    // Load state from server or localStorage
+    function loadWall() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const data = JSON.parse(saved);
+          grid = data.grid || grid;
+          visitors = new Set(data.visitors || []);
+        }
+      } catch(e) {}
+      // Also try to fetch from server
+      fetch('/wall/state.json', { cache: 'no-cache' })
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (data && data.grid) {
+            // Merge: server wins for non-null pixels
+            data.grid.forEach((c, i) => {
+              if (c) grid[i] = c;
+            });
+            if (data.visitors) data.visitors.forEach(v => visitors.add(v));
+            saveLocal();
+            render();
+            updateStats();
+          }
+        })
+        .catch(() => {});
+      render();
+      updateStats();
+    }
+
+    function saveLocal() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ grid, visitors: [...visitors] }));
+      } catch(e) {}
+    }
+
+    function render() {
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      pixelCount = 0;
+      grid.forEach((c, i) => {
+        if (c) {
+          const x = (i % GRID) * PIXEL_SIZE;
+          const y = Math.floor(i / GRID) * PIXEL_SIZE;
+          ctx.fillStyle = c;
+          ctx.fillRect(x, y, PIXEL_SIZE, PIXEL_SIZE);
+          pixelCount++;
+        }
+      });
+    }
+
+    function updateStats() {
+      document.getElementById('pixelCount').textContent = pixelCount;
+      document.getElementById('visitorCount').textContent = visitors.size;
+    }
+
+    function getVisitorId() {
+      let id = localStorage.getItem(VISITOR_KEY);
+      if (!id) {
+        id = Math.random().toString(36).slice(2, 10);
+        localStorage.setItem(VISITOR_KEY, id);
+      }
+      return id;
+    }
+
+    function placePixel(gx, gy) {
+      const now = Date.now();
+      if (now - lastPlace < COOLDOWN_MS) return;
+
+      const idx = gy * GRID + gx;
+      grid[idx] = selectedColor;
+      lastPlace = now;
+
+      const vid = getVisitorId();
+      visitors.add(vid);
+
+      render();
+      updateStats();
+      saveLocal();
+
+      // Send to server
+      fetch('/wall/place', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ x: gx, y: gy, c: selectedColor, v: vid })
+      }).catch(() => {});
+
+      // Cooldown animation
+      const fill = document.getElementById('cooldownFill');
+      const text = document.getElementById('cooldownText');
+      fill.style.width = '0%';
+      text.textContent = 'cooling...';
+      let start = now;
+      function tick() {
+        const elapsed = Date.now() - start;
+        const pct = Math.min(elapsed / COOLDOWN_MS * 100, 100);
+        fill.style.width = pct + '%';
+        if (pct < 100) requestAnimationFrame(tick);
+        else text.textContent = 'ready';
+      }
+      requestAnimationFrame(tick);
+    }
+
+    // Input handling
+    function getGridPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const x = Math.floor((clientX - rect.left) / PIXEL_SIZE);
+      const y = Math.floor((clientY - rect.top) / PIXEL_SIZE);
+      return [Math.max(0, Math.min(GRID-1, x)), Math.max(0, Math.min(GRID-1, y))];
+    }
+
+    canvas.addEventListener('click', e => {
+      const [gx, gy] = getGridPos(e);
+      placePixel(gx, gy);
+    });
+
+    canvas.addEventListener('touchstart', e => {
+      e.preventDefault();
+      const [gx, gy] = getGridPos(e);
+      placePixel(gx, gy);
+    }, { passive: false });
+
+    loadWall();
+  </script>
+</body>
+</html>

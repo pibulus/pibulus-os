@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Palestine Library - quickcat.club</title>
+  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #050505;
+      --green: #55cc55;
+      --green-dim: rgba(85,204,85,0.3);
+      --text: #e0e0e0;
+      --dim: #888;
+      --dim-soft: #555;
+      --panel: rgba(0,0,0,0.6);
+      --border: rgba(85,204,85,0.2);
+    }
+    html { scrollbar-color: var(--green) var(--bg); scrollbar-width: thin; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'VT323', monospace;
+      font-size: 20px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.12) 2px, rgba(0,0,0,0.12) 4px);
+      pointer-events: none; z-index: 999;
+    }
+    .wrapper {
+      position: relative; z-index: 1;
+      max-width: 880px; margin: 0 auto; padding: 2rem 1.5rem 4rem;
+    }
+    .back { color: var(--dim); text-decoration: none; font-size: 1rem; }
+    .back:hover { color: var(--green); }
+    header { text-align: center; padding: 2rem 0 1.5rem; }
+    h1 {
+      font-size: clamp(2.5rem, 8vw, 4rem);
+      color: var(--green);
+      text-shadow: 0 0 10px var(--green), 0 0 30px rgba(85,204,85,0.3);
+      letter-spacing: 4px; line-height: 1;
+    }
+    .subtitle { color: var(--dim); font-size: 1.1rem; margin-top: 0.5rem; letter-spacing: 2px; }
+    .section-divider { display: flex; align-items: center; gap: 0.75rem; margin: 2rem 0 1rem; }
+    .section-divider::before, .section-divider::after {
+      content: ''; flex: 1; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--green-dim), transparent);
+    }
+    .section-label { font-size: 1.1rem; color: var(--green); letter-spacing: 4px; white-space: nowrap; }
+    .file-list { display: flex; flex-direction: column; gap: 4px; }
+    .file-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-left: 3px solid transparent;
+      text-decoration: none;
+      color: var(--text);
+      transition: all 0.15s ease;
+    }
+    .file-item:hover {
+      border-left-color: var(--green);
+      background: rgba(85,204,85,0.04);
+    }
+    .file-icon { font-size: 1.5rem; flex-shrink: 0; width: 2rem; text-align: center; }
+    .file-info { flex: 1; min-width: 0; }
+    .file-name {
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      font-size: 1.15rem;
+    }
+    .file-meta { font-size: 0.85rem; color: var(--dim); }
+    .file-action {
+      font-size: 0.85rem; color: var(--green); letter-spacing: 2px;
+      flex-shrink: 0; opacity: 0;
+      transition: opacity 0.15s;
+    }
+    .file-item:hover .file-action { opacity: 1; }
+    .loading { text-align: center; color: var(--dim); padding: 3rem 0; }
+    footer { text-align: center; margin-top: 3rem; padding-top: 1rem; border-top: 1px solid rgba(85,204,85,0.1); }
+    .footer-text { color: var(--dim-soft); font-size: 0.9rem; letter-spacing: 2px; }
+    @media (max-width: 560px) {
+      .file-name { font-size: 1rem; }
+      .file-action { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <a href="/" class="back">&larr; quickcat.club</a>
+    <header>
+      <h1>Palestine</h1>
+      <p class="subtitle">films, books, documents</p>
+    </header>
+
+    <div class="section-divider"><span class="section-label">[ FILMS ]</span></div>
+    <div class="file-list" id="films"><div class="loading">scanning...</div></div>
+
+    <div class="section-divider"><span class="section-label">[ BOOKS &amp; DOCUMENTS ]</span></div>
+    <div class="file-list" id="books"><div class="loading">scanning...</div></div>
+
+    <footer>
+      <p class="footer-text">curated collection &mdash; download, watch, share</p>
+    </footer>
+  </div>
+  <script>
+    const VIDEO_EXT = ['.mp4','.mkv','.avi','.webm'];
+    const DOC_EXT = ['.pdf','.epub','.mobi','.djvu','.txt'];
+
+    function iconFor(name) {
+      const n = name.toLowerCase();
+      if (VIDEO_EXT.some(e => n.endsWith(e))) return '\u{1F3AC}';
+      if (n.endsWith('.pdf')) return '\u{1F4C4}';
+      if (n.endsWith('.epub') || n.endsWith('.mobi')) return '\u{1F4D6}';
+      return '\u{1F4C1}';
+    }
+
+    function cleanName(name) {
+      return name
+        .replace(/\.(mp4|mkv|avi|webm|pdf|epub|mobi|djvu)$/i, '')
+        .replace(/www\.\w+\.\w+\s*-?\s*/g, '')
+        .replace(/\[.*?\]/g, '')
+        .replace(/\{.*?\}/g, '')
+        .replace(/\((\d{4})\)/, '($1)')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+    }
+
+    function sizeStr(bytes) {
+      if (bytes > 1073741824) return (bytes/1073741824).toFixed(1) + ' GB';
+      if (bytes > 1048576) return (bytes/1048576).toFixed(0) + ' MB';
+      return (bytes/1024).toFixed(0) + ' KB';
+    }
+
+    function makeItem(entry, isDir) {
+      const a = document.createElement('a');
+      a.className = 'file-item';
+      if (isDir) {
+        a.href = '/palestine/files/' + encodeURIComponent(entry.name) + '/';
+      } else {
+        a.href = '/palestine/files/' + encodeURIComponent(entry.name);
+      }
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.innerHTML = `
+        <span class="file-icon">${isDir ? '\u{1F4C1}' : iconFor(entry.name)}</span>
+        <span class="file-info">
+          <span class="file-name">${cleanName(entry.name)}</span>
+          <span class="file-meta">${isDir ? 'folder' : sizeStr(entry.size || 0)}</span>
+        </span>
+        <span class="file-action">${isDir ? 'OPEN' : 'DOWNLOAD'}</span>
+      `;
+      return a;
+    }
+
+    async function load() {
+      try {
+        const res = await fetch('/palestine/files/');
+        const text = await res.text();
+        // Parse nginx autoindex HTML or JSON
+        let entries;
+        try {
+          entries = JSON.parse(text);
+        } catch {
+          // fallback: parse HTML autoindex
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(text, 'text/html');
+          const links = doc.querySelectorAll('a');
+          entries = [];
+          links.forEach(a => {
+            const name = decodeURIComponent(a.getAttribute('href') || '').replace(/\/$/, '');
+            if (name && name !== '..' && !name.startsWith('/')) {
+              entries.push({ name, type: a.getAttribute('href').endsWith('/') ? 'directory' : 'file', size: 0 });
+            }
+          });
+        }
+
+        const films = [];
+        const books = [];
+        const dirs = [];
+
+        entries.forEach(e => {
+          const n = e.name.toLowerCase();
+          if (e.type === 'directory') {
+            // Directories are likely movie folders
+            dirs.push(e);
+          } else if (VIDEO_EXT.some(ext => n.endsWith(ext))) {
+            films.push(e);
+          } else if (DOC_EXT.some(ext => n.endsWith(ext))) {
+            books.push(e);
+          }
+        });
+
+        // Combine dirs + video files as films
+        const allFilms = [...dirs, ...films].sort((a,b) => cleanName(a.name).localeCompare(cleanName(b.name)));
+        const allBooks = books.sort((a,b) => cleanName(a.name).localeCompare(cleanName(b.name)));
+
+        const filmsList = document.getElementById('films');
+        const booksList = document.getElementById('books');
+
+        filmsList.innerHTML = '';
+        booksList.innerHTML = '';
+
+        if (allFilms.length === 0) filmsList.innerHTML = '<div class="loading">no films found</div>';
+        allFilms.forEach(e => filmsList.appendChild(makeItem(e, e.type === 'directory')));
+
+        if (allBooks.length === 0) booksList.innerHTML = '<div class="loading">no documents found</div>';
+        allBooks.forEach(e => booksList.appendChild(makeItem(e, false)));
+
+      } catch (err) {
+        document.getElementById('films').innerHTML = '<div class="loading">could not load library</div>';
+        document.getElementById('books').innerHTML = '';
+      }
+    }
+
+    load();
+  </script>
+</body>
+</html>

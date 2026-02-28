@@ -106,6 +106,7 @@ services:
       - /home/pibulus/pibulus-os/config/nginx/hardening.conf:/etc/nginx/conf.d/default.conf:ro
       - /media/pibulus/passport/www/html:/usr/share/nginx/html:ro
       - /media/pibulus/passport/Roms:/usr/share/nginx/roms:ro
+      - /media/pibulus/passport/Palestine:/usr/share/nginx/palestine:ro
       - /home/pibulus/pibulus-os/config/nginx/.htpasswd:/etc/nginx/.htpasswd:ro
     restart: always
 
