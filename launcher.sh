@@ -92,16 +92,14 @@ while true; do
         "🏴‍☠️ Pirate Station"*) manage_stack "PIRATE STATION" "$PIRATE_CONFIG" "jellyfin" ;;
         "📻 KPAB.fm Radio"*) manage_radio ;;
         "📝 Quick Memos"*) echo "Memos at http://pibulus.local:5230"; gum input --placeholder "Press Enter to return..." ;;
-        "🤖 Mission Control" "🧠 Ask Bishop") manage_mission_control ;;
-        "🤖 Mission Control" "💀 Grey Hat Ops") manage_grey_hat ;;
+        "💀 Grey Hat Ops") manage_grey_hat ;;
         "📡 SIGINT Ops") manage_sigint ;;
         "📀 Vault Ops") manage_vault ;;
         "🏠 Dashboard Ops") manage_homepage ;;
         "🕵️ Stealth Toggle") "$SCRIPT_DIR/scripts/set_stealth.sh" public ;;
         "🔒 Lock Bunker") "$SCRIPT_DIR/scripts/set_stealth.sh" bunker ;;
         "⏏️ Safe Eject") safe_eject ;;
-        "🧹 Flush RAM") ~/pibulus-os/scripts/flush_ram.sh ;;
-        "🧹 Flush RAM" "📊 System Status") pm2 list && gum input --placeholder "Press Enter to return..." ;;
+        "📊 System Status") ~/pibulus-os/scripts/flush_ram.sh; docker ps --format "table {{.Names}}\t{{.Status}}" | head -25; gum input --placeholder "Press Enter to return..." ;;
         "🚪 Exit") play_tone "click"; clear; exit 0 ;;
     esac
 done
