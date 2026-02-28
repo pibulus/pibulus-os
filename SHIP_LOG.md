@@ -215,3 +215,23 @@ irc                    : 9000   |
 - [ ] Immich ML: Run face detection pass then stop to free RAM
 - [ ] kpab.fm: Run remaining batches (garage, hardcore, shoegaze, electronic, hiphop, krautrock)
 - [ ] Sleaford Mods + black midi: Not on Soulseek atm, retry later
+
+---
+
+## 2026-02-28 — The Port Massacre Fix
+
+**Problem:** Pi crashed after power cycle, most services down. Ports 'kept fucking out'. Root disk at 98%.
+
+**Root Cause Found:** AzuraCast's docker-compose.yml mapped ~100 Icecast relay ports (8000-8496) on the host. Only 1 station exists (kpab.fm). These ports were stealing 8080 (Filebrowser), 8083 (Calibre-Web), 8095, 8096 (Jellyfin) and more. Race condition on boot = random services fail.
+
+**Fixes Applied:**
+- Rewrote AzuraCast docker-compose.yml: 100+ ports → 9 ports (8000 stream, 8200-8216 station, 8500 admin, 8443 HTTPS, 2022 SFTP)
+- Fixed filebrowser port mapping (was 8080:8080, container listens on 80, now 8080:80)
+- Docker disk cleanup: removed unused calibre:latest (4.7GB!), gluetun, dangling images. Root: 98% → 87%
+- Stopped Immich ML to save ~500MB RAM
+- Added /passport/Soulseek mount to AzuraCast override (now sees both download dirs)
+- Calibre library: bulk imported 430 books from Assorted (culled junk first). 964 books total.
+- Verified all 13 services responding OK
+- Golden image: qcc_golden_v2026-02-28_0744.tar.gz
+
+**Status:** All services nominal. No port conflicts. Tunnel active.
