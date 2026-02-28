@@ -300,3 +300,54 @@ irc                    : 9000   |
 - **PureVPN:** Credentials configured in .env but Gluetun TLS failing (stale server list). slskd runs direct for now.
 - **AI Handbook:** Complete rewrite with full API docs, port map, path reference, and operational notes.
 - **Music Downloads:** Queued first batch - King Gizzard, Butthole Surfers, Slayer, Cake (7 FLAC albums).
+## Session 3 — 2026-02-28 (Late Night)
+
+### KPAB.FM Song Request System — SHIPPED
+- Built inline search-as-you-type request panel into KPAB.FM player
+- Static catalog approach: gen_request_catalog.sh scrapes 4,332 songs → catalog.json (1.1MB)
+- Catalog auto-refreshes every 6 hours via cron
+- Search filters client-side (artist/title/album), 50 results max, album art thumbnails
+- One-click REQUEST → POST to AzuraCast API → toast confirmation
+- ESC to close, whole-row clickable, smooth panel transition
+
+### QOL Juice Pass (11 improvements)
+- Responsive request panel for mobile
+- Smooth scroll-to on panel open
+- Real CSS transition (max-height) replacing broken display:none animation
+- Search input glow when active
+- SENT button cyan glow
+- Button press feedback (scale)
+- History item hover highlights
+- OG meta tags for link previews
+- ESC hint inline with close button
+- Cleaned up script
+
+### Full Audit
+- All KPAB.FM routes verified: homepage, catalog, API, stream, art, request POST
+- All quickcat.club routes: homepage, arcade, retro arcade
+- Deck auth (401) confirmed working
+- pibulus.local LAN access confirmed
+- 19 Docker containers all running
+
+### Git: WWW HTML pages now tracked
+- Added www/html/ to pibulus-os repo (HTML/JSON pages only, ~152K)
+- Binary files (game ROMs, generated catalogs) excluded via .gitignore
+- Source of truth remains /media/pibulus/passport/www/html/
+
+### Downloads Status
+- Mega Drive No-Intro: 1,773 ROMs (1.1GB) downloaded via ia into nointro.md subfolder
+- Myrient TP: 57 games (1 new: Chrono Regalia), remaining 28 stalled (RAM pressure)
+- Tiny Best Set Go: Not started (queued behind MD)
+- Downloads tmux session alive but stalled — Pi at 507MB available, swap 100%
+
+### ErsatzTV Status
+- Empty config at ~/.config/ersatztv/, no Docker image
+- NOT viable right now — Pi at RAM ceiling (4GB, swap maxed)
+- Defer until RAM pressure drops (kill unused services or add swap)
+
+### System Health
+- RAM: ~500MB available, swap 2047/2047 used (100%)
+- Temp: 57.1°C (healthy)
+- Root disk: 85% (8.3GB free of 58GB) — needs monitoring
+- Passport: 66% (1.9TB free of 5.5TB) — comfortable
+- AzuraCast: Healthy, playing music, 0 listeners at time of check

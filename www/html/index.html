@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>quickcat.club</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #050505;
+      --cyan: #00ffea;
+      --magenta: #ff00ff;
+      --text: #e0e0e0;
+      --dim: #888;
+      --dim-soft: #555;
+      --card-bg: rgba(0, 0, 0, 0.6);
+      --card-border: rgba(0, 255, 234, 0.3);
+      --card-hover-bg: rgba(0, 255, 234, 0.05);
+    }
+
+    html { scrollbar-color: var(--cyan) var(--bg); scrollbar-width: thin; }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'VT323', monospace;
+      font-size: 20px;
+      line-height: 1.6;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* scanlines */
+    body::before {
+      content: '';
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.12) 2px, rgba(0,0,0,0.12) 4px);
+      pointer-events: none; z-index: 999;
+    }
+
+    /* grid texture */
+    body::after {
+      content: '';
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background-image:
+        linear-gradient(rgba(0,255,234,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,255,234,0.025) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none; z-index: 0;
+    }
+
+    .wrapper {
+      position: relative; z-index: 1;
+      max-width: 880px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem;
+    }
+
+    /* HEADER */
+    header { text-align: center; padding: 3.5rem 0 1.5rem; }
+
+    h1 {
+      font-size: clamp(3rem, 11vw, 5.5rem);
+      line-height: 1;
+      color: var(--cyan);
+      text-shadow: 0 0 10px var(--cyan), 0 0 30px rgba(0,255,234,0.4), 0 0 60px rgba(0,255,234,0.15);
+      letter-spacing: 4px;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      font-size: clamp(1.1rem, 3.5vw, 1.5rem);
+      color: var(--magenta);
+      text-shadow: 0 0 8px rgba(255,0,255,0.5);
+      letter-spacing: 2px;
+    }
+
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+    .cursor {
+      display: inline-block; width: 0.65em; height: 0.95em;
+      background: var(--cyan); vertical-align: text-bottom;
+      animation: blink 1.2s step-end infinite;
+      box-shadow: 0 0 8px var(--cyan);
+    }
+
+    /* SECTION DIVIDERS */
+    .section-divider { display: flex; align-items: center; gap: 0.75rem; margin: 3rem 0 1.5rem; }
+    .section-divider::before, .section-divider::after {
+      content: ''; flex: 1; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(0,255,234,0.4), transparent);
+    }
+    .section-label {
+      font-size: 1.2rem; color: var(--cyan); letter-spacing: 4px;
+      white-space: nowrap; text-shadow: 0 0 8px rgba(0,255,234,0.5);
+    }
+
+    /* GRID */
+    .grid {
+      display: grid;
+      gap: 1.1rem;
+    }
+    .grid-2 { grid-template-columns: repeat(2, 1fr); }
+    .grid-3 { grid-template-columns: repeat(3, 1fr); }
+
+    @media (max-width: 560px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    }
+
+    @media (min-width: 561px) and (max-width: 760px) {
+      .grid-3 { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* CARDS */
+    .card {
+      display: block;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 2px;
+      padding: 1.5rem 1.25rem;
+      text-decoration: none;
+      color: var(--text);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      position: relative; overflow: hidden;
+      text-align: center;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute; top: 0; left: -100%; width: 60%; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+      transition: left 0.4s ease;
+    }
+    .card:hover::before { left: 140%; }
+    .card:hover {
+      transform: translateY(-4px);
+      background: var(--card-hover-bg);
+      border-color: rgba(0,255,234,0.7);
+      box-shadow: 0 0 20px rgba(0,255,234,0.12), 0 8px 24px rgba(0,0,0,0.5);
+    }
+
+    .card-emoji { font-size: 2rem; display: block; margin-bottom: 0.4rem; line-height: 1; }
+    .card-label { font-size: 1.7rem; color: var(--cyan); letter-spacing: 2px; display: block; margin-bottom: 0.15rem; }
+    .card-desc { font-size: 1.1rem; color: var(--dim); letter-spacing: 1px; }
+
+    /* special card colours */
+    .card.fun .card-label { color: #ffff00; text-shadow: 0 0 6px rgba(255,255,0,0.4); }
+    .card.fun:hover { border-color: rgba(255,255,0,0.7); box-shadow: 0 0 20px rgba(255,255,0,0.1), 0 8px 24px rgba(0,0,0,0.5); }
+    .card.fun::before { background: linear-gradient(90deg, transparent, #ffff00, transparent); }
+
+    .card.solidarity .card-label { color: #55cc55; text-shadow: 0 0 6px rgba(85,204,85,0.4); }
+    .card.solidarity:hover { border-color: rgba(85,204,85,0.7); box-shadow: 0 0 20px rgba(85,204,85,0.12), 0 8px 24px rgba(0,0,0,0.5); }
+    .card.solidarity::before { background: linear-gradient(90deg, transparent, #55cc55, transparent); }
+
+    /* GUESTBOOK */
+    .guestbook {
+      background: var(--card-bg); border: 1px solid var(--card-border);
+      border-radius: 2px; padding: 1.5rem; backdrop-filter: blur(12px);
+    }
+    .guestbook-messages {
+      max-height: 240px; overflow-y: auto; margin-bottom: 1rem;
+      text-align: left; color: var(--dim); font-size: 1.05rem;
+    }
+    .guestbook-form { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    .guestbook-form input, .guestbook-form button {
+      background: rgba(255,255,255,0.05); border: 1px solid var(--card-border);
+      color: var(--text); padding: 0.6rem 0.85rem; font-family: 'VT323', monospace; font-size: 1.1rem;
+    }
+    .guestbook-form input:focus { outline: none; border-color: var(--cyan); }
+    .guestbook-form input[placeholder="handle"] { width: 130px; color: var(--cyan); }
+    .guestbook-form input[placeholder="leave a message..."] { flex: 1; min-width: 160px; }
+    .guestbook-form button {
+      color: var(--cyan); border-color: var(--cyan); cursor: pointer;
+      transition: background 0.2s, box-shadow 0.2s; letter-spacing: 2px;
+    }
+    .guestbook-form button:hover { background: rgba(0,255,234,0.1); box-shadow: 0 0 12px rgba(0,255,234,0.2); }
+
+    @media (max-width: 480px) {
+      .guestbook-form input[placeholder="handle"] { width: 100%; }
+    }
+
+    /* FOOTER */
+    footer { text-align: center; margin-top: 3.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(0,255,234,0.15); }
+    .footer-text { color: var(--dim-soft); font-size: 1rem; letter-spacing: 3px; }
+    .footer-text span { color: var(--cyan); }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+
+    <header>
+      <h1>quick cat club<span class="cursor"></span></h1>
+      <p class="subtitle">~(=^..^) a self-hosted sanctuary</p>
+    </header>
+
+    <!-- THE ROOMS -->
+    <div class="section-divider">
+      <span class="section-label">[ THE ROOMS ]</span>
+    </div>
+
+    <div class="grid grid-3">
+      <a class="card" href="https://watch.quickcat.club" target="_blank" rel="noopener">
+        <span class="card-emoji">&#9654;</span>
+        <span class="card-label">WATCH</span>
+        <span class="card-desc">movies &amp; shows</span>
+      </a>
+      <a class="card" href="https://music.quickcat.club" target="_blank" rel="noopener">
+        <span class="card-emoji">&#9835;</span>
+        <span class="card-label">LISTEN</span>
+        <span class="card-desc">hi-fi music</span>
+      </a>
+      <a class="card" href="https://kpab.fm" target="_blank" rel="noopener">
+        <span class="card-emoji">&#128225;</span>
+        <span class="card-label">RADIO</span>
+        <span class="card-desc">KPAB.FM pirate radio</span>
+      </a>
+    </div>
+
+    <div class="grid grid-2" style="margin-top: 1.1rem;">
+      <a class="card" href="https://read.quickcat.club" target="_blank" rel="noopener">
+        <span class="card-emoji">&#128214;</span>
+        <span class="card-label">READ</span>
+        <span class="card-desc">book library</span>
+      </a>
+      <a class="card" href="https://comics.quickcat.club" target="_blank" rel="noopener">
+        <span class="card-emoji">&#128165;</span>
+        <span class="card-label">COMICS</span>
+        <span class="card-desc">graphic novels</span>
+      </a>
+    </div>
+
+    <!-- EXPLORE -->
+    <div class="section-divider">
+      <span class="section-label">[ EXPLORE ]</span>
+    </div>
+
+    <div class="grid grid-2">
+      <a class="card fun" href="/arcade/">
+        <span class="card-emoji">&#128377;</span>
+        <span class="card-label">ARCADE</span>
+        <span class="card-desc">text adventures</span>
+      </a>
+      <a class="card fun" href="https://radio.quickcat.club" target="_blank" rel="noopener">
+        <span class="card-emoji">&#127897;</span>
+        <span class="card-label">LIVE STREAM</span>
+        <span class="card-desc">icecast audio</span>
+      </a>
+    </div>
+
+    <!-- PALESTINE -->
+    <div class="section-divider">
+      <span class="section-label">[ PALESTINE ]</span>
+    </div>
+
+    <div class="grid grid-3">
+      <a class="card solidarity" href="https://watch.quickcat.club" target="_blank" rel="noopener">
+        <span class="card-emoji">&#127909;</span>
+        <span class="card-label">FILMS</span>
+        <span class="card-desc">documentaries &amp; cinema</span>
+      </a>
+      <a class="card solidarity" href="https://read.quickcat.club" target="_blank" rel="noopener">
+        <span class="card-emoji">&#128218;</span>
+        <span class="card-label">BOOKS</span>
+        <span class="card-desc">history &amp; testimony</span>
+      </a>
+      <a class="card solidarity" href="https://comics.quickcat.club" target="_blank" rel="noopener">
+        <span class="card-emoji">&#9997;</span>
+        <span class="card-label">COMICS</span>
+        <span class="card-desc">Joe Sacco &amp; more</span>
+      </a>
+    </div>
+
+    <!-- BBS GUESTBOOK -->
+    <div class="section-divider">
+      <span class="section-label">[ BBS GUESTBOOK ]</span>
+    </div>
+
+    <div class="guestbook">
+      <div class="guestbook-messages" id="messages">
+        <div><span style="color:var(--magenta)">[SYSTEM]</span> Initializing message board...</div>
+        <div><span style="color:var(--magenta)">[SYSTEM]</span> Welcome to the Quick Cat Club.</div>
+      </div>
+      <div class="guestbook-form">
+        <input type="text" id="gb-name" placeholder="handle" maxlength="20">
+        <input type="text" id="gb-msg" placeholder="leave a message..." maxlength="200" onkeydown="if(event.key==='Enter')addMessage()">
+        <button onclick="addMessage()">SEND</button>
+      </div>
+    </div>
+
+    <footer>
+      <p class="footer-text"><span>QUICK CAT CLUB</span> &mdash; self-hosted &amp; sovereign</p>
+    </footer>
+
+  </div>
+
+  <script>
+    function addMessage() {
+      const name = document.getElementById('gb-name').value.trim() || 'anonymous';
+      const msg = document.getElementById('gb-msg').value.trim();
+      if (!msg) return;
+      const board = document.getElementById('messages');
+      const time = new Date().toLocaleTimeString();
+      const entry = document.createElement('div');
+      entry.innerHTML = '<span style="color:var(--magenta)">[' + time + ']</span> <span style="color:var(--cyan)">' + name + ':</span> ' + msg.replace(/</g, '&lt;');
+      board.appendChild(entry);
+      document.getElementById('gb-msg').value = '';
+      board.scrollTop = board.scrollHeight;
+    }
+  </script>
+</body>
+</html>

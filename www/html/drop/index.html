@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>drop zone - quickcat.club</title>
+  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'VT323',monospace; background:#050505; color:#e0e0e0; min-height:100vh; display:flex; justify-content:center; align-items:center; }
+    body::after { content:''; position:fixed; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.08) 2px,rgba(0,0,0,0.08) 4px); pointer-events:none; z-index:9999; }
+    .drop-zone { text-align:center; max-width:500px; padding:48px; }
+    h1 { font-size:3rem; color:#ff00ff; text-shadow:0 0 20px rgba(255,0,255,0.4); margin-bottom:16px; }
+    p { color:#666; font-size:1.1rem; margin-bottom:32px; }
+    .upload-area { border:2px dashed rgba(0,255,234,0.3); border-radius:12px; padding:48px 24px; cursor:pointer; transition:all 0.3s; position:relative; }
+    .upload-area:hover, .upload-area.dragover { border-color:#00ffea; background:rgba(0,255,234,0.05); }
+    .upload-area input { position:absolute; inset:0; opacity:0; cursor:pointer; }
+    .upload-area .icon { font-size:3rem; margin-bottom:16px; }
+    .upload-area .label { color:#00ffea; font-size:1.3rem; }
+    .upload-area .hint { color:#666; font-size:0.9rem; margin-top:8px; }
+    .status { margin-top:24px; min-height:40px; font-size:1.1rem; }
+    .status.ok { color:#00ff88; }
+    .status.err { color:#ff4444; }
+    .status.uploading { color:#00ffea; }
+    .back { color:#666; text-decoration:none; font-size:0.9rem; display:inline-block; margin-top:32px; }
+    .back:hover { color:#00ffea; }
+    .rules { color:#444; font-size:0.85rem; margin-top:24px; line-height:1.6; }
+  </style>
+</head>
+<body>
+<div class="drop-zone">
+  <h1>drop zone</h1>
+  <p>contribute to the collection</p>
+  
+  <div class="upload-area" id="drop">
+    <div class="icon">📦</div>
+    <div class="label">drag &amp; drop or click to upload</div>
+    <div class="hint">music, comics, roms, books - whatever&apos;s good</div>
+    <input type="file" id="fileInput" multiple>
+  </div>
+  
+  <div class="status" id="status"></div>
+  
+  <div class="rules">
+    max 500MB per file &middot; goes to moderation queue<br>
+    pibulus reviews everything before it hits the library
+  </div>
+  
+  <a href="/" class="back">&larr; quickcat.club</a>
+</div>
+
+<script>
+const drop = document.getElementById('drop');
+const input = document.getElementById('fileInput');
+const status = document.getElementById('status');
+
+['dragenter','dragover'].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.add('dragover'); }));
+['dragleave','drop'].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.remove('dragover'); }));
+
+drop.addEventListener('drop', e => { handleFiles(e.dataTransfer.files); });
+input.addEventListener('change', () => { handleFiles(input.files); });
+
+async function handleFiles(files) {
+  for (const file of files) {
+    if (file.size > 500 * 1024 * 1024) {
+      status.className = 'status err';
+      status.textContent = file.name + ' is too big (500MB max)';
+      continue;
+    }
+    status.className = 'status uploading';
+    status.textContent = 'uploading ' + file.name + '...';
+    
+    const form = new FormData();
+    form.append('file', file);
+    
+    try {
+      const r = await fetch('/drop/upload', { method:'POST', body:form });
+      if (r.ok) {
+        status.className = 'status ok';
+        status.textContent = file.name + ' uploaded! thanks :)';
+      } else {
+        status.className = 'status err';
+        status.textContent = 'upload failed: ' + await r.text();
+      }
+    } catch(e) {
+      status.className = 'status err';
+      status.textContent = 'upload failed - try again?';
+    }
+  }
+}
+</script>
+</body>
+</html>

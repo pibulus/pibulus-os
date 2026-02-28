@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>the arcade - quickcat.club</title>
+  <meta name="description" content="30 text adventures playable in your browser. No downloads, no installs. Just words.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    :root {
+      --bg: #050505;
+      --cyan: #00ffea;
+      --magenta: #ff00ff;
+      --text: #e0e0e0;
+      --dim: #666;
+      --card-bg: rgba(0, 0, 0, 0.6);
+      --card-border: rgba(0, 255, 234, 0.2);
+      --blur: 12px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'VT323', monospace;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      font-size: 18px;
+      line-height: 1.6;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg, transparent, transparent 2px,
+        rgba(0, 0, 0, 0.08) 2px, rgba(0, 0, 0, 0.08) 4px
+      );
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* === HEADER === */
+    .header {
+      padding: 48px 0 32px;
+      text-align: center;
+    }
+
+    .header .back {
+      display: inline-block;
+      color: var(--dim);
+      text-decoration: none;
+      font-size: 1rem;
+      margin-bottom: 16px;
+      transition: color 0.2s;
+    }
+
+    .header .back:hover { color: var(--cyan); }
+
+    .header h1 {
+      font-size: clamp(2rem, 6vw, 3.5rem);
+      color: var(--magenta);
+      text-shadow: 0 0 20px rgba(255, 0, 255, 0.4);
+      letter-spacing: 0.05em;
+    }
+
+    .header .count {
+      color: var(--dim);
+      font-size: 1.1rem;
+      margin-top: 8px;
+    }
+
+    /* === SEARCH === */
+    .search-bar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      padding: 16px 0;
+      background: rgba(5, 5, 5, 0.9);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .search-bar input {
+      width: 100%;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      color: var(--text);
+      font-family: 'VT323', monospace;
+      font-size: 1.2rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-bar input::placeholder { color: var(--dim); }
+    .search-bar input:focus { border-color: var(--cyan); }
+
+    /* === FILTERS === */
+    .filters {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 8px 0 24px;
+    }
+
+    .filter-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 4px;
+      padding: 4px 12px;
+      color: var(--dim);
+      font-family: 'VT323', monospace;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-btn:hover, .filter-btn.active {
+      color: var(--cyan);
+      border-color: var(--cyan);
+    }
+
+    /* === GAME GRID === */
+    .games {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      padding-bottom: 48px;
+    }
+
+    .game-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(var(--blur));
+      -webkit-backdrop-filter: blur(var(--blur));
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 24px 20px;
+      cursor: pointer;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                  box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                  border-color 0.3s ease;
+      position: relative;
+    }
+
+    .game-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0, 255, 234, 0.12);
+      border-color: var(--cyan);
+    }
+
+    .game-card .title {
+      font-size: 1.4rem;
+      color: var(--cyan);
+      margin-bottom: 4px;
+    }
+
+    .game-card .meta {
+      font-size: 0.9rem;
+      color: var(--dim);
+      margin-bottom: 10px;
+    }
+
+    .game-card .desc {
+      font-size: 1.05rem;
+      color: #aaa;
+      line-height: 1.5;
+    }
+
+    .game-card .tags {
+      margin-top: 12px;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .game-card .tag {
+      font-size: 0.8rem;
+      color: var(--dim);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 3px;
+      padding: 1px 8px;
+    }
+
+    .game-card .format-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      font-size: 0.75rem;
+      color: var(--dim);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .game-card.tads-game {
+      opacity: 0.6;
+    }
+
+    .game-card.tads-game .title::after {
+      content: ' (no browser play)';
+      font-size: 0.8rem;
+      color: var(--dim);
+    }
+
+    /* === NO RESULTS === */
+    .no-results {
+      text-align: center;
+      padding: 48px 0;
+      color: var(--dim);
+      font-size: 1.2rem;
+      display: none;
+    }
+
+    /* === PLAY MODAL === */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal {
+      background: #0a0a0a;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      width: 90vw;
+      height: 85vh;
+      max-width: 1000px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .modal-header .modal-title {
+      color: var(--cyan);
+      font-size: 1.3rem;
+    }
+
+    .modal-header .close-btn {
+      background: none;
+      border: 1px solid var(--card-border);
+      border-radius: 4px;
+      color: var(--dim);
+      font-family: 'VT323', monospace;
+      font-size: 1rem;
+      padding: 4px 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .modal-header .close-btn:hover {
+      color: var(--text);
+      border-color: var(--text);
+    }
+
+    .modal iframe {
+      flex: 1;
+      border: none;
+      width: 100%;
+    }
+
+    .modal .new-tab-hint {
+      text-align: center;
+      padding: 8px;
+      color: var(--dim);
+      font-size: 0.85rem;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .modal .new-tab-hint a {
+      color: var(--cyan);
+      text-decoration: none;
+    }
+
+    /* === FOOTER === */
+    .footer {
+      text-align: center;
+      padding: 24px 0 48px;
+      color: var(--dim);
+      font-size: 0.95rem;
+    }
+
+    .footer a {
+      color: var(--cyan);
+      text-decoration: none;
+    }
+
+    .footer .tip {
+      margin-top: 12px;
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 640px) {
+      .games {
+        grid-template-columns: 1fr;
+      }
+
+      .modal {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <a href="/" class="back">&larr; quickcat.club</a>
+      <h1>the arcade</h1>
+      <p class="count" id="game-count"></p>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="search-bar">
+      <input type="text" id="search" placeholder="search games..." autocomplete="off" spellcheck="false">
+    </div>
+
+    <div class="filters" id="filters"></div>
+
+    <div class="games" id="games"></div>
+    <div class="no-results" id="no-results">no games match that search</div>
+  </div>
+
+  <div class="container">
+    <div class="footer">
+      <p>all games are freely distributed by their authors</p>
+      <p>played via <a href="https://iplayif.com" target="_blank" rel="noopener">parchment</a> (z-machine / glulx interpreter)</p>
+      <p class="tip">tip: type <code style="color:var(--cyan)">look</code> to see where you are, <code style="color:var(--cyan)">inventory</code> to check your pockets, <code style="color:var(--cyan)">examine</code> to inspect things</p>
+    </div>
+  </div>
+
+  <!-- PLAY MODAL -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title" id="modal-title"></span>
+        <button class="close-btn" onclick="closeGame()">close [esc]</button>
+      </div>
+      <iframe id="game-frame" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+      <div class="new-tab-hint">
+        having trouble? <a id="new-tab-link" href="#" target="_blank" rel="noopener">open in new tab</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let games = [];
+    let activeFilter = null;
+
+    async function init() {
+      const r = await fetch('/arcade/games.json');
+      games = await r.json();
+
+      document.getElementById('game-count').textContent =
+        games.length + ' games loaded';
+
+      // Build tag filter buttons
+      const allTags = [...new Set(games.flatMap(g => g.tags))].sort();
+      const filtersEl = document.getElementById('filters');
+      const allBtn = document.createElement('button');
+      allBtn.className = 'filter-btn active';
+      allBtn.textContent = 'all';
+      allBtn.onclick = () => setFilter(null, allBtn);
+      filtersEl.appendChild(allBtn);
+
+      allTags.forEach(tag => {
+        const btn = document.createElement('button');
+        btn.className = 'filter-btn';
+        btn.textContent = tag;
+        btn.onclick = () => setFilter(tag, btn);
+        filtersEl.appendChild(btn);
+      });
+
+      renderGames(games);
+    }
+
+    function setFilter(tag, btn) {
+      activeFilter = tag;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      filterGames();
+    }
+
+    function filterGames() {
+      const q = document.getElementById('search').value.toLowerCase().trim();
+      let filtered = games;
+
+      if (activeFilter) {
+        filtered = filtered.filter(g => g.tags.includes(activeFilter));
+      }
+
+      if (q) {
+        filtered = filtered.filter(g =>
+          g.title.toLowerCase().includes(q) ||
+          g.author.toLowerCase().includes(q) ||
+          g.desc.toLowerCase().includes(q) ||
+          g.tags.some(t => t.includes(q)) ||
+          String(g.year).includes(q)
+        );
+      }
+
+      renderGames(filtered);
+    }
+
+    function renderGames(list) {
+      const container = document.getElementById('games');
+      const noResults = document.getElementById('no-results');
+
+      if (list.length === 0) {
+        container.innerHTML = '';
+        noResults.style.display = 'block';
+        return;
+      }
+
+      noResults.style.display = 'none';
+
+      container.innerHTML = list.map(g => {
+        const isTads = g.format === 'tads';
+        return `
+          <div class="game-card ${isTads ? 'tads-game' : ''}"
+               onclick="${isTads ? '' : `playGame('${g.file}', '${g.title.replace(/'/g, "\\'")}')`}"
+               ${isTads ? 'title="TADS games cannot be played in browser"' : ''}>
+            <span class="format-badge">${g.format === 'z-machine' ? 'z' : g.format === 'glulx' ? 'g' : 't'}</span>
+            <div class="title">${g.title}</div>
+            <div class="meta">${g.author} &middot; ${g.year}</div>
+            <div class="desc">${g.desc}</div>
+            <div class="tags">${g.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function playGame(file, title) {
+      const storyUrl = encodeURIComponent('https://quickcat.club/arcade/games/' + file);
+      const parchmentUrl = 'https://iplayif.com/?story=' + storyUrl;
+
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('game-frame').src = parchmentUrl;
+      document.getElementById('new-tab-link').href = parchmentUrl;
+      document.getElementById('modal').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeGame() {
+      document.getElementById('modal').classList.remove('open');
+      document.getElementById('game-frame').src = '';
+      document.body.style.overflow = '';
+    }
+
+    // Escape to close
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeGame();
+    });
+
+    // Search
+    document.getElementById('search').addEventListener('input', filterGames);
+
+    init();
+  </script>
+</body>
+</html>
