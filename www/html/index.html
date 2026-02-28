@@ -338,27 +338,43 @@
     <div class="faq">
       <details>
         <summary>What is this place?</summary>
-        <p>Quick Cat Club is a self-hosted community server running on a Raspberry Pi 5 in Brunswick, Melbourne. It hosts pirate radio, a library, comics, movies, retro games, and an offline copy of Wikipedia. Everything runs locally &mdash; no cloud, no tracking, no subscriptions.</p>
+        <p>Quick Cat Club is a self-hosted server running on a Raspberry Pi 5 in Melbourne. It runs pirate radio, a film library, a book collection, retro games, comics, and an offline copy of Wikipedia. No cloud. No tracking. No subscriptions. Just a hard drive and some docker containers doing their best.</p>
+      </details>
+      <details>
+        <summary>Why does this exist?</summary>
+        <p>Because the internet used to be weird and personal and ours. Before everything became five websites full of screenshots of the other four. This is a tiny corner of the web that belongs to no platform, answers to no algorithm, and doesn't need your data to function. It's not about destroying the system &mdash; it's about quietly building something outside of it.</p>
       </details>
       <details>
         <summary>How do I listen to the radio?</summary>
-        <p>Visit <a href="https://kpab.fm">kpab.fm</a> and hit play. You can also search and request songs from 4,000+ tracks. The station runs 24/7 on auto-DJ.</p>
+        <p>Visit <a href="https://kpab.fm">kpab.fm</a> and hit play. 24/7 auto-DJ with 4,000+ tracks. You can search and request songs from the full catalog. No account needed. No ads. Just music.</p>
       </details>
       <details>
-        <summary>How do I get access to books/movies/comics?</summary>
-        <p>These are friend-tier services. If you know Pablo, ask for the login. If you're connecting via the KPAB-Hotspot wifi, the public stuff (radio, arcade, Wikipedia) is open to everyone.</p>
+        <summary>How do I get access to movies, books, and comics?</summary>
+        <p>Those are friend-tier services. If you know Pablo, ask for the login. If you're already here reading this, you're probably close enough. The public stuff &mdash; radio, arcade, Wikipedia &mdash; is open to everyone, no questions asked.</p>
       </details>
       <details>
-        <summary>Can I upload files?</summary>
-        <p>Not yet publicly, but it's coming. If you have music or books to contribute, talk to Pablo directly.</p>
+        <summary>Can I connect directly?</summary>
+        <p>Yes. If you're physically nearby, look for the <strong>KPAB-Hotspot</strong> wifi network. It connects you directly to the Pi &mdash; no internet needed. You get radio, games, Wikipedia, and the landing page. Like a digital zine table at a house show.</p>
       </details>
       <details>
         <summary>Will this server go down?</summary>
-        <p>Probably! It's a 4GB Raspberry Pi doing the work of ten servers. If it's down, it'll be back. That's the punk ethos &mdash; imperfect, alive, and yours.</p>
+        <p>Almost certainly. It's a 4GB Raspberry Pi running 17 containers. It crashes when you look at it funny. But it always comes back. That's the deal &mdash; it's imperfect, alive, and ours. Uptime is a corporate metric. We measure in vibes.</p>
       </details>
       <details>
-        <summary>Can I run something like this myself?</summary>
-        <p>Absolutely. This whole setup is open and documented. A Pi 5, a hard drive, and some Docker containers. The code lives at the Quick Cat Club GitHub. Ask Pablo for the link.</p>
+        <summary>Is my data being collected?</summary>
+        <p>No. There's no analytics, no cookies, no tracking pixels, no third-party scripts. The server doesn't know who you are and doesn't want to. Your visit exists only in an nginx log that gets rotated into oblivion.</p>
+      </details>
+      <details>
+        <summary>What's the philosophy here?</summary>
+        <p>Software is politics. Every platform you use is a statement about who owns your attention. This server runs on the idea that tools should help you and then leave you alone. One purpose, done well, with personality. Small is beautiful. Can't scale is a feature. The weird web we lost is the weird web we can rebuild.</p>
+      </details>
+      <details>
+        <summary>Can I build something like this?</summary>
+        <p>Absolutely. A Raspberry Pi 5, a hard drive, and a weekend. The whole setup is documented and version-controlled. Docker makes it modular &mdash; add what you want, ignore what you don't. If a kid in Brunswick can run a pirate radio station and a film library from under a desk, so can you. Ask Pablo for the repo link.</p>
+      </details>
+      <details>
+        <summary>How can I contribute?</summary>
+        <p>Got music? Books? Comics? ROMs? Weird knowledge? Talk to Pablo. Got skills? Even better. This isn't a product &mdash; it's a community project. The best contributions are the ones that make someone go "wait, you can do that?"</p>
       </details>
     </div>
 
@@ -393,7 +409,7 @@
       const board = document.getElementById('messages');
       const time = new Date().toLocaleTimeString();
       const entry = document.createElement('div');
-      entry.innerHTML = '<span style="color:var(--magenta)">[' + time + ']</span> <span style="color:var(--cyan)">' + name + ':</span> ' + msg.replace(/</g, '&lt;');
+      entry.innerHTML = '<span style="color:var(--magenta)">[' + time + ']</span> <span style="color:var(--cyan)">' + name.replace(/</g, '&lt;') + ':</span> ' + msg.replace(/</g, '&lt;');
       board.appendChild(entry);
       document.getElementById('gb-msg').value = '';
       board.scrollTop = board.scrollHeight;

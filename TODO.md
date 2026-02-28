@@ -18,8 +18,8 @@
 - [ ] **ErsatzTV** — was crash-looping (.NET arm64 error), needs investigation before starting. tv.quickcat.club currently 404s
 - [ ] **Immich ML** — run face detection pass then stop container to free ~2GB RAM
 - [ ] **Sleaford Mods + black midi** — not on Soulseek right now, retry batches later
-- [ ] **OpenClaw** — run `openclaw onboard` to connect messaging + API key if not done
-- [ ] **Security review** — basic auth on any other public subdomains? Review what's exposed
+- [x] **OpenClaw** — killed (Session 3), process removed, RAM freed
+- [x] **Security review** — nginx hardened (server_tokens off, security headers, Cloudflare real IP), rpcbind disabled, dead tunnel route removed
 
 ## ✅ Recently Done
 

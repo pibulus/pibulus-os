@@ -9,35 +9,47 @@ Type `deck` to launch the mainframe. Type `halp` if lost.
 
 | Port | Service | Public URL | Notes |
 |------|---------|-----------|-------|
-| 80 | Homepage | quickcat.club / deck.quickcat.club | deck requires basic auth |
-| 2283 | Immich | — | AI photo vault (local only) |
+| 80 | Nginx (web_host) | quickcat.club / deck.quickcat.club | deck requires basic auth |
+| 2222 | Gitea SSH | — | Git over SSH |
 | 3001 | Gitea | — | Local Git server |
 | 4533 | Navidrome | music.quickcat.club | Hi-fi music streaming |
 | 5000 | Kavita | comics.quickcat.club | Comics & graphic novels |
 | 5030 | slskd | — | Soulseek P2P (local only) |
 | 5055 | Overseerr | — | Media requests |
 | 5230 | Memos | — | Private microblogging |
-| 7681 | Cyber Arcade | — | Terminal games |
 | 7682 | Web Terminal | — | Browser shell |
-| 8000 | AzuraCast (stream) | radio.quickcat.club | Icecast audio stream |
+| 8000 | AzuraCast (Icecast) | kpab.fm (via nginx proxy) | Audio stream |
 | 8080 | Filebrowser | — | Passport drive browser |
 | 8081 | Homepage Admin | — | Admin dashboard |
-| 8083 | Calibre-Web | read.quickcat.club | Book library |
+| 8083 | Calibre-Web | read.quickcat.club | Book library (964 books) |
+| 8084 | Kiwix | quickcat.club/wiki/ | Offline Wikipedia |
 | 8096 | Jellyfin | watch.quickcat.club | Movies & shows |
 | 8500 | AzuraCast (UI) | kpab.fm (via nginx proxy) | Radio admin + API + art |
 | 9000 | IRC (The Lounge) | — | Chat client |
 
 ---
 
-## 🔐 ACCESS
+## 🔐 ACCESS TIERS
 
-| Thing | How |
-|-------|-----|
-| SSH | `ssh pibulus@pibulus.local` (pw: meringue) |
-| deck.quickcat.club | user: `pibulus` / pw: `Church0fTheSubgeniu5!` |
-| Web terminal | user: `user` / pw: `Church0fTheSubgeniu5!` |
-| Navidrome guest | guest / quickcat |
-| Calibre-Web | admin / admin123 (change this!) |
+### Public (anyone with the URL)
+- quickcat.club — landing page, FAQ, guestbook
+- quickcat.club/wiki/ — offline Wikipedia
+- quickcat.club/arcade/ — text adventures
+- quickcat.club/arcade/retro/ — Mega Drive + retro games
+- kpab.fm — pirate radio + song requests
+
+### Friend Tier (need the login)
+- watch.quickcat.club — Jellyfin (movies & shows)
+- music.quickcat.club — Navidrome (hi-fi music)
+- read.quickcat.club — Calibre-Web (books)
+- comics.quickcat.club — Kavita (graphic novels)
+
+### Admin (deck password)
+- deck.quickcat.club — admin control panel (basic auth)
+
+### LAN Only (pibulus.local)
+- pibulus.local — full deck, no auth needed
+- Filebrowser, Gitea, Overseerr, slskd, Memos, IRC
 
 ---
 
@@ -49,9 +61,11 @@ halp          # You're lost
 free -h       # Check RAM (swap at 1.8/2GB = danger zone)
 docker ps     # What's running
 df -h /media/pibulus/passport   # Passport space
+btop          # System monitor
+dust          # Visual disk usage
 ```
 
-**Key tools:** `fzf` (fuzzy find), `glow` (markdown viewer), `bat` (syntax highlight), `dust` (disk usage), `btop` (system monitor)
+**Key tools:** `fzf` (fuzzy find), `glow` (markdown viewer), `bat` (syntax highlight), `dust` (disk usage), `btop` (system monitor), `gum` (TUI toolkit)
 
 ---
 
@@ -61,7 +75,7 @@ df -h /media/pibulus/passport   # Passport space
 1. Power cycle (pull USB-C, wait 5s, replug)
 2. SSH in: `ssh pibulus@pibulus.local` (pw: meringue)
 3. Check RAM: `free -h` — if swap full, stop heavy containers:
-   `docker stop immich_machine_learning romm ersatztv`
+   `docker stop jellyfin azuracast`
 4. Restart services:
    `cd ~/pibulus-os/config/stacks && docker compose -f pirate.yml up -d`
 
@@ -76,6 +90,11 @@ curl -I https://quickcat.club
 cd ~/azuracast && docker compose up -d
 ```
 
+**Flush RAM in a pinch:**
+```bash
+bash ~/pibulus-os/scripts/flush_ram.sh
+```
+
 **Golden Image (backup):**
 Run via `deck` → Vault Ops → Golden Image
 Recovery: Fresh OS → clone pibulus-os repo → extract golden image from Passport
@@ -85,11 +104,14 @@ Recovery: Fresh OS → clone pibulus-os repo → extract golden image from Passp
 ## 📦 STACK OVERVIEW
 
 5 compose stacks in `~/pibulus-os/config/stacks/`:
-- **pirate.yml** — Jellyfin, Navidrome, Kavita, Calibre-Web, slskd, Overseerr, Filebrowser, ErsatzTV, Gluetun
+- **pirate.yml** — Jellyfin, Navidrome, Kavita, Calibre-Web, slskd, Overseerr, Filebrowser, Gluetun
 - **social.yml** — Gitea, Memos, IRC
 - **admin.yml** — Homepage + Web Terminal
-- **immich.yml** — Photos + ML
+- **immich.yml** — Photos + ML (stopped by default to save RAM)
 - **~/azuracast/** — Radio (its own compose)
+
+Standalone containers:
+- **kiwix** — Offline Wikipedia (docker run, auto-restart)
 
 ---
 
@@ -98,41 +120,72 @@ Recovery: Fresh OS → clone pibulus-os repo → extract golden image from Passp
 | Container | RAM |
 |-----------|-----|
 | System + kernel | ~800MB |
-| OpenClaw gateway | ~420MB |
 | Jellyfin | ~300-500MB |
 | AzuraCast | ~300-400MB |
 | Navidrome | ~100MB |
 | Kavita | ~100MB |
+| Kiwix | ~20MB |
 | Everything else | ~200-400MB |
-| Swap | 2GB safety net |
+| **Swap** | **2GB safety net** |
 
-**DO NOT** run `immich_machine_learning` + full stack simultaneously = OOM death spiral.
+**Golden rules:**
+- Immich ML is OFF by default — run face detection then stop
+- Docker pulls can OOM the Pi — stop heavy services first
+- If swap hits 1.8/2GB, things will start dying
 
 ---
 
-*Stay modular. Stay redundant. Stay hidden.*
+## 🛡️ SECURITY POSTURE
 
+### Network
+- **Cloudflare Tunnel** — all public traffic goes through Cloudflare, Pi's real IP is never exposed
+- **No open ports to internet** — everything proxied via tunnel
+- **Real IP forwarding** — nginx extracts real client IPs from Cloudflare headers for rate limiting
+- **Rate limiting** — 1 req/sec with burst=5, 10 connections per IP (nginx)
+- **Fail2Ban** — SSH monitoring, 3 fails = 24hr ban
 
-## SECURITY NOTES
-# 🛡️ CYBERDECK SECURITY AUDIT
-### Quick Cat Club - Defensive Posture v1.0
+### Authentication
+- **deck.quickcat.club** — nginx basic auth (htpasswd)
+- **Friend-tier services** — each service has its own login
+- **SSH** — password auth enabled (LAN only, not exposed via tunnel)
 
-## 1. NETWORK DEFENSE
-- **MAC Randomization:** NetworkManager is configured to randomize hardware IDs for every new connection. Prevents physical tracking.
-- **Private DNS:** All queries routed through Quad9 (Encrypted/Swiss-based). Bypasses ISP logging.
-- **VPN Shield:** Critical P2P traffic (Soulseek) is gated through a Gluetun VPN tunnel.
-- **Hotspot Security:** WPA2-PSK enabled on 'pibulus-deck' node.
+### Headers
+- `server_tokens off` — nginx version hidden
+- `X-Content-Type-Options: nosniff`
+- `X-Frame-Options: SAMEORIGIN`
+- `Referrer-Policy: strict-origin-when-cross-origin`
+- `Permissions-Policy: camera=(), microphone=(), geolocation=()`
 
-## 2. SYSTEM HARDENING
-- **Fail2Ban:** Monitoring SSH logs. 3 failed attempts = 24hr IP ban.
-- **Nginx Gatekeeper:** Rate limiting (1 request/sec) and connection limits (10 per IP) to prevent DDoS/Brute-force.
-- **Stealth Mode:** System-wide toggle to switch between Key-only (Bunker) and Password (Travel) access.
+### Privacy
+- **MAC randomization** — NetworkManager randomizes hardware IDs
+- **Private DNS** — Quad9 encrypted DNS (Swiss-based)
+- **VPN** — Gluetun tunnel for P2P traffic (when configured)
+- **.env blacklisted** from git
 
-## 3. DATA PRIVACY
-- **Digital Hygiene:** Periodic purges of APT cache, Docker orphans, and installer logs.
-- **Secrets Management:** .env files are blacklisted from Git tracking.
+### Known Gaps
+- Passport drive not LUKS encrypted (physical theft risk)
+- Gitea needs 2FA enabled
+- rpcbind running (port 111) — disable if NFS not needed
+- Guestbook is client-side only (no persistence backend yet)
 
-## ⚠️ POTENTIAL LEAKS / FUTURE RISKS
-- **Disk Encryption:** The Passport drive is not yet LUKS-encrypted. If physically stolen, data is accessible.
-- **Local Git:** Gitea needs 2FA enabled for the 'pibulus' user.
-- **SDR Leakage:** Passive sniffing is safe, but FM broadcasting (TR508) is a physical beacon. Use 'Stealth Frequencies' found via scan_fm.sh.
+---
+
+## 🌐 WIFI HOTSPOT
+
+KPAB-Hotspot runs on wlan0 at 10.42.0.1
+- Public services accessible without internet
+- WPA2-PSK secured
+- Visitors get: radio, arcade, Wikipedia, landing page
+
+---
+
+## 📻 CRON JOBS
+
+| Schedule | Script | What |
+|----------|--------|------|
+| */5 * * * * | status.sh | System health check |
+| 0 */6 * * * | gen_request_catalog.sh | Refresh 4,332-song request catalog |
+
+---
+
+*Stay modular. Stay redundant. Stay sovereign.*
