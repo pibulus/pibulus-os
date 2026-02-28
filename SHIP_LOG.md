@@ -351,3 +351,31 @@ irc                    : 9000   |
 - Root disk: 85% (8.3GB free of 58GB) — needs monitoring
 - Passport: 66% (1.9TB free of 5.5TB) — comfortable
 - AzuraCast: Healthy, playing music, 0 listeners at time of check
+
+### Session 3 — Continued (Post-Reboot)
+
+#### Kiwix Wikipedia — LIVE
+- Simple English Wikipedia (3.2GB ZIM) served via Kiwix on port 8084
+- Nginx /wiki/ proxy on quickcat.club + pibulus.local
+- ~20MB RAM footprint, survives reboot (--restart unless-stopped)
+
+#### Landing Page Update
+- Added KPAB.FM, Retro Arcade, Wikipedia cards (were missing)
+- Knowledge section with Wikipedia + Notes
+- 6-question FAQ accordion (what is this, radio, access, uploads, downtime, DIY)
+
+#### Launcher Audit — 9 Fixes
+- azuracast_web -> azuracast (container name)
+- local keyword in main loop (bash error)
+- 3 missing functions added: manage_stack, manage_community, manage_homepage
+- PIRATE_CONFIG default, Knowledge Vault dedup, community quick command
+
+#### Cloudflare Worker (prepped, not deployed)
+- scripts/cloudflare-maintenance-worker.js ready
+- CRT-styled Technical Difficulties page with auto-retry
+- Needs manual deploy via Cloudflare Dashboard
+
+#### Notes
+- Immich (3 containers) did not auto-start after reboot = 1.7GB available RAM
+- Root disk at 86% — monitor this
+- Kiwix image only 88MB, great citizen
