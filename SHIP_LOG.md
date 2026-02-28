@@ -235,3 +235,10 @@ irc                    : 9000   |
 - Golden image: qcc_golden_v2026-02-28_0744.tar.gz
 
 **Status:** All services nominal. No port conflicts. Tunnel active.
+
+### Quick wins
+- Pages v2: removed all service branding (Jellyfin/Navidrome/Kavita etc), replaced with descriptive text
+- Public page: added Palestine section (films, books, comics - green accent cards)
+- Font sizes bumped 18px→20px, --dim brightened #666→#888 for legibility
+- ErsatzTV confirmed broken on arm64 - removed image (saved 1.1GB)
+- Immich, Overseerr brought back online
