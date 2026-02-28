@@ -12,24 +12,18 @@ services:
       - .env
     ports:
       - '2283:2283'
+    environment:
+      - IMMICH_MACHINE_LEARNING_ENABLED=false
     depends_on:
       - redis
       - database
-    restart: "no"
+    restart: unless-stopped
 
-  immich-machine-learning:
-    container_name: immich_machine_learning
-    image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}
-    volumes:
-      - model-cache:/cache
-    env_file:
-      - .env
-    restart: "no"
 
   redis:
     container_name: immich_redis
     image: docker.io/valkey/valkey:9@sha256:546304417feac0874c3dd576e0952c6bb8f06bb4093ea0c9ca303c73cf458f63
-    restart: "no"
+    restart: unless-stopped
 
   database:
     container_name: immich_postgres
@@ -41,7 +35,7 @@ services:
       POSTGRES_INITDB_ARGS: '--data-checksums'
     volumes:
       - ${DB_DATA_LOCATION}:/var/lib/postgresql/data
-    restart: "no"
+    restart: unless-stopped
 
   # --- YOUR NEW BRIDGE ---
   icloudpd:
