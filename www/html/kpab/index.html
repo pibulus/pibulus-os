@@ -872,16 +872,6 @@
       <div class="listeners-badge">&#x1F465; <span class="listeners-count" id="listenerCount">&mdash;</span> listening</div>
     </section>
 
-    <section class="history-section" aria-label="Song history">
-      <div class="section-header">Recently Played</div>
-      <div class="history-list" id="historyList">
-        <div class="history-item">
-          <div class="history-art-placeholder">&#x266A;</div>
-          <div class="history-text">Loading history...</div>
-        </div>
-      </div>
-    </section>
-
     <section class="request-section" id="requestSection">
       <button class="request-toggle" id="requestToggle" aria-label="Request a song">&#x1F4FB; Request a Song</button>
       <div class="request-panel" id="requestPanel" aria-label="Song request">
@@ -904,6 +894,16 @@
       </div>
     </section>
 
+    <section class="history-section" aria-label="Song history">
+      <div class="section-header">Recently Played</div>
+      <div class="history-list" id="historyList">
+        <div class="history-item">
+          <div class="history-art-placeholder">&#x266A;</div>
+          <div class="history-text">Loading history...</div>
+        </div>
+      </div>
+    </section>
+
     <footer class="footer">Quick Cat Club &middot; Pi 5 Node &middot; Unlicensed &amp; Unashamed</footer>
   </div>
 
@@ -920,6 +920,8 @@
     let trackElapsed = 0;
     let trackDuration = 0;
     let progressTimer = null;
+    let lastHistoryKey = '';
+    let pollFailCount = 0;
 
     const audioEl        = document.getElementById('audioEl');
     const playBtn        = document.getElementById('playBtn');
@@ -1074,6 +1076,11 @@
       }
 
       if (history.length > 0) {
+        // Only re-render if history actually changed
+        const historyKey = history.slice(0, 5).map(h => h.song?.id || h.song?.title || '').join('|');
+        if (historyKey === lastHistoryKey) return;
+        lastHistoryKey = historyKey;
+
         historyList.innerHTML = '';
         history.slice(0, 5).forEach((item, idx) => {
           const s = item.song;
@@ -1170,10 +1177,16 @@
         const res = await fetch(API_URL, { mode: 'cors', cache: 'no-store', headers: { 'Accept': 'application/json' } });
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const data = await res.json();
+        pollFailCount = 0;
         updateNowPlaying(data);
       } catch (err) {
         console.warn('[KPAB.FM] Poll failed:', err.message);
+        pollFailCount++;
         showSignalLost();
+        // After 6 consecutive failures (60s), redirect to offline page
+        if (pollFailCount >= 6) {
+          window.location.href = '/offline.html';
+        }
       }
     }
 
