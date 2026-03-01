@@ -821,11 +821,14 @@
       text-align: center;
       font-family: 'VT323', monospace;
       font-size: clamp(14px, 3vw, 18px);
-      color: var(--dim);
+      color: var(--magenta);
+      text-shadow: 0 0 8px rgba(255,0,255,0.3);
       letter-spacing: 3px;
       padding: 4px 0;
       line-height: 1.5;
+      transition: opacity 0.6s ease;
     }
+    .tagline.fading { opacity: 0; }
 
     /* ABOUT / FAQ SECTION */
     .about-section { position: relative; }
@@ -1094,7 +1097,7 @@
       </div>
     </section>
 
-    <div class="tagline">Pretty good most of the time. Sometimes great.</div>
+    <div class="tagline" id="taglineEl">Pretty good most of the time. Sometimes great.</div>
 
     <section class="about-section">
       <button class="about-toggle" id="aboutToggle">&#x2139; About / FAQ</button>
@@ -1123,7 +1126,7 @@
 
           <div class="faq-item">
             <div class="faq-q">HOW SHOULD I LISTEN?</div>
-            <div class="faq-a">Just let it play. If you don't recognise a song, that's not a mistake &mdash; that's the point. Most people need about twenty minutes before they stop resisting. After that it kind of takes over.</div>
+            <div class="faq-a">Just let it play. If you don't recognise something, stay with it. You'll get your song eventually, and in the meantime you might find something better. Give it half an hour. Don't touch anything.</div>
           </div>
 
           <div class="faq-item">
@@ -1138,7 +1141,7 @@
 
           <div class="faq-item">
             <div class="faq-q">WHO MADE THIS?</div>
-            <div class="faq-a">Pablo. One person who loves music more than they love their taste in music. Built it and now genuinely can't listen to music without it. Part of the <a href="https://quickcat.club" target="_blank" rel="noopener" style="color: var(--cyan); text-decoration: none; border-bottom: 1px solid rgba(0,255,234,0.3);">Quick Cat Club</a> ecosystem. Code on <a href="https://github.com/pibulus" target="_blank" rel="noopener" style="color: var(--cyan); text-decoration: none; border-bottom: 1px solid rgba(0,255,234,0.3);">GitHub</a>.</div>
+            <div class="faq-a">Pablo. Mexican-Australian in Melbourne who builds things and hates the machine. Plays in <a href="https://mesacosa.com" target="_blank" rel="noopener" style="color: var(--cyan); text-decoration: none; border-bottom: 1px solid rgba(0,255,234,0.3);">Mesa Cosa</a>, runs <a href="https://bonesoup.au" target="_blank" rel="noopener" style="color: var(--cyan); text-decoration: none; border-bottom: 1px solid rgba(0,255,234,0.3);">Bone Soup</a> touring, codes at <a href="https://github.com/pibulus" target="_blank" rel="noopener" style="color: var(--cyan); text-decoration: none; border-bottom: 1px solid rgba(0,255,234,0.3);">GitHub</a>. Part of the <a href="https://quickcat.club" target="_blank" rel="noopener" style="color: var(--cyan); text-decoration: none; border-bottom: 1px solid rgba(0,255,234,0.3);">Quick Cat Club</a>. Pro choice, pro Palestine, pro wrestling.</div>
           </div>
         </div>
       </div>
@@ -1166,6 +1169,32 @@
   <audio id="audioEl" preload="none" aria-hidden="true"></audio>
 
   <script>
+    /* ── ROTATING TAGLINES ── */
+    const TAGLINES = [
+      'Pretty good most of the time. Sometimes great.',
+      'A station for people who love music more than their taste in music.',
+      'From salsa to Slayer to Wu-Tang. Don\'t touch anything.',
+      'All the incentives said not to build this. We built it anyway.',
+      'Uncertainty is the product.',
+      'No algorithm. No format. No apologies.',
+      'A Raspberry Pi in a house in Brunswick doing its best.',
+      'You can\'t be a genre person here. You\'re just a person who likes music.',
+      'Built it. Can\'t listen to music without it anymore.',
+      'The curation guarantees a floor. The shuffle does the rest.',
+      'Every platform reduces uncertainty. This one embraces it.',
+      'Ten thousand tracks. One shuffle. Zero regard for what goes together.',
+    ];
+    (function rotateTagline() {
+      const el = document.getElementById('taglineEl');
+      if (!el) return;
+      let idx = 0;
+      setInterval(() => {
+        idx = (idx + 1) % TAGLINES.length;
+        el.classList.add('fading');
+        setTimeout(() => { el.textContent = TAGLINES[idx]; el.classList.remove('fading'); }, 600);
+      }, 12000);
+    })();
+
     const API_URL    = '/api/nowplaying/kpab.fm';
     const STREAM_URL = '/radio.mp3';
     const POLL_MS    = 10000;
