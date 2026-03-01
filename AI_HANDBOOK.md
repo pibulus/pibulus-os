@@ -44,6 +44,7 @@ All compose files in `~/pibulus-os/config/stacks/`:
 | 8081 | Homepage Admin | (local only) | Dashboard |
 | 8096 | Jellyfin | watch.quickcat.club | Video streaming (host network) |
 | 8500 | AzuraCast (Web UI) | kpab.fm / www.kpab.fm | Radio admin at /login |
+| 8088 | URL Shortener | go.quickcat.club | Python micro-app, systemd |
 | 9000 | The Lounge | (local only) | IRC client |
 
 ## CALIBRE-WEB
@@ -103,6 +104,29 @@ All compose files in `~/pibulus-os/config/stacks/`:
 - **Music dirs:** Library + Soulseek Legacy + Soulseek (new)
 - **Admin:** pibulus/meringue, Guest: guest/quickcat
 
+## BISHOP AI LIBRARIAN
+- **Module:** `~/pibulus-os/modules/librarian_module.sh`
+- **Quick command:** `deck search`
+- **Engine:** `claude -p --model haiku` (headless, one-shot, $0.02 budget cap)
+- **Data:** Searches `~/pibulus-os/mission-control/manifest.txt`
+- **Fallback:** grep search when claude unavailable
+
+## SCAVENGER BOT
+- **Module:** `~/pibulus-os/modules/scavenger_module.sh`
+- **Quick command:** `deck scavenge`
+- **Engine:** `claude -p --model haiku` for tool selection ($0.03 budget cap)
+- **Tools:** slskd API (Soulseek), yt-dlp, ia CLI, aria2
+- **Smart Search:** Describe what you want, AI picks the best tool and crafts the query
+- **Fallback:** Keyword heuristics when claude unavailable
+
+## URL SHORTENER
+- **Script:** `~/pibulus-os/scripts/shortener.py`
+- **Service:** `shortener.service` (systemd, 32MB memory cap)
+- **Port:** 8088
+- **URL:** go.quickcat.club (needs Porkbun CNAME)
+- **Storage:** `~/pibulus-os/data/shortener.json`
+- **API:** POST `/shorten` with `{"url":"...","slug":"optional"}`, GET `/:slug` for redirect
+
 ## KEY PATHS
 ```
 ~/pibulus-os/
@@ -155,6 +179,8 @@ Config at `/etc/cloudflared/config.yml`. Tunnel ID: `c79eb8a2-9791-4ece-8b54-bc9
 | watch.quickcat.club | localhost:8096 |
 | read.quickcat.club | localhost:8083 |
 | comics.quickcat.club | localhost:5000 |
+| memo.quickcat.club | localhost:5230 |
+| go.quickcat.club | localhost:8088 |
 | tv.quickcat.club | localhost:8001 |
 
 ## VPN (GLUETUN)

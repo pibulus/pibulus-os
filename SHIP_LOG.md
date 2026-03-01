@@ -379,3 +379,49 @@ irc                    : 9000   |
 - Immich (3 containers) did not auto-start after reboot = 1.7GB available RAM
 - Root disk at 86% — monitor this
 - Kiwix image only 88MB, great citizen
+
+---
+
+## Session 2026-03-01 — Cyberdeck v7.1: The Big Audit + AI Upgrade
+
+### Summary
+Full audit and rebuild of launcher.sh and all 16 modules. Added AI-powered features.
+
+### P0 Bugs Fixed
+- backup_module.sh: Broken line continuations + wrong AzuraCast path (~/azuracast not ~/.config/azuracast)
+- mission_control_module.sh: JSON corruption via raw append (now uses proper python json.load/dump)
+- games_module.sh: Shell injection via game titles in inline Python (now uses sys.argv)
+
+### P1 Fixes
+- Wikipedia port 8083→8084 (was pointing to Calibre-Web instead of Kiwix)
+- Stealth toggle now actually checks state and toggles (was hardcoded to "public")
+- Deduplicated "Vault Navigator"/"Knowledge Vault" menu entries
+- Wired orphaned modules: Mission Control, Security Audit, Bishop Librarian
+- nmap -sP→-sn (deprecated flag)
+- command -v guards for pyradio, gemini, and other missing tools
+
+### P2 Polish
+- Fixed escaped shebangs (#\! → #!/bin/bash) in 3 modules
+- Audio device guard — silently skips tones when no HDMI audio
+- Reorganized 18-item flat menu into 4 categories (Media, Knowledge, Security, System)
+- Improved HUD: memory usage + container count
+- Cleaned up dead code (terminal_travels play_games, inline manage_community)
+
+### New Features
+- 🧠 Bishop AI Librarian: headless claude -p with manifest search (deck search)
+- 🤖 Scavenger Bot: AI-powered tool selector — slskd + yt-dlp + ia + aria2 (deck scavenge)
+- 🔗 URL Shortener: Python micro-app on port 8088, systemd service, pastel-punk UI
+- 📝 memo.quickcat.club: Memos exposed via Cloudflare tunnel
+- 🔗 go.quickcat.club: URL shortener exposed via Cloudflare tunnel
+- 🚀 Deploy Wizard v6.0: local folder deploy, blank site creator, proper cloudflare injection
+
+### DNS Action Needed
+quickcat.club needs API access enabled in Porkbun dashboard, then:
+- CNAME: memo → c79eb8a2-...cfargotunnel.com
+- CNAME: go → c79eb8a2-...cfargotunnel.com
+
+### Files Changed
+18 files, 1473 insertions, 332 deletions. Commit: 6b91ad1
+
+### Backup
+v6.7 originals at ~/pibulus-os/modules/.backup-v6.7/
