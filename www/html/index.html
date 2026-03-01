@@ -13,6 +13,8 @@
       --bg: #050505;
       --cyan: #00ffea;
       --magenta: #ff00ff;
+      --yellow: #ffff00;
+      --green: #55cc55;
       --text: #e0e0e0;
       --dim: #888;
       --dim-soft: #555;
@@ -31,21 +33,18 @@
       line-height: 1.6;
       min-height: 100vh;
       overflow-x: hidden;
-      position: relative;
     }
 
-    /* scanlines */
     body::before {
       content: '';
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      position: fixed; inset: 0;
       background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.12) 2px, rgba(0,0,0,0.12) 4px);
       pointer-events: none; z-index: 999;
     }
 
-    /* grid texture */
     body::after {
       content: '';
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      position: fixed; inset: 0;
       background-image:
         linear-gradient(rgba(0,255,234,0.025) 1px, transparent 1px),
         linear-gradient(90deg, rgba(0,255,234,0.025) 1px, transparent 1px);
@@ -58,7 +57,6 @@
       max-width: 880px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem;
     }
 
-    /* HEADER */
     header { text-align: center; padding: 3.5rem 0 1.5rem; }
 
     h1 {
@@ -85,6 +83,17 @@
       box-shadow: 0 0 8px var(--cyan);
     }
 
+    /* ALIVE BAR */
+    .alive-bar {
+      text-align: center;
+      padding: 0.6rem 1rem;
+      margin: 0.5rem 0 0;
+      font-size: 0.95rem;
+      color: var(--dim);
+      letter-spacing: 1px;
+    }
+    .alive-bar span { color: var(--cyan); }
+
     /* SECTION DIVIDERS */
     .section-divider { display: flex; align-items: center; gap: 0.75rem; margin: 3rem 0 1.5rem; }
     .section-divider::before, .section-divider::after {
@@ -96,23 +105,17 @@
       white-space: nowrap; text-shadow: 0 0 8px rgba(0,255,234,0.5);
     }
 
-    /* GRID */
-    .grid {
-      display: grid;
-      gap: 1.1rem;
-    }
+    .grid { display: grid; gap: 1.1rem; }
     .grid-2 { grid-template-columns: repeat(2, 1fr); }
     .grid-3 { grid-template-columns: repeat(3, 1fr); }
 
     @media (max-width: 560px) {
       .grid-2, .grid-3 { grid-template-columns: 1fr; }
     }
-
     @media (min-width: 561px) and (max-width: 760px) {
       .grid-3 { grid-template-columns: repeat(2, 1fr); }
     }
 
-    /* CARDS */
     .card {
       display: block;
       background: var(--card-bg);
@@ -146,24 +149,18 @@
     .card-label { font-size: 1.7rem; color: var(--cyan); letter-spacing: 2px; display: block; margin-bottom: 0.15rem; }
     .card-desc { font-size: 1.1rem; color: var(--dim); letter-spacing: 1px; }
 
-    /* special card colours */
-    .card.fun .card-label { color: #ffff00; text-shadow: 0 0 6px rgba(255,255,0,0.4); }
+    .card.fun .card-label { color: var(--yellow); text-shadow: 0 0 6px rgba(255,255,0,0.4); }
     .card.fun:hover { border-color: rgba(255,255,0,0.7); box-shadow: 0 0 20px rgba(255,255,0,0.1), 0 8px 24px rgba(0,0,0,0.5); }
-    .card.fun::before { background: linear-gradient(90deg, transparent, #ffff00, transparent); }
+    .card.fun::before { background: linear-gradient(90deg, transparent, var(--yellow), transparent); }
 
-    .card.solidarity .card-label { color: #55cc55; text-shadow: 0 0 6px rgba(85,204,85,0.4); }
+    .card.solidarity .card-label { color: var(--green); text-shadow: 0 0 6px rgba(85,204,85,0.4); }
     .card.solidarity:hover { border-color: rgba(85,204,85,0.7); box-shadow: 0 0 20px rgba(85,204,85,0.12), 0 8px 24px rgba(0,0,0,0.5); }
-    .card.solidarity::before { background: linear-gradient(90deg, transparent, #55cc55, transparent); }
+    .card.solidarity::before { background: linear-gradient(90deg, transparent, var(--green), transparent); }
 
-    @media (max-width: 480px) {
-    }
-
-    /* FOOTER */
     footer { text-align: center; margin-top: 3.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(0,255,234,0.15); }
     .footer-text { color: var(--dim-soft); font-size: 1rem; letter-spacing: 3px; }
     .footer-text span { color: var(--cyan); }
 
-    /* FAQ */
     .faq { display: flex; flex-direction: column; gap: 2px; }
     .faq details {
       background: var(--card-bg);
@@ -204,6 +201,7 @@
     <header>
       <h1>quick cat club<span class="cursor"></span></h1>
       <p class="subtitle">~(=^..^) a self-hosted sanctuary</p>
+      <div class="alive-bar" id="alive"></div>
     </header>
 
     <!-- THE ROOMS -->
@@ -215,17 +213,17 @@
       <a class="card" href="https://watch.quickcat.club" target="_blank" rel="noopener">
         <span class="card-emoji">&#9654;</span>
         <span class="card-label">WATCH</span>
-        <span class="card-desc">movies &amp; shows</span>
+        <span class="card-desc">200+ movies &amp; 170+ shows</span>
       </a>
       <a class="card" href="https://music.quickcat.club" target="_blank" rel="noopener">
         <span class="card-emoji">&#9835;</span>
         <span class="card-label">LISTEN</span>
-        <span class="card-desc">hi-fi music</span>
+        <span class="card-desc">10,000+ tracks</span>
       </a>
       <a class="card" href="https://kpab.fm" target="_blank" rel="noopener">
         <span class="card-emoji">&#128225;</span>
         <span class="card-label">RADIO</span>
-        <span class="card-desc">KPAB.FM pirate radio</span>
+        <span class="card-desc">KPAB.FM 24/7</span>
       </a>
     </div>
 
@@ -233,12 +231,12 @@
       <a class="card" href="https://read.quickcat.club" target="_blank" rel="noopener">
         <span class="card-emoji">&#128214;</span>
         <span class="card-label">READ</span>
-        <span class="card-desc">book library</span>
+        <span class="card-desc">960+ books</span>
       </a>
       <a class="card" href="https://comics.quickcat.club" target="_blank" rel="noopener">
         <span class="card-emoji">&#128165;</span>
         <span class="card-label">COMICS</span>
-        <span class="card-desc">graphic novels</span>
+        <span class="card-desc">1,800+ issues</span>
       </a>
     </div>
 
@@ -247,26 +245,16 @@
       <span class="section-label">[ EXPLORE ]</span>
     </div>
 
-    <div class="grid grid-2">
-<a class="card fun" href="/arcade/">
+    <div class="grid grid-3">
+      <a class="card fun" href="/arcade/">
         <span class="card-emoji">&#128377;</span>
         <span class="card-label">ARCADE</span>
         <span class="card-desc">text adventures</span>
-      </a>
-      <a class="card fun" href="/arcade/retro/">
-        <span class="card-emoji">&#x1F3AE;</span>
-        <span class="card-label">RETRO</span>
-        <span class="card-desc">mega drive + more</span>
       </a>
       <a class="card fun" href="/wiki/">
         <span class="card-emoji">&#x1F4DA;</span>
         <span class="card-label">WIKIPEDIA</span>
         <span class="card-desc">offline encyclopedia</span>
-      </a>
-      <a class="card fun" href="/drop/">
-        <span class="card-emoji">&#x1F4E6;</span>
-        <span class="card-label">DROP ZONE</span>
-        <span class="card-desc">upload to the collection</span>
       </a>
       <a class="card fun" href="/wall/">
         <span class="card-emoji">&#x1F3A8;</span>
@@ -275,26 +263,21 @@
       </a>
     </div>
 
-    <!-- PALESTINE -->
-    <div class="section-divider">
-      <span class="section-label">[ PALESTINE ]</span>
-    </div>
-
-    <div class="grid grid-3">
+    <div class="grid grid-3" style="margin-top: 1.1rem;">
       <a class="card solidarity" href="/palestine/">
-        <span class="card-emoji">&#127909;</span>
-        <span class="card-label">FILMS</span>
-        <span class="card-desc">documentaries &amp; cinema</span>
+        <span class="card-emoji">&#127477;&#127480;</span>
+        <span class="card-label">PALESTINE</span>
+        <span class="card-desc">films, books &amp; docs</span>
       </a>
-      <a class="card solidarity" href="/palestine/">
-        <span class="card-emoji">&#128218;</span>
-        <span class="card-label">BOOKS</span>
-        <span class="card-desc">history &amp; testimony</span>
+      <a class="card fun" href="/conspiracy/">
+        <span class="card-emoji">&#x1F441;</span>
+        <span class="card-label">FORBIDDEN</span>
+        <span class="card-desc">occult &amp; esoterica</span>
       </a>
-      <a class="card solidarity" href="/palestine/">
-        <span class="card-emoji">&#9997;</span>
-        <span class="card-label">COMICS</span>
-        <span class="card-desc">Joe Sacco &amp; more</span>
+      <a class="card fun" href="/drop/">
+        <span class="card-emoji">&#x1F4E6;</span>
+        <span class="card-label">DROP ZONE</span>
+        <span class="card-desc">gift the collection</span>
       </a>
     </div>
 
@@ -314,7 +297,7 @@
       </details>
       <details>
         <summary>How do I listen to the radio?</summary>
-        <p>Visit <a href="https://kpab.fm">kpab.fm</a> and hit play. 24/7 auto-DJ with 4,000+ tracks. You can search and request songs from the full catalog. No account needed. No ads. Just music.</p>
+        <p>Visit <a href="https://kpab.fm">kpab.fm</a> and hit play. 24/7 auto-DJ with 10,000+ tracks. You can search and request songs from the full catalog. No account needed. No ads. Just music.</p>
       </details>
       <details>
         <summary>How do I get access to movies, books, and comics?</summary>
@@ -326,7 +309,7 @@
       </details>
       <details>
         <summary>Will this server go down?</summary>
-        <p>Almost certainly. It's a 4GB Raspberry Pi running 15 containers. It crashes when you look at it funny. But it always comes back. That's the deal &mdash; it's imperfect, alive, and ours. Uptime is a corporate metric. We measure in vibes.</p>
+        <p>Almost certainly. It's a 4GB Raspberry Pi running 17 containers. It crashes when you look at it funny. But it always comes back. That's the deal &mdash; it's imperfect, alive, and ours. Uptime is a corporate metric. We measure in vibes.</p>
       </details>
       <details>
         <summary>Is my data being collected?</summary>
@@ -338,7 +321,7 @@
       </details>
       <details>
         <summary>Can I build something like this?</summary>
-        <p>Absolutely. A Raspberry Pi 5, a hard drive, and a weekend. Docker makes it modular &mdash; add what you want, ignore what you don't. I run a pirate radio station and a film library from under a desk in Brunswick. You can too. The whole setup is on <a href="https://github.com/pibulus/pibulus-os">GitHub</a>.</p>
+        <p>Absolutely. A Raspberry Pi 5, a hard drive, and a weekend. Docker makes it modular &mdash; add what you want, ignore what you don't. I built a pirate radio station and a film library from under a desk in Brunswick. You can too. The whole setup is on <a href="https://github.com/pibulus/pibulus-os">GitHub</a>.</p>
       </details>
       <details>
         <summary>How can I contribute?</summary>
@@ -346,10 +329,57 @@
       </details>
     </div>
 
-        <footer>
-      <p class="footer-text"><span>QUICK CAT CLUB</span> &mdash; self-hosted &amp; sovereign &mdash; <a href="https://github.com/pibulus/pibulus-os" target="_blank" rel="noopener" style="color: var(--dim); text-decoration: none; border-bottom: 1px solid var(--dim-soft);">source</a></p>
+    <footer>
+      <p class="footer-text"><span>QUICK CAT CLUB</span> &mdash; self-hosted &amp; sovereign &mdash; <a href="https://github.com/pibulus/pibulus-os" target="_blank" rel="noopener" style="color: var(--dim-soft); text-decoration: none; border-bottom: 1px solid var(--dim-soft);">source</a></p>
     </footer>
 
   </div>
+
+  <script>
+    // Alive bar — rotating flavour text + live radio data
+    var phrases = [
+      'broadcasting from a desk in brunswick',
+      'running on 4GB of RAM and pure stubbornness',
+      'the internet used to be weird. we kept a piece of it.',
+      'no algorithms. no ads. no data harvesting.',
+      'a raspberry pi, a hard drive, and a dream',
+      'powered by docker, caffeine, and spite',
+      'everything here fits on one SD card',
+      'this website runs on less power than your phone charger',
+      'the cloud is just someone else\'s computer. this is ours.',
+      'can\'t scale. won\'t scale. that\'s the point.',
+      'zero tracking. zero cookies. zero fucks.',
+      'built by one person. used by friends.',
+      'what if the internet was a zine?',
+      'pirate radio from the future of the past'
+    ];
+
+    var aliveEl = document.getElementById('alive');
+
+    function setAlive(text) {
+      aliveEl.innerHTML = text;
+    }
+
+    // Try to get now playing from radio
+    fetch('/status.json', { cache: 'no-cache' })
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(d) {
+        if (d && d.np_artist && d.np_title) {
+          setAlive('now playing on <span>KPAB.FM</span>: ' + d.np_artist + ' &mdash; ' + d.np_title);
+        } else {
+          setAlive(phrases[Math.floor(Math.random() * phrases.length)]);
+        }
+      })
+      .catch(function() {
+        setAlive(phrases[Math.floor(Math.random() * phrases.length)]);
+      });
+
+    // Rotate phrase every 20 seconds if no radio data
+    setInterval(function() {
+      if (aliveEl.innerHTML.indexOf('KPAB.FM') === -1) {
+        setAlive(phrases[Math.floor(Math.random() * phrases.length)]);
+      }
+    }, 20000);
+  </script>
 </body>
 </html>

@@ -7,61 +7,79 @@
   <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family:'VT323',monospace; background:#050505; color:#e0e0e0; min-height:100vh; display:flex; justify-content:center; align-items:center; }
+    :root {
+      --bg: #050505;
+      --cyan: #00ffea;
+      --magenta: #ff00ff;
+      --dim: #666;
+      --dim-soft: #444;
+      --text: #e0e0e0;
+    }
+    body { font-family:'VT323',monospace; background:var(--bg); color:var(--text); min-height:100vh; display:flex; justify-content:center; align-items:center; }
     body::after { content:''; position:fixed; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.08) 2px,rgba(0,0,0,0.08) 4px); pointer-events:none; z-index:9999; }
-    .drop-zone { text-align:center; max-width:500px; padding:48px; }
-    h1 { font-size:3rem; color:#ff00ff; text-shadow:0 0 20px rgba(255,0,255,0.4); margin-bottom:16px; }
-    p { color:#666; font-size:1.1rem; margin-bottom:32px; }
-    .upload-area { border:2px dashed rgba(0,255,234,0.3); border-radius:12px; padding:48px 24px; cursor:pointer; transition:all 0.3s; position:relative; }
-    .upload-area:hover, .upload-area.dragover { border-color:#00ffea; background:rgba(0,255,234,0.05); }
+    .drop-zone { text-align:center; max-width:520px; padding:48px 24px; }
+    h1 { font-size:3rem; color:var(--magenta); text-shadow:0 0 20px rgba(255,0,255,0.4); margin-bottom:8px; }
+    .subtitle { color:var(--dim); font-size:1.2rem; letter-spacing:2px; margin-bottom:24px; }
+    .what {
+      color:var(--dim-soft); font-size:0.95rem; line-height:1.6;
+      margin-bottom:32px; max-width:400px; margin-left:auto; margin-right:auto;
+    }
+    .what span { color:var(--cyan); }
+    .upload-area { border:2px dashed rgba(0,255,234,0.3); border-radius:4px; padding:48px 24px; cursor:pointer; transition:all 0.3s; position:relative; }
+    .upload-area:hover, .upload-area.dragover { border-color:var(--cyan); background:rgba(0,255,234,0.05); }
     .upload-area input { position:absolute; inset:0; opacity:0; cursor:pointer; }
-    .upload-area .icon { font-size:3rem; margin-bottom:16px; }
-    .upload-area .label { color:#00ffea; font-size:1.3rem; }
-    .upload-area .hint { color:#666; font-size:0.9rem; margin-top:8px; }
+    .upload-area .icon { font-size:3rem; margin-bottom:12px; }
+    .upload-area .label { color:var(--cyan); font-size:1.3rem; letter-spacing:1px; }
+    .upload-area .hint { color:var(--dim); font-size:0.9rem; margin-top:8px; }
     .status { margin-top:24px; min-height:40px; font-size:1.1rem; }
     .status.ok { color:#00ff88; }
     .status.err { color:#ff4444; }
-    .status.uploading { color:#00ffea; }
-    .back { color:#666; text-decoration:none; font-size:0.9rem; display:inline-block; margin-top:32px; }
-    .back:hover { color:#00ffea; }
-    .rules { color:#444; font-size:0.85rem; margin-top:24px; line-height:1.6; }
+    .status.uploading { color:var(--cyan); }
+    .back { color:var(--dim); text-decoration:none; font-size:0.9rem; display:inline-block; margin-top:32px; }
+    .back:hover { color:var(--cyan); }
+    .rules { color:var(--dim-soft); font-size:0.85rem; margin-top:24px; line-height:1.6; }
   </style>
 </head>
 <body>
 <div class="drop-zone">
   <h1>drop zone</h1>
-  <p>contribute to the collection</p>
-  
+  <p class="subtitle">gift the collection</p>
+
+  <div class="what">
+    got something good? <span>music</span>, <span>comics</span>, <span>books</span>, <span>roms</span>, <span>documentaries</span> &mdash; anything you think belongs on the shelf. pablo reviews everything before it goes live. think of it as a donation box at a community library.
+  </div>
+
   <div class="upload-area" id="drop">
-    <div class="icon">📦</div>
+    <div class="icon">&#x1F4E6;</div>
     <div class="label">drag &amp; drop or click to upload</div>
-    <div class="hint">music, comics, roms, books - whatever&apos;s good</div>
+    <div class="hint">any format &middot; max 500MB per file</div>
     <input type="file" id="fileInput" multiple>
   </div>
-  
+
   <div class="status" id="status"></div>
-  
+
   <div class="rules">
-    max 500MB per file &middot; goes to moderation queue<br>
-    pibulus reviews everything before it hits the library
+    all uploads are moderated &middot; no account needed<br>
+    your contribution helps keep the library growing
   </div>
-  
+
   <a href="/" class="back">&larr; quickcat.club</a>
 </div>
 
 <script>
-const drop = document.getElementById('drop');
-const input = document.getElementById('fileInput');
-const status = document.getElementById('status');
+var drop = document.getElementById('drop');
+var input = document.getElementById('fileInput');
+var status = document.getElementById('status');
 
-['dragenter','dragover'].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.add('dragover'); }));
-['dragleave','drop'].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.remove('dragover'); }));
+['dragenter','dragover'].forEach(function(e) { drop.addEventListener(e, function(ev) { ev.preventDefault(); drop.classList.add('dragover'); }); });
+['dragleave','drop'].forEach(function(e) { drop.addEventListener(e, function(ev) { ev.preventDefault(); drop.classList.remove('dragover'); }); });
 
-drop.addEventListener('drop', e => { handleFiles(e.dataTransfer.files); });
-input.addEventListener('change', () => { handleFiles(input.files); });
+drop.addEventListener('drop', function(e) { handleFiles(e.dataTransfer.files); });
+input.addEventListener('change', function() { handleFiles(input.files); });
 
 async function handleFiles(files) {
-  for (const file of files) {
+  for (var i = 0; i < files.length; i++) {
+    var file = files[i];
     if (file.size > 500 * 1024 * 1024) {
       status.className = 'status err';
       status.textContent = file.name + ' is too big (500MB max)';
@@ -69,15 +87,15 @@ async function handleFiles(files) {
     }
     status.className = 'status uploading';
     status.textContent = 'uploading ' + file.name + '...';
-    
-    const form = new FormData();
+
+    var form = new FormData();
     form.append('file', file);
-    
+
     try {
-      const r = await fetch('/drop/upload', { method:'POST', body:form });
+      var r = await fetch('/drop/upload', { method:'POST', body:form });
       if (r.ok) {
         status.className = 'status ok';
-        status.textContent = file.name + ' uploaded! thanks :)';
+        status.textContent = file.name + ' received! thanks for the gift :)';
       } else {
         status.className = 'status err';
         status.textContent = 'upload failed: ' + await r.text();

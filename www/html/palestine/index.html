@@ -38,7 +38,7 @@
     }
     .back { color: var(--dim); text-decoration: none; font-size: 1rem; }
     .back:hover { color: var(--green); }
-    header { text-align: center; padding: 2rem 0 1.5rem; }
+    header { text-align: center; padding: 2rem 0 1rem; }
     h1 {
       font-size: clamp(2.5rem, 8vw, 4rem);
       color: var(--green);
@@ -46,16 +46,21 @@
       letter-spacing: 4px; line-height: 1;
     }
     .subtitle { color: var(--dim); font-size: 1.1rem; margin-top: 0.5rem; letter-spacing: 2px; }
-    .section-divider { display: flex; align-items: center; gap: 0.75rem; margin: 2rem 0 1rem; }
+    .intro {
+      text-align: center; color: var(--dim-soft); font-size: 0.95rem;
+      max-width: 600px; margin: 0.75rem auto 0; line-height: 1.5;
+    }
+    .section-divider { display: flex; align-items: center; gap: 0.75rem; margin: 2.5rem 0 1rem; }
     .section-divider::before, .section-divider::after {
       content: ''; flex: 1; height: 1px;
       background: linear-gradient(90deg, transparent, var(--green-dim), transparent);
     }
     .section-label { font-size: 1.1rem; color: var(--green); letter-spacing: 4px; white-space: nowrap; }
+    .count { font-size: 0.85rem; color: var(--dim); letter-spacing: 1px; margin-bottom: 0.5rem; text-align: right; }
     .file-list { display: flex; flex-direction: column; gap: 4px; }
     .file-item {
       display: flex; align-items: center; gap: 12px;
-      padding: 12px 16px;
+      padding: 14px 16px;
       background: var(--panel);
       border: 1px solid var(--border);
       border-left: 3px solid transparent;
@@ -70,9 +75,10 @@
     .file-icon { font-size: 1.5rem; flex-shrink: 0; width: 2rem; text-align: center; }
     .file-info { flex: 1; min-width: 0; }
     .file-name {
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       font-size: 1.15rem;
+      line-height: 1.3;
     }
+    .file-year { color: var(--green); }
     .file-meta { font-size: 0.85rem; color: var(--dim); }
     .file-action {
       font-size: 0.85rem; color: var(--green); letter-spacing: 2px;
@@ -80,7 +86,7 @@
       transition: opacity 0.15s;
     }
     .file-item:hover .file-action { opacity: 1; }
-    .loading { text-align: center; color: var(--dim); padding: 3rem 0; }
+    .loading { text-align: center; color: var(--dim); padding: 2rem 0; }
     footer { text-align: center; margin-top: 3rem; padding-top: 1rem; border-top: 1px solid rgba(85,204,85,0.1); }
     .footer-text { color: var(--dim-soft); font-size: 0.9rem; letter-spacing: 2px; }
     @media (max-width: 560px) {
@@ -94,127 +100,181 @@
     <a href="/" class="back">&larr; quickcat.club</a>
     <header>
       <h1>Palestine</h1>
-      <p class="subtitle">films, books, documents</p>
+      <p class="subtitle">films, books &amp; documents</p>
+      <p class="intro">a curated collection of documentaries, cinema, and essential reading. download, watch, share freely.</p>
     </header>
 
-    <div class="section-divider"><span class="section-label">[ FILMS ]</span></div>
-    <div class="file-list" id="films"><div class="loading">scanning...</div></div>
+    <div class="section-divider"><span class="section-label">[ FILMS &amp; DOCUMENTARIES ]</span></div>
+    <div class="count" id="film-count"></div>
+    <div class="file-list" id="films"><div class="loading">scanning library...</div></div>
 
     <div class="section-divider"><span class="section-label">[ BOOKS &amp; DOCUMENTS ]</span></div>
-    <div class="file-list" id="books"><div class="loading">scanning...</div></div>
+    <div class="count" id="book-count"></div>
+    <div class="file-list" id="books"><div class="loading">scanning library...</div></div>
 
     <footer>
-      <p class="footer-text">curated collection &mdash; download, watch, share</p>
+      <p class="footer-text">free palestine &mdash; download, watch, share</p>
     </footer>
   </div>
   <script>
-    const VIDEO_EXT = ['.mp4','.mkv','.avi','.webm'];
-    const DOC_EXT = ['.pdf','.epub','.mobi','.djvu','.txt'];
+    var VIDEO_EXT = ['.mp4','.mkv','.avi','.webm'];
+    var DOC_EXT = ['.pdf','.epub','.mobi','.djvu','.txt'];
+
+    // Clean up messy torrent/download filenames into readable titles
+    var TITLE_MAP = {
+      'BBC.Storyville.2024.Life.and.Death.in.Gaza': { title: 'Life and Death in Gaza', year: '2024', source: 'BBC Storyville' },
+      'BBC.The.Darkest.Days.Israel-Gaza.Six.Months.On': { title: 'The Darkest Days: Israel-Gaza, Six Months On', year: '2024', source: 'BBC' },
+      'Ch4.Gaza.Doctors.Under.Attack': { title: 'Gaza: Doctors Under Attack', year: '2024', source: 'Channel 4' },
+      'Ch4.No.Other.Land.2024': { title: 'No Other Land', year: '2024', source: 'Channel 4' },
+      'Farha.2021': { title: 'Farha', year: '2021', source: '' },
+      'Jeffrey Epstein Deep Dive': { title: 'Jeffrey Epstein Deep Dive: Mossad, Fraud & The Temple', year: '', source: '' },
+      'Lemon.Tree': { title: 'Lemon Tree', year: '2008', source: '' },
+      'Paradise Now': { title: 'Paradise Now', year: '2005', source: '' },
+      'Tantura': { title: 'Tantura', year: '2022', source: '' },
+      'The Time That Remains': { title: 'The Time That Remains', year: '2009', source: '' },
+      'The Wanted 18': { title: 'The Wanted 18', year: '2014', source: '' },
+      'Born In Gaza': { title: 'Born in Gaza', year: '2014', source: '' },
+      'Killing Gaza': { title: 'Killing Gaza', year: '2018', source: '' },
+      'No Other Land 2024': { title: 'No Other Land', year: '2024', source: '' },
+      'The Voice Of Hind Rajab': { title: 'The Voice of Hind Rajab', year: '2025', source: '' },
+      'Wajib': { title: 'Wajib', year: '2017', source: '' },
+      'The Ethnic Cleansing of Palestine': { title: 'The Ethnic Cleansing of Palestine', year: '', source: 'Ilan Papp\u00e9' },
+      'Palestine Speaks': { title: 'Palestine Speaks: Narratives of Life Under Occupation', year: '', source: 'Cate Malek' },
+      'Zaitoun': { title: 'Zaitoun: Recipes from the Palestinian Kitchen', year: '', source: '' },
+      'By Way of Deception': { title: 'By Way of Deception', year: '', source: '' },
+      'Hamas Contained': { title: 'Hamas Contained: The Rise and Pacification of Palestinian Resistance', year: '', source: 'Tareq Baconi' },
+      'Understanding Hamas': { title: 'Understanding Hamas: And Why That Matters', year: '2024', source: 'Helena Cobban' },
+      'Israel\'s Colonial Project': { title: 'Israel\'s Colonial Project in Palestine', year: '2016', source: 'Elia Zureik' },
+      'The Thorn and the Carnation': { title: 'The Thorn and the Carnation', year: '2024', source: 'Yahya Sinwar' },
+      'Inside Hamas': { title: 'Inside Hamas: The Untold Story', year: '2007', source: 'Zaki Chehab' }
+    };
+
+    function lookupTitle(rawName) {
+      for (var key in TITLE_MAP) {
+        if (rawName.indexOf(key) !== -1) return TITLE_MAP[key];
+      }
+      return null;
+    }
 
     function iconFor(name) {
-      const n = name.toLowerCase();
-      if (VIDEO_EXT.some(e => n.endsWith(e))) return '\u{1F3AC}';
+      var n = name.toLowerCase();
+      if (VIDEO_EXT.some(function(e) { return n.endsWith(e); })) return '\u{1F3AC}';
       if (n.endsWith('.pdf')) return '\u{1F4C4}';
       if (n.endsWith('.epub') || n.endsWith('.mobi')) return '\u{1F4D6}';
       return '\u{1F4C1}';
     }
 
-    function cleanName(name) {
-      return name
-        .replace(/\.(mp4|mkv|avi|webm|pdf|epub|mobi|djvu)$/i, '')
-        .replace(/www\.\w+\.\w+\s*-?\s*/g, '')
-        .replace(/\[.*?\]/g, '')
-        .replace(/\{.*?\}/g, '')
-        .replace(/\((\d{4})\)/, '($1)')
-        .replace(/\s{2,}/g, ' ')
-        .trim();
-    }
-
     function sizeStr(bytes) {
       if (bytes > 1073741824) return (bytes/1073741824).toFixed(1) + ' GB';
       if (bytes > 1048576) return (bytes/1048576).toFixed(0) + ' MB';
-      return (bytes/1024).toFixed(0) + ' KB';
+      if (bytes > 1024) return (bytes/1024).toFixed(0) + ' KB';
+      return '';
     }
 
     function makeItem(entry, isDir) {
-      const a = document.createElement('a');
-      a.className = 'file-item';
-      if (isDir) {
-        a.href = '/palestine/files/' + encodeURIComponent(entry.name) + '/';
+      var mapped = lookupTitle(entry.name);
+      var displayName, meta;
+
+      if (mapped) {
+        displayName = mapped.title;
+        var parts = [];
+        if (mapped.year) parts.push('<span class="file-year">' + mapped.year + '</span>');
+        if (mapped.source) parts.push(mapped.source);
+        var sz = isDir ? 'folder' : sizeStr(entry.size || 0);
+        if (sz) parts.push(sz);
+        meta = parts.join(' &middot; ');
       } else {
-        a.href = '/palestine/files/' + encodeURIComponent(entry.name);
+        // Fallback: clean up raw name
+        displayName = entry.name
+          .replace(/\.(mp4|mkv|avi|webm|pdf|epub|mobi|djvu)$/i, '')
+          .replace(/www\.\w+\.\w+\s*-?\s*/g, '')
+          .replace(/\[.*?\]/g, '')
+          .replace(/\{.*?\}/g, '')
+          .replace(/\d{3,4}p\b.*$/i, '')
+          .replace(/\s*--\s*.*/g, '')
+          .replace(/\s{2,}/g, ' ')
+          .trim();
+        var yearMatch = entry.name.match(/[.(]?((?:19|20)\d{2})[.)]/);
+        var yearStr = yearMatch ? '<span class="file-year">' + yearMatch[1] + '</span>' : '';
+        meta = [yearStr, isDir ? 'folder' : sizeStr(entry.size || 0)].filter(Boolean).join(' &middot; ');
       }
+
+      var a = document.createElement('a');
+      a.className = 'file-item';
+      a.href = '/palestine/files/' + encodeURIComponent(entry.name) + (isDir ? '/' : '');
       a.target = '_blank';
       a.rel = 'noopener';
-      a.innerHTML = `
-        <span class="file-icon">${isDir ? '\u{1F4C1}' : iconFor(entry.name)}</span>
-        <span class="file-info">
-          <span class="file-name">${cleanName(entry.name)}</span>
-          <span class="file-meta">${isDir ? 'folder' : sizeStr(entry.size || 0)}</span>
-        </span>
-        <span class="file-action">${isDir ? 'OPEN' : 'DOWNLOAD'}</span>
-      `;
+      a.innerHTML =
+        '<span class="file-icon">' + (isDir ? '\u{1F4C1}' : iconFor(entry.name)) + '</span>' +
+        '<span class="file-info">' +
+          '<span class="file-name">' + displayName + '</span>' +
+          '<span class="file-meta">' + meta + '</span>' +
+        '</span>' +
+        '<span class="file-action">' + (isDir ? 'OPEN' : 'DOWNLOAD') + '</span>';
       return a;
     }
 
-    async function load() {
-      try {
-        const res = await fetch('/palestine/files/');
-        const text = await res.text();
-        // Parse nginx autoindex HTML or JSON
-        let entries;
-        try {
-          entries = JSON.parse(text);
-        } catch {
-          // fallback: parse HTML autoindex
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(text, 'text/html');
-          const links = doc.querySelectorAll('a');
-          entries = [];
-          links.forEach(a => {
-            const name = decodeURIComponent(a.getAttribute('href') || '').replace(/\/$/, '');
-            if (name && name !== '..' && !name.startsWith('/')) {
-              entries.push({ name, type: a.getAttribute('href').endsWith('/') ? 'directory' : 'file', size: 0 });
+    function load() {
+      fetch('/palestine/files/', { cache: 'no-cache' })
+        .then(function(res) { return res.text(); })
+        .then(function(text) {
+          var entries;
+          try {
+            entries = JSON.parse(text);
+          } catch(e) {
+            var parser = new DOMParser();
+            var doc = parser.parseFromString(text, 'text/html');
+            var links = doc.querySelectorAll('a');
+            entries = [];
+            links.forEach(function(a) {
+              var name = decodeURIComponent(a.getAttribute('href') || '').replace(/\/$/, '');
+              if (name && name !== '..' && !name.startsWith('/')) {
+                entries.push({ name: name, type: a.getAttribute('href').endsWith('/') ? 'directory' : 'file', size: 0 });
+              }
+            });
+          }
+
+          var films = [];
+          var books = [];
+
+          entries.forEach(function(e) {
+            var n = e.name.toLowerCase();
+            if (e.type === 'directory') {
+              films.push(e);
+            } else if (VIDEO_EXT.some(function(ext) { return n.endsWith(ext); })) {
+              films.push(e);
+            } else if (DOC_EXT.some(function(ext) { return n.endsWith(ext); })) {
+              books.push(e);
             }
           });
-        }
 
-        const films = [];
-        const books = [];
-        const dirs = [];
-
-        entries.forEach(e => {
-          const n = e.name.toLowerCase();
-          if (e.type === 'directory') {
-            // Directories are likely movie folders
-            dirs.push(e);
-          } else if (VIDEO_EXT.some(ext => n.endsWith(ext))) {
-            films.push(e);
-          } else if (DOC_EXT.some(ext => n.endsWith(ext))) {
-            books.push(e);
+          // Sort by clean title
+          function sortKey(e) {
+            var m = lookupTitle(e.name);
+            return m ? m.title.toLowerCase() : e.name.toLowerCase();
           }
+          films.sort(function(a,b) { return sortKey(a).localeCompare(sortKey(b)); });
+          books.sort(function(a,b) { return sortKey(a).localeCompare(sortKey(b)); });
+
+          var filmsList = document.getElementById('films');
+          var booksList = document.getElementById('books');
+
+          filmsList.innerHTML = '';
+          booksList.innerHTML = '';
+
+          document.getElementById('film-count').textContent = films.length + ' items';
+          document.getElementById('book-count').textContent = books.length + ' items';
+
+          if (films.length === 0) filmsList.innerHTML = '<div class="loading">no films found</div>';
+          films.forEach(function(e) { filmsList.appendChild(makeItem(e, e.type === 'directory')); });
+
+          if (books.length === 0) booksList.innerHTML = '<div class="loading">no documents found</div>';
+          books.forEach(function(e) { booksList.appendChild(makeItem(e, false)); });
+        })
+        .catch(function() {
+          document.getElementById('films').innerHTML = '<div class="loading">could not load library</div>';
+          document.getElementById('books').innerHTML = '';
         });
-
-        // Combine dirs + video files as films
-        const allFilms = [...dirs, ...films].sort((a,b) => cleanName(a.name).localeCompare(cleanName(b.name)));
-        const allBooks = books.sort((a,b) => cleanName(a.name).localeCompare(cleanName(b.name)));
-
-        const filmsList = document.getElementById('films');
-        const booksList = document.getElementById('books');
-
-        filmsList.innerHTML = '';
-        booksList.innerHTML = '';
-
-        if (allFilms.length === 0) filmsList.innerHTML = '<div class="loading">no films found</div>';
-        allFilms.forEach(e => filmsList.appendChild(makeItem(e, e.type === 'directory')));
-
-        if (allBooks.length === 0) booksList.innerHTML = '<div class="loading">no documents found</div>';
-        allBooks.forEach(e => booksList.appendChild(makeItem(e, false)));
-
-      } catch (err) {
-        document.getElementById('films').innerHTML = '<div class="loading">could not load library</div>';
-        document.getElementById('books').innerHTML = '';
-      }
     }
 
     load();
