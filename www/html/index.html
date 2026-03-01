@@ -193,6 +193,65 @@
     }
     .faq details p a { color: var(--cyan); text-decoration: none; }
     .faq details p a:hover { text-decoration: underline; }
+
+    /* MESSAGE DROP */
+    .msg-drop {
+      max-width: 600px;
+      margin: 2rem auto 0;
+      background: rgba(0,0,0,0.5);
+      border: 1px solid rgba(0,255,234,0.15);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .msg-toggle {
+      width: 100%;
+      background: none;
+      border: none;
+      color: var(--cyan);
+      font-family: 'VT323', monospace;
+      font-size: 1.1rem;
+      padding: 0.8rem 1rem;
+      cursor: pointer;
+      letter-spacing: 2px;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.15s;
+    }
+    .msg-toggle:hover { background: rgba(0,255,234,0.03); }
+    .msg-toggle .arrow { transition: transform 0.2s; }
+    .msg-toggle.open .arrow { transform: rotate(90deg); }
+    .msg-body { display: none; padding: 0 1rem 1rem; }
+    .msg-body.open { display: block; }
+    .msg-input-row { display: flex; gap: 8px; margin-bottom: 8px; }
+    .msg-input-row input, .msg-input-row textarea {
+      flex: 1;
+      background: rgba(0,0,0,0.6);
+      border: 1px solid rgba(0,255,234,0.2);
+      color: var(--text);
+      font-family: 'VT323', monospace;
+      font-size: 1rem;
+      padding: 8px 10px;
+      outline: none;
+    }
+    .msg-input-row input:focus, .msg-input-row textarea:focus { border-color: var(--cyan); }
+    .msg-input-row textarea { resize: vertical; min-height: 50px; }
+    .msg-send {
+      background: rgba(0,255,234,0.1);
+      border: 1px solid var(--cyan);
+      color: var(--cyan);
+      font-family: 'VT323', monospace;
+      font-size: 1rem;
+      padding: 8px 20px;
+      cursor: pointer;
+      letter-spacing: 2px;
+      transition: all 0.15s;
+    }
+    .msg-send:hover { background: rgba(0,255,234,0.2); }
+    .msg-status { font-size: 0.9rem; color: var(--dim); min-height: 1.2em; }
+    .msg-status.ok { color: #55cc55; }
+    .msg-status.err { color: #ff4444; }
   </style>
 </head>
 <body>
@@ -329,6 +388,25 @@
       </details>
     </div>
 
+
+    <!-- MESSAGE DROP -->
+    <div class="msg-drop">
+      <button class="msg-toggle" id="msgToggle" onclick="this.classList.toggle('open');document.getElementById('msgBody').classList.toggle('open');">
+        <span class="arrow">&#9654;</span>
+        <span>LEAVE A MESSAGE</span>
+      </button>
+      <div class="msg-body" id="msgBody">
+        <div class="msg-input-row">
+          <input type="text" id="msgName" placeholder="name" maxlength="30" style="max-width:120px;">
+          <textarea id="msgText" placeholder="request something, say hi, or tell pablo what to download next..." maxlength="500"></textarea>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <button class="msg-send" onclick="sendMsg()">SEND</button>
+          <div class="msg-status" id="msgStatus"></div>
+        </div>
+      </div>
+    </div>
+
     <footer>
       <p class="footer-text"><span>QUICK CAT CLUB</span> &mdash; self-hosted &amp; sovereign &mdash; <a href="https://github.com/pibulus/pibulus-os" target="_blank" rel="noopener" style="color: var(--dim-soft); text-decoration: none; border-bottom: 1px solid var(--dim-soft);">source</a></p>
     </footer>
@@ -380,6 +458,21 @@
         setAlive(phrases[Math.floor(Math.random() * phrases.length)]);
       }
     }, 20000);
+
+    function sendMsg() {
+      var name = document.getElementById('msgName').value.trim() || 'anon';
+      var text = document.getElementById('msgText').value.trim();
+      var status = document.getElementById('msgStatus');
+      if (!text) { status.className = 'msg-status err'; status.textContent = 'write something first'; return; }
+      status.className = 'msg-status'; status.textContent = 'sending...';
+      fetch('/msg/drop', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: name, msg: text }) })
+        .then(function(r) {
+          if (r.ok) { status.className = 'msg-status ok'; status.textContent = 'sent! pablo will see it.'; document.getElementById('msgText').value = ''; }
+          else if (r.status === 429) { status.className = 'msg-status err'; status.textContent = 'easy tiger. wait a bit.'; }
+          else { status.className = 'msg-status err'; status.textContent = 'failed to send'; }
+        })
+        .catch(function() { status.className = 'msg-status err'; status.textContent = 'connection error'; });
+    }
   </script>
 </body>
 </html>

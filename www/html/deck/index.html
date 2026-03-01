@@ -227,6 +227,167 @@
     }
     .live-dot.warn { background: var(--orange); }
     .live-dot.off { background: var(--red); animation: none; }
+
+    /* FLOATING RADIO */
+    .radio-float {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 900;
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+    .radio-btn {
+      background: rgba(0,0,0,0.85);
+      border: 2px solid rgba(0,255,234,0.4);
+      color: var(--cyan);
+      font-family: 'VT323', monospace;
+      font-size: 1rem;
+      padding: 10px 16px;
+      cursor: pointer;
+      letter-spacing: 2px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .radio-btn:hover {
+      border-color: var(--cyan);
+      box-shadow: 0 0 15px rgba(0,255,234,0.2);
+    }
+    .radio-btn.playing {
+      border-color: var(--magenta);
+      color: var(--magenta);
+      box-shadow: 0 0 15px rgba(255,0,255,0.2);
+    }
+    .radio-btn .r-icon { margin-right: 6px; }
+    .radio-switch {
+      background: rgba(0,0,0,0.85);
+      border: 2px solid rgba(0,255,234,0.4);
+      border-left: none;
+      color: var(--dim);
+      font-family: 'VT323', monospace;
+      font-size: 0.85rem;
+      padding: 10px 12px;
+      cursor: pointer;
+      letter-spacing: 1px;
+      backdrop-filter: blur(12px);
+      transition: all 0.2s;
+    }
+    .radio-switch:hover { color: var(--cyan); border-color: var(--cyan); }
+
+    /* MESSAGE DROP */
+    .msg-drop {
+      margin-top: 2rem;
+      background: rgba(0,0,0,0.5);
+      border: 1px solid rgba(0,255,234,0.15);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .msg-toggle {
+      width: 100%;
+      background: none;
+      border: none;
+      color: var(--cyan);
+      font-family: 'VT323', monospace;
+      font-size: 1.1rem;
+      padding: 0.8rem 1rem;
+      cursor: pointer;
+      letter-spacing: 2px;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.15s;
+    }
+    .msg-toggle:hover { background: rgba(0,255,234,0.03); }
+    .msg-toggle .arrow { transition: transform 0.2s; }
+    .msg-toggle.open .arrow { transform: rotate(90deg); }
+    .msg-badge {
+      background: var(--magenta);
+      color: #000;
+      font-size: 0.8rem;
+      padding: 1px 6px;
+      border-radius: 2px;
+      margin-left: auto;
+    }
+    .msg-body {
+      display: none;
+      padding: 0 1rem 1rem;
+    }
+    .msg-body.open { display: block; }
+    .msg-input-row {
+      display: flex; gap: 8px; margin-bottom: 8px;
+    }
+    .msg-input-row input, .msg-input-row textarea {
+      flex: 1;
+      background: rgba(0,0,0,0.6);
+      border: 1px solid rgba(0,255,234,0.2);
+      color: var(--text);
+      font-family: 'VT323', monospace;
+      font-size: 1rem;
+      padding: 8px 10px;
+      outline: none;
+    }
+    .msg-input-row input:focus, .msg-input-row textarea:focus {
+      border-color: var(--cyan);
+    }
+    .msg-input-row textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+    .msg-send {
+      background: rgba(0,255,234,0.1);
+      border: 1px solid var(--cyan);
+      color: var(--cyan);
+      font-family: 'VT323', monospace;
+      font-size: 1rem;
+      padding: 8px 20px;
+      cursor: pointer;
+      letter-spacing: 2px;
+      transition: all 0.15s;
+    }
+    .msg-send:hover { background: rgba(0,255,234,0.2); }
+    .msg-status {
+      font-size: 0.9rem;
+      color: var(--dim);
+      min-height: 1.2em;
+    }
+    .msg-status.ok { color: var(--green); }
+    .msg-status.err { color: var(--red); }
+    .msg-list {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .msg-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 8px 10px;
+      background: rgba(0,0,0,0.3);
+      border-left: 2px solid rgba(0,255,234,0.2);
+      font-size: 0.95rem;
+    }
+    .msg-item.unread { border-left-color: var(--magenta); }
+    .msg-item .mi-name { color: var(--cyan); flex-shrink: 0; }
+    .msg-item .mi-text { color: var(--dim); flex: 1; word-break: break-word; }
+    .msg-item .mi-time { color: var(--dim-soft); font-size: 0.8rem; flex-shrink: 0; }
+    .msg-item .mi-dismiss {
+      color: var(--dim-soft); cursor: pointer; font-size: 0.8rem;
+      flex-shrink: 0; border: none; background: none;
+      font-family: 'VT323', monospace;
+    }
+    .msg-item .mi-dismiss:hover { color: var(--cyan); }
+
+    @media (max-width: 560px) {
+      .radio-float { bottom: 16px; right: 16px; }
+      .radio-btn { font-size: 0.9rem; padding: 8px 12px; }
+    }
   </style>
 </head>
 <body>
@@ -390,6 +551,27 @@
       </a>
     </div>
 
+
+    <!-- MESSAGE DROP -->
+    <div class="msg-drop">
+      <button class="msg-toggle" id="msgToggle" onclick="toggleMsg()">
+        <span class="arrow">&#9654;</span>
+        <span>MESSAGE DROP</span>
+        <span class="msg-badge" id="msgBadge" style="display:none">0</span>
+      </button>
+      <div class="msg-body" id="msgBody">
+        <div class="msg-input-row">
+          <input type="text" id="msgName" placeholder="name (optional)" maxlength="30" style="max-width:140px;">
+          <textarea id="msgText" placeholder="leave a request, message, or just say hi..." maxlength="500"></textarea>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <button class="msg-send" onclick="sendMsg()">SEND</button>
+          <div class="msg-status" id="msgStatus"></div>
+        </div>
+        <div class="msg-list" id="msgList"></div>
+      </div>
+    </div>
+
     <footer>
       <p class="footer-text"><span>PIBULUS DECK</span> v7 &mdash; raspberry pi 5 &mdash; <span id="f-containers">--</span> containers</p>
       <p class="footer-text" style="margin-top: 0.3rem; font-size: 0.8rem;">
@@ -449,6 +631,151 @@
     loadStatus();
     setInterval(loadStatus, 30000);
 
+
+    // === FLOATING RADIO ===
+    var stations = [
+      { name: 'KPAB.FM', url: 'https://kpab.fm/listen/kpab.fm/radio.mp3' },
+      { name: 'GROOVE SALAD', url: 'https://ice4.somafm.com/groovesalad-256-mp3' }
+    ];
+    var currentStation = 0;
+    var isPlaying = false;
+    var radioAudio = document.getElementById('radioAudio');
+    var radioBtn = document.getElementById('radioBtn');
+    var radioLabel = document.getElementById('radioLabel');
+
+    function toggleRadio() {
+      if (isPlaying) {
+        radioAudio.pause();
+        radioAudio.src = '';
+        isPlaying = false;
+        radioBtn.classList.remove('playing');
+        radioLabel.textContent = stations[currentStation].name;
+      } else {
+        radioAudio.src = stations[currentStation].url;
+        radioAudio.play().catch(function(){});
+        isPlaying = true;
+        radioBtn.classList.add('playing');
+        radioLabel.textContent = '\u25A0 ' + stations[currentStation].name;
+      }
+    }
+
+    function switchStation() {
+      currentStation = (currentStation + 1) % stations.length;
+      radioLabel.textContent = stations[currentStation].name;
+      if (isPlaying) {
+        radioAudio.src = stations[currentStation].url;
+        radioAudio.play().catch(function(){});
+        radioLabel.textContent = '\u25A0 ' + stations[currentStation].name;
+      }
+    }
+
+    // === MESSAGE DROP ===
+    var msgToggle = document.getElementById('msgToggle');
+    var msgBody = document.getElementById('msgBody');
+
+    function toggleMsg() {
+      msgToggle.classList.toggle('open');
+      msgBody.classList.toggle('open');
+      if (msgBody.classList.contains('open')) loadMessages();
+    }
+
+    function sendMsg() {
+      var name = document.getElementById('msgName').value.trim() || 'anon';
+      var text = document.getElementById('msgText').value.trim();
+      var status = document.getElementById('msgStatus');
+
+      if (!text) {
+        status.className = 'msg-status err';
+        status.textContent = 'write something first';
+        return;
+      }
+
+      status.className = 'msg-status';
+      status.textContent = 'sending...';
+
+      fetch('/msg/drop', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name, msg: text })
+      })
+      .then(function(r) {
+        if (r.ok) {
+          status.className = 'msg-status ok';
+          status.textContent = 'sent! pablo will see it.';
+          document.getElementById('msgText').value = '';
+          setTimeout(loadMessages, 500);
+        } else if (r.status === 429) {
+          status.className = 'msg-status err';
+          status.textContent = 'easy tiger. wait a bit.';
+        } else {
+          status.className = 'msg-status err';
+          status.textContent = 'failed to send';
+        }
+      })
+      .catch(function() {
+        status.className = 'msg-status err';
+        status.textContent = 'connection error';
+      });
+    }
+
+    function loadMessages() {
+      fetch('/msg/inbox', { cache: 'no-cache' })
+        .then(function(r) { return r.ok ? r.json() : []; })
+        .then(function(msgs) {
+          var list = document.getElementById('msgList');
+          var badge = document.getElementById('msgBadge');
+          var unread = msgs.filter(function(m) { return !m.read; }).length;
+
+          if (unread > 0) {
+            badge.style.display = '';
+            badge.textContent = unread;
+          } else {
+            badge.style.display = 'none';
+          }
+
+          list.innerHTML = '';
+          msgs.slice(0, 30).forEach(function(m) {
+            var d = new Date(m.ts * 1000);
+            var timeStr = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+            var div = document.createElement('div');
+            div.className = 'msg-item' + (m.read ? '' : ' unread');
+            div.innerHTML =
+              '<span class="mi-name">' + m.name + '</span>' +
+              '<span class="mi-text">' + m.msg.replace(/</g,'&lt;') + '</span>' +
+              '<span class="mi-time">' + timeStr + '</span>' +
+              '<button class="mi-dismiss" onclick="dismissMsg(\'' + m.id + '\',this)" title="mark read">\u2713</button>';
+            list.appendChild(div);
+          });
+        })
+        .catch(function() {});
+    }
+
+    function dismissMsg(id, btn) {
+      fetch('/msg/dismiss', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: id })
+      }).then(function() {
+        btn.closest('.msg-item').classList.remove('unread');
+        btn.textContent = '\u2714';
+        var badge = document.getElementById('msgBadge');
+        var n = parseInt(badge.textContent) - 1;
+        if (n <= 0) badge.style.display = 'none';
+        else badge.textContent = n;
+      });
+    }
+
+    // Check unread count on load
+    fetch('/msg/count', { cache: 'no-cache' })
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(d) {
+        if (d && d.unread > 0) {
+          document.getElementById('msgBadge').style.display = '';
+          document.getElementById('msgBadge').textContent = d.unread;
+        }
+      })
+      .catch(function() {});
+
     // Rewrite pibulus.local links for remote access
     (function() {
       if (location.hostname === 'pibulus.local') return;
@@ -478,5 +805,15 @@
       });
     })();
   </script>
+
+    <!-- FLOATING RADIO WIDGET -->
+    <div class="radio-float">
+      <button class="radio-btn" id="radioBtn" onclick="toggleRadio()">
+        <span class="r-icon">&#128225;</span>
+        <span id="radioLabel">KPAB.FM</span>
+      </button>
+      <button class="radio-switch" onclick="switchStation()" title="switch station">&#x21C4;</button>
+    </div>
+    <audio id="radioAudio" preload="none"></audio>
 </body>
 </html>
