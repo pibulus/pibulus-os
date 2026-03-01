@@ -1,5 +1,5 @@
-#\!/bin/bash
-# 📀 QUICK CAT CLUB - VAULT OPS
+#!/bin/bash
+# 📀 QUICK CAT CLUB - VAULT & RECOVERY OPS v1.1
 
 manage_vault() {
     while true; do
@@ -7,23 +7,30 @@ manage_vault() {
         echo -e "$(gum style --foreground 226 '--- 📀 VAULT & RECOVERY OPS ---')"
         local action=$(tactile_choose \
             "💾 Create Golden Image" \
-            "📖 Read Ship Log (Ledger)" \
+            "🛡️  Run Security Audit" \
+            "📖 Ship Log (Session Diary)" \
+            "📖 Ledger (Changelog)" \
             "🤖 AI Handbook" \
             "📑 Glossary" \
-            "📄 Read Manifesto" \
+            "📄 Manifesto" \
             "Back")
-        
+
         case $action in
             "💾 Create Golden Image")
-                ~/pibulus-os/scripts/golden_image.sh
+                if [ -f ~/pibulus-os/scripts/golden_image.sh ]; then
+                    ~/pibulus-os/scripts/golden_image.sh
+                else
+                    gum style --foreground 196 "golden_image.sh not found"
+                    sleep 2
+                fi
                 gum input --placeholder "Press Enter to return..."
                 ;;
-            "📖 Read Ship Log (Ledger)") glow ~/pibulus-os/LEDGER.md || less ~/pibulus-os/LEDGER.md ;;
-            "🤖 AI Handbook") glow ~/pibulus-os/AI_HANDBOOK.md || less ~/pibulus-os/AI_HANDBOOK.md ;;
-            "📑 Glossary") glow ~/pibulus-os/GLOSSARY.md || less ~/pibulus-os/GLOSSARY.md ;;
-            "📄 Read Manifesto")
-                glow ~/pibulus-os/MANIFESTO.md || less ~/pibulus-os/MANIFESTO.md
-                ;;
+            "🛡️  Run Security Audit") run_audit ;;
+            "📖 Ship Log (Session Diary)") glow ~/pibulus-os/SHIP_LOG.md 2>/dev/null || less ~/pibulus-os/SHIP_LOG.md ;;
+            "📖 Ledger (Changelog)") glow ~/pibulus-os/LEDGER.md 2>/dev/null || less ~/pibulus-os/LEDGER.md ;;
+            "🤖 AI Handbook") glow ~/pibulus-os/AI_HANDBOOK.md 2>/dev/null || less ~/pibulus-os/AI_HANDBOOK.md ;;
+            "📑 Glossary") glow ~/pibulus-os/GLOSSARY.md 2>/dev/null || less ~/pibulus-os/GLOSSARY.md ;;
+            "📄 Manifesto") glow ~/pibulus-os/MANIFESTO.md 2>/dev/null || less ~/pibulus-os/MANIFESTO.md ;;
             "Back") return ;;
         esac
     done
