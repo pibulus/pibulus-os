@@ -816,6 +816,196 @@
       .request-toggle { font-size: 16px; padding: 14px 20px; }
     }
 
+    /* TAGLINE */
+    .tagline {
+      text-align: center;
+      font-family: 'VT323', monospace;
+      font-size: clamp(14px, 3vw, 18px);
+      color: var(--dim);
+      letter-spacing: 3px;
+      padding: 4px 0;
+      line-height: 1.5;
+    }
+
+    /* ABOUT / FAQ SECTION */
+    .about-section { position: relative; }
+
+    .about-toggle {
+      width: 100%;
+      justify-content: center;
+      font-family: 'VT323', monospace;
+      font-size: 15px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      padding: 10px 20px;
+      border: 1px solid #333;
+      color: var(--dim);
+      cursor: pointer;
+      background: transparent;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .about-toggle:hover { border-color: var(--dim); color: var(--text); }
+
+    .about-panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-top: none;
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition: max-height 0.4s ease-out, opacity 0.3s ease-out;
+    }
+
+    .about-panel.open {
+      max-height: 2000px;
+      opacity: 1;
+    }
+
+    .about-content {
+      padding: 20px 18px;
+    }
+
+    .about-blurb {
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.8;
+      letter-spacing: 0.5px;
+      margin-bottom: 20px;
+      border-left: 2px solid var(--cyan);
+      padding-left: 14px;
+    }
+
+    .faq-item {
+      margin-bottom: 16px;
+    }
+
+    .faq-q {
+      font-family: 'VT323', monospace;
+      font-size: 15px;
+      color: var(--cyan);
+      letter-spacing: 2px;
+      margin-bottom: 4px;
+    }
+
+    .faq-q::before {
+      content: '> ';
+      color: var(--dim);
+    }
+
+    .faq-a {
+      font-size: 12px;
+      color: var(--dim);
+      line-height: 1.7;
+      padding-left: 16px;
+      letter-spacing: 0.3px;
+    }
+
+    .faq-a strong { color: var(--text); font-weight: normal; }
+
+    /* MESSAGE DROP */
+    .msg-section {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      padding: 16px 18px;
+    }
+
+    .msg-section.open .msg-form { display: flex; }
+    .msg-section.open .msg-toggle-text { display: none; }
+
+    .msg-toggle {
+      width: 100%;
+      background: none;
+      border: none;
+      font-family: 'VT323', monospace;
+      font-size: 14px;
+      color: var(--dim);
+      letter-spacing: 3px;
+      cursor: pointer;
+      padding: 0;
+      text-align: center;
+      transition: color 0.15s;
+    }
+
+    .msg-toggle:hover { color: var(--magenta); }
+
+    .msg-form {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .msg-form input,
+    .msg-form textarea {
+      width: 100%;
+      background: #111;
+      border: 1px solid #222;
+      color: var(--text);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 14px;
+      padding: 10px 12px;
+      outline: none;
+      transition: border-color 0.2s;
+      border-radius: 0;
+    }
+
+    .msg-form input:focus,
+    .msg-form textarea:focus {
+      border-color: var(--magenta);
+      box-shadow: 0 0 6px rgba(255,0,255,0.1);
+    }
+
+    .msg-form textarea {
+      resize: vertical;
+      min-height: 60px;
+      max-height: 140px;
+      font-size: 13px;
+    }
+
+    .msg-form input::placeholder,
+    .msg-form textarea::placeholder { color: #444; }
+
+    .msg-send {
+      font-family: 'VT323', monospace;
+      font-size: 15px;
+      letter-spacing: 2px;
+      color: var(--magenta);
+      border: 1px solid var(--magenta);
+      background: transparent;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: all 0.15s;
+      align-self: flex-end;
+    }
+
+    .msg-send:hover {
+      background: rgba(255,0,255,0.1);
+      box-shadow: 0 0 10px rgba(255,0,255,0.2);
+    }
+
+    .msg-send:disabled {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    .msg-status {
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-align: center;
+    }
+
+    .msg-status.ok { color: var(--cyan); }
+    .msg-status.err { color: #ff4444; }
+
+    @media (max-width: 560px) {
+      .about-content { padding: 16px 14px; }
+      .msg-section { padding: 14px; }
+    }
+
     /* PWA standalone mode adjustments */
     @media (display-mode: standalone) {
       .container {
@@ -904,7 +1094,69 @@
       </div>
     </section>
 
-    <footer class="footer">Quick Cat Club &middot; Pi 5 Node &middot; Unlicensed &amp; Unashamed</footer>
+    <div class="tagline">Pretty good most of the time. Sometimes great.</div>
+
+    <section class="about-section">
+      <button class="about-toggle" id="aboutToggle">&#x2139; About / FAQ</button>
+      <div class="about-panel" id="aboutPanel">
+        <div class="about-content">
+          <div class="about-blurb">
+            10,000+ songs on shuffle. No algorithm. No DJ. No format.<br>
+            One person picked every track by hand, then handed it to chaos.<br>
+            You won't get Fleetwood Mac. You might get Slayer into Enya into Wu-Tang.<br>
+            Give it half an hour and don't touch anything.
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-q">WHAT IS THIS?</div>
+            <div class="faq-a">A pirate radio station running on a Raspberry Pi in Brunswick, Melbourne. One playlist. Infinite shuffle. 24/7 until the power goes out.</div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-q">WHAT KIND OF MUSIC?</div>
+            <div class="faq-a">All of it. Punk, jazz, salsa, metal, ambient, hip-hop, Afrobeat, hyperpop, country, dub, soul, whatever. The only rule is it has to be good. You'll hear <strong>Osees into Amyl into Doechii into Amon Tobin into NKOTB</strong>. The fun is in not knowing.</div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-q">WHY CAN'T I FIND [ARTIST I LIKE]?</div>
+            <div class="faq-a">There's a taste floor. No obvious stuff. No evil music. No Fleetwood Mac. No Radiohead. No Sleep Token. No Simple Plan. Some things just aren't invited.</div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-q">HOW SHOULD I LISTEN?</div>
+            <div class="faq-a">Every music platform is built around reducing uncertainty. This one embraces it.</div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-q">WILL IT GO DOWN?</div>
+            <div class="faq-a">Yes. It's a Raspberry Pi in someone's house. It will absolutely go down. It will come back. Probably.</div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-q">WHO MADE THIS?</div>
+            <div class="faq-a">One person who loves music more than they love their taste in music. Built it and now genuinely can't listen to music without it. <a href="https://github.com/pibulus" target="_blank" rel="noopener" style="color: var(--cyan); text-decoration: none; border-bottom: 1px solid rgba(0,255,234,0.3);">@pibulus</a></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="msg-section" id="msgSection">
+      <button class="msg-toggle" id="msgToggle">
+        <span class="msg-toggle-text">&#x1F4EC; DROP A MESSAGE</span>
+      </button>
+      <div class="msg-form" id="msgForm">
+        <input type="text" id="msgName" placeholder="Name (optional)" maxlength="50">
+        <textarea id="msgText" placeholder="Say something..." maxlength="500" rows="3"></textarea>
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <span class="msg-status" id="msgStatus"></span>
+          <button class="msg-send" id="msgSend">SEND</button>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <a href="https://github.com/pibulus" target="_blank" rel="noopener" style="color: #444; text-decoration: none;">pibulus</a> &middot; Pi 5 Node &middot; Unlicensed &amp; Unashamed
+    </footer>
   </div>
 
   <audio id="audioEl" preload="none" aria-hidden="true"></audio>
@@ -1437,6 +1689,71 @@
 
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden && pollTimer) { clearInterval(pollTimer); startPolling(); }
+    });
+
+    // === ABOUT TOGGLE ===
+    const aboutToggle = document.getElementById('aboutToggle');
+    const aboutPanel = document.getElementById('aboutPanel');
+    aboutToggle.addEventListener('click', () => {
+      const isOpen = aboutPanel.classList.contains('open');
+      aboutPanel.classList.toggle('open');
+      aboutToggle.innerHTML = isOpen ? '&#x2139; About / FAQ' : '&#x2139; Close';
+    });
+
+    // === MESSAGE DROP ===
+    const msgSection = document.getElementById('msgSection');
+    const msgToggle = document.getElementById('msgToggle');
+    const msgForm = document.getElementById('msgForm');
+    const msgName = document.getElementById('msgName');
+    const msgText = document.getElementById('msgText');
+    const msgSend = document.getElementById('msgSend');
+    const msgStatus = document.getElementById('msgStatus');
+
+    msgToggle.addEventListener('click', () => {
+      msgSection.classList.add('open');
+      msgText.focus();
+    });
+
+    msgSend.addEventListener('click', async () => {
+      const text = msgText.value.trim();
+      if (!text) return;
+
+      msgSend.disabled = true;
+      msgSend.textContent = '...';
+      msgStatus.textContent = '';
+      msgStatus.className = 'msg-status';
+
+      try {
+        const res = await fetch('/msg/drop', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: msgName.value.trim() || 'Anonymous listener',
+            message: text,
+            source: 'kpab.fm'
+          })
+        });
+
+        if (res.ok) {
+          msgStatus.textContent = 'SENT \u2713';
+          msgStatus.className = 'msg-status ok';
+          msgText.value = '';
+          setTimeout(() => {
+            msgSection.classList.remove('open');
+            msgStatus.textContent = '';
+          }, 2000);
+        } else {
+          const data = await res.json().catch(() => ({}));
+          msgStatus.textContent = data.error || 'Failed to send';
+          msgStatus.className = 'msg-status err';
+        }
+      } catch (e) {
+        msgStatus.textContent = 'Network error';
+        msgStatus.className = 'msg-status err';
+      }
+
+      msgSend.disabled = false;
+      msgSend.textContent = 'SEND';
     });
 
     // Register service worker for PWA
