@@ -12,8 +12,13 @@
       --bg: #050505;
       --cyan: #00ffea;
       --magenta: #ff00ff;
+      --yellow: #ffff00;
+      --green: #55cc55;
+      --red: #ff4444;
+      --orange: #ff9900;
       --text: #e0e0e0;
       --dim: #888;
+      --dim-soft: #555;
       --card-bg: rgba(0, 0, 0, 0.6);
       --card-border: rgba(0, 255, 234, 0.3);
       --card-hover-bg: rgba(0, 255, 234, 0.05);
@@ -29,70 +34,111 @@
       line-height: 1.6;
       min-height: 100vh;
       overflow-x: hidden;
-      position: relative;
     }
 
-    /* scanlines */
     body::before {
       content: '';
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.15) 2px, rgba(0,0,0,0.15) 4px);
+      position: fixed; inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.12) 2px, rgba(0,0,0,0.12) 4px);
       pointer-events: none; z-index: 999;
     }
 
-    /* grid texture */
     body::after {
       content: '';
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      position: fixed; inset: 0;
       background-image:
-        linear-gradient(rgba(0,255,234,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,255,234,0.03) 1px, transparent 1px);
+        linear-gradient(rgba(0,255,234,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,255,234,0.025) 1px, transparent 1px);
       background-size: 40px 40px;
       pointer-events: none; z-index: 0;
     }
 
     .wrapper {
       position: relative; z-index: 1;
-      max-width: 960px; margin: 0 auto; padding: 2rem 1.25rem 4rem;
+      max-width: 880px; margin: 0 auto; padding: 2rem 1.5rem 4rem;
     }
 
     /* HEADER */
-    header { text-align: center; padding: 2.5rem 0 1rem; margin-bottom: 0.5rem; }
+    header { text-align: center; padding: 2rem 0 0.5rem; }
 
     .public-link {
       display: inline-block; font-size: 0.9rem; color: var(--dim);
       text-decoration: none; letter-spacing: 1px;
       border-bottom: 1px solid transparent; transition: color 0.2s, border-color 0.2s;
-      margin-bottom: 1.2rem;
+      margin-bottom: 1rem;
     }
     .public-link:hover { color: var(--magenta); border-color: var(--magenta); }
 
     h1 {
-      font-size: clamp(2.8rem, 10vw, 5.5rem);
+      font-size: clamp(2.5rem, 9vw, 4.5rem);
       line-height: 1;
       color: var(--cyan);
       text-shadow: 0 0 10px var(--cyan), 0 0 30px rgba(0,255,234,0.4), 0 0 60px rgba(0,255,234,0.15);
       letter-spacing: 4px;
-      margin-bottom: 0.4rem;
+      margin-bottom: 0.3rem;
     }
 
     .subtitle {
-      font-size: clamp(1rem, 3vw, 1.4rem);
+      font-size: clamp(1rem, 3vw, 1.3rem);
       color: var(--magenta);
       text-shadow: 0 0 8px rgba(255,0,255,0.5);
       letter-spacing: 2px;
-      margin-bottom: 0.5rem;
     }
-
-    .header-meta { color: var(--dim); font-size: 0.95rem; letter-spacing: 1px; }
 
     @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
     .cursor {
-      display: inline-block; width: 0.7em; height: 1em;
+      display: inline-block; width: 0.6em; height: 0.9em;
       background: var(--cyan); vertical-align: text-bottom;
       animation: blink 1.2s step-end infinite;
       box-shadow: 0 0 8px var(--cyan);
     }
+
+    /* LIVE DASHBOARD */
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.75rem;
+      margin: 1.5rem 0;
+      padding: 1rem;
+      background: rgba(0,0,0,0.5);
+      border: 1px solid rgba(0,255,234,0.15);
+      border-radius: 2px;
+    }
+
+    @media (max-width: 560px) {
+      .dashboard { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .stat {
+      text-align: center;
+      padding: 0.5rem 0.25rem;
+    }
+    .stat-value {
+      font-size: 1.8rem;
+      color: var(--cyan);
+      line-height: 1;
+      text-shadow: 0 0 6px rgba(0,255,234,0.4);
+    }
+    .stat-value.warn { color: var(--orange); text-shadow: 0 0 6px rgba(255,153,0,0.4); }
+    .stat-value.crit { color: var(--red); text-shadow: 0 0 6px rgba(255,68,68,0.4); }
+    .stat-label {
+      font-size: 0.85rem;
+      color: var(--dim);
+      letter-spacing: 2px;
+      margin-top: 0.15rem;
+    }
+
+    .now-playing {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 0.5rem;
+      border-top: 1px solid rgba(0,255,234,0.1);
+      margin-top: 0.25rem;
+    }
+    .np-label { color: var(--dim); font-size: 0.8rem; letter-spacing: 2px; }
+    .np-song { color: var(--magenta); font-size: 1.1rem; letter-spacing: 1px; }
+    .np-song a { color: var(--magenta); text-decoration: none; }
+    .np-song a:hover { text-decoration: underline; }
 
     /* SECTION DIVIDERS */
     .section-divider { display: flex; align-items: center; gap: 0.75rem; margin: 2.5rem 0 1.25rem; }
@@ -101,25 +147,19 @@
       background: linear-gradient(90deg, transparent, rgba(0,255,234,0.4), transparent);
     }
     .section-label {
-      font-size: 1.2rem; color: var(--cyan); letter-spacing: 4px;
+      font-size: 1.1rem; color: var(--cyan); letter-spacing: 4px;
       white-space: nowrap; text-shadow: 0 0 8px rgba(0,255,234,0.5);
     }
 
     /* GRID */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-    }
-
+    .grid { display: grid; gap: 1rem; }
     .grid-2 { grid-template-columns: repeat(2, 1fr); }
     .grid-3 { grid-template-columns: repeat(3, 1fr); }
 
-    @media (max-width: 540px) {
-      .grid, .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    @media (max-width: 560px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
     }
-
-    @media (min-width: 541px) and (max-width: 760px) {
+    @media (min-width: 561px) and (max-width: 760px) {
       .grid-3 { grid-template-columns: repeat(2, 1fr); }
     }
 
@@ -129,7 +169,7 @@
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: 2px;
-      padding: 1.4rem 1.25rem;
+      padding: 1.4rem 1rem;
       text-decoration: none;
       color: var(--text);
       backdrop-filter: blur(12px);
@@ -147,66 +187,105 @@
     }
     .card:hover::before { left: 140%; }
     .card:hover {
-      transform: translateY(-5px);
+      transform: translateY(-4px);
       background: var(--card-hover-bg);
       border-color: rgba(0,255,234,0.7);
       box-shadow: 0 0 20px rgba(0,255,234,0.12), 0 8px 24px rgba(0,0,0,0.5);
     }
 
-    .card-emoji { font-size: 2rem; display: block; margin-bottom: 0.4rem; line-height: 1; }
-    .card-label { font-size: 1.5rem; color: var(--cyan); letter-spacing: 2px; display: block; margin-bottom: 0.1rem; }
-    .card-desc { font-size: 1.1rem; color: var(--dim); letter-spacing: 1px; }
+    .card-emoji { font-size: 1.8rem; display: block; margin-bottom: 0.35rem; line-height: 1; }
+    .card-label { font-size: 1.4rem; color: var(--cyan); letter-spacing: 2px; display: block; margin-bottom: 0.1rem; }
+    .card-desc { font-size: 1rem; color: var(--dim); letter-spacing: 1px; }
 
-    /* admin cards */
+    /* card colours */
     .card.admin .card-label { color: var(--magenta); text-shadow: 0 0 6px rgba(255,0,255,0.4); }
     .card.admin:hover { border-color: rgba(255,0,255,0.7); box-shadow: 0 0 20px rgba(255,0,255,0.12), 0 8px 24px rgba(0,0,0,0.5); }
     .card.admin::before { background: linear-gradient(90deg, transparent, var(--magenta), transparent); }
 
-    /* fun cards */
-    .card.fun .card-label { color: #ffff00; text-shadow: 0 0 6px rgba(255,255,0,0.4); }
+    .card.fun .card-label { color: var(--yellow); text-shadow: 0 0 6px rgba(255,255,0,0.4); }
     .card.fun:hover { border-color: rgba(255,255,0,0.7); box-shadow: 0 0 20px rgba(255,255,0,0.1), 0 8px 24px rgba(0,0,0,0.5); }
-    .card.fun::before { background: linear-gradient(90deg, transparent, #ffff00, transparent); }
+    .card.fun::before { background: linear-gradient(90deg, transparent, var(--yellow), transparent); }
+
+    .card.solidarity .card-label { color: var(--green); text-shadow: 0 0 6px rgba(85,204,85,0.4); }
+    .card.solidarity:hover { border-color: rgba(85,204,85,0.7); box-shadow: 0 0 20px rgba(85,204,85,0.12), 0 8px 24px rgba(0,0,0,0.5); }
+    .card.solidarity::before { background: linear-gradient(90deg, transparent, var(--green), transparent); }
 
     /* FOOTER */
-    footer { text-align: center; margin-top: 3.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(0,255,234,0.15); }
-    .footer-text { color: var(--dim); font-size: 0.9rem; letter-spacing: 3px; }
+    footer { text-align: center; margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid rgba(0,255,234,0.15); }
+    .footer-text { color: var(--dim-soft); font-size: 0.9rem; letter-spacing: 3px; }
+    .footer-text a { color: var(--dim-soft); text-decoration: none; border-bottom: 1px solid rgba(0,255,234,0.2); }
+    .footer-text a:hover { color: var(--cyan); }
     .footer-text span { color: var(--cyan); }
+
+    /* pulse on live indicator */
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .live-dot {
+      display: inline-block; width: 6px; height: 6px;
+      background: var(--green); border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+      margin-right: 4px; vertical-align: middle;
+    }
+    .live-dot.warn { background: var(--orange); }
+    .live-dot.off { background: var(--red); animation: none; }
   </style>
 </head>
 <body>
   <div class="wrapper">
 
     <header>
-      <a class="public-link" href="https://quickcat.club" target="_blank" rel="noopener">public site &rarr;</a>
+      <a class="public-link" href="https://quickcat.club" target="_blank" rel="noopener">quickcat.club &rarr;</a>
       <h1>pibulus deck<span class="cursor"></span></h1>
       <p class="subtitle">~(=^..^) command &amp; control</p>
-      <p class="header-meta">raspberry pi 5 &nbsp;/&nbsp; lan access &nbsp;/&nbsp; v6.5</p>
     </header>
+
+    <!-- LIVE DASHBOARD -->
+    <div class="dashboard" id="dashboard">
+      <div class="stat">
+        <div class="stat-value" id="d-temp">--</div>
+        <div class="stat-label">TEMP</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="d-ram">--</div>
+        <div class="stat-label">RAM</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="d-disk">--</div>
+        <div class="stat-label">DISK</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="d-up">--</div>
+        <div class="stat-label">UPTIME</div>
+      </div>
+      <div class="now-playing">
+        <span class="np-label"><span class="live-dot" id="np-dot"></span>KPAB.FM</span>
+        <div class="np-song" id="np-song">loading...</div>
+      </div>
+    </div>
 
     <!-- MEDIA -->
     <div class="section-divider">
-      <span class="section-label">[ MEDIA // THE ROOMS ]</span>
+      <span class="section-label">[ MEDIA ]</span>
     </div>
 
     <div class="grid grid-3">
       <a class="card" href="http://pibulus.local:8096" target="_blank" rel="noopener">
-        <span class="card-emoji">&#128250;</span>
+        <span class="card-emoji">&#9654;</span>
         <span class="card-label">WATCH</span>
         <span class="card-desc">movies &amp; shows</span>
       </a>
       <a class="card" href="http://pibulus.local:4533" target="_blank" rel="noopener">
-        <span class="card-emoji">&#127925;</span>
+        <span class="card-emoji">&#9835;</span>
         <span class="card-label">LISTEN</span>
         <span class="card-desc">hi-fi music</span>
       </a>
       <a class="card" href="https://kpab.fm" target="_blank" rel="noopener">
         <span class="card-emoji">&#128225;</span>
         <span class="card-label">RADIO</span>
-        <span class="card-desc">KPAB.FM pirate radio</span>
+        <span class="card-desc">KPAB.FM</span>
       </a>
     </div>
 
-    <div class="grid grid-2" style="margin-top: 1rem;">
+    <div class="grid grid-3" style="margin-top: 1rem;">
       <a class="card" href="http://pibulus.local:8083" target="_blank" rel="noopener">
         <span class="card-emoji">&#128214;</span>
         <span class="card-label">READ</span>
@@ -217,54 +296,10 @@
         <span class="card-label">COMICS</span>
         <span class="card-desc">graphic novels</span>
       </a>
-    </div>
-
-    <!-- PERSONAL -->
-    <div class="section-divider">
-      <span class="section-label">[ PERSONAL ]</span>
-    </div>
-
-    <div class="grid grid-3">
       <a class="card" href="http://pibulus.local:2283" target="_blank" rel="noopener">
         <span class="card-emoji">&#128247;</span>
         <span class="card-label">PHOTOS</span>
         <span class="card-desc">photo vault</span>
-      </a>
-<a class="card" href="http://pibulus.local:8080" target="_blank" rel="noopener">
-        <span class="card-emoji">&#128193;</span>
-        <span class="card-label">FILES</span>
-        <span class="card-desc">passport drive</span>
-      </a>
-    </div>
-
-    <!-- ADMIN -->
-    <div class="section-divider">
-      <span class="section-label">[ ADMIN ]</span>
-    </div>
-
-    <div class="grid grid-3">
-      <a class="card admin" href="http://pibulus.local:8500/admin" target="_blank" rel="noopener">
-        <span class="card-emoji">&#127897;</span>
-        <span class="card-label">RADIO ADMIN</span>
-        <span class="card-desc">station manager</span>
-      </a>
-</div>
-
-    <div class="grid grid-3" style="margin-top: 1rem;">
-      <a class="card admin" href="/status.json" target="_blank" rel="noopener">
-        <span class="card-emoji">&#127968;</span>
-        <span class="card-label">STATUS</span>
-        <span class="card-desc">system health</span>
-      </a>
-      <a class="card admin" href="http://pibulus.local:7682" target="_blank" rel="noopener">
-        <span class="card-emoji">&#128187;</span>
-        <span class="card-label">TERMINAL</span>
-        <span class="card-desc">web shell</span>
-      </a>
-      <a class="card admin" href="http://pibulus.local:5030" target="_blank" rel="noopener">
-        <span class="card-emoji">&#127926;</span>
-        <span class="card-label">SOULSEEK</span>
-        <span class="card-desc">P2P music</span>
       </a>
     </div>
 
@@ -273,21 +308,21 @@
       <span class="section-label">[ KNOWLEDGE VAULT ]</span>
     </div>
 
-    <div class="grid grid-2">
-      <a class="card" href="http://pibulus.local:8080/files/Soulseek/" target="_blank" rel="noopener">
-        <span class="card-emoji">&#127924;</span>
-        <span class="card-label">SOULSEEK FILES</span>
-        <span class="card-desc">downloaded music</span>
-      </a>
-      <a class="card" href="/palestine/">
+    <div class="grid grid-3">
+      <a class="card solidarity" href="/palestine/">
         <span class="card-emoji">&#127477;&#127480;</span>
         <span class="card-label">PALESTINE</span>
         <span class="card-desc">films, books &amp; docs</span>
       </a>
-      <a class="card" href="/wiki/">
+      <a class="card" href="http://pibulus.local:8084" target="_blank" rel="noopener">
         <span class="card-emoji">&#x1F4DA;</span>
         <span class="card-label">WIKIPEDIA</span>
         <span class="card-desc">offline encyclopedia</span>
+      </a>
+      <a class="card" href="http://pibulus.local:8080" target="_blank" rel="noopener">
+        <span class="card-emoji">&#128193;</span>
+        <span class="card-label">FILES</span>
+        <span class="card-desc">passport drive</span>
       </a>
     </div>
 
@@ -305,7 +340,7 @@
       <a class="card fun" href="/arcade/retro/">
         <span class="card-emoji">&#x1F3AE;</span>
         <span class="card-label">RETRO</span>
-        <span class="card-desc">mega drive games</span>
+        <span class="card-desc">mega drive + more</span>
       </a>
       <a class="card fun" href="http://pibulus.local:9000" target="_blank" rel="noopener">
         <span class="card-emoji">&#128172;</span>
@@ -319,15 +354,107 @@
       </a>
     </div>
 
+    <!-- ADMIN -->
+    <div class="section-divider">
+      <span class="section-label">[ ADMIN ]</span>
+    </div>
+
+    <div class="grid grid-3">
+      <a class="card admin" href="http://pibulus.local:8500/admin" target="_blank" rel="noopener">
+        <span class="card-emoji">&#127897;</span>
+        <span class="card-label">RADIO MGR</span>
+        <span class="card-desc">AzuraCast admin</span>
+      </a>
+      <a class="card admin" href="http://pibulus.local:5030" target="_blank" rel="noopener">
+        <span class="card-emoji">&#127926;</span>
+        <span class="card-label">SOULSEEK</span>
+        <span class="card-desc">P2P downloads</span>
+      </a>
+      <a class="card admin" href="http://pibulus.local:7682" target="_blank" rel="noopener">
+        <span class="card-emoji">&#128187;</span>
+        <span class="card-label">TERMINAL</span>
+        <span class="card-desc">web shell</span>
+      </a>
+    </div>
+
+    <div class="grid grid-3" style="margin-top: 1rem;">
+      <a class="card admin" href="/drop/">
+        <span class="card-emoji">&#x1F4E6;</span>
+        <span class="card-label">DROP ZONE</span>
+        <span class="card-desc">file uploads</span>
+      </a>
+      <a class="card admin" href="/status.json" target="_blank" rel="noopener">
+        <span class="card-emoji">&#x1F4CA;</span>
+        <span class="card-label">RAW DATA</span>
+        <span class="card-desc">status API</span>
+      </a>
+      <a class="card admin" href="https://github.com/pibulus/pibulus-os" target="_blank" rel="noopener">
+        <span class="card-emoji">&#x1F4BB;</span>
+        <span class="card-label">GITHUB</span>
+        <span class="card-desc">source code</span>
+      </a>
+    </div>
+
     <footer>
-      <p class="footer-text"><span>PIBULUS DECK</span> &mdash; PI 5 CYBERDECK v6.5 &mdash; <span>LAN ONLY</span></p>
-      <p class="footer-text" style="margin-top: 0.4rem; font-size: 0.8rem;">~(=^..^) pibulus.local // <a href="https://github.com/pibulus/pibulus-os" target="_blank" rel="noopener" style="color: var(--dim); text-decoration: none; border-bottom: 1px solid rgba(0,255,234,0.2);">github</a></p>
+      <p class="footer-text"><span>PIBULUS DECK</span> v7 &mdash; raspberry pi 5 &mdash; <span id="f-containers">--</span> containers</p>
+      <p class="footer-text" style="margin-top: 0.3rem; font-size: 0.8rem;">
+        ~(=^..^) <a href="https://github.com/pibulus/pibulus-os">pibulus-os</a> // last ping <span id="f-ts">--:--</span>
+      </p>
     </footer>
 
   </div>
 
   <script>
-    // Rewrite links for remote access via deck.quickcat.club
+    // Live dashboard — polls status.json every 30s
+    function loadStatus() {
+      fetch('/status.json', { cache: 'no-cache' })
+        .then(r => r.ok ? r.json() : null)
+        .then(d => {
+          if (!d) return;
+
+          // Temp
+          var tempEl = document.getElementById('d-temp');
+          var t = parseFloat(d.temp);
+          tempEl.textContent = t.toFixed(0) + '\u00B0C';
+          tempEl.className = 'stat-value' + (t >= 70 ? ' crit' : t >= 60 ? ' warn' : '');
+
+          // RAM
+          var ramEl = document.getElementById('d-ram');
+          ramEl.textContent = d.ram_pct + '%';
+          ramEl.className = 'stat-value' + (d.ram_pct >= 90 ? ' crit' : d.ram_pct >= 75 ? ' warn' : '');
+
+          // Disk
+          var diskEl = document.getElementById('d-disk');
+          diskEl.textContent = d.disk_used;
+          diskEl.className = 'stat-value' + (d.disk_pct >= 85 ? ' crit' : d.disk_pct >= 75 ? ' warn' : '');
+
+          // Uptime
+          document.getElementById('d-up').textContent = d.uptime;
+
+          // Now playing
+          var npDot = document.getElementById('np-dot');
+          var npSong = document.getElementById('np-song');
+          if (d.np_artist && d.np_title) {
+            npSong.innerHTML = '<a href="https://kpab.fm" target="_blank">' +
+              d.np_artist + ' &mdash; ' + d.np_title + '</a>' +
+              (d.np_listeners > 0 ? ' <span style="color:var(--dim);font-size:0.85rem;">(' + d.np_listeners + ' listening)</span>' : '');
+            npDot.className = 'live-dot';
+          } else {
+            npSong.textContent = 'offline';
+            npDot.className = 'live-dot off';
+          }
+
+          // Footer
+          document.getElementById('f-containers').textContent = d.containers;
+          document.getElementById('f-ts').textContent = d.ts;
+        })
+        .catch(() => {});
+    }
+
+    loadStatus();
+    setInterval(loadStatus, 30000);
+
+    // Rewrite pibulus.local links for remote access
     (function() {
       if (location.hostname === 'pibulus.local') return;
 
@@ -336,8 +463,7 @@
         '4533': 'https://music.quickcat.club',
         '8083': 'https://read.quickcat.club',
         '5000': 'https://comics.quickcat.club',
-        '8500': 'https://kpab.fm',
-        '8000': 'https://radio.quickcat.club'
+        '8500': 'https://kpab.fm'
       };
 
       document.querySelectorAll('a[href*="pibulus.local:"]').forEach(function(a) {
@@ -347,12 +473,12 @@
         if (portMap[port]) {
           a.href = portMap[port] + path;
         } else {
-          // No tunnel for this service - mark as LAN only
           var desc = a.querySelector('.card-desc');
-          if (desc) desc.textContent = desc.textContent + ' (LAN only)';
+          if (desc) desc.textContent += ' (LAN)';
           a.removeAttribute('href');
-          a.style.opacity = '0.4';
+          a.style.opacity = '0.35';
           a.style.cursor = 'not-allowed';
+          a.title = 'LAN access only — connect to pibulus.local';
         }
       });
     })();
