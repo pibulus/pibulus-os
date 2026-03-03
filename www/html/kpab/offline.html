@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KPAB.FM — Technical Difficulties</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #050505;
+    color: #e0e0e0;
+    font-family: 'Courier New', monospace;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.2) 2px, rgba(0,0,0,0.2) 4px);
+    pointer-events: none;
+    z-index: 10;
+  }
+  .card {
+    text-align: center;
+    padding: 40px 30px;
+    max-width: 500px;
+    width: 90%;
+  }
+  .station {
+    font-size: clamp(48px, 12vw, 80px);
+    color: #ff00ff;
+    text-shadow: 0 0 10px #ff00ff, 0 0 30px rgba(255,0,255,0.4);
+    letter-spacing: 4px;
+    animation: flicker 3s ease-in-out infinite;
+  }
+  .bars {
+    margin: 24px auto;
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    height: 60px;
+    align-items: flex-end;
+  }
+  .bar {
+    width: 8px;
+    background: #00ffea;
+    border-radius: 1px;
+    opacity: 0.6;
+  }
+  .bar:nth-child(1) { height: 20px; animation: pulse 1.2s 0.0s ease-in-out infinite; }
+  .bar:nth-child(2) { height: 35px; animation: pulse 1.2s 0.1s ease-in-out infinite; }
+  .bar:nth-child(3) { height: 50px; animation: pulse 1.2s 0.2s ease-in-out infinite; }
+  .bar:nth-child(4) { height: 60px; animation: pulse 1.2s 0.3s ease-in-out infinite; }
+  .bar:nth-child(5) { height: 45px; animation: pulse 1.2s 0.4s ease-in-out infinite; }
+  .bar:nth-child(6) { height: 30px; animation: pulse 1.2s 0.5s ease-in-out infinite; }
+  .bar:nth-child(7) { height: 15px; animation: pulse 1.2s 0.6s ease-in-out infinite; }
+  .msg {
+    font-size: 22px;
+    color: #00ffea;
+    text-shadow: 0 0 8px rgba(0,255,234,0.5);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .sub {
+    font-size: 13px;
+    color: #666;
+    letter-spacing: 2px;
+    line-height: 1.8;
+  }
+  .sub span {
+    color: #ff00ff;
+  }
+  @keyframes flicker {
+    0%, 100% { opacity: 1; }
+    92% { opacity: 1; }
+    93% { opacity: 0.2; }
+    95% { opacity: 1; }
+    96% { opacity: 0.15; }
+    97% { opacity: 1; }
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scaleY(0.3); opacity: 0.3; }
+    50% { transform: scaleY(1); opacity: 0.8; }
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="station">KPAB.FM</div>
+  <div class="bars">
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+  </div>
+  <div class="msg">Technical Difficulties</div>
+  <div class="sub">
+    The pirate signal is temporarily offline.<br>
+    Our <span>Pi 5</span> is probably rebooting.<br><br>
+    Try again in a minute or two.<br><br>
+    <span id="retry">Retrying in <span id="countdown">30</span>s...</span>
+  </div>
+</div>
+<script>
+  let sec = 30;
+  const cd = document.getElementById('countdown');
+  setInterval(() => {
+    sec--;
+    cd.textContent = sec;
+    if (sec <= 0) {
+      // Try to reach the API before redirecting back
+      fetch('/api/nowplaying/kpab.fm', { cache: 'no-store' })
+        .then(r => { if (r.ok) window.location.href = '/'; else sec = 15; })
+        .catch(() => { sec = 15; });
+    }
+  }, 1000);
+</script>
+</body>
+</html>

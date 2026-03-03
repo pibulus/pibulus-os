@@ -50,6 +50,13 @@
       text-align: center; color: var(--dim-soft); font-size: 0.95rem;
       max-width: 600px; margin: 0.75rem auto 0; line-height: 1.5;
     }
+    .breadcrumbs {
+      display: flex; flex-wrap: wrap; gap: 4px; align-items: center;
+      margin: 1.5rem 0 0.5rem; font-size: 0.95rem; color: var(--dim);
+    }
+    .breadcrumbs a { color: var(--accent); text-decoration: none; cursor: pointer; }
+    .breadcrumbs a:hover { text-decoration: underline; }
+    .breadcrumbs .sep { color: var(--dim-soft); margin: 0 2px; }
     .count { font-size: 0.85rem; color: var(--dim); letter-spacing: 1px; margin: 1.5rem 0 0.5rem; text-align: right; }
     .file-list { display: flex; flex-direction: column; gap: 4px; }
     .file-item {
@@ -61,6 +68,7 @@
       text-decoration: none;
       color: var(--text);
       transition: all 0.15s ease;
+      cursor: pointer;
     }
     .file-item:hover {
       border-left-color: var(--accent);
@@ -93,6 +101,7 @@
       <p class="intro">grimoires, chaos magic, tarot, astrology, conspiracy archives, SubGenius recruitment materials. no judgement. no algorithms. just shelves.</p>
     </header>
 
+    <div class="breadcrumbs" id="breadcrumbs"></div>
     <div class="count" id="item-count"></div>
     <div class="file-list" id="items"><div class="loading">scanning the vault...</div></div>
 
@@ -101,6 +110,8 @@
     </footer>
   </div>
   <script>
+    var currentPath = '';
+
     function iconFor(name) {
       var n = name.toLowerCase();
       if (n.endsWith('.pdf') || n.endsWith('.epub') || n.endsWith('.mobi')) return '\u{1F4D6}';
@@ -126,12 +137,44 @@
       return '';
     }
 
+    function buildPath(subpath) {
+      var base = '/conspiracy/files/';
+      if (!subpath) return base;
+      return base + subpath.split('/').map(encodeURIComponent).join('/') + '/';
+    }
+
+    function renderBreadcrumbs() {
+      var bc = document.getElementById('breadcrumbs');
+      if (!currentPath) {
+        bc.innerHTML = '';
+        return;
+      }
+      var parts = currentPath.split('/').filter(Boolean);
+      var html = '<a onclick="navigate(\'\')">Vault</a>';
+      var accumulated = '';
+      for (var i = 0; i < parts.length; i++) {
+        accumulated += (accumulated ? '/' : '') + parts[i];
+        html += '<span class="sep">/</span>';
+        if (i === parts.length - 1) {
+          html += '<span>' + decodeURIComponent(parts[i]) + '</span>';
+        } else {
+          html += '<a onclick="navigate(\'' + accumulated.replace(/'/g, "\\'") + '\')">' + decodeURIComponent(parts[i]) + '</a>';
+        }
+      }
+      bc.innerHTML = html;
+    }
+
     function makeItem(entry, isDir) {
       var a = document.createElement('a');
       a.className = 'file-item';
-      a.href = '/conspiracy/files/' + encodeURIComponent(entry.name) + (isDir ? '/' : '');
-      a.target = '_blank';
-      a.rel = 'noopener';
+      if (isDir) {
+        var newPath = currentPath ? currentPath + '/' + entry.name : entry.name;
+        a.onclick = function() { navigate(newPath); };
+      } else {
+        a.href = buildPath(currentPath) + encodeURIComponent(entry.name);
+        a.target = '_blank';
+        a.rel = 'noopener';
+      }
       a.innerHTML =
         '<span class="file-icon">' + (isDir ? '\u{1F4C1}' : iconFor(entry.name)) + '</span>' +
         '<span class="file-info">' +
@@ -142,8 +185,17 @@
       return a;
     }
 
+    function navigate(path) {
+      currentPath = path;
+      renderBreadcrumbs();
+      load();
+    }
+
     function load() {
-      fetch('/conspiracy/files/', { cache: 'no-cache' })
+      var url = buildPath(currentPath);
+      document.getElementById('items').innerHTML = '<div class="loading">scanning the vault...</div>';
+
+      fetch(url, { cache: 'no-cache' })
         .then(function(r) { return r.text(); })
         .then(function(text) {
           var entries;
@@ -154,7 +206,6 @@
           }
 
           entries.sort(function(a,b) {
-            // Directories first, then alphabetical
             if (a.type === 'directory' && b.type !== 'directory') return -1;
             if (a.type !== 'directory' && b.type === 'directory') return 1;
             return cleanName(a.name).toLowerCase().localeCompare(cleanName(b.name).toLowerCase());
@@ -173,7 +224,7 @@
         });
     }
 
-    load();
+    navigate('');
   </script>
 </body>
 </html>

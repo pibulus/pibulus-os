@@ -50,6 +50,13 @@
       text-align: center; color: var(--dim-soft); font-size: 0.95rem;
       max-width: 600px; margin: 0.75rem auto 0; line-height: 1.5;
     }
+    .breadcrumbs {
+      display: flex; flex-wrap: wrap; gap: 4px; align-items: center;
+      margin: 1.5rem 0 0.5rem; font-size: 0.95rem; color: var(--dim);
+    }
+    .breadcrumbs a { color: var(--green); text-decoration: none; cursor: pointer; }
+    .breadcrumbs a:hover { text-decoration: underline; }
+    .breadcrumbs .sep { color: var(--dim-soft); margin: 0 2px; }
     .section-divider { display: flex; align-items: center; gap: 0.75rem; margin: 2.5rem 0 1rem; }
     .section-divider::before, .section-divider::after {
       content: ''; flex: 1; height: 1px;
@@ -67,6 +74,7 @@
       text-decoration: none;
       color: var(--text);
       transition: all 0.15s ease;
+      cursor: pointer;
     }
     .file-item:hover {
       border-left-color: var(--green);
@@ -89,6 +97,7 @@
     .loading { text-align: center; color: var(--dim); padding: 2rem 0; }
     footer { text-align: center; margin-top: 3rem; padding-top: 1rem; border-top: 1px solid rgba(85,204,85,0.1); }
     .footer-text { color: var(--dim-soft); font-size: 0.9rem; letter-spacing: 2px; }
+    #root-view, #browse-view { display: none; }
     @media (max-width: 560px) {
       .file-name { font-size: 1rem; }
       .file-action { opacity: 1; }
@@ -104,13 +113,24 @@
       <p class="intro">a curated collection of documentaries, cinema, and essential reading. download, watch, share freely.</p>
     </header>
 
-    <div class="section-divider"><span class="section-label">[ FILMS &amp; DOCUMENTARIES ]</span></div>
-    <div class="count" id="film-count"></div>
-    <div class="file-list" id="films"><div class="loading">scanning library...</div></div>
+    <div class="breadcrumbs" id="breadcrumbs"></div>
 
-    <div class="section-divider"><span class="section-label">[ BOOKS &amp; DOCUMENTS ]</span></div>
-    <div class="count" id="book-count"></div>
-    <div class="file-list" id="books"><div class="loading">scanning library...</div></div>
+    <!-- Root view: films/books split -->
+    <div id="root-view">
+      <div class="section-divider"><span class="section-label">[ FILMS &amp; DOCUMENTARIES ]</span></div>
+      <div class="count" id="film-count"></div>
+      <div class="file-list" id="films"><div class="loading">scanning library...</div></div>
+
+      <div class="section-divider"><span class="section-label">[ BOOKS &amp; DOCUMENTS ]</span></div>
+      <div class="count" id="book-count"></div>
+      <div class="file-list" id="books"><div class="loading">scanning library...</div></div>
+    </div>
+
+    <!-- Browse view: flat list for subdirectories -->
+    <div id="browse-view">
+      <div class="count" id="browse-count"></div>
+      <div class="file-list" id="browse-items"></div>
+    </div>
 
     <footer>
       <p class="footer-text">free palestine &mdash; download, watch, share</p>
@@ -119,8 +139,8 @@
   <script>
     var VIDEO_EXT = ['.mp4','.mkv','.avi','.webm'];
     var DOC_EXT = ['.pdf','.epub','.mobi','.djvu','.txt'];
+    var currentPath = '';
 
-    // Clean up messy torrent/download filenames into readable titles
     var TITLE_MAP = {
       'BBC.Storyville.2024.Life.and.Death.in.Gaza': { title: 'Life and Death in Gaza', year: '2024', source: 'BBC Storyville' },
       'BBC.The.Darkest.Days.Israel-Gaza.Six.Months.On': { title: 'The Darkest Days: Israel-Gaza, Six Months On', year: '2024', source: 'BBC' },
@@ -138,7 +158,7 @@
       'No Other Land 2024': { title: 'No Other Land', year: '2024', source: '' },
       'The Voice Of Hind Rajab': { title: 'The Voice of Hind Rajab', year: '2025', source: '' },
       'Wajib': { title: 'Wajib', year: '2017', source: '' },
-      'The Ethnic Cleansing of Palestine': { title: 'The Ethnic Cleansing of Palestine', year: '', source: 'Ilan Papp\u00e9' },
+      'The Ethnic Cleansing of Palestine': { title: 'The Ethnic Cleansing of Palestine', year: '', source: 'Ilan Pappe' },
       'Palestine Speaks': { title: 'Palestine Speaks: Narratives of Life Under Occupation', year: '', source: 'Cate Malek' },
       'Zaitoun': { title: 'Zaitoun: Recipes from the Palestinian Kitchen', year: '', source: '' },
       'By Way of Deception': { title: 'By Way of Deception', year: '', source: '' },
@@ -171,7 +191,46 @@
       return '';
     }
 
-    function makeItem(entry, isDir) {
+    function cleanDisplayName(name) {
+      return name
+        .replace(/\.(mp4|mkv|avi|webm|pdf|epub|mobi|djvu|txt|srt|nfo|jpg|png)$/i, '')
+        .replace(/www\.\w+\.\w+\s*-?\s*/g, '')
+        .replace(/\[.*?\]/g, '')
+        .replace(/\{.*?\}/g, '')
+        .replace(/\d{3,4}p\b.*$/i, '')
+        .replace(/\s*--\s*.*/g, '')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+    }
+
+    function buildPath(subpath) {
+      var base = '/palestine/files/';
+      if (!subpath) return base;
+      return base + subpath.split('/').map(encodeURIComponent).join('/') + '/';
+    }
+
+    function renderBreadcrumbs() {
+      var bc = document.getElementById('breadcrumbs');
+      if (!currentPath) {
+        bc.innerHTML = '';
+        return;
+      }
+      var parts = currentPath.split('/').filter(Boolean);
+      var html = '<a onclick="navigate(\'\')">Library</a>';
+      var accumulated = '';
+      for (var i = 0; i < parts.length; i++) {
+        accumulated += (accumulated ? '/' : '') + parts[i];
+        html += '<span class="sep">/</span>';
+        if (i === parts.length - 1) {
+          html += '<span>' + decodeURIComponent(parts[i]) + '</span>';
+        } else {
+          html += '<a onclick="navigate(\'' + accumulated.replace(/'/g, "\\'") + '\')">' + decodeURIComponent(parts[i]) + '</a>';
+        }
+      }
+      bc.innerHTML = html;
+    }
+
+    function makeRootItem(entry, isDir) {
       var mapped = lookupTitle(entry.name);
       var displayName, meta;
 
@@ -184,16 +243,7 @@
         if (sz) parts.push(sz);
         meta = parts.join(' &middot; ');
       } else {
-        // Fallback: clean up raw name
-        displayName = entry.name
-          .replace(/\.(mp4|mkv|avi|webm|pdf|epub|mobi|djvu)$/i, '')
-          .replace(/www\.\w+\.\w+\s*-?\s*/g, '')
-          .replace(/\[.*?\]/g, '')
-          .replace(/\{.*?\}/g, '')
-          .replace(/\d{3,4}p\b.*$/i, '')
-          .replace(/\s*--\s*.*/g, '')
-          .replace(/\s{2,}/g, ' ')
-          .trim();
+        displayName = cleanDisplayName(entry.name);
         var yearMatch = entry.name.match(/[.(]?((?:19|20)\d{2})[.)]/);
         var yearStr = yearMatch ? '<span class="file-year">' + yearMatch[1] + '</span>' : '';
         meta = [yearStr, isDir ? 'folder' : sizeStr(entry.size || 0)].filter(Boolean).join(' &middot; ');
@@ -201,21 +251,68 @@
 
       var a = document.createElement('a');
       a.className = 'file-item';
-      a.href = '/palestine/files/' + encodeURIComponent(entry.name) + (isDir ? '/' : '');
-      a.target = '_blank';
-      a.rel = 'noopener';
+      if (isDir) {
+        a.onclick = function() { navigate(entry.name); };
+      } else {
+        a.href = buildPath(currentPath) + encodeURIComponent(entry.name);
+        a.target = '_blank';
+        a.rel = 'noopener';
+      }
       a.innerHTML =
         '<span class="file-icon">' + (isDir ? '\u{1F4C1}' : iconFor(entry.name)) + '</span>' +
         '<span class="file-info">' +
           '<span class="file-name">' + displayName + '</span>' +
           '<span class="file-meta">' + meta + '</span>' +
         '</span>' +
-        '<span class="file-action">' + (isDir ? 'OPEN' : 'DOWNLOAD') + '</span>';
+        '<span class="file-action">' + (isDir ? 'BROWSE' : 'DOWNLOAD') + '</span>';
       return a;
     }
 
+    function makeBrowseItem(entry, isDir) {
+      var displayName = cleanDisplayName(entry.name);
+      var meta = isDir ? 'folder' : sizeStr(entry.size || 0);
+
+      var a = document.createElement('a');
+      a.className = 'file-item';
+      if (isDir) {
+        var newPath = currentPath ? currentPath + '/' + entry.name : entry.name;
+        a.onclick = function() { navigate(newPath); };
+      } else {
+        a.href = buildPath(currentPath) + encodeURIComponent(entry.name);
+        a.target = '_blank';
+        a.rel = 'noopener';
+      }
+      a.innerHTML =
+        '<span class="file-icon">' + (isDir ? '\u{1F4C1}' : iconFor(entry.name)) + '</span>' +
+        '<span class="file-info">' +
+          '<span class="file-name">' + displayName + '</span>' +
+          '<span class="file-meta">' + meta + '</span>' +
+        '</span>' +
+        '<span class="file-action">' + (isDir ? 'BROWSE' : 'DOWNLOAD') + '</span>';
+      return a;
+    }
+
+    function navigate(path) {
+      currentPath = path;
+      renderBreadcrumbs();
+      load();
+    }
+
     function load() {
-      fetch('/palestine/files/', { cache: 'no-cache' })
+      var url = buildPath(currentPath);
+      var isRoot = !currentPath;
+
+      document.getElementById('root-view').style.display = isRoot ? 'block' : 'none';
+      document.getElementById('browse-view').style.display = isRoot ? 'none' : 'block';
+
+      if (isRoot) {
+        document.getElementById('films').innerHTML = '<div class="loading">scanning library...</div>';
+        document.getElementById('books').innerHTML = '<div class="loading">scanning library...</div>';
+      } else {
+        document.getElementById('browse-items').innerHTML = '<div class="loading">scanning...</div>';
+      }
+
+      fetch(url, { cache: 'no-cache' })
         .then(function(res) { return res.text(); })
         .then(function(text) {
           var entries;
@@ -234,50 +331,76 @@
             });
           }
 
-          var films = [];
-          var books = [];
-
-          entries.forEach(function(e) {
-            var n = e.name.toLowerCase();
-            if (e.type === 'directory') {
-              films.push(e);
-            } else if (VIDEO_EXT.some(function(ext) { return n.endsWith(ext); })) {
-              films.push(e);
-            } else if (DOC_EXT.some(function(ext) { return n.endsWith(ext); })) {
-              books.push(e);
-            }
-          });
-
-          // Sort by clean title
-          function sortKey(e) {
-            var m = lookupTitle(e.name);
-            return m ? m.title.toLowerCase() : e.name.toLowerCase();
+          if (isRoot) {
+            renderRoot(entries);
+          } else {
+            renderBrowse(entries);
           }
-          films.sort(function(a,b) { return sortKey(a).localeCompare(sortKey(b)); });
-          books.sort(function(a,b) { return sortKey(a).localeCompare(sortKey(b)); });
-
-          var filmsList = document.getElementById('films');
-          var booksList = document.getElementById('books');
-
-          filmsList.innerHTML = '';
-          booksList.innerHTML = '';
-
-          document.getElementById('film-count').textContent = films.length + ' items';
-          document.getElementById('book-count').textContent = books.length + ' items';
-
-          if (films.length === 0) filmsList.innerHTML = '<div class="loading">no films found</div>';
-          films.forEach(function(e) { filmsList.appendChild(makeItem(e, e.type === 'directory')); });
-
-          if (books.length === 0) booksList.innerHTML = '<div class="loading">no documents found</div>';
-          books.forEach(function(e) { booksList.appendChild(makeItem(e, false)); });
         })
         .catch(function() {
-          document.getElementById('films').innerHTML = '<div class="loading">could not load library</div>';
-          document.getElementById('books').innerHTML = '';
+          if (isRoot) {
+            document.getElementById('films').innerHTML = '<div class="loading">could not load library</div>';
+            document.getElementById('books').innerHTML = '';
+          } else {
+            document.getElementById('browse-items').innerHTML = '<div class="loading">could not load folder</div>';
+          }
         });
     }
 
-    load();
+    function renderRoot(entries) {
+      var films = [];
+      var books = [];
+
+      entries.forEach(function(e) {
+        var n = e.name.toLowerCase();
+        if (e.type === 'directory') {
+          films.push(e);
+        } else if (VIDEO_EXT.some(function(ext) { return n.endsWith(ext); })) {
+          films.push(e);
+        } else if (DOC_EXT.some(function(ext) { return n.endsWith(ext); })) {
+          books.push(e);
+        }
+      });
+
+      function sortKey(e) {
+        var m = lookupTitle(e.name);
+        return m ? m.title.toLowerCase() : e.name.toLowerCase();
+      }
+      films.sort(function(a,b) { return sortKey(a).localeCompare(sortKey(b)); });
+      books.sort(function(a,b) { return sortKey(a).localeCompare(sortKey(b)); });
+
+      var filmsList = document.getElementById('films');
+      var booksList = document.getElementById('books');
+      filmsList.innerHTML = '';
+      booksList.innerHTML = '';
+
+      document.getElementById('film-count').textContent = films.length + ' items';
+      document.getElementById('book-count').textContent = books.length + ' items';
+
+      if (films.length === 0) filmsList.innerHTML = '<div class="loading">no films found</div>';
+      films.forEach(function(e) { filmsList.appendChild(makeRootItem(e, e.type === 'directory')); });
+
+      if (books.length === 0) booksList.innerHTML = '<div class="loading">no documents found</div>';
+      books.forEach(function(e) { booksList.appendChild(makeRootItem(e, false)); });
+    }
+
+    function renderBrowse(entries) {
+      entries.sort(function(a,b) {
+        if (a.type === 'directory' && b.type !== 'directory') return -1;
+        if (a.type !== 'directory' && b.type === 'directory') return 1;
+        return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
+      });
+
+      var list = document.getElementById('browse-items');
+      list.innerHTML = '';
+      document.getElementById('browse-count').textContent = entries.length + ' items';
+
+      entries.forEach(function(e) {
+        list.appendChild(makeBrowseItem(e, e.type === 'directory'));
+      });
+    }
+
+    navigate('');
   </script>
 </body>
 </html>

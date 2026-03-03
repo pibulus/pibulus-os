@@ -3,4 +3,8 @@ kpab/catalog.json
 arcade/retro/games.json
 arcade/retro/roms/
 arcade/games/
+
+# Runtime state (lives on passport, overlaid by docker)
 status.json
+msg/
+wall/state.json

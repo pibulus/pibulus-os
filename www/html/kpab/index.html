@@ -864,22 +864,22 @@
       width: 100%;
       justify-content: center;
       font-family: 'VT323', monospace;
-      font-size: 13px;
-      letter-spacing: 2px;
+      font-size: 14px;
+      letter-spacing: 3px;
       text-transform: uppercase;
-      padding: 10px 20px;
-      border: 1px solid #333;
+      padding: 0;
+      border: none;
       color: var(--dim);
       cursor: pointer;
       background: transparent;
-      transition: all 0.15s ease;
+      transition: color 0.15s ease;
       display: flex;
       align-items: center;
       gap: 8px;
       -webkit-tap-highlight-color: transparent;
     }
 
-    .about-toggle:hover { border-color: var(--dim); color: var(--text); }
+    .about-toggle:hover { color: var(--cyan); }
 
     .about-panel {
       background: var(--panel);
@@ -1133,9 +1133,8 @@
       <div class="about-panel" id="aboutPanel">
         <div class="about-content">
           <div class="about-blurb">
-            10,000+ tracks curated by hand. Every genre, every era, every mood.<br>
-            You won't get Fleetwood Mac. You might get Slayer into Enya into Wu-Tang.<br>
-            Every music platform is built around reducing uncertainty. This one embraces it.
+            10,000+ curated tracks. Every genre, every era, every mood.<br>
+	    The algorithms are corrupted. Embrace uncertainty.
           </div>
 
           <div class="faq-item">
@@ -1145,7 +1144,7 @@
 
           <div class="faq-item">
             <div class="faq-q">WHAT KIND OF MUSIC?</div>
-            <div class="faq-a">All of it. Punk, jazz, salsa, metal, ambient, hip-hop, Afrobeat, hyperpop, country, dub, soul, whatever. <strong>Chance the Rapper into Cibo Matto into Frank Zappa into Doechii.</strong> The curation guarantees a floor &mdash; nothing evil, nothing obvious &mdash; but within that, anything can happen. The fun is in not knowing what's next.</div>
+            <div class="faq-a">All of it. Punk, jazz, salsa, metal, ambient, hip-hop, Afrobeat, hyperpop, country, dub, soul, whatever. The curation guarantees a floor &mdash; nothing evil, nothing obvious &mdash; but within that, anything can happen. The fun is in not knowing what's next.</div>
           </div>
 
           <div class="faq-item">
@@ -1160,17 +1159,17 @@
 
           <div class="faq-item">
             <div class="faq-q">WHAT'S COMING?</div>
-            <div class="faq-a">Station IDs. Wacky podcasts. Experimental hours. More music. We'll do whatever we want &mdash; it's pirate radio. The library keeps growing. The signal keeps evolving.</div>
+            <div class="faq-a">Station IDs. Wacky podcasts. Experimental hours. More music. Whatever! &mdash; it's pirate radio. The frequency must grow.</div>
           </div>
 
           <div class="faq-item">
             <div class="faq-q">WILL IT GO DOWN?</div>
-            <div class="faq-a">Almost certainly. It's a Raspberry Pi in my house. It crashes when you look at it funny. But it always comes back. Uptime is a corporate metric. We measure in vibes.</div>
+            <div class="faq-a">Almost certainly. It's an $80 raspberry pi strapped to a hard drive on a desk in my house. It crashes when I look at it funny. But it always comes back. Uptime is a corporate metric. We measure in vibes.</div>
           </div>
 
           <div class="faq-item">
             <div class="faq-q">WHO MADE THIS?</div>
-            <div class="faq-a">Pablo. Mexican-Australian in Melbourne who builds things and hates the machine. Plays in <a href="https://mesacosa.bandcamp.com/album/el-es-demons" target="_blank" rel="noopener" style="color: var(--cyan); text-decoration: none; border-bottom: 1px solid rgba(0,255,234,0.3);">Mesa Cosa</a>, runs <a href="https://bonesouprules.com" target="_blank" rel="noopener" style="color: var(--cyan); text-decoration: none; border-bottom: 1px solid rgba(0,255,234,0.3);">Bone Soup</a> touring, codes at <a href="https://github.com/pibulus" target="_blank" rel="noopener" style="color: var(--cyan); text-decoration: none; border-bottom: 1px solid rgba(0,255,234,0.3);">GitHub</a>. Part of the <a href="https://quickcat.club" target="_blank" rel="noopener" style="color: var(--cyan); text-decoration: none; border-bottom: 1px solid rgba(0,255,234,0.3);">Quick Cat Club</a>. Pro choice, pro Palestine, pro wrestling.</div>
+            <div class="faq-a">Pablo. Medium sized Mexican-Australian in Brunswick, Melbourne. Card carrying Subgenius. Plays in <a href="https://mesacosa.bandcamp.com/album/el-es-demons" target="_blank" rel="noopener" style="color: var(--cyan); text-decoration: none; border-bottom: 1px solid rgba(0,255,234,0.3);">Mesa Cosa</a>, runs <a href="https://bonesouprules.com" target="_blank" rel="noopener" style="color: var(--cyan); text-decoration: none; border-bottom: 1px solid rgba(0,255,234,0.3);">Bone Soup</a> touring, codes at <a href="https://github.com/pibulus" target="_blank" rel="noopener" style="color: var(--cyan); text-decoration: none; border-bottom: 1px solid rgba(0,255,234,0.3);">GitHub</a>. Part of the <a href="https://quickcat.club" target="_blank" rel="noopener" style="color: var(--cyan); text-decoration: none; border-bottom: 1px solid rgba(0,255,234,0.3);">Quick Cat Club</a>. Pro choice, pro Palestine, pro wrestling.</div>
           </div>
         </div>
       </div>
@@ -1191,25 +1190,24 @@
     </section>
 
     <footer class="footer">
-      <a href="https://github.com/pibulus" target="_blank" rel="noopener" style="color: #444; text-decoration: none;">pibulus</a> &middot; Pi 5 Node &middot; Unlicensed &amp; Unashamed
+      <a href="https://github.com/pibulus" target="_blank" rel="noopener" style="color: #444; text-decoration: none;">pibulus</a> &middot; Pi 5 Node &middot; Software is Politics &amp; Free Palestine
     </footer>
   </div>
 
   <audio id="audioEl" preload="none" aria-hidden="true"></audio>
 
   <script>
-    /* ── ROTATING TAGLINES ── */
+    /* ── ROTATING TAGLINES (disabled) ── */
+    /*
     const TAGLINES = [
       'Pretty good most of the time. Sometimes great.',
       'It\'s like rage but for music.',
       'Tune in and freak out.',
-      'All tunes all time 24/7 7/11.',
-      'It sounds weird but I think it\'s revolutionary.',
+      'All tunes All time.',
       'Sometimes it\'s nice to not be able to skip.',
-      'For chill ears with chill minds.',
       'Satisfaction guaranteed or triple your money back.',
       'From salsa to Slayer to Wu-Tang and back.',
-      'We\'ll make our own algorithm.',
+      'Pull the wool over your own eyes.',
       'Fuck em if they can\'t take a joke.',
       'Give me slack or kill me.',
     ];
@@ -1224,6 +1222,7 @@
         setTimeout(() => { el.textContent = TAGLINES[idx]; el.classList.remove('fading'); }, 600);
       }, 12000);
     })();
+    */
 
     const API_URL    = '/api/nowplaying/kpab.fm';
     const STREAM_URL = '/radio.mp3';
@@ -1624,7 +1623,7 @@
         showRequestResults('');
       } catch (err) {
         console.warn('[KPAB] Catalog load failed:', err);
-        requestResults.innerHTML = '<div class="request-empty"><span class="empty-icon">&#x26A1;</span><span>Could not load catalog. Try again later.</span></div>';
+        requestResults.innerHTML = '<div class="request-empty"><span class="empty-icon">&#x26A1;</span><span>Eep! Could not load the catalog. Try again in a bit!</span></div>';
       }
     }
 

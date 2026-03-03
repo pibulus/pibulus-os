@@ -475,12 +475,12 @@
         <span class="card-label">PALESTINE</span>
         <span class="card-desc">films, books &amp; docs</span>
       </a>
-      <a class="card" href="http://pibulus.local:8084" target="_blank" rel="noopener">
+      <a class="card solidarity" href="http://pibulus.local:8084" target="_blank" rel="noopener">
         <span class="card-emoji">&#x1F4DA;</span>
         <span class="card-label">WIKIPEDIA</span>
         <span class="card-desc">offline encyclopedia</span>
       </a>
-      <a class="card" href="http://pibulus.local:8080" target="_blank" rel="noopener">
+      <a class="card solidarity" href="http://pibulus.local:8080" target="_blank" rel="noopener">
         <span class="card-emoji">&#128193;</span>
         <span class="card-label">FILES</span>
         <span class="card-desc">passport drive</span>
@@ -552,23 +552,16 @@
     </div>
 
 
-    <!-- MESSAGE DROP -->
+    <!-- MESSAGE INBOX (read-only viewer) -->
     <div class="msg-drop">
       <button class="msg-toggle" id="msgToggle" onclick="toggleMsg()">
         <span class="arrow">&#9654;</span>
-        <span>MESSAGE DROP</span>
+        <span>INBOX</span>
         <span class="msg-badge" id="msgBadge" style="display:none">0</span>
       </button>
       <div class="msg-body" id="msgBody">
-        <div class="msg-input-row">
-          <input type="text" id="msgName" placeholder="name (optional)" maxlength="30" style="max-width:140px;">
-          <textarea id="msgText" placeholder="leave a request, message, or just say hi..." maxlength="500"></textarea>
-        </div>
-        <div style="display:flex;align-items:center;gap:12px;">
-          <button class="msg-send" onclick="sendMsg()">SEND</button>
-          <div class="msg-status" id="msgStatus"></div>
-        </div>
         <div class="msg-list" id="msgList"></div>
+        <div class="msg-status" id="msgStatus" style="text-align:center;padding:8px 0;"></div>
       </div>
     </div>
 
@@ -669,7 +662,7 @@
       }
     }
 
-    // === MESSAGE DROP ===
+    // === MESSAGE INBOX (read-only) ===
     var msgToggle = document.getElementById('msgToggle');
     var msgBody = document.getElementById('msgBody');
 
@@ -677,45 +670,6 @@
       msgToggle.classList.toggle('open');
       msgBody.classList.toggle('open');
       if (msgBody.classList.contains('open')) loadMessages();
-    }
-
-    function sendMsg() {
-      var name = document.getElementById('msgName').value.trim() || 'anon';
-      var text = document.getElementById('msgText').value.trim();
-      var status = document.getElementById('msgStatus');
-
-      if (!text) {
-        status.className = 'msg-status err';
-        status.textContent = 'write something first';
-        return;
-      }
-
-      status.className = 'msg-status';
-      status.textContent = 'sending...';
-
-      fetch('/msg/drop', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name, msg: text })
-      })
-      .then(function(r) {
-        if (r.ok) {
-          status.className = 'msg-status ok';
-          status.textContent = 'sent! pablo will see it.';
-          document.getElementById('msgText').value = '';
-          setTimeout(loadMessages, 500);
-        } else if (r.status === 429) {
-          status.className = 'msg-status err';
-          status.textContent = 'easy tiger. wait a bit.';
-        } else {
-          status.className = 'msg-status err';
-          status.textContent = 'failed to send';
-        }
-      })
-      .catch(function() {
-        status.className = 'msg-status err';
-        status.textContent = 'connection error';
-      });
     }
 
     function loadMessages() {
