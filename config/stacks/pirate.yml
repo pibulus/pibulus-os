@@ -104,7 +104,7 @@ services:
       - "80:80"
     volumes:
       - /home/pibulus/pibulus-os/config/nginx/hardening.conf:/etc/nginx/conf.d/default.conf:ro
-      - /home/pibulus/pibulus-os/www/html:/usr/share/nginx/html:ro
+      - /home/pibulus/pibulus-os/www/html:/usr/share/nginx/html
       # Binary blobs & runtime state stay on passport (overlaid on top of repo)
       - /media/pibulus/passport/www/html/arcade/games:/usr/share/nginx/html/arcade/games:ro
       - /media/pibulus/passport/www/html/status.json:/usr/share/nginx/html/status.json:ro

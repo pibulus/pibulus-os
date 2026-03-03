@@ -9,3 +9,16 @@ services:
       - /home/pibulus/.config/thelounge:/var/opt/thelounge
     ports:
       - "9000:9000"
+
+  memos:
+    image: ghcr.io/usememos/memos:latest
+    container_name: memos
+    restart: unless-stopped
+    volumes:
+      - /home/pibulus/.config/memos:/var/opt/memos
+    ports:
+      - "5230:5230"
+    deploy:
+      resources:
+        limits:
+          memory: 128M
