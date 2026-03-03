@@ -1,0 +1,272 @@
+[
+  {
+    "file": "lostpig.z8",
+    "title": "Lost Pig",
+    "author": "Admiral Jota",
+    "year": 2007,
+    "format": "z-machine",
+    "desc": "You are Grunk. Grunk lose pig. Boss say find pig. That all Grunk know.",
+    "tags": ["comedy", "fantasy", "beginner-friendly"]
+  },
+  {
+    "file": "photopia.z5",
+    "title": "Photopia",
+    "author": "Adam Cadre",
+    "year": 1998,
+    "format": "z-machine",
+    "desc": "Interactive poetry about light, loss, and the colors between. Not really a game. Something better.",
+    "tags": ["literary", "emotional", "short"]
+  },
+  {
+    "file": "spider.z5",
+    "title": "Spider and Web",
+    "author": "Andrew Plotkin",
+    "year": 1998,
+    "format": "z-machine",
+    "desc": "An interrogation. A flashback. Nothing is what it seems. The original unreliable narrator game.",
+    "tags": ["spy", "puzzle", "mind-bending"]
+  },
+  {
+    "file": "anchorhead.z8",
+    "title": "Anchorhead",
+    "author": "Michael Gentry",
+    "year": 1998,
+    "format": "z-machine",
+    "desc": "Lovecraftian horror in a small New England town. Your husband inherited a mansion. You inherited the nightmares.",
+    "tags": ["horror", "lovecraft", "long"]
+  },
+  {
+    "file": "shade.z5",
+    "title": "Shade",
+    "author": "Andrew Plotkin",
+    "year": 2000,
+    "format": "z-machine",
+    "desc": "One room. One apartment. Something is very wrong and it's getting worse. Paranoia in text form.",
+    "tags": ["horror", "surreal", "short"]
+  },
+  {
+    "file": "zdungeon.z5",
+    "title": "Dungeon",
+    "author": "Tim Anderson, Marc Blank, Bruce Daniels, Dave Lebling",
+    "year": 1979,
+    "format": "z-machine",
+    "desc": "The original mainframe Zork. The Great Underground Empire before it was split into three retail games.",
+    "tags": ["classic", "adventure", "long"]
+  },
+  {
+    "file": "zork1.z5",
+    "title": "Zork I: The Great Underground Empire",
+    "author": "Infocom",
+    "year": 1980,
+    "format": "z-machine",
+    "desc": "West of house. You are standing in an open field. There is a mailbox here. You know the rest.",
+    "tags": ["classic", "adventure", "essential"]
+  },
+  {
+    "file": "zork2.z5",
+    "title": "Zork II: The Wizard of Frobozz",
+    "author": "Infocom",
+    "year": 1981,
+    "format": "z-machine",
+    "desc": "Deeper into the Great Underground Empire. The Wizard is watching. The puzzles are harder.",
+    "tags": ["classic", "adventure"]
+  },
+  {
+    "file": "zork3.z5",
+    "title": "Zork III: The Dungeon Master",
+    "author": "Infocom",
+    "year": 1982,
+    "format": "z-machine",
+    "desc": "The final chapter. Less treasure hunting, more existential. What does it mean to be the Dungeon Master?",
+    "tags": ["classic", "adventure"]
+  },
+  {
+    "file": "hhgttg.z3",
+    "title": "The Hitchhiker's Guide to the Galaxy",
+    "author": "Douglas Adams & Steve Meretzky",
+    "year": 1984,
+    "format": "z-machine",
+    "desc": "The Earth is about to be demolished. You have a hangover. The puzzle with the babel fish will make you cry.",
+    "tags": ["comedy", "sci-fi", "classic", "hard"]
+  },
+  {
+    "file": "planetfall.z3",
+    "title": "Planetfall",
+    "author": "Steve Meretzky",
+    "year": 1983,
+    "format": "z-machine",
+    "desc": "Stranded on a deserted planet with Floyd, the most lovable robot in fiction. You will feel things.",
+    "tags": ["sci-fi", "classic", "emotional"]
+  },
+  {
+    "file": "trinity.z4",
+    "title": "Trinity",
+    "author": "Brian Moriarty",
+    "year": 1986,
+    "format": "z-machine",
+    "desc": "Nuclear weapons, time travel, and a white door that appears in a London park. Infocom's masterpiece.",
+    "tags": ["literary", "sci-fi", "classic"]
+  },
+  {
+    "file": "amfv.z4",
+    "title": "A Mind Forever Voyaging",
+    "author": "Steve Meretzky",
+    "year": 1985,
+    "format": "z-machine",
+    "desc": "You're an AI simulating the future. The future is getting worse. Political sci-fi decades ahead of its time.",
+    "tags": ["sci-fi", "political", "literary", "classic"]
+  },
+  {
+    "file": "wishbringer.z3",
+    "title": "Wishbringer",
+    "author": "Brian Moriarty",
+    "year": 1985,
+    "format": "z-machine",
+    "desc": "A gentle fairy tale that eases you into interactive fiction. Deliver a letter. Save a town. Use a magic stone.",
+    "tags": ["fantasy", "beginner-friendly", "classic"]
+  },
+  {
+    "file": "endless-nameless.z8",
+    "title": "Endless, Nameless",
+    "author": "Adam Cadre",
+    "year": 2012,
+    "format": "z-machine",
+    "desc": "From the creator of Photopia. A game that keeps changing what kind of game it is.",
+    "tags": ["experimental", "meta"]
+  },
+  {
+    "file": "counterfeit-monkey.gblorb",
+    "title": "Counterfeit Monkey",
+    "author": "Emily Short",
+    "year": 2012,
+    "format": "glulx",
+    "desc": "Remove a letter from 'sword' and get a 'word'. The most inventive wordplay mechanic in any game, ever.",
+    "tags": ["wordplay", "puzzle", "long"]
+  },
+  {
+    "file": "galatea.zblorb",
+    "title": "Galatea",
+    "author": "Emily Short",
+    "year": 2000,
+    "format": "glulx",
+    "desc": "A conversation with a living statue. Seventy possible endings. The best dialogue system in IF history.",
+    "tags": ["conversation", "literary", "short"]
+  },
+  {
+    "file": "violet.zblorb",
+    "title": "Violet",
+    "author": "Jeremy Freese",
+    "year": 2008,
+    "format": "glulx",
+    "desc": "Write 1000 words or your girlfriend leaves you. Your office is full of distractions. Sound familiar?",
+    "tags": ["comedy", "romance", "beginner-friendly"]
+  },
+  {
+    "file": "blue-lacuna.gblorb",
+    "title": "Blue Lacuna",
+    "author": "Aaron A. Reed",
+    "year": 2008,
+    "format": "glulx",
+    "desc": "A novel-length interactive story on a mysterious island. Art vs love. One of the longest IF works ever made.",
+    "tags": ["literary", "long", "emotional"]
+  },
+  {
+    "file": "slouching-towards-bedlam.gblorb",
+    "title": "Slouching Towards Bedlam",
+    "author": "Star Foster & Daniel Ravipinto",
+    "year": 2003,
+    "format": "glulx",
+    "desc": "Victorian steampunk Bethlem asylum. An alien intelligence is spreading through language itself.",
+    "tags": ["steampunk", "horror", "literary"]
+  },
+  {
+    "file": "coloratura.gblorb",
+    "title": "Coloratura",
+    "author": "Lynnea Glasser",
+    "year": 2013,
+    "format": "glulx",
+    "desc": "You're the alien on the ship. The humans are the monsters. Everything is color and song and misunderstanding.",
+    "tags": ["sci-fi", "literary", "unique"]
+  },
+  {
+    "file": "the-wizard-sniffer.gblorb",
+    "title": "The Wizard Sniffer",
+    "author": "Buster Hudson",
+    "year": 2017,
+    "format": "glulx",
+    "desc": "Fantasy comedy. You're a pig. You can smell wizards. It's exactly as good as that sounds.",
+    "tags": ["comedy", "fantasy", "beginner-friendly"]
+  },
+  {
+    "file": "dr-ludwig-and-the-devil.gblorb",
+    "title": "Dr Ludwig and the Devil",
+    "author": "SV Linwood",
+    "year": 2023,
+    "format": "glulx",
+    "desc": "A Faustian bargain with excellent comedy timing. Sell your soul, negotiate the terms, find the loopholes.",
+    "tags": ["comedy", "puzzle"]
+  },
+  {
+    "file": "dr-horrors-house-of-terror.gblorb",
+    "title": "Dr Horror's House of Terror",
+    "author": "Ade McT",
+    "year": 2020,
+    "format": "glulx",
+    "desc": "B-movie horror comedy. Cheesy, self-aware, and surprisingly clever. Bring popcorn.",
+    "tags": ["comedy", "horror"]
+  },
+  {
+    "file": "superluminal.gblorb",
+    "title": "Superluminal",
+    "author": "C.E.J. Pacian",
+    "year": 2008,
+    "format": "glulx",
+    "desc": "Faster-than-light space exploration with a streamlined interface. Short, sweet, and beautifully designed.",
+    "tags": ["sci-fi", "short"]
+  },
+  {
+    "file": "the-bat.gblorb",
+    "title": "The Bat",
+    "author": "Jess Mersky",
+    "year": 2022,
+    "format": "glulx",
+    "desc": "A bat gets into your house. Things escalate.",
+    "tags": ["comedy", "short"]
+  },
+  {
+    "file": "and-then-you-come-to-a-house.gblorb",
+    "title": "And Then You Come to a House Not Unlike the Previous One",
+    "author": "B.J. Best",
+    "year": 2021,
+    "format": "glulx",
+    "desc": "Procedurally generated rooms, hand-crafted melancholy. A house that keeps going.",
+    "tags": ["experimental", "surreal"]
+  },
+  {
+    "file": "repeat-ending.gblorb",
+    "title": "Repeat the Ending",
+    "author": "Drew Cook",
+    "year": 2020,
+    "format": "glulx",
+    "desc": "Time loop puzzle. Figure out what happened. Figure out how to fix it. Repeat.",
+    "tags": ["puzzle", "time-loop"]
+  },
+  {
+    "file": "what-heart-heard-of-ghost-guessed.gblorb",
+    "title": "What Heart Heard of, Ghost Guessed",
+    "author": "Amanda Walker",
+    "year": 2019,
+    "format": "glulx",
+    "desc": "A ghost story told through poetry and fragments. Atmospheric and haunting.",
+    "tags": ["literary", "atmospheric", "short"]
+  },
+  {
+    "file": "according-to-cain.t3",
+    "title": "According to Cain",
+    "author": "Jim Nelson",
+    "year": 2010,
+    "format": "tads",
+    "desc": "Noir detective fiction. Dark, well-written, and dripping with atmosphere. TADS format - may not play in browser.",
+    "tags": ["noir", "detective", "literary"]
+  }
+]
