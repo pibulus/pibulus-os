@@ -425,3 +425,13 @@ quickcat.club needs API access enabled in Porkbun dashboard, then:
 
 ### Backup
 v6.7 originals at ~/pibulus-os/modules/.backup-v6.7/
+
+## 2026-03-03 - Retro Arcade Fix + Enhance + Wikipedia Fix
+- **Retro Arcade**: Fixed garbled audio/no video — iframe-based EmulatorJS player (player.html)
+- **Curated catalog**: 634 → 251 Mega Drive games + 41 PSX games = 292 total
+- **Save states**: EJS_gameName per game, IndexedDB persistence works
+- **PSX added**: Symlinked /Roms/psx into roms dir, 41 titles (Alundra to Vib-Ribbon)
+- **Links**: RETRO card on quickcat.club, deck, arcade hub banner
+- **Wikipedia fix**: Kiwix --urlRootLocation /wiki + nginx proxy_pass trailing slash removed
+- **Files**: retro/index.html, retro/player.html, retro/games.json, arcade/index.html, main index.html, deck index.html, hardening.conf
+- **Note**: Sonic 1/2/3 + Streets of Rage missing from nointro ROM set

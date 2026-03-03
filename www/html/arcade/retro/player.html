@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>retro arcade - player</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
+    #game { width: 100%; height: 100%; }
+  </style>
+</head>
+<body>
+  <div id="game"></div>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const rom = params.get('rom');
+    const system = params.get('system') || 'megadrive';
+    const name = params.get('name') || 'Game';
+
+    const coreMap = {
+      'megadrive': 'genesis_plus_gx',
+      'genesis': 'genesis_plus_gx',
+      'snes': 'snes9x',
+      'nes': 'fceumm',
+      'gba': 'mgba',
+      'gb': 'gambatte',
+      'gbc': 'gambatte',
+      'n64': 'mupen64plus_next',
+      'psx': 'pcsx_rearmed',
+      'mastersystem': 'genesis_plus_gx',
+      'gamegear': 'genesis_plus_gx',
+      'atari2600': 'stella2014',
+    };
+
+    EJS_player = '#game';
+    EJS_core = coreMap[system] || 'genesis_plus_gx';
+    EJS_gameUrl = '/arcade/retro/roms/' + rom;
+    EJS_gameName = name;
+    EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
+    EJS_color = '#00ffea';
+  </script>
+  <script src="https://cdn.emulatorjs.org/stable/data/loader.js"></script>
+</body>
+</html>
