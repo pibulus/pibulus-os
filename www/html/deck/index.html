@@ -423,7 +423,49 @@
       </div>
     </div>
 
-    <!-- MEDIA -->
+    <!-- ADMIN -->
+    <div class="section-divider admin-divider">
+      <span class="section-label" style="color:var(--magenta);text-shadow:0 0 8px rgba(255,0,255,0.5);">[ ADMIN ]</span>
+    </div>
+    <style>.admin-divider::before,.admin-divider::after{background:linear-gradient(90deg,transparent,rgba(255,0,255,0.4),transparent)!important;}</style>
+
+    <div class="grid grid-3">
+      <a class="card admin" href="http://pibulus.local:8500/admin" target="_blank" rel="noopener">
+        <span class="card-emoji">&#127897;</span>
+        <span class="card-label">RADIO MGR</span>
+        <span class="card-desc">AzuraCast admin</span>
+      </a>
+      <a class="card admin" href="http://pibulus.local:5030" target="_blank" rel="noopener">
+        <span class="card-emoji">&#127926;</span>
+        <span class="card-label">SOULSEEK</span>
+        <span class="card-desc">P2P downloads</span>
+      </a>
+      <a class="card admin" href="http://pibulus.local:7682" target="_blank" rel="noopener">
+        <span class="card-emoji">&#128187;</span>
+        <span class="card-label">TERMINAL</span>
+        <span class="card-desc">web shell</span>
+      </a>
+    </div>
+
+    <div class="grid grid-3" style="margin-top: 1rem;">
+      <a class="card admin" href="/drop/">
+        <span class="card-emoji">&#x1F4E6;</span>
+        <span class="card-label">DROP ZONE</span>
+        <span class="card-desc">file uploads</span>
+      </a>
+      <a class="card admin" href="/status.json" target="_blank" rel="noopener">
+        <span class="card-emoji">&#x1F4CA;</span>
+        <span class="card-label">RAW DATA</span>
+        <span class="card-desc">status API</span>
+      </a>
+      <a class="card admin" href="https://github.com/pibulus/pibulus-os" target="_blank" rel="noopener">
+        <span class="card-emoji">&#x1F4BB;</span>
+        <span class="card-label">GITHUB</span>
+        <span class="card-desc">source code</span>
+      </a>
+    </div>
+
+        <!-- MEDIA -->
     <div class="section-divider">
       <span class="section-label">[ MEDIA ]</span>
     </div>
@@ -465,9 +507,10 @@
     </div>
 
     <!-- KNOWLEDGE VAULT -->
-    <div class="section-divider">
-      <span class="section-label">[ KNOWLEDGE VAULT ]</span>
+    <div class="section-divider kv-divider">
+      <span class="section-label" style="color:var(--green);text-shadow:0 0 8px rgba(85,204,85,0.5);">[ KNOWLEDGE VAULT ]</span>
     </div>
+    <style>.kv-divider::before,.kv-divider::after{background:linear-gradient(90deg,transparent,rgba(85,204,85,0.4),transparent)!important;}</style>
 
     <div class="grid grid-3">
       <a class="card solidarity" href="/palestine/">
@@ -488,9 +531,10 @@
     </div>
 
     <!-- FUN -->
-    <div class="section-divider">
-      <span class="section-label">[ FUN ]</span>
+    <div class="section-divider fun-divider">
+      <span class="section-label" style="color:var(--yellow);text-shadow:0 0 8px rgba(255,255,0,0.5);">[ FUN ]</span>
     </div>
+    <style>.fun-divider::before,.fun-divider::after{background:linear-gradient(90deg,transparent,rgba(255,255,0,0.4),transparent)!important;}</style>
 
     <div class="grid grid-3">
       <a class="card fun" href="/arcade/">
@@ -503,6 +547,11 @@
         <span class="card-label">ROM VAULT</span>
         <span class="card-desc">browse zip archives</span>
       </a>
+      <a class="card fun" href="/conspiracy/">
+        <span class="card-emoji">&#128302;</span>
+        <span class="card-label">FORBIDDEN</span>
+        <span class="card-desc">occult &amp; esoterica</span>
+      </a>
       <a class="card fun" href="http://pibulus.local:9000" target="_blank" rel="noopener">
         <span class="card-emoji">&#128172;</span>
         <span class="card-label">IRC</span>
@@ -514,48 +563,6 @@
         <span class="card-desc">pixel graffiti</span>
       </a>
     </div>
-
-    <!-- ADMIN -->
-    <div class="section-divider">
-      <span class="section-label">[ ADMIN ]</span>
-    </div>
-
-    <div class="grid grid-3">
-      <a class="card admin" href="http://pibulus.local:8500/admin" target="_blank" rel="noopener">
-        <span class="card-emoji">&#127897;</span>
-        <span class="card-label">RADIO MGR</span>
-        <span class="card-desc">AzuraCast admin</span>
-      </a>
-      <a class="card admin" href="http://pibulus.local:5030" target="_blank" rel="noopener">
-        <span class="card-emoji">&#127926;</span>
-        <span class="card-label">SOULSEEK</span>
-        <span class="card-desc">P2P downloads</span>
-      </a>
-      <a class="card admin" href="http://pibulus.local:7682" target="_blank" rel="noopener">
-        <span class="card-emoji">&#128187;</span>
-        <span class="card-label">TERMINAL</span>
-        <span class="card-desc">web shell</span>
-      </a>
-    </div>
-
-    <div class="grid grid-3" style="margin-top: 1rem;">
-      <a class="card admin" href="/drop/">
-        <span class="card-emoji">&#x1F4E6;</span>
-        <span class="card-label">DROP ZONE</span>
-        <span class="card-desc">file uploads</span>
-      </a>
-      <a class="card admin" href="/status.json" target="_blank" rel="noopener">
-        <span class="card-emoji">&#x1F4CA;</span>
-        <span class="card-label">RAW DATA</span>
-        <span class="card-desc">status API</span>
-      </a>
-      <a class="card admin" href="https://github.com/pibulus/pibulus-os" target="_blank" rel="noopener">
-        <span class="card-emoji">&#x1F4BB;</span>
-        <span class="card-label">GITHUB</span>
-        <span class="card-desc">source code</span>
-      </a>
-    </div>
-
 
     <!-- MESSAGE INBOX (read-only viewer) -->
     <div class="msg-drop">
