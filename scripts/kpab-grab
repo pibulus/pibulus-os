@@ -1,0 +1,198 @@
+#!/usr/bin/env python3
+"""
+kpab-grab - Quick album grabber for KPAB.FM pirate radio
+Searches slskd, picks the best result, queues it. One command.
+
+Usage:
+  kpab-grab "Jao Selva"                    # Search by artist (grabs best match)
+  kpab-grab "Jao Selva" "Mango"            # Artist + album (more precise)
+  kpab-grab "Jao Selva" --dry-run          # Preview without downloading
+  kpab-grab "Jao Selva" "Mango" --flac     # Prefer FLAC only
+"""
+import json, urllib.request, urllib.error, time, sys
+
+BASE = "http://localhost:5030/api/v0"
+
+def get_token():
+    req = urllib.request.Request(
+        BASE + "/session",
+        data=json.dumps({"username": "slskd", "password": "slskd"}).encode(),
+        headers={"Content-Type": "application/json"}
+    )
+    return json.loads(urllib.request.urlopen(req, timeout=10).read())["token"]
+
+def search(token, query):
+    req = urllib.request.Request(
+        BASE + "/searches",
+        data=json.dumps({"searchText": query, "fileLimit": 100}).encode(),
+        headers={"Content-Type": "application/json", "Authorization": f"Bearer {token}"}
+    )
+    d = json.loads(urllib.request.urlopen(req, timeout=10).read())
+    sid = d["id"]
+    print(f"  Searching: \"{query}\"")
+    for i in range(10):
+        time.sleep(3)
+        req = urllib.request.Request(
+            BASE + f"/searches/{sid}",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        status = json.loads(urllib.request.urlopen(req, timeout=10).read())
+        if status.get("isComplete") or "Completed" in str(status.get("state", "")):
+            break
+        sys.stdout.write(".")
+        sys.stdout.flush()
+    print()
+    req = urllib.request.Request(
+        BASE + f"/searches/{sid}/responses",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    try:
+        r = json.loads(urllib.request.urlopen(req, timeout=10).read())
+        return r if isinstance(r, list) else []
+    except:
+        return []
+
+def score(response, artist, album=None, flac_only=False):
+    files = response.get("files", [])
+    if not files:
+        return 0, []
+    sc = 0
+    all_names = " ".join(f.get("filename", "").lower() for f in files)
+    has_flac = any(f.get("filename","").lower().endswith(".flac") for f in files)
+    has_mp3 = any(f.get("filename","").lower().endswith(".mp3") for f in files)
+    if has_flac:
+        sc += 100
+    elif has_mp3 and not flac_only:
+        bitrates = [f.get("bitRate", 0) for f in files if f.get("bitRate")]
+        sc += 70 if (bitrates and max(bitrates) >= 320) else 40
+    else:
+        return 0, []
+    a_clean = artist.lower().replace(" ", "").replace("the", "")
+    if a_clean in all_names.replace(" ", "").replace("the", ""):
+        sc += 25
+    if album:
+        al_clean = album.lower().replace(" ", "")
+        if al_clean in all_names.replace(" ", ""):
+            sc += 25
+    sc += min(len(files) * 2, 20)
+    speed = response.get("uploadSpeed", 0)
+    sc += 15 if speed > 200000 else (8 if speed > 50000 else 0)
+    if response.get("freeUploadSlots", 0) > 0:
+        sc += 10
+    return sc, files
+
+def queue(token, username, files, dry_run=False):
+    audio = [f for f in files if f.get("filename","").lower().endswith((".flac",".mp3",".ogg",".m4a"))]
+    if not audio:
+        return 0
+    if dry_run:
+        for f in audio:
+            name = f["filename"].rsplit("\\", 1)[-1].rsplit("/", 1)[-1]
+            print(f"    {name}")
+        return len(audio)
+    queued = 0
+    for f in audio:
+        payload = [{"filename": f["filename"], "size": f.get("size", 0)}]
+        req = urllib.request.Request(
+            BASE + f"/transfers/downloads/{username}",
+            data=json.dumps(payload).encode(),
+            headers={"Content-Type": "application/json", "Authorization": f"Bearer {token}"}
+        )
+        try:
+            urllib.request.urlopen(req, timeout=10)
+            queued += 1
+        except urllib.error.HTTPError as e:
+            if e.code == 409:  # already queued
+                queued += 1
+    return queued
+
+def main():
+    import argparse
+    parser = argparse.ArgumentParser(
+        description="kpab-grab - Quick album grabber for KPAB.FM",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog='Examples:\n  kpab-grab "Jao Selva"\n  kpab-grab "Jao Selva" "Mango"\n  kpab-grab "Boards of Canada" "Geogaddi" --flac'
+    )
+    parser.add_argument("artist", help="Artist name")
+    parser.add_argument("album", nargs="?", default=None, help="Album name (optional)")
+    parser.add_argument("--dry-run", "-n", action="store_true", help="Preview only")
+    parser.add_argument("--flac", action="store_true", help="FLAC only (skip MP3)")
+    parser.add_argument("--top", "-t", type=int, default=3, help="Show top N results (default 3)")
+    args = parser.parse_args()
+
+    query = f"{args.artist} {args.album}" if args.album else args.artist
+    mode = "[DRY RUN] " if args.dry_run else ""
+
+    print(f"\n  KPAB-GRAB {mode}")
+    print(f"  {'='*40}")
+    print(f"  Artist: {args.artist}")
+    if args.album:
+        print(f"  Album:  {args.album}")
+    if args.flac:
+        print(f"  Format: FLAC only")
+    print()
+
+    try:
+        token = get_token()
+    except Exception as e:
+        print(f"  Could not connect to slskd: {e}")
+        sys.exit(1)
+
+    responses = search(token, query)
+    if not responses:
+        print("  No results found. Try a different search term.")
+        sys.exit(1)
+
+    # Score all responses
+    scored = []
+    for r in responses:
+        s, files = score(r, args.artist, args.album, args.flac)
+        if s > 0:
+            scored.append((s, r.get("username", "?"), files, r))
+
+    if not scored:
+        print(f"  {len(responses)} responses but no matching audio files.")
+        sys.exit(1)
+
+    scored.sort(key=lambda x: x[0], reverse=True)
+
+    # Show top results
+    print(f"  Found {len(scored)} matching sources:\n")
+    for i, (s, user, files, r) in enumerate(scored[:args.top]):
+        audio = [f for f in files if f.get("filename","").lower().endswith((".flac",".mp3",".ogg",".m4a"))]
+        has_flac = any(f.get("filename","").lower().endswith(".flac") for f in audio)
+        fmt = "FLAC" if has_flac else "MP3"
+        speed = r.get("uploadSpeed", 0)
+        speed_str = f"{speed//1024}KB/s" if speed > 0 else "?"
+        free = r.get("freeUploadSlots", 0)
+        marker = " <-- BEST" if i == 0 else ""
+        print(f"  {i+1}. {user} | {len(audio)} {fmt} files | {speed_str} | {free} free slots | score={s}{marker}")
+
+        # Show folder path from first file
+        if audio:
+            path = audio[0].get("filename", "")
+            folder = path.rsplit("\\", 1)[0] if "\\" in path else path.rsplit("/", 1)[0]
+            print(f"     {folder}")
+        print()
+
+    # Queue the best
+    best_score, best_user, best_files, _ = scored[0]
+    audio_count = len([f for f in best_files if f.get("filename","").lower().endswith((".flac",".mp3",".ogg",".m4a"))])
+
+    if args.dry_run:
+        print(f"  Would queue {audio_count} files from {best_user}:\n")
+        queue(token, best_user, best_files, dry_run=True)
+        print(f"\n  Run without --dry-run to download.")
+    else:
+        count = queue(token, best_user, best_files)
+        if count > 0:
+            print(f"  Queued {count} files from {best_user}")
+            print(f"  Downloads will appear in /media/pibulus/passport/Soulseek/")
+            print(f"  AzuraCast picks them up automatically. Spit-spot!")
+        else:
+            print(f"  Failed to queue. Try a different result with --top 5")
+
+    print()
+
+if __name__ == "__main__":
+    main()
