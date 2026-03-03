@@ -865,36 +865,29 @@
     .about-toggle {
       width: 100%;
       justify-content: center;
-      position: relative;
-      overflow: hidden;
       font-family: 'VT323', monospace;
       font-size: 18px;
       letter-spacing: 2px;
       text-transform: uppercase;
       padding: 14px 20px;
-      border: 1px solid var(--cyan);
-      color: var(--cyan);
-      text-shadow: 0 0 6px rgba(0,255,234,0.4);
+      border: 1px solid #333;
+      color: #999;
       cursor: pointer;
       background: transparent;
-      transition: all 0.15s ease;
+      transition: all 0.2s ease;
       display: flex;
       align-items: center;
       gap: 8px;
       -webkit-tap-highlight-color: transparent;
     }
 
-    .about-toggle:hover { background: rgba(0,255,234,0.1); box-shadow: 0 0 14px rgba(0,255,234,0.3); }
-    .about-toggle:active { transform: scale(0.98); }
-
-    .about-toggle::after {
-      content: '';
-      position: absolute;
-      top: 0; left: -100%;
-      width: 50%; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(0,255,234,0.08), transparent);
-      animation: shimmer 3s ease-in-out infinite;
+    .about-toggle:hover {
+      border-color: var(--cyan);
+      color: var(--cyan);
+      text-shadow: 0 0 6px rgba(0,255,234,0.4);
+      box-shadow: 0 0 14px rgba(0,255,234,0.2);
     }
+    .about-toggle:active { transform: scale(0.98); }
 
     .about-panel {
       background: var(--panel);
@@ -966,36 +959,29 @@
     .msg-toggle {
       width: 100%;
       justify-content: center;
-      position: relative;
-      overflow: hidden;
       font-family: 'VT323', monospace;
       font-size: 18px;
       letter-spacing: 2px;
       text-transform: uppercase;
       padding: 14px 20px;
-      border: 1px solid var(--magenta);
-      color: var(--magenta);
-      text-shadow: 0 0 6px rgba(255,0,255,0.4);
+      border: 1px solid #333;
+      color: #999;
       cursor: pointer;
       background: transparent;
-      transition: all 0.15s ease;
+      transition: all 0.2s ease;
       display: flex;
       align-items: center;
       gap: 8px;
       -webkit-tap-highlight-color: transparent;
     }
 
-    .msg-toggle:hover { background: rgba(255,0,255,0.1); box-shadow: 0 0 14px rgba(255,0,255,0.3); }
-    .msg-toggle:active { transform: scale(0.98); }
-
-    .msg-toggle::after {
-      content: '';
-      position: absolute;
-      top: 0; left: -100%;
-      width: 50%; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,0,255,0.08), transparent);
-      animation: shimmer 3s ease-in-out infinite;
+    .msg-toggle:hover {
+      border-color: var(--magenta);
+      color: var(--magenta);
+      text-shadow: 0 0 6px rgba(255,0,255,0.4);
+      box-shadow: 0 0 14px rgba(255,0,255,0.2);
     }
+    .msg-toggle:active { transform: scale(0.98); }
 
     .msg-form {
       display: none;
