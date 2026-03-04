@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>KPAB.FM — Pirate Radio</title>
-  <meta name="description" content="KPAB.FM — Pirate radio broadcasting from Brunswick. Listen live, request songs from 10,000+ tracks.">
+  <meta name="description" content="KPAB.FM — Pirate radio broadcasting from Brunswick. Listen live, request songs from 13,000+ tracks.">
   <meta name="theme-color" content="#050505">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -514,7 +514,7 @@
       .play-btn { width: 50px; height: 50px; font-size: 18px; }
       .visualizer { min-width: 60px; }
       input[type="range"] { width: 60px; }
-      .listeners-badge { display: none; }
+      .listeners-badge { font-size: 10px; }
       .progress-section { padding: 8px 14px 10px; border-bottom: 1px solid #151515; }
       input[type="range"]::-webkit-slider-thumb { width: 18px; height: 18px; }
       .progress-times { font-size: 13px; }
@@ -583,6 +583,7 @@
     .request-panel.open {
       max-height: 500px;
       opacity: 1;
+      animation: panelSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     }
 
     .request-header {
@@ -841,6 +842,7 @@
       .request-toggle { font-size: 16px; padding: 14px 20px; }
       .about-toggle { font-size: 16px; padding: 12px 16px; }
       .msg-toggle { font-size: 16px; padding: 12px 16px; }
+      .mutiny-toggle { font-size: 16px; padding: 12px 16px; }
     }
 
     /* TAGLINE */
@@ -858,6 +860,51 @@
       transition: opacity 0.6s ease;
     }
     .tagline.fading { opacity: 0; }
+
+
+
+    /* Micro-bounce on button focus */
+    @keyframes microBounce {
+      0% { transform: scale(1); }
+      50% { transform: scale(0.97); }
+      100% { transform: scale(1); }
+    }
+    .about-toggle:active,
+    .msg-toggle:active,
+    .mutiny-toggle:active,
+    .request-toggle:active {
+      animation: microBounce 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* SPRING ANIMATIONS for panel reveals */
+    @keyframes panelSlideIn {
+      0% {
+        opacity: 0;
+        transform: translateY(-8px) scaleY(0.96);
+      }
+      40% {
+        opacity: 1;
+        transform: translateY(2px) scaleY(1.01);
+      }
+      70% {
+        transform: translateY(-1px) scaleY(1);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scaleY(1);
+      }
+    }
+
+    @keyframes contentFadeUp {
+      0% {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
 
     /* ABOUT / FAQ SECTION */
     .about-section { position: relative; }
@@ -896,12 +943,18 @@
       max-height: 0;
       overflow: hidden;
       opacity: 0;
-      transition: max-height 0.4s ease-out, opacity 0.3s ease-out;
+      transform-origin: top center;
+      transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
     }
 
     .about-panel.open {
       max-height: 2000px;
       opacity: 1;
+      animation: panelSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    .about-panel.open .about-content {
+      animation: contentFadeUp 0.4s ease 0.15s both;
     }
 
     .about-content {
@@ -924,7 +977,7 @@
 
     .faq-q {
       font-family: 'VT323', monospace;
-      font-size: 15px;
+      font-size: 17px;
       color: var(--cyan);
       letter-spacing: 2px;
       margin-bottom: 4px;
@@ -936,14 +989,147 @@
     }
 
     .faq-a {
-      font-size: 12px;
-      color: var(--dim);
+      font-size: 13px;
+      color: #7a7a88;
       line-height: 1.7;
       padding-left: 16px;
       letter-spacing: 0.3px;
     }
 
     .faq-a strong { color: var(--text); font-weight: normal; }
+
+    /* MUTINY SKIP */
+    .mutiny-section { position: relative; }
+
+    .mutiny-toggle {
+      width: 100%;
+      justify-content: flex-start;
+      font-family: 'VT323', monospace;
+      font-size: 18px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 14px 20px;
+      border: 1px solid #333;
+      color: #999;
+      cursor: pointer;
+      background: transparent;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .mutiny-toggle:hover {
+      border-color: var(--cyan);
+      color: var(--cyan);
+      text-shadow: 0 0 6px rgba(0,255,234,0.4);
+      box-shadow: 0 0 14px rgba(0,255,234,0.2);
+    }
+    .mutiny-toggle:active { transform: scale(0.98); }
+
+    .mutiny-toggle.voted {
+      border-color: #c33;
+      color: #c33;
+      text-shadow: 0 0 6px rgba(204,51,51,0.3);
+    }
+
+    .mutiny-toggle.cooldown {
+      color: #444;
+      border-color: #262626;
+    }
+    .mutiny-toggle.cooldown:hover {
+      border-color: #333;
+      color: #555;
+      text-shadow: none;
+      box-shadow: none;
+    }
+
+    .mutiny-panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-top: none;
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transform-origin: top center;
+      transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+    }
+
+    .mutiny-panel.open {
+      max-height: 200px;
+      opacity: 1;
+      animation: panelSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    .mutiny-info {
+      padding: 14px 18px;
+      font-size: 12px;
+      color: var(--dim);
+      line-height: 1.7;
+      letter-spacing: 0.3px;
+      text-align: center;
+    }
+
+    .mutiny-panel.open .mutiny-info {
+      animation: contentFadeUp 0.4s ease 0.15s both;
+    }
+
+    .mutiny-info .vote-status {
+      font-family: 'VT323', monospace;
+      font-size: 15px;
+      color: #c33;
+      letter-spacing: 2px;
+      margin-bottom: 4px;
+    }
+
+    .mutiny-fire {
+      display: inline-block;
+      margin-left: auto;
+      margin-right: auto;
+      font-family: 'VT323', monospace;
+      font-size: 14px;
+      letter-spacing: 2px;
+      padding: 8px 20px;
+      margin-top: 8px;
+      border: 1px solid #c33;
+      color: #c33;
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-transform: uppercase;
+    }
+
+    .mutiny-fire:hover {
+      background: rgba(204,51,51,0.15);
+      box-shadow: 0 0 12px rgba(204,51,51,0.3);
+      text-shadow: 0 0 6px rgba(204,51,51,0.5);
+    }
+    .mutiny-fire:active { transform: scale(0.96); }
+
+    .mutiny-toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      font-family: 'VT323', monospace;
+      font-size: 16px;
+      letter-spacing: 2px;
+      color: #c33;
+      background: rgba(10,10,14,0.95);
+      border: 1px solid #c33;
+      padding: 10px 20px;
+      z-index: 1000;
+      opacity: 0;
+      transition: all 0.3s ease;
+      text-shadow: 0 0 6px rgba(204,51,51,0.4);
+      box-shadow: 0 0 20px rgba(204,51,51,0.15);
+    }
+
+    .mutiny-toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
 
     /* MESSAGE DROP */
     .msg-section {
@@ -952,9 +1138,18 @@
       padding: 0;
     }
 
-    .msg-section.open .msg-toggle { display: none; }
-    .msg-section.open .msg-form { display: flex; }
-    .msg-section.open { background: var(--panel); border: 1px solid var(--border); padding: 16px 18px; }
+    .msg-form-wrap {
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transform-origin: top center;
+      transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+    }
+    .msg-section.open .msg-form-wrap {
+      max-height: 500px;
+      opacity: 1;
+      animation: panelSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
 
     .msg-toggle {
       width: 100%;
@@ -984,9 +1179,10 @@
     .msg-toggle:active { transform: scale(0.98); }
 
     .msg-form {
-      display: none;
       flex-direction: column;
       gap: 10px;
+      display: flex;
+      padding: 16px 18px;
     }
 
     .msg-form input,
@@ -1020,16 +1216,16 @@
     .msg-form textarea::placeholder { color: #444; }
 
     .msg-send {
+      width: 100%;
       font-family: 'VT323', monospace;
-      font-size: 15px;
+      font-size: 18px;
       letter-spacing: 2px;
       color: var(--magenta);
       border: 1px solid var(--magenta);
       background: transparent;
-      padding: 8px 16px;
+      padding: 14px 20px;
       cursor: pointer;
       transition: all 0.15s;
-      align-self: flex-end;
     }
 
     .msg-send:hover {
@@ -1114,6 +1310,8 @@
     </section>
     </div>
 
+
+    <div class="mutiny-toast" id="mutinyToast"></div>
     <section class="request-section" id="requestSection">
       <button class="request-toggle" id="requestToggle" aria-label="Request a song">&#x1F4FB; Request a Song</button>
       <div class="request-panel" id="requestPanel" aria-label="Song request">
@@ -1148,13 +1346,23 @@
 
     <!-- <div class="tagline" id="taglineEl">Pretty good most of the time. Sometimes great.</div> -->
 
+    <section class="mutiny-section" id="mutinySection">
+      <button class="mutiny-toggle" id="mutinyToggle" title="Skip this track">&#x2620; MUTINY</button>
+      <div class="mutiny-panel" id="mutinyPanel">
+        <div class="mutiny-info">
+          <div class="vote-status" id="mutinyStatus">READY</div>
+          <div id="mutinyDesc">Don't like what's playing? Call a mutiny. Solo listener = instant skip. Multiple listeners = majority vote.</div>
+          <button class="mutiny-fire" id="mutinyFire">&#x2620; WALK THE PLANK</button>
+        </div>
+      </div>
+    </section>
+
     <section class="about-section">
       <button class="about-toggle" id="aboutToggle">&#x2139; About / FAQ</button>
       <div class="about-panel" id="aboutPanel">
         <div class="about-content">
           <div class="about-blurb">
-            <!-- 10,000+ curated tracks. Every genre, every era, every mood. -->
-	    The algorithms are corrupted. Embrace uncertainty.
+            A radio station for people who like music more than their taste in music.
           </div>
 
           <div class="faq-item">
@@ -1174,7 +1382,7 @@
 
           <div class="faq-item">
             <div class="faq-q">HOW SHOULD I LISTEN?</div>
-            <div class="faq-a">Hit play and let it ride. Not recognising half the songs is a feature, not a bug &mdash; jumping from Enya to Pantera <em>is</em> the point. Give it half an hour, it starts to make sense. You can search and request from the full catalog, no account needed. If something catches you, stay with it. If it doesn't, something better is 3 minutes away. (Want a radio show? Hit me up.) <a href="https://quickcat.club/drop/" target="_blank" rel="noopener" style="color: var(--cyan); text-decoration: none; border-bottom: 1px solid rgba(0,255,234,0.3);">Contribute a record to the station</a>.</div>
+            <div class="faq-a">Hit play and let go. Not recognising half the songs is a feature, not a bug &mdash; jumping from Enya to Pantera <em>is</em> the point. Search and request from the full catalog, no account needed. Something better is always 3 minutes away. <a href="https://quickcat.club/drop/" target="_blank" rel="noopener" style="color: var(--cyan); text-decoration: none; border-bottom: 1px solid rgba(0,255,234,0.3);">Contribute a record</a>.</div>
           </div>
 
           <div class="faq-item">
@@ -1199,14 +1407,10 @@
       <button class="msg-toggle" id="msgToggle">
         <span class="msg-toggle-text">&#x1F4EC; DROP A MESSAGE</span>
       </button>
-      <div class="msg-form" id="msgForm">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-          <span style="font-family:'VT323',monospace;font-size:14px;color:var(--magenta);letter-spacing:3px;">DROP A MESSAGE</span>
-          <button onclick="document.getElementById('msgSection').classList.remove('open')" style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:18px;font-family:'VT323',monospace;padding:0 4px;">&times;</button>
-        </div>
-        <input type="text" id="msgName" placeholder="Name (optional)" maxlength="50">
-        <textarea id="msgText" placeholder="Say something..." maxlength="500" rows="3"></textarea>
-        <div style="display:flex; align-items:center; justify-content:space-between;">
+      <div class="msg-form-wrap" id="msgFormWrap">
+        <div class="msg-form" id="msgForm" style="background:var(--panel);border:1px solid var(--border);border-top:none;">
+          <input type="text" id="msgName" placeholder="Name (optional)" maxlength="50">
+          <textarea id="msgText" placeholder="Say something..." maxlength="500" rows="3"></textarea>
           <span class="msg-status" id="msgStatus"></span>
           <button class="msg-send" id="msgSend">SEND</button>
         </div>
@@ -1802,7 +2006,10 @@
     msgToggle.addEventListener('click', () => {
       const isOpen = msgSection.classList.contains('open');
       msgSection.classList.toggle('open');
-      if (!isOpen) msgText.focus();
+      msgToggle.innerHTML = isOpen
+        ? '<span class="msg-toggle-text">&#x1F4EC; DROP A MESSAGE</span>'
+        : '&#x1F4EC; Close';
+      if (!isOpen) setTimeout(() => msgText.focus(), 400);
     });
 
     msgSend.addEventListener('click', async () => {
@@ -1851,6 +2058,87 @@
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(() => {});
     }
+
+    // === MUTINY SKIP SYSTEM ===
+    const mutinyToggle = document.getElementById('mutinyToggle');
+    const mutinyPanel = document.getElementById('mutinyPanel');
+    const mutinyStatus = document.getElementById('mutinyStatus');
+    const mutinyDesc = document.getElementById('mutinyDesc');
+    const mutinyFire = document.getElementById('mutinyFire');
+    const mutinyToast = document.getElementById('mutinyToast');
+    let mutinyCooldown = false;
+
+    function showMutinyToast(msg, duration = 3000) {
+      mutinyToast.textContent = msg;
+      mutinyToast.classList.add('show');
+      setTimeout(() => mutinyToast.classList.remove('show'), duration);
+    }
+
+    function setMutinyCooldown(seconds) {
+      mutinyCooldown = true;
+      mutinyToggle.classList.add('cooldown');
+      mutinyToggle.classList.remove('voted');
+      mutinyFire.disabled = true;
+      mutinyFire.style.opacity = '0.3';
+      mutinyFire.style.cursor = 'not-allowed';
+      mutinyStatus.textContent = 'COOLING DOWN';
+      mutinyDesc.textContent = 'Mutiny on cooldown. Try again in a few minutes.';
+      const end = Date.now() + seconds * 1000;
+      const tick = setInterval(() => {
+        const left = Math.max(0, Math.ceil((end - Date.now()) / 1000));
+        if (left <= 0) {
+          clearInterval(tick);
+          mutinyCooldown = false;
+          mutinyToggle.classList.remove('cooldown');
+          mutinyToggle.innerHTML = '&#x2620; MUTINY';
+          mutinyFire.disabled = false;
+          mutinyFire.style.opacity = '1';
+          mutinyFire.style.cursor = 'pointer';
+          mutinyStatus.textContent = 'READY';
+          mutinyDesc.textContent = "Don't like what's playing? Call a mutiny.";
+          return;
+        }
+        const display = left > 60 ? Math.ceil(left/60) + 'm' : left + 's';
+        mutinyToggle.innerHTML = '&#x2620; MUTINY (' + display + ')';
+      }, 1000);
+    }
+
+    // Toggle opens/closes panel
+    mutinyToggle.addEventListener('click', () => {
+      const isOpen = mutinyPanel.classList.contains('open');
+      mutinyPanel.classList.toggle('open');
+      if (!mutinyCooldown) {
+        mutinyToggle.innerHTML = isOpen ? '&#x2620; MUTINY' : '&#x2620; Close';
+      }
+    });
+
+    // Fire button triggers the skip
+    mutinyFire.addEventListener('click', async () => {
+      if (mutinyCooldown) return;
+      mutinyFire.textContent = '...';
+      try {
+        const res = await fetch('/mutiny/mutiny', { method: 'POST' });
+        const data = await res.json();
+        if (res.status === 429) {
+          showMutinyToast(data.message);
+          setMutinyCooldown(data.remaining);
+          return;
+        }
+        if (data.action === 'skipped') {
+          showMutinyToast(data.message);
+          setMutinyCooldown(300);
+        } else if (data.action === 'voted') {
+          mutinyToggle.classList.add('voted');
+          mutinyStatus.textContent = data.votes + '/' + data.needed + ' VOTES';
+          mutinyDesc.textContent = data.message;
+          mutinyFire.innerHTML = '&#x2620; VOTED';
+          showMutinyToast(data.message, 5000);
+        }
+      } catch (e) {
+        showMutinyToast('Mutiny failed. Radio resists.');
+        mutinyFire.innerHTML = '&#x2620; WALK THE PLANK';
+      }
+    });
   </script>
 </body>
 </html>
