@@ -31,6 +31,8 @@ source "$SCRIPT_DIR/modules/grey_hat_module.sh"
 source "$SCRIPT_DIR/modules/mission_control_module.sh"
 source "$SCRIPT_DIR/modules/librarian_module.sh"
 source "$SCRIPT_DIR/modules/scavenger_module.sh"
+source "$SCRIPT_DIR/modules/pirate_grab_module.sh"
+source "$SCRIPT_DIR/modules/downloads_module.sh"
 
 # --- HELP FLAG ---
 if [[ "$1" == "--help" || "$1" == "-h" || "$1" == "help" ]]; then
@@ -50,6 +52,7 @@ if [[ "$1" == "--help" || "$1" == "-h" || "$1" == "help" ]]; then
             '  deploy       Deploy a new app' \
             '  search       Ask Bishop (AI librarian)' \
             '  scavenge     Scavenger bot (AI downloads)' \
+            '  downloads    Active download monitor' \
             '  --help, -h   This help' \
             '' \
             'Aliases: help, halp, sos, wtf')"
@@ -59,12 +62,13 @@ fi
 
 # --- QUICK COMMANDS ---
 case "$1" in
-    radio)    manage_radio; exit 0 ;;
-    games)    manage_games; exit 0 ;;
-    audit)    run_audit; exit 0 ;;
-    search)   ask_bishop; exit 0 ;;
-    scavenge) manage_scavenger; exit 0 ;;
-    deploy)   play_tone "confirm"; "$SCRIPT_DIR/scripts/deploy.sh"; exit 0 ;;
+    radio)     manage_radio; exit 0 ;;
+    games)     manage_games; exit 0 ;;
+    audit)     run_audit; exit 0 ;;
+    search)    ask_bishop; exit 0 ;;
+    scavenge)  manage_scavenger; exit 0 ;;
+    downloads) manage_downloads; exit 0 ;;
+    deploy)    play_tone "confirm"; "$SCRIPT_DIR/scripts/deploy.sh"; exit 0 ;;
     status)
         echo ""
         vcgencmd measure_temp 2>/dev/null
@@ -95,9 +99,12 @@ render_hud() {
     local PWR_HEX=$(vcgencmd get_throttled 2>/dev/null | cut -d'=' -f2)
     [ "$PWR_HEX" == "0x0" ] && PWR="⚡" || PWR="⚠️"
     local CONTAINERS=$(docker ps -q 2>/dev/null | wc -l | tr -d ' ')
+    local DL_COUNT=$(count_downloads 2>/dev/null)
+    local DL_BADGE=""
+    [ "$DL_COUNT" -gt 0 ] 2>/dev/null && DL_BADGE="  |  📥 ${DL_COUNT} dl"
 
     gum style --border double --border-foreground 212 --padding "0 2" --margin "1 0" --align center \
-        "$PWR 🐾 $USER_NAME  |  🌡️ $TEMP  |  🧠 $MEM  |  📼 $DISK  |  $VPN  |  📦 ${CONTAINERS} up"
+        "$PWR 🐾 $USER_NAME  |  🌡️ $TEMP  |  🧠 $MEM  |  📼 $DISK  |  $VPN  |  📦 ${CONTAINERS} up${DL_BADGE}"
 }
 
 tactile_choose() {
@@ -170,6 +177,7 @@ menu_media() {
             "📻 KPAB.fm Radio $(get_status azuracast)" \
             "🤖 Scavenger Bot (AI Downloads)" \
             "📥 Media Scavenger (Manual)" \
+            "🏴 Pirate Grab (Torrents)" \
             "🕹️ Terminal Arcade" \
             "Back")
 
@@ -178,6 +186,7 @@ menu_media() {
             "📻 KPAB.fm Radio"*) manage_radio ;;
             "🤖 Scavenger Bot"*) manage_scavenger ;;
             "📥 Media Scavenger"*) pull_media ;;
+            "🏴 Pirate Grab"*) manage_pirate_grab ;;
             "🕹️ Terminal Arcade") manage_games ;;
             "Back") return ;;
         esac
@@ -282,11 +291,15 @@ menu_system() {
 
         local kv_status=""
         tmux has-session -t knowledge-vault 2>/dev/null && kv_status="🟢" || kv_status="🔴"
+        local dl_count=$(count_downloads 2>/dev/null)
+        local dl_badge=""
+        [ "$dl_count" -gt 0 ] 2>/dev/null && dl_badge=" ($dl_count active)"
 
         local choice=$(tactile_choose \
             "📊 System Status" \
             "🛡️ Security Audit" \
             "🤖 Mission Control" \
+            "📥 Downloads Monitor${dl_badge}" \
             "📀 Vault & Recovery" \
             "🧠 Knowledge Vault DL $kv_status" \
             "💾 Create Backup" \
@@ -312,6 +325,7 @@ menu_system() {
                 ;;
             "🛡️ Security Audit") run_audit ;;
             "🤖 Mission Control") manage_mission_control ;;
+            "📥 Downloads Monitor"*) manage_downloads ;;
             "📀 Vault & Recovery") manage_vault ;;
             "🧠 Knowledge Vault DL"*)
                 if tmux has-session -t knowledge-vault 2>/dev/null; then
