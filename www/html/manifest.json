@@ -1,0 +1,21 @@
+{
+  "name": "quickcat.club",
+  "short_name": "quickcat",
+  "description": "A self-hosted sanctuary for movies, books, games and radio.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050505",
+  "theme_color": "#00ffea",
+  "icons": [
+    {
+      "src": "/kpab/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/kpab/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

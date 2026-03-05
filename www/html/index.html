@@ -4,6 +4,26 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>quickcat.club</title>
+  <meta name="description" content="quickcat.club — a self-hosted sanctuary for movies, books, games and pirate radio.">
+  <meta name="theme-color" content="#050505">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="quickcat">
+  
+  <meta property="og:title" content="quickcat.club">
+  <meta property="og:description" content="A self-hosted sanctuary from Melbourne. Pirate radio, movies, books, and arcade games.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://quickcat.club">
+  <meta property="og:image" content="https://quickcat.club/kpab/icon-512.png">
+  
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="quickcat.club">
+  <meta name="twitter:description" content="A self-hosted sanctuary from Melbourne.">
+  <meta name="twitter:image" content="https://quickcat.club/kpab/icon-512.png">
+
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/kpab/icon-192.png">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
   <style>
@@ -325,8 +345,8 @@
       </a>
       <a class="card fun" href="/wall/">
         <span class="card-emoji">&#x1F3A8;</span>
-        <span class="card-label">THE WALL</span>
-        <span class="card-desc">leave a pixel behind</span>
+        <span class="card-label">GRAFFITI WALL</span>
+        <span class="card-desc">leave your mark</span>
       </a>
       <a class="card fun" href="/drop/">
         <span class="card-emoji">&#x1F4E6;</span>
@@ -478,6 +498,10 @@
           else { status.className = 'msg-status err'; status.textContent = 'failed to send'; }
         })
         .catch(function() { status.className = 'msg-status err'; status.textContent = 'connection error'; });
+    }
+  
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(function() {});
     }
   </script>
 </body>
