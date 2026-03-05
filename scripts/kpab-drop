@@ -1,0 +1,102 @@
+#!/usr/bin/env python3
+"""
+kpab-drop - Drop any URL into KPAB.FM radio
+Downloads audio from SoundCloud, YouTube, Bandcamp, etc via yt-dlp
+and drops it into the AzuraCast media folder.
+
+Usage:
+  kpab-drop "https://soundcloud.com/artist/track"
+  kpab-drop "https://soundcloud.com/artist/sets/mix-name"
+  kpab-drop "https://www.youtube.com/watch?v=xxx"
+  kpab-drop "https://bandcamp.com/album/whatever"
+  kpab-drop URL --dry-run          # Preview without downloading
+  kpab-drop URL --dir /custom/path # Custom output dir
+"""
+import subprocess, sys, argparse, os, json
+
+DEFAULT_DIR = "/media/pibulus/passport/Soulseek"
+
+def get_info(url):
+    """Get metadata without downloading"""
+    try:
+        result = subprocess.run(
+            ["yt-dlp", "--dump-json", "--flat-playlist", url],
+            capture_output=True, text=True, timeout=30
+        )
+        entries = []
+        for line in result.stdout.strip().split('\n'):
+            if line:
+                try:
+                    entries.append(json.loads(line))
+                except json.JSONDecodeError:
+                    pass
+        return entries
+    except subprocess.TimeoutExpired:
+        return []
+
+def download(url, output_dir, dry_run=False):
+    """Download audio from URL"""
+    # Template: Artist - Title.ext (or just Title if no artist)
+    template = os.path.join(output_dir, "%(artist,uploader,creator|Unknown)s - %(title)s.%(ext)s")
+
+    cmd = [
+        "yt-dlp",
+        "-x",                          # Extract audio only
+        "--audio-format", "mp3",       # Convert to mp3
+        "--audio-quality", "0",        # Best quality
+        "--embed-thumbnail",           # Embed cover art if available
+        "--add-metadata",              # Add metadata tags
+        "--no-playlist" if "sets/" not in url and "playlist" not in url else "--yes-playlist",
+        "-o", template,
+        url
+    ]
+
+    if dry_run:
+        # Just show what would be downloaded
+        entries = get_info(url)
+        if entries:
+            print(f"\n  Would download {len(entries)} track(s):\n")
+            for e in entries[:20]:
+                title = e.get("title", "?")
+                artist = e.get("artist") or e.get("uploader") or "?"
+                duration = e.get("duration")
+                dur_str = f" ({duration//60}:{duration%60:02d})" if duration else ""
+                print(f"    {artist} - {title}{dur_str}")
+            if len(entries) > 20:
+                print(f"    ... and {len(entries)-20} more")
+        else:
+            print("  Could not fetch info. URL might need auth or be invalid.")
+        return
+
+    print(f"  Downloading to {output_dir}...")
+    result = subprocess.run(cmd, timeout=600)
+
+    if result.returncode == 0:
+        print(f"\n  Done! AzuraCast will pick it up on next media scan.")
+        print(f"  To force scan: docker exec azuracast azuracast_cli azuracast:media:sync")
+    else:
+        print(f"\n  Download failed (exit code {result.returncode})")
+        sys.exit(1)
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="kpab-drop - Drop any URL into KPAB.FM",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="Supports: SoundCloud, YouTube, Bandcamp, Mixcloud, and 1000+ more sites.")
+    parser.add_argument("url", help="URL to download")
+    parser.add_argument("--dry-run", "-n", action="store_true", help="Preview only")
+    parser.add_argument("--dir", "-d", default=DEFAULT_DIR, help=f"Output dir (default: {DEFAULT_DIR})")
+    args = parser.parse_args()
+
+    print(f"\n  KPAB-DROP")
+    print(f"  {'='*40}")
+    print(f"  URL: {args.url}")
+    if args.dry_run:
+        print(f"  Mode: DRY RUN")
+    print()
+
+    download(args.url, args.dir, args.dry_run)
+    print()
+
+if __name__ == "__main__":
+    main()

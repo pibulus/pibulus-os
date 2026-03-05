@@ -1,0 +1,18 @@
+/* PIBULUS Calibre-Web Override - Clean & Simple */
+.cover img {
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.cover img:hover {
+  transform: scale(1.03);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+}
+.rating { display: none !important; }
+.cover .badge { display: none !important; }
+.book-table th:nth-child(5), .book-table td:nth-child(5) { display: none; }
+.detail-info .publishing-date, .detail-info .identifiers { opacity: 0.5; font-size: 0.85em; }
+a[href="/advsearch"] { display: none; }
+.footer { opacity: 0.3; }
+.discover .container-fluid { max-width: 1200px; }
+#query { font-size: 16px !important; padding: 8px 12px !important; }

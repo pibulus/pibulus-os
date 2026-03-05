@@ -31,8 +31,6 @@ server {
     index index.html;
 
     location / {
-        add_header Cache-Control "no-cache, no-store, must-revalidate";
-        add_header Pragma "no-cache";
         try_files $uri $uri/ =404;
     }
 
@@ -42,6 +40,7 @@ server {
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
     }
+
 
     # The Wall - pixel graffiti backend
     location /wall/state.json {
@@ -57,6 +56,8 @@ server {
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
     }
+
+
 
     # Message Drop backend
     location /msg/drop {
@@ -126,6 +127,11 @@ server {
         proxy_set_header Host $host;
     }
 
+    # Interactive Fiction (text adventures)
+    location /fiction/ {
+        try_files $uri $uri/ =404;
+    }
+
     # Drop Zone upload proxy
     location = /drop/upload {
         client_max_body_size 500m;
@@ -153,33 +159,45 @@ server {
     auth_basic "PIBULUS DECK";
     auth_basic_user_file /etc/nginx/.htpasswd;
 
-    root /usr/share/nginx/html;
+    root /usr/share/nginx/html/deck;
     index index.html;
 
-    # Deck landing page
-    location = / {
-        rewrite ^ /deck/index.html last;
+    # Status JSON from html root (not deck subdir)
+    location = /status.json {
+        alias /usr/share/nginx/html/status.json;
+        add_header Access-Control-Allow-Origin *;
+        add_header Cache-Control "no-cache";
     }
 
     location / {
-        add_header Cache-Control "no-cache, no-store, must-revalidate";
-        add_header Pragma "no-cache";
         try_files $uri $uri/ =404;
     }
 
-    # CORS for arcade games (Parchment needs Range requests)
+    # Serve arcade from parent html dir
+    location /arcade/ {
+        alias /usr/share/nginx/html/arcade/;
+        index index.html;
+    }
+
     location /arcade/games/ {
+        alias /usr/share/nginx/html/arcade/games/;
         add_header Access-Control-Allow-Origin *;
         add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
         add_header Access-Control-Allow-Headers "Range";
         add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
     }
-
     # Serve ROMs from mounted directory
     location /arcade/roms/ {
         alias /usr/share/nginx/roms/;
         add_header Access-Control-Allow-Origin *;
     }
+
+    # Interactive Fiction (text adventures)
+    location /fiction/ {
+        alias /usr/share/nginx/html/fiction/;
+        index index.html;
+    }
+
 }
 
 # LOCAL - pibulus.local (no auth needed, you're on LAN)
@@ -187,7 +205,7 @@ server {
     listen 80;
     server_name pibulus.local;
 
-    root /usr/share/nginx/html;
+    root /usr/share/nginx/html/deck;
     index index.html;
 
     # Security headers
@@ -196,14 +214,14 @@ server {
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
     add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
 
-    # Deck landing page (LAN shows deck by default)
-    location = / {
-        rewrite ^ /deck/index.html last;
+    # Status JSON from html root (not deck subdir)
+    location = /status.json {
+        alias /usr/share/nginx/html/status.json;
+        add_header Access-Control-Allow-Origin *;
+        add_header Cache-Control "no-cache";
     }
 
     location / {
-        add_header Cache-Control "no-cache, no-store, must-revalidate";
-        add_header Pragma "no-cache";
         try_files $uri $uri/ =404;
     }
 
@@ -214,18 +232,30 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
     }
 
-    # CORS for arcade games (Parchment needs Range requests)
+    # Serve arcade from parent html dir
+    location /arcade/ {
+        alias /usr/share/nginx/html/arcade/;
+        index index.html;
+    }
+
     location /arcade/games/ {
+        alias /usr/share/nginx/html/arcade/games/;
         add_header Access-Control-Allow-Origin *;
         add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
         add_header Access-Control-Allow-Headers "Range";
         add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
     }
-
     # Serve ROMs from mounted directory
     location /arcade/roms/ {
         alias /usr/share/nginx/roms/;
         add_header Access-Control-Allow-Origin *;
+    }
+
+
+    # Interactive Fiction (text adventures)
+    location /fiction/ {
+        alias /usr/share/nginx/html/fiction/;
+        index index.html;
     }
 
     # ROM Vault - filebrowser (Tiny Best Set Go)
@@ -237,20 +267,6 @@ server {
     location /static/ {
         proxy_pass http://172.17.0.1:8080/static/;
         proxy_set_header Host $host;
-    }
-
-    # Memos - microblog
-    location /memos/ {
-        proxy_pass http://172.17.0.1:5230/;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-
-    # URL Shortener
-    location /go/ {
-        proxy_pass http://172.17.0.1:8088/;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
     }
 
     # Drop Zone upload proxy
@@ -279,8 +295,6 @@ server {
 
     # Static landing page
     location / {
-        add_header Cache-Control "no-cache, no-store, must-revalidate";
-        add_header Pragma "no-cache";
         try_files $uri $uri/ =404;
         add_header Cache-Control "no-cache, no-store, must-revalidate";
         add_header Pragma "no-cache";

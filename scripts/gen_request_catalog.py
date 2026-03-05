@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Generate KPAB.FM request catalog - fetches ALL pages from AzuraCast API"""
-import json, urllib.request, time, sys
+import json, urllib.request, time, sys, os
 
 API = "http://localhost:8500/api/station/1/requests"
 OUTFILE = "/media/pibulus/passport/www/html/kpab/catalog.json"
+TEMP_FILE = OUTFILE + ".tmp"
 
 catalog = []
 page = 1
@@ -13,7 +14,7 @@ retries_left = 3
 print(f"Fetching catalog from {API}...")
 
 while True:
-    url = f"{API}?per_page=25&page={page}"
+    url = f"{API}?per_page=50&page={page}"
     try:
         with urllib.request.urlopen(url, timeout=30) as resp:
             data = json.loads(resp.read())
@@ -21,21 +22,18 @@ while True:
         print(f"  Page {page} failed: {e}", file=sys.stderr)
         retries_left -= 1
         if retries_left <= 0:
-            print(f"  Too many failures, stopping at page {page}")
-            break
+            print(f"  FATAL: Too many failures. Aborting to protect existing catalog.")
+            sys.exit(1)
         time.sleep(2)
         continue
     
-    retries_left = 3  # reset on success
-    
+    retries_left = 3
     if total_pages is None:
         total_pages = data.get("total_pages", 0)
-        total = data.get("total", 0)
-        print(f"  Total: {total} tracks across {total_pages} pages")
+        print(f"  Total: {data.get('total', 0)} tracks across {total_pages} pages")
     
     rows = data.get("rows", [])
-    if not rows:
-        break
+    if not rows: break
     
     for r in rows:
         s = r.get("song", {})
@@ -48,17 +46,16 @@ while True:
             "art": s.get("art", "")
         })
     
-    if page % 50 == 0:
-        print(f"  Page {page}/{total_pages} ({len(catalog)} tracks so far)")
-    
-    if page >= total_pages:
-        break
-    
+    if page >= total_pages: break
     page += 1
     time.sleep(0.05)
 
-print(f"Writing {len(catalog)} tracks to {OUTFILE}")
-with open(OUTFILE, "w") as f:
-    json.dump(catalog, f, separators=(",", ":"))
-
-print(f"Done! {len(catalog)} tracks in catalog")
+if len(catalog) > 0:
+    print(f"Writing {len(catalog)} tracks to {OUTFILE}")
+    with open(TEMP_FILE, "w") as f:
+        json.dump(catalog, f, separators=(",", ":"))
+    os.replace(TEMP_FILE, OUTFILE)
+    print("Done!")
+else:
+    print("Error: Catalog is empty. Not overwriting.")
+    sys.exit(1)

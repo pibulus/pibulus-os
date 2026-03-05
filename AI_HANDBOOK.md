@@ -199,3 +199,76 @@ Recovery: Fresh OS install -> clone repo -> extract golden image.
 - **Structure:** `Show Title/Season X/Episode.mkv`.
 - **Consolidation:** Avoid split season folders in the root. Always merge into a single show directory.
 - **Jellyfin:** Host network mode (port 8096). Rescans automatically on file changes.
+
+## JELLYFIN LIBRARY TOOLS
+
+### jellyfin-merge (Season Merger)
+- **Script:** `~/pibulus-os/scripts/jellyfin_merge.py`
+- **Symlink:** `~/.local/bin/jellyfin-merge`
+- **Purpose:** Merges split-season folders into proper Jellyfin structure (Show/Season XX/)
+- **Zero AI calls** - pure pattern matching, very cheap to run
+- **Usage:**
+  ```bash
+  jellyfin-merge /media/pibulus/passport/Shows --scan --dry-run   # Find problems
+  jellyfin-merge /media/pibulus/passport/Shows --scan              # Fix them (confirms first)
+  jellyfin-merge /media/pibulus/passport/Shows --eject "Folder"    # Move non-show out
+  ```
+
+### mary_poppins.py (Filename Cleaner)
+- **Script:** `~/pibulus-os/scripts/mary_poppins.py`
+- **Purpose:** Cleans messy filenames using AI (haiku model)
+- **Uses claude CLI** - costs a few cents per batch
+- **Patterns:** comics, music, movies, generic
+- **Usage:**
+  ```bash
+  python3 ~/pibulus-os/scripts/mary_poppins.py /path/to/folder --pattern movies --dry-run
+  python3 ~/pibulus-os/scripts/mary_poppins.py /path/to/folder --pattern music
+  ```
+
+## KPAB-DROP (URL to Radio)
+- **Script:** `~/pibulus-os/scripts/kpab-drop`
+- **Symlink:** `~/.local/bin/kpab-drop`
+- **Purpose:** Download audio from any URL (SoundCloud, YouTube, Bandcamp, etc) into AzuraCast media
+- **Engine:** yt-dlp (supports 1000+ sites)
+- **Usage:**
+  ```bash
+  kpab-drop "https://soundcloud.com/artist/track"           # Single track
+  kpab-drop "https://soundcloud.com/artist/sets/playlist"    # Full playlist/mix
+  kpab-drop "https://youtube.com/watch?v=xxx"                # YouTube
+  kpab-drop URL --dry-run                                     # Preview
+  ```
+- **Output:** Downloads to /media/pibulus/passport/Soulseek/ (AzuraCast auto-picks up)
+
+## SIMPSONS GOLDMINE
+- **Script:** `~/pibulus-os/scripts/simpsons_goldmine.py`
+- **Symlink:** `~/.local/bin/simpsons-goldmine`
+- **Purpose:** Find highly-rated episodes from later Simpsons seasons using IMDb data
+- **Data:** IMDb public datasets (cached 7 days), pre-computed gems at ~/.cache/simpsons-goldmine/gems.json
+- **Note:** Pi DNS (Tailscale) may not resolve datasets.imdbws.com - run from Mac and SCP cache
+- **Usage:**
+  ```bash
+  simpsons-goldmine                          # S20+, 7.0+ rating
+  simpsons-goldmine --min-season 15          # From S15
+  simpsons-goldmine --min-rating 7.5         # Higher bar
+  simpsons-goldmine --format torrent         # Output search strings
+  ```
+
+## PIRATE-GRAB (TV/Movie Grabber)
+- **Script:** `~/pibulus-os/scripts/pirate_grab.py`
+- **Symlink:** `~/.local/bin/pirate-grab`
+- **Purpose:** Search torrents and download via transmission-cli. For legally owned media preservation.
+- **Sources:** 1337x (primary) + Pirate Bay (fallback). Has relevance filtering to avoid garbage results.
+- **Engine:** requests + BeautifulSoup scraping, NO heavy services (no Sonarr/Prowlarr/Jackett)
+- **Usage:**
+  ```bash
+  pirate-grab "Show Name" --season 2 --dry-run      # Preview
+  pirate-grab "Show Name" --season 2                  # Download
+  pirate-grab "Show Name" -s 3 -e 6                   # Specific episode
+  pirate-grab "Movie Name" --movie                     # Movies
+  pirate-grab "query" --quality 720                    # Prefer 720p
+  pirate-grab "query" --top 10                         # Show more results
+  pirate-grab "query" --pick 3                         # Pick 3rd result
+  ```
+- **Output:** Downloads to /media/pibulus/passport/Shows (or /Movies with --movie)
+- **Tip:** Run `jellyfin-merge --scan` after to organize any new season folders
+- **Note:** Niche shows may only be on TPB. Very niche stuff might need manual search or slskd.

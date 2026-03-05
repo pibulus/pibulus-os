@@ -112,6 +112,34 @@
       text-shadow: 0 0 8px rgba(255,0,255,0.5);
     }
 
+    /* BUTTON STANDARDS */
+    .action-button {
+      width: 100%;
+      justify-content: center;
+      font-family: 'VT323', monospace;
+      font-size: 18px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 14px 20px;
+      border: 1px solid #333;
+      color: #999;
+      cursor: pointer;
+      background: transparent;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .action-button:hover {
+      border-color: var(--cyan);
+      color: var(--cyan);
+      text-shadow: 0 0 6px rgba(0,255,234,0.4);
+      box-shadow: 0 0 14px rgba(0,255,234,0.2);
+    }
+    .action-button:active { transform: scale(0.98); }
+
     .status-bar {
       display: flex;
       justify-content: center;
@@ -178,8 +206,6 @@
       padding: 18px;
       position: relative;
     }
-
-    .now-playing-label { display: none; }
 
     .art-wrapper { position: relative; width: 130px; height: 130px; flex-shrink: 0; }
 
@@ -253,166 +279,177 @@
       background: transparent;
       border: none;
       border-bottom: 1px solid #151515;
-      padding: 10px 18px 12px;
+      padding: 12px 18px;
     }
 
-    .progress-bar-wrap {
-      position: relative;
-      width: 100%;
+    .progress-track {
       height: 6px;
-      background: #222;
-      cursor: default;
+      background: #111;
+      border: 1px solid #222;
+      position: relative;
+      overflow: hidden;
     }
 
-    .progress-bar-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--cyan), rgba(0,255,234,0.7));
+    .progress-fill {
+      position: absolute;
+      top: 0; left: 0; height: 100%;
+      background: var(--cyan);
       width: 0%;
+      box-shadow: 0 0 8px var(--cyan);
       transition: width 1s linear;
-      box-shadow: 0 0 8px rgba(0,255,234,0.6), 0 0 16px rgba(0,255,234,0.2);
     }
 
-    .progress-times {
+    .time-meta {
       display: flex;
       justify-content: space-between;
       margin-top: 6px;
-      font-family: 'VT323', monospace;
-      font-size: 14px;
+      font-size: 10px;
       color: var(--dim);
       letter-spacing: 1px;
     }
 
-    .progress-times .elapsed { color: var(--cyan); }
-
-    .signal-lost {
-      display: none;
-      font-family: 'VT323', monospace;
-      font-size: 28px;
-      color: var(--magenta);
-      animation: flicker 1.5s ease-in-out infinite;
-      letter-spacing: 4px;
-    }
-
-    @keyframes flicker {
-      0%, 100% { opacity: 1; } 92% { opacity: 1; } 93% { opacity: 0.1; }
-      95% { opacity: 1; } 96% { opacity: 0.1; } 97% { opacity: 1; }
-    }
-
-    /* PLAYER CONTROLS */
-    .player-controls {
-      display: flex;
+    /* CONTROLS */
+    .controls {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
       align-items: center;
       gap: 16px;
-      background: transparent;
-      border: none;
-      padding: 14px 18px;
+      padding: 16px 18px;
     }
 
     .play-btn {
-      width: 56px; height: 56px;
-      border-radius: 50%;
-      border: 2px solid var(--cyan);
+      width: 58px; height: 58px;
       background: transparent;
-      color: var(--cyan);
-      font-size: 20px;
+      border: 2px solid var(--text);
+      color: var(--text);
+      border-radius: 50%;
+      font-size: 24px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
+      transition: all 0.2s ease;
+      position: relative;
       flex-shrink: 0;
-      transition: all 0.15s ease;
-      text-shadow: 0 0 8px var(--cyan);
-      box-shadow: 0 0 10px rgba(0,255,234,0.2), inset 0 0 10px rgba(0,255,234,0.05);
-      -webkit-tap-highlight-color: transparent;
     }
 
     .play-btn:hover {
-      background: rgba(0,255,234,0.1);
-      box-shadow: 0 0 20px rgba(0,255,234,0.4), inset 0 0 15px rgba(0,255,234,0.1);
+      color: var(--cyan);
+      border-color: var(--cyan);
+      box-shadow: 0 0 15px rgba(0,255,234,0.3);
       transform: scale(1.05);
     }
-
-    .play-btn:active { transform: scale(0.97); }
 
     .play-btn.playing {
       border-color: var(--magenta);
       color: var(--magenta);
-      text-shadow: 0 0 8px var(--magenta);
-      box-shadow: 0 0 14px rgba(255,0,255,0.3), inset 0 0 10px rgba(255,0,255,0.05);
+      box-shadow: 0 0 15px rgba(255,0,255,0.3);
     }
 
-    .play-btn.playing:hover {
-      background: rgba(255,0,255,0.1);
-      box-shadow: 0 0 22px rgba(255,0,255,0.5), inset 0 0 15px rgba(255,0,255,0.1);
+    .play-btn::after {
+      content: '';
+      position: absolute;
+      top: -6px; left: -6px; right: -6px; bottom: -6px;
+      border: 1px solid transparent;
+      border-radius: 50%;
+      transition: all 0.3s ease;
     }
 
+    .play-btn:hover::after { border-color: rgba(0,255,234,0.2); transform: scale(1.1); }
+
+    .vol-wrapper { display: flex; align-items: center; gap: 10px; flex-grow: 1; }
+
+    .vol-icon { font-size: 16px; color: var(--dim); min-width: 20px; }
+
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      background: transparent;
+    }
+
+    input[type=range]:focus { outline: none; }
+
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 4px;
+      cursor: pointer;
+      background: #222;
+      border-radius: 2px;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+      height: 16px;
+      width: 16px;
+      border-radius: 50%;
+      background: var(--text);
+      cursor: pointer;
+      -webkit-appearance: none;
+      margin-top: -6px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.5);
+    }
+
+    input[type=range]:hover::-webkit-slider-thumb { background: var(--cyan); box-shadow: 0 0 10px var(--cyan); }
+
+    .share-btn {
+      background: transparent;
+      border: 1px solid #333;
+      color: var(--dim);
+      padding: 8px 12px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      letter-spacing: 1px;
+    }
+
+    .share-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+    .share-btn.shared { background: var(--cyan); color: var(--bg); border-color: var(--cyan); }
+
+    /* VISUALIZER */
     .visualizer {
+      height: 20px;
       display: flex;
       align-items: flex-end;
-      gap: 3px;
-      height: 36px;
-      flex: 1;
-      min-width: 0;
+      gap: 2px;
+      padding: 0 18px 10px;
+      overflow: hidden;
+      opacity: 0.3;
+      transition: opacity 0.5s ease;
     }
+
+    .visualizer.active { opacity: 1; }
 
     .viz-bar {
       flex: 1;
       background: var(--cyan);
-      border-radius: 1px;
-      min-height: 3px;
-      opacity: 0.3;
-      transition: height 0.1s ease;
+      height: 2px;
+      min-height: 2px;
     }
 
     .visualizer.active .viz-bar {
-      opacity: 0.8;
-      animation: vizPulse var(--dur, 0.6s) ease-in-out infinite alternate;
+      animation: vizAnim var(--dur) ease-in-out infinite alternate;
     }
 
-    @keyframes vizPulse {
-      from { transform: scaleY(0.15); }
-      to   { transform: scaleY(1); }
+    @keyframes vizAnim {
+      0% { height: 2px; }
+      100% { height: 100%; }
     }
 
-    .vol-wrapper { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-    .vol-icon { color: var(--dim); font-size: 14px; width: 18px; text-align: center; cursor: pointer; }
+    /* SONG HISTORY */
+    .history-panel { margin-top: 10px; }
 
-    input[type="range"] {
-      -webkit-appearance: none; appearance: none;
-      width: 80px; height: 3px;
-      background: #222; outline: none; cursor: pointer;
-    }
-
-    input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 14px; height: 14px; border-radius: 50%;
-      background: var(--cyan); box-shadow: 0 0 6px var(--cyan); cursor: pointer;
-    }
-
-    input[type="range"]::-moz-range-thumb {
-      width: 14px; height: 14px; border-radius: 50%;
-      background: var(--cyan); box-shadow: 0 0 6px var(--cyan); cursor: pointer; border: none;
-    }
-
-    .listeners-badge { font-size: 11px; color: var(--dim); letter-spacing: 1px; white-space: nowrap; }
-    .listeners-count { color: var(--cyan); font-size: 13px; }
-
-    /* HISTORY */
-    .history-section { flex: 1; }
-
-    .section-header {
+    .history-label {
       font-family: 'VT323', monospace;
-      font-size: 14px;
+      font-size: 13px;
       color: var(--dim);
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      margin-bottom: 10px;
+      letter-spacing: 3px;
+      margin-bottom: 8px;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
 
-    .section-header::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .history-label::after { content: ''; flex-grow: 1; height: 1px; background: #151515; }
 
     .history-list { display: flex; flex-direction: column; gap: 4px; }
 
@@ -420,701 +457,195 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 10px 12px;
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-left: 2px solid #1a1a1a;
-      transition: border-left-color 0.2s ease, background 0.2s ease, transform 0.15s ease;
-      min-width: 0;
-      cursor: pointer;
+      padding: 8px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
       position: relative;
+      cursor: pointer;
     }
 
-    .history-item:hover {
-      border-left-color: var(--cyan);
-      background: rgba(0,255,234,0.03);
-      transform: translateX(2px);
-    }
+    .history-item:hover { background: rgba(255,255,255,0.04); border-color: #222; }
 
-    .history-art {
-      width: 40px; height: 40px;
-      object-fit: cover;
-      border: 1px solid #1a1a1a;
-      flex-shrink: 0;
-    }
-
+    .history-art { width: 32px; height: 32px; object-fit: cover; border: 1px solid #222; flex-shrink: 0; }
     .history-art-placeholder {
-      width: 40px; height: 40px;
+      width: 32px; height: 32px;
       background: #111;
-      border: 1px solid #1a1a1a;
+      border: 1px solid #222;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 16px;
+      font-size: 14px;
       color: #333;
       flex-shrink: 0;
     }
 
     .history-text {
-      font-size: 13px;
-      color: #888;
+      font-size: 12px;
+      color: #777;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      min-width: 0;
-      flex: 1;
+      flex-grow: 1;
     }
 
     .history-text span { color: var(--text); }
 
-    /* History action popup */
     .history-actions {
-      display: none;
-      position: absolute;
-      right: 8px;
-      top: 50%;
-      transform: translateY(-50%);
+      display: flex;
       gap: 6px;
-      z-index: 10;
+      opacity: 0;
+      transition: opacity 0.2s ease;
     }
 
-    .history-item:hover .history-actions,
-    .history-item.touch-active .history-actions {
-      display: flex;
-    }
+    .history-item:hover .history-actions { opacity: 1; }
+    .history-item.touch-active .history-actions { opacity: 1; }
 
     .history-action-btn {
-      font-family: 'VT323', monospace;
-      font-size: 12px;
-      letter-spacing: 1px;
+      background: #151515;
+      border: 1px solid #252525;
       color: var(--dim);
-      border: 1px solid #333;
-      background: var(--bg);
-      padding: 3px 8px;
-      cursor: pointer;
-      transition: all 0.15s;
-      white-space: nowrap;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .history-action-btn:hover {
-      color: var(--cyan);
-      border-color: var(--cyan);
-      box-shadow: 0 0 6px rgba(0,255,234,0.2);
-    }
-
-    /* FOOTER */
-    .footer {
-      text-align: center;
       font-size: 10px;
-      color: #333;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      padding-top: 12px;
-      border-top: 1px solid var(--border);
-      margin-top: auto;
-    }
-
-    /* RESPONSIVE — MOBILE */
-    @media (max-width: 560px) {
-      .container { padding: calc(16px + var(--safe-top)) 14px calc(24px + var(--safe-bottom)); gap: 12px; }
-      .now-playing { gap: 12px; padding: 14px; }
-      .art-wrapper, .album-art, .art-placeholder { width: 90px; height: 90px; }
-      .player-controls { gap: 10px; padding: 12px 14px; }
-      .play-btn { width: 50px; height: 50px; font-size: 18px; }
-      .visualizer { min-width: 60px; }
-      input[type="range"] { width: 60px; }
-      .listeners-badge { font-size: 10px; }
-      .progress-section { padding: 8px 14px 10px; border-bottom: 1px solid #151515; }
-      input[type="range"]::-webkit-slider-thumb { width: 18px; height: 18px; }
-      .progress-times { font-size: 13px; }
-      .btn { justify-content: center; font-size: 16px; padding: 12px 20px; }
-      .history-action-btn { font-size: 11px; padding: 2px 6px; }
-    }
-
-    @media (max-width: 380px) {
-      .art-wrapper, .album-art, .art-placeholder { width: 72px; height: 72px; }
-      .station-name { letter-spacing: 2px; }
-      .status-bar { gap: 8px; font-size: 10px; }
-      .vol-wrapper { display: none; }
-    }
-
-    /* REQUEST PANEL */
-    .request-section { position: relative; }
-
-    .request-toggle {
-      width: 100%;
-      justify-content: center;
-      position: relative;
-      overflow: hidden;
-      font-family: 'VT323', monospace;
-      font-size: 18px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      padding: 14px 20px;
-      border: 1px solid var(--magenta);
-      color: var(--magenta);
-      text-shadow: 0 0 6px rgba(255,0,255,0.4);
+      padding: 2px 6px;
       cursor: pointer;
-      background: transparent;
-      transition: all 0.15s ease;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      -webkit-tap-highlight-color: transparent;
+      text-decoration: none;
+      font-family: 'Share Tech Mono', monospace;
     }
 
-    .request-toggle:hover { background: rgba(255,0,255,0.1); box-shadow: 0 0 14px rgba(255,0,255,0.3); }
-    .request-toggle:active { transform: scale(0.98); }
+    .history-action-btn:hover { border-color: var(--cyan); color: var(--cyan); }
 
-    .request-toggle::after {
-      content: '';
-      position: absolute;
-      top: 0; left: -100%;
-      width: 50%; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,0,255,0.08), transparent);
-      animation: shimmer 3s ease-in-out infinite;
-    }
-
-    @keyframes shimmer { 0% { left: -100%; } 100% { left: 200%; } }
+    /* SONG REQUEST SECTION */
+    .request-section { margin-top: 10px; position: relative; }
 
     .request-panel {
-      display: flex;
-      flex-direction: column;
       background: var(--panel);
-      border: 1px solid var(--magenta);
+      border: 1px solid var(--border);
       border-top: none;
       max-height: 0;
       overflow: hidden;
       opacity: 0;
-      transition: max-height 0.3s ease-out, opacity 0.2s ease-out;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .request-panel.open {
-      max-height: 500px;
-      opacity: 1;
-      animation: panelSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-    }
+    .request-panel.open { max-height: 500px; opacity: 1; border-color: #222; }
 
-    .request-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 14px;
-      border-bottom: 1px solid #1a1a1a;
-    }
-
-    .request-title {
-      font-family: 'VT323', monospace;
-      font-size: 13px;
-      color: var(--magenta);
-      letter-spacing: 4px;
-      text-shadow: 0 0 6px rgba(255,0,255,0.4);
-    }
-
-    .request-close {
-      background: none;
-      border: none;
-      color: var(--dim);
-      font-size: 22px;
-      cursor: pointer;
-      padding: 0 4px;
-      line-height: 1;
-      transition: color 0.15s;
-    }
-
-    .request-close:hover { color: var(--magenta); }
-
-    .request-search-wrap {
-      position: relative;
-      padding: 10px 14px;
-      border-bottom: 1px solid #1a1a1a;
-    }
+    .request-search-wrap { padding: 12px; background: rgba(0,0,0,0.2); border-bottom: 1px solid #151515; }
 
     .request-search {
       width: 100%;
-      background: #111;
+      background: #080808;
       border: 1px solid #222;
       color: var(--text);
       font-family: 'Share Tech Mono', monospace;
-      font-size: 16px;
-      padding: 12px 14px 12px 32px;
+      padding: 10px 14px;
+      font-size: 14px;
       outline: none;
-      transition: border-color 0.2s;
-      border-radius: 0;
+      transition: border-color 0.2s ease;
     }
 
-    .request-search:focus { border-color: var(--cyan); box-shadow: 0 0 8px rgba(0,255,234,0.15); }
-    .request-search:not(:placeholder-shown) { border-color: var(--cyan); }
-    .request-search::placeholder { color: #444; }
+    .request-search:focus { border-color: var(--cyan); box-shadow: 0 0 8px rgba(0,255,234,0.1); }
 
-    .search-icon {
-      position: absolute;
-      left: 24px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #444;
-      font-size: 16px;
-      pointer-events: none;
-    }
-
-    .search-count {
-      position: absolute;
-      right: 24px;
-      top: 50%;
-      transform: translateY(-50%);
+    .search-meta {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 6px;
       font-size: 10px;
       color: var(--dim);
       letter-spacing: 1px;
     }
 
     .request-results {
-      flex: 1;
+      max-height: 380px;
       overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: thin;
-      scrollbar-color: #222 transparent;
+      background: transparent;
     }
 
     .request-results::-webkit-scrollbar { width: 4px; }
     .request-results::-webkit-scrollbar-track { background: transparent; }
-    .request-results::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
-
-    .request-empty {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 40px 20px;
-      color: #333;
-      font-size: 13px;
-      letter-spacing: 1px;
-    }
-
-    .empty-icon { font-size: 32px; opacity: 0.4; }
+    .request-results::-webkit-scrollbar-thumb { background: #222; }
 
     .request-item {
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 10px 14px;
-      border-bottom: 1px solid #111;
-      cursor: pointer;
-      transition: background 0.12s, border-left 0.12s;
-      border-left: 2px solid transparent;
+      padding: 10px 12px;
+      border-bottom: 1px solid #121215;
+      transition: background 0.2s ease;
     }
 
-    .request-item:hover {
-      background: rgba(255,0,255,0.04);
-      border-left-color: var(--magenta);
-    }
+    .request-item:hover { background: rgba(255,255,255,0.03); }
 
-    .request-item:active { background: rgba(255,0,255,0.08); }
-
-    .request-item-art {
-      width: 44px; height: 44px;
-      object-fit: cover;
-      border: 1px solid #1a1a1a;
-      flex-shrink: 0;
-      background: #111;
-    }
-
+    .request-item-art { width: 40px; height: 40px; object-fit: cover; border: 1px solid #222; }
     .request-item-art-ph {
-      width: 44px; height: 44px;
+      width: 40px; height: 40px;
       background: #111;
-      border: 1px solid #1a1a1a;
+      border: 1px solid #222;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 18px;
+      font-size: 16px;
       color: #333;
-      flex-shrink: 0;
     }
 
-    .request-item-info {
-      flex: 1;
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .request-item-title {
-      font-size: 13px;
-      color: var(--text);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .request-item-meta {
-      font-size: 11px;
-      color: var(--dim);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
+    .request-item-info { flex-grow: 1; min-width: 0; }
+    .request-item-title { font-size: 13px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .request-item-meta { font-size: 11px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .request-item-meta .artist { color: var(--cyan); }
 
     .request-item-btn {
-      flex-shrink: 0;
-      font-family: 'VT323', monospace;
-      font-size: 13px;
-      letter-spacing: 2px;
-      color: var(--magenta);
-      border: 1px solid rgba(255,0,255,0.3);
       background: transparent;
-      padding: 4px 10px;
+      border: 1px solid #333;
+      color: #777;
+      font-family: 'VT323', monospace;
+      font-size: 14px;
+      padding: 4px 12px;
       cursor: pointer;
-      transition: all 0.15s;
+      letter-spacing: 1px;
+      transition: all 0.2s ease;
+    }
+
+    .request-item-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+    .request-item-btn.sent { border-color: var(--magenta); color: var(--magenta); pointer-events: none; }
+    .request-item-btn.failed { border-color: #c33; color: #c33; }
+
+    .request-empty {
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--dim);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .empty-icon { font-size: 32px; opacity: 0.3; }
+
+    .request-loading { padding: 40px; text-align: center; font-size: 13px; color: var(--cyan); letter-spacing: 4px; }
+
+    .request-toast {
+      position: fixed;
+      bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--cyan);
+      color: var(--bg);
+      padding: 10px 20px;
+      font-size: 12px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      z-index: 2000;
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
       white-space: nowrap;
     }
 
-    .request-item-btn:hover {
-      background: rgba(255,0,255,0.1);
-      border-color: var(--magenta);
-      box-shadow: 0 0 8px rgba(255,0,255,0.2);
-    }
+    .request-toast.show { transform: translateX(-50%) translateY(0); }
+    .request-toast.error { background: #c33; color: #fff; }
 
-    .request-item-btn.sent {
-      color: var(--cyan);
-      border-color: var(--cyan);
-      pointer-events: none;
-      text-shadow: 0 0 6px var(--cyan);
-      box-shadow: 0 0 8px rgba(0,255,234,0.15);
-    }
-
-    .request-item-btn.failed {
-      color: #ff4444;
-      border-color: #ff4444;
-      pointer-events: none;
-    }
-
-    .request-loading {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 30px;
-      color: var(--dim);
-      font-size: 12px;
-      letter-spacing: 2px;
-    }
-
-    .request-loading::before {
-      content: '\25CC';
-      display: inline-block;
-      margin-right: 8px;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-    .request-toast {
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      background: rgba(0,255,234,0.12);
-      border-top: 1px solid var(--cyan);
-      color: var(--cyan);
-      font-family: 'VT323', monospace;
-      font-size: 16px;
-      letter-spacing: 2px;
-      text-align: center;
-      padding: 12px;
-      transform: translateY(100%);
-      transition: transform 0.3s ease;
-      pointer-events: none;
-      z-index: 10;
-    }
-
-    .request-toast.show { transform: translateY(0); }
-    .request-toast.error {
-      background: rgba(255,68,68,0.12);
-      border-top-color: #ff4444;
-      color: #ff4444;
-    }
-
-    .request-close::before {
-      content: 'ESC';
-      font-size: 9px;
-      color: #333;
-      letter-spacing: 1px;
-      margin-right: 6px;
-      vertical-align: middle;
-    }
-
-    @media (max-width: 560px) {
-      .request-panel.open { max-height: 400px; }
-      .request-item { padding: 8px 10px; gap: 10px; }
-      .request-item-art, .request-item-art-ph { width: 36px; height: 36px; }
-      .request-item-btn { font-size: 11px; padding: 3px 8px; }
-      .request-toggle { font-size: 16px; padding: 14px 20px; }
-      .about-toggle { font-size: 16px; padding: 12px 16px; }
-      .msg-toggle { font-size: 16px; padding: 12px 16px; }
-      .mutiny-toggle { font-size: 16px; padding: 12px 16px; }
-    }
-
-    /* TAGLINE */
-    .tagline {
-      text-align: center;
-      font-family: 'VT323', monospace;
-      font-size: clamp(16px, 3.5vw, 22px);
-      color: var(--cyan);
-      text-shadow: 0 0 10px rgba(0,255,234,0.4), 0 0 30px rgba(0,255,234,0.15);
-      letter-spacing: 4px;
-      padding: 16px 0;
-      line-height: 1.5;
-      border-top: 1px solid #111;
-      border-bottom: 1px solid #111;
-      transition: opacity 0.6s ease;
-    }
-    .tagline.fading { opacity: 0; }
-
-
-
-    /* Micro-bounce on button focus */
-    @keyframes microBounce {
-      0% { transform: scale(1); }
-      50% { transform: scale(0.97); }
-      100% { transform: scale(1); }
-    }
-    .about-toggle:active,
-    .msg-toggle:active,
-    .mutiny-toggle:active,
-    .request-toggle:active {
-      animation: microBounce 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    /* SPRING ANIMATIONS for panel reveals */
-    @keyframes panelSlideIn {
-      0% {
-        opacity: 0;
-        transform: translateY(-8px) scaleY(0.96);
-      }
-      40% {
-        opacity: 1;
-        transform: translateY(2px) scaleY(1.01);
-      }
-      70% {
-        transform: translateY(-1px) scaleY(1);
-      }
-      100% {
-        opacity: 1;
-        transform: translateY(0) scaleY(1);
-      }
-    }
-
-    @keyframes contentFadeUp {
-      0% {
-        opacity: 0;
-        transform: translateY(6px);
-      }
-      100% {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    /* ABOUT / FAQ SECTION */
-    .about-section { position: relative; }
-
-    .about-toggle {
-      width: 100%;
-      justify-content: center;
-      font-family: 'VT323', monospace;
-      font-size: 18px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      padding: 14px 20px;
-      border: 1px solid #333;
-      color: #999;
-      cursor: pointer;
-      background: transparent;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .about-toggle:hover {
-      border-color: var(--cyan);
-      color: var(--cyan);
-      text-shadow: 0 0 6px rgba(0,255,234,0.4);
-      box-shadow: 0 0 14px rgba(0,255,234,0.2);
-    }
-    .about-toggle:active { transform: scale(0.98); }
-
-    .about-panel {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-top: none;
-      max-height: 0;
-      overflow: hidden;
-      opacity: 0;
-      transform-origin: top center;
-      transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
-    }
-
-    .about-panel.open {
-      max-height: 2000px;
-      opacity: 1;
-      animation: panelSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-    }
-
-    .about-panel.open .about-content {
-      animation: contentFadeUp 0.4s ease 0.15s both;
-    }
-
-    .about-content {
-      padding: 20px 18px;
-    }
-
-    .about-blurb {
-      font-size: 13px;
-      color: var(--text);
-      line-height: 1.8;
-      letter-spacing: 0.5px;
-      margin-bottom: 20px;
-      border-left: 2px solid var(--cyan);
-      padding-left: 14px;
-    }
-
-    .faq-item {
-      margin-bottom: 16px;
-    }
-
-    .faq-q {
-      font-family: 'VT323', monospace;
-      font-size: 17px;
-      color: var(--cyan);
-      letter-spacing: 2px;
-      margin-bottom: 4px;
-    }
-
-    .faq-q::before {
-      content: '> ';
-      color: var(--dim);
-    }
-
-    .faq-a {
-      font-size: 13px;
-      color: #8a8a96;
-      line-height: 1.7;
-      padding-left: 16px;
-      letter-spacing: 0.3px;
-    }
-
-    .faq-a strong { color: var(--text); font-weight: normal; }
-
-    /* SHARE BUTTON */
-    .share-btn {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: rgba(6,6,8,0.7);
-      border: 1px solid var(--border);
-      color: var(--dim);
-      font-family: 'VT323', monospace;
-      font-size: 15px;
-      letter-spacing: 1px;
-      cursor: pointer;
-      padding: 5px 8px;
-      border-radius: 3px;
-      transition: all 0.2s ease;
-      z-index: 50;
-      line-height: 1;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .share-btn:hover {
-      color: var(--cyan);
-      border-color: var(--border);
-      text-shadow: 0 0 6px rgba(0,255,234,0.4);
-    }
-    .share-btn:active { transform: scale(0.92); }
-    .share-btn.shared {
-      color: var(--cyan);
-      animation: sharePulse 0.4s ease;
-    }
-    @keyframes sharePulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.2); }
-      100% { transform: scale(1); }
-    }
-    .share-toast {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%) translateY(100px);
-      font-family: 'VT323', monospace;
-      font-size: 16px;
-      letter-spacing: 2px;
-      color: var(--cyan);
-      background: rgba(10,10,14,0.95);
-      border: 1px solid var(--cyan);
-      padding: 10px 20px;
-      z-index: 1001;
-      opacity: 0;
-      transition: all 0.3s ease;
-      text-shadow: 0 0 6px rgba(0,255,234,0.4);
-      box-shadow: 0 0 20px rgba(0,255,234,0.15);
-      pointer-events: none;
-    }
-    .share-toast.show {
-      transform: translateX(-50%) translateY(0);
-      opacity: 1;
-    }
-
-    /* MUTINY SKIP */
-    .mutiny-section { position: relative; }
-
-    .mutiny-toggle {
-      width: 100%;
-      justify-content: center;
-      font-family: 'VT323', monospace;
-      font-size: 18px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      padding: 14px 20px;
-      border: 1px solid #333;
-      color: #999;
-      cursor: pointer;
-      background: transparent;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .mutiny-toggle:hover {
-      border-color: var(--cyan);
-      color: var(--cyan);
-      text-shadow: 0 0 6px rgba(0,255,234,0.4);
-      box-shadow: 0 0 14px rgba(0,255,234,0.2);
-    }
-    .mutiny-toggle:active { transform: scale(0.98); }
-
-    .mutiny-toggle.voted {
-      border-color: #c33;
-      color: #c33;
-      text-shadow: 0 0 6px rgba(204,51,51,0.3);
-    }
-
-    .mutiny-toggle.cooldown {
-      color: #444;
-      border-color: #262626;
-    }
-    .mutiny-toggle.cooldown:hover {
-      border-color: #333;
-      color: #555;
-      text-shadow: none;
-      box-shadow: none;
-    }
+    /* MUTINY SKIP SYSTEM */
+    .mutiny-section { position: relative; margin-top: 10px; }
+    
+    .mutiny-toggle.voted { border-color: #c33; color: #c33; text-shadow: 0 0 6px rgba(204,51,51,0.3); }
+    .mutiny-toggle.cooldown { color: #444; border-color: #262626; }
 
     .mutiny-panel {
       background: var(--panel);
@@ -1142,10 +673,6 @@
       text-align: left;
     }
 
-    .mutiny-panel.open .mutiny-info {
-      animation: contentFadeUp 0.4s ease 0.15s both;
-    }
-
     .mutiny-info .vote-status {
       font-family: 'VT323', monospace;
       font-size: 15px;
@@ -1156,271 +683,235 @@
 
     .mutiny-fire {
       display: inline-block;
-      margin-left: auto;
-      margin-right: auto;
       font-family: 'VT323', monospace;
       font-size: 14px;
       letter-spacing: 2px;
       padding: 8px 20px;
       margin-top: 8px;
+      background: transparent;
       border: 1px solid #c33;
       color: #c33;
-      background: transparent;
       cursor: pointer;
-      transition: all 0.15s ease;
-      text-transform: uppercase;
+      transition: all 0.2s ease;
     }
-
-    .mutiny-fire:hover {
-      background: rgba(204,51,51,0.15);
-      box-shadow: 0 0 12px rgba(204,51,51,0.3);
-      text-shadow: 0 0 6px rgba(204,51,51,0.5);
-    }
-    .mutiny-fire:active { transform: scale(0.96); }
+    .mutiny-fire:hover { background: #c33; color: #fff; box-shadow: 0 0 15px rgba(204,51,51,0.4); }
 
     .mutiny-toast {
       position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%) translateY(100px);
-      font-family: 'VT323', monospace;
-      font-size: 16px;
-      letter-spacing: 2px;
-      color: #c33;
-      background: rgba(10,10,14,0.95);
-      border: 1px solid #c33;
+      top: 24px; left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      background: #c33;
+      color: #fff;
       padding: 10px 20px;
-      z-index: 1000;
-      opacity: 0;
-      transition: all 0.3s ease;
-      text-shadow: 0 0 6px rgba(204,51,51,0.4);
-      box-shadow: 0 0 20px rgba(204,51,51,0.15);
+      font-size: 12px;
+      z-index: 2001;
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     }
+    .mutiny-toast.show { transform: translateX(-50%) translateY(0); }
 
-    .mutiny-toast.show {
-      transform: translateX(-50%) translateY(0);
-      opacity: 1;
-    }
-
-    /* MESSAGE DROP */
-    .msg-section {
-      background: transparent;
-      border: none;
-      padding: 0;
-    }
-
-    .msg-form-wrap {
+    /* ABOUT / FAQ */
+    .about-section { margin-top: 10px; }
+    
+    .about-panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-top: none;
       max-height: 0;
       overflow: hidden;
       opacity: 0;
-      transform-origin: top center;
-      transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
-    }
-    .msg-section.open .msg-form-wrap {
-      max-height: 500px;
-      opacity: 1;
-      animation: panelSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .msg-toggle {
-      width: 100%;
-      justify-content: center;
+    .about-panel.open { max-height: 2000px; opacity: 1; padding-bottom: 20px; }
+
+    .about-content { padding: 20px 18px; }
+    .about-blurb {
       font-family: 'VT323', monospace;
       font-size: 18px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      padding: 14px 20px;
-      border: 1px solid #333;
-      color: #999;
-      cursor: pointer;
-      background: transparent;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      -webkit-tap-highlight-color: transparent;
+      color: var(--cyan);
+      margin-bottom: 24px;
+      line-height: 1.4;
+      border-left: 2px solid var(--cyan);
+      padding-left: 14px;
     }
 
-    .msg-toggle:hover {
-      border-color: var(--magenta);
-      color: var(--magenta);
-      text-shadow: 0 0 6px rgba(255,0,255,0.4);
-      box-shadow: 0 0 14px rgba(255,0,255,0.2);
-    }
-    .msg-toggle:active { transform: scale(0.98); }
+    .faq-item { margin-bottom: 20px; }
+    .faq-q { font-size: 11px; color: var(--magenta); letter-spacing: 2px; margin-bottom: 6px; font-weight: bold; }
+    .faq-a { font-size: 12px; color: #888; line-height: 1.8; }
 
-    .msg-form {
-      flex-direction: column;
-      gap: 10px;
-      display: flex;
-      padding: 16px 18px;
+    /* MESSAGE DROP */
+    .msg-section { margin-top: 10px; }
+    
+    .msg-form-wrap {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-top: none;
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition: all 0.4s ease;
     }
+    .msg-section.open .msg-form-wrap { max-height: 300px; opacity: 1; }
 
-    .msg-form input,
-    .msg-form textarea {
-      width: 100%;
-      background: #111;
+    .msg-form { padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+    .msg-form input, .msg-form textarea {
+      background: #080808;
       border: 1px solid #222;
       color: var(--text);
       font-family: 'Share Tech Mono', monospace;
-      font-size: 14px;
-      padding: 10px 12px;
-      outline: none;
-      transition: border-color 0.2s;
-      border-radius: 0;
-    }
-
-    .msg-form input:focus,
-    .msg-form textarea:focus {
-      border-color: var(--magenta);
-      box-shadow: 0 0 6px rgba(255,0,255,0.1);
-    }
-
-    .msg-form textarea {
-      resize: vertical;
-      min-height: 60px;
-      max-height: 140px;
+      padding: 10px;
       font-size: 13px;
+      outline: none;
     }
-
-    .msg-form input::placeholder,
-    .msg-form textarea::placeholder { color: #444; }
-
+    .msg-form input:focus, .msg-form textarea:focus { border-color: var(--cyan); }
     .msg-send {
-      width: 100%;
-      font-family: 'VT323', monospace;
-      font-size: 18px;
-      letter-spacing: 2px;
-      color: var(--magenta);
-      border: 1px solid var(--magenta);
+      align-self: flex-end;
       background: transparent;
-      padding: 14px 20px;
+      border: 1px solid var(--cyan);
+      color: var(--cyan);
+      font-family: 'VT323', monospace;
+      font-size: 16px;
+      padding: 4px 20px;
       cursor: pointer;
-      transition: all 0.15s;
+      letter-spacing: 2px;
     }
-
-    .msg-send:hover {
-      background: rgba(255,0,255,0.1);
-      box-shadow: 0 0 10px rgba(255,0,255,0.2);
-    }
-
-    .msg-send:disabled {
-      opacity: 0.4;
-      pointer-events: none;
-    }
-
-    .msg-status {
-      font-size: 12px;
-      letter-spacing: 1px;
-      text-align: center;
-    }
-
+    .msg-send:hover { background: var(--cyan); color: var(--bg); }
+    .msg-status { font-size: 10px; letter-spacing: 1px; }
     .msg-status.ok { color: var(--cyan); }
-    .msg-status.err { color: #ff4444; }
+    .msg-status.err { color: #c33; }
 
-    @media (max-width: 560px) {
-      .about-content { padding: 16px 14px; }
-      .msg-section { padding: 14px; }
+    /* FOOTER */
+    .footer {
+      text-align: center;
+      padding: 30px 0 10px;
+      font-size: 10px;
+      color: #333;
+      letter-spacing: 1px;
+      text-transform: uppercase;
     }
 
-    /* PWA standalone mode adjustments */
-    @media (display-mode: standalone) {
-      .container {
-        padding-top: calc(44px + var(--safe-top));
-      }
+    .signal-lost {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(10,10,15,0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 10;
+      display: none;
+    }
+
+    .lost-icon { font-size: 32px; color: var(--magenta); animation: pulse 1s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+    /* Animations */
+    @keyframes panelSlideIn {
+      from { transform: scaleY(0.8); opacity: 0; }
+      to { transform: scaleY(1); opacity: 1; }
+    }
+    @keyframes contentFadeUp {
+      from { transform: translateY(10px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 480px) {
+      .container { padding: calc(16px + var(--safe-top)) 14px 20px; gap: 14px; }
+      .now-playing { grid-template-columns: 1fr; justify-items: center; text-align: center; gap: 12px; }
+      .art-wrapper, .album-art, .art-placeholder { width: 180px; height: 180px; }
+      .track-info { width: 100%; }
+      .controls { grid-template-columns: auto 1fr; }
+      .share-btn { grid-column: 1 / span 2; width: 100%; margin-top: 4px; }
     }
   </style>
 </head>
 <body>
   <div class="container">
     <header class="header">
-      <div class="station-name">KPAB.FM</div>
-      <div class="station-subtitle">Broadcasting from Brunswick</div>
+      <h1 class="station-name">KPAB.FM</h1>
+      <p class="station-subtitle">Pirate Radio &middot; Brunswick</p>
       <div class="status-bar">
         <span class="status-dot"></span>
-        <span>LIVE TRANSMISSION</span>
-        <span>&middot;</span>
-        <span>PIRATE SIGNAL ACTIVE</span>
+        <span>LIVE SIGNAL</span>
+        <span style="color:#222">|</span>
+        <span id="listenerCount">\u2014</span> <span>LISTENERS</span>
       </div>
     </header>
 
-    <div class="player-chassis" id="playerChassis" style="position:relative">
-    <button class="share-btn" id="shareBtn" title="Share what's playing" aria-label="Share">↗</button>
-    <section class="now-playing" id="nowPlaying" aria-label="Now playing">
-      <span class="now-playing-label">NOW PLAYING</span>
-      <div class="art-wrapper">
-        <img class="album-art" id="albumArt" src="" alt="Album art" style="display:none">
-        <div class="art-placeholder" id="artPlaceholder">&#x1F4FB;</div>
+    <main class="player-chassis" id="playerChassis">
+      <div class="signal-lost" id="signalLost">
+        <div class="lost-icon">\u26A1</div>
+        <div style="font-size:12px; color:var(--magenta); letter-spacing:3px;">SIGNAL LOST</div>
       </div>
-      <div class="track-info">
-        <div class="signal-lost" id="signalLost">&#x26A1; SIGNAL LOST &#x26A1;</div>
-        <div class="track-artist" id="trackArtist">LOADING...</div>
-        <div class="track-title" id="trackTitle">Tuning in...</div>
-        <div class="track-meta" id="trackAlbum"></div>
-        <div class="genre-tag" id="genreTag" style="display:none"></div>
+
+      <section class="now-playing">
+        <div class="art-wrapper">
+          <img src="" alt="" class="album-art" id="albumArt" style="display:none;">
+          <div class="art-placeholder" id="artPlaceholder">\u266A</div>
+        </div>
+        <div class="track-info">
+          <div class="track-artist" id="trackArtist">LOADING...</div>
+          <div class="track-title" id="trackTitle">Tuning in...</div>
+          <div class="track-album" id="trackAlbum" style="font-size:11px; color:var(--dim);"></div>
+          <div class="genre-tag" id="genreTag" style="display:none;"></div>
+        </div>
+      </section>
+
+      <section class="progress-section">
+        <div class="progress-track">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="time-meta">
+          <span id="timeElapsed">--:--</span>
+          <span id="timeDuration">--:--</span>
+        </div>
+      </section>
+
+      <section class="controls">
+        <button class="play-btn" id="playBtn" aria-label="Play stream">\u25B6</button>
+        <div class="vol-wrapper">
+          <span class="vol-icon" id="volIcon">\uD83D\uDD0A</span>
+          <input type="range" id="volSlider" min="0" max="1" step="0.01" value="0.8">
+        </div>
+        <button class="share-btn" id="shareBtn">SHARE</button>
+      </section>
+
+      <div class="visualizer" id="visualizer"></div>
+    </main>
+
+    <section class="history-panel">
+      <div class="history-label">RECENTLY PLAYED</div>
+      <div class="history-list" id="historyList">
+        <!-- History items injected here -->
       </div>
     </section>
 
-    <section class="progress-section" id="progressSection" aria-label="Track progress">
-      <div class="progress-bar-wrap">
-        <div class="progress-bar-fill" id="progressFill"></div>
-      </div>
-      <div class="progress-times">
-        <span class="elapsed" id="timeElapsed">--:--</span>
-        <span id="timeDuration">--:--</span>
-      </div>
-    </section>
-
-    <section class="player-controls" aria-label="Player controls">
-      <button class="play-btn" id="playBtn" aria-label="Play stream" title="Play / Pause">&#x25B6;</button>
-      <div class="visualizer" id="visualizer" aria-hidden="true"></div>
-      <div class="vol-wrapper">
-        <span class="vol-icon" id="volIcon">&#x1F50A;</span>
-        <input type="range" id="volSlider" min="0" max="1" step="0.02" value="0.8" aria-label="Volume">
-      </div>
-      <div class="listeners-badge">&#x1F465; <span class="listeners-count" id="listenerCount">&mdash;</span> listening</div>
-    </section>
-    </div>
-
-
-    <div class="share-toast" id="shareToast"></div>
-    <div class="mutiny-toast" id="mutinyToast"></div>
     <section class="request-section" id="requestSection">
-      <button class="request-toggle" id="requestToggle" aria-label="Request a song">&#x1F4FB; Request a Song</button>
-      <div class="request-panel" id="requestPanel" aria-label="Song request">
-        <div class="request-header">
-          <span class="request-title">REQUEST A TRACK</span>
-          <button class="request-close" id="requestClose" aria-label="Close">&times;</button>
-        </div>
+      <button class="action-button" id="requestToggle">&#x1F4FB; Request a Song</button>
+      <div class="request-panel" id="requestPanel">
         <div class="request-search-wrap">
-          <input type="text" class="request-search" id="requestSearch" placeholder="Search artist, title, album..." autocomplete="off" spellcheck="false">
-          <span class="search-icon">&#x2315;</span>
-          <span class="search-count" id="searchCount"></span>
-        </div>
-        <div class="request-results" id="requestResults">
-          <div class="request-empty" id="requestEmpty">
-            <span class="empty-icon">&#x1F3B5;</span>
-            <span>Search 10,000+ requestable tracks</span>
+          <input type="text" class="request-search" id="requestSearch" placeholder="Search artist, title or album..." autocomplete="off">
+          <div class="search-meta">
+            <span id="searchCount"></span>
+            <span>TOP 50 MATCHES</span>
           </div>
         </div>
-        <div class="request-toast" id="requestToast" aria-live="polite"></div>
-      </div>
-    </section>
-
-    <section class="history-section" aria-label="Song history">
-      <div class="section-header">Recently Played</div>
-      <div class="history-list" id="historyList">
-        <div class="history-item">
-          <div class="history-art-placeholder">&#x266A;</div>
-          <div class="history-text">Loading history...</div>
+        <div class="request-results" id="requestResults">
+          <!-- Results injected here -->
+        </div>
+        <div class="request-empty" id="requestEmpty">
+          <span class="empty-icon">\uD83D\uDCC3</span>
+          <span>Search 10,000+ requestable tracks</span>
         </div>
       </div>
+      <div class="request-toast" id="requestToast">REQUEST SENT \u2713</div>
     </section>
 
-    <!-- <div class="tagline" id="taglineEl">Pretty good most of the time. Sometimes great.</div> -->
-
     <section class="mutiny-section" id="mutinySection">
-      <button class="mutiny-toggle" id="mutinyToggle" title="Skip this track">&#x2620; MUTINY</button>
+      <button class="action-button" id="mutinyToggle" title="Skip this track">&#x2620; MUTINY</button>
       <div class="mutiny-panel" id="mutinyPanel">
         <div class="mutiny-info">
           <div class="vote-status" id="mutinyStatus">READY</div>
@@ -1428,10 +919,11 @@
           <button class="mutiny-fire" id="mutinyFire">&#x2620; WALK THE PLANK</button>
         </div>
       </div>
+      <div class="mutiny-toast" id="mutinyToast">MUTINY LOGGED</div>
     </section>
 
     <section class="about-section">
-      <button class="about-toggle" id="aboutToggle">&#x2139; About / FAQ</button>
+      <button class="action-button" id="aboutToggle">&#x2139; About / FAQ</button>
       <div class="about-panel" id="aboutPanel">
         <div class="about-content">
           <div class="about-blurb">
@@ -1465,12 +957,12 @@
 
           <div class="faq-item">
             <div class="faq-q">D.I.T. &mdash; DOING IT TOGETHER</div>
-            <div class="faq-a">This isn't a service, it's a project. <a href="https://quickcat.club/drop/" target="_blank" rel="noopener" style="color: var(--cyan); text-decoration: none; border-bottom: 1px solid rgba(0,255,234,0.3);">Drop us a record</a> and we'll add it to the library. Got a weird playlist? A radio show idea? A 3am ambient set? Send it through. The whole point is that this thing gets shaped by the people listening to it. The more people contribute, the weirder and better it gets.</div>
+            <div class="faq-a">Got a weird playlist? A radio show idea? A 3am ambient set? <a href="https://quickcat.club/drop/" target="_blank" rel="noopener" style="color: var(--cyan); text-decoration: none; border-bottom: 1px solid rgba(0,255,234,0.3);">Send it through</a>. The whole point is that this thing gets shaped by the people listening to it. The more people contribute, the weirder and better it gets.</div>
           </div>
 
           <div class="faq-item">
             <div class="faq-q">WILL IT GO DOWN?</div>
-            <div class="faq-a">Almost certainly. It's an $80 raspberry pi strapped to a hard drive on a desk in my house. It crashes when I look at it funny. But it always comes back. Uptime is a corporate metric. We measure in vibes.</div>
+            <div class="faq-a">Almost certainly. It's an 0 raspberry pi strapped to a hard drive on a desk in my house. It crashes when I look at it funny. But it always comes back. Uptime is a corporate metric. We measure in vibes.</div>
           </div>
 
           <div class="faq-item">
@@ -1482,8 +974,8 @@
     </section>
 
     <section class="msg-section" id="msgSection">
-      <button class="msg-toggle" id="msgToggle">
-        <span class="msg-toggle-text">&#x1F4EC; DROP A MESSAGE</span>
+      <button class="action-button" id="msgToggle">
+        <span class="msg-toggle-text">\uD83D\uDCEC DROP A MESSAGE</span>
       </button>
       <div class="msg-form-wrap" id="msgFormWrap">
         <div class="msg-form" id="msgForm" style="background:var(--panel);border:1px solid var(--border);border-top:none;">
@@ -1503,33 +995,6 @@
   <audio id="audioEl" preload="none" aria-hidden="true"></audio>
 
   <script>
-    /* ── ROTATING TAGLINES (disabled) ── */
-    /*
-    const TAGLINES = [
-      'Pretty good most of the time. Sometimes great.',
-      'It\'s like rage but for music.',
-      'Tune in and freak out.',
-      'All tunes All time.',
-      'Sometimes it\'s nice to not be able to skip.',
-      'Satisfaction guaranteed or triple your money back.',
-      'From salsa to Slayer to Wu-Tang and back.',
-      'Pull the wool over your own eyes.',
-      'Fuck em if they can\'t take a joke.',
-      'Give me slack or kill me.',
-    ];
-    (function rotateTagline() {
-      const el = document.getElementById('taglineEl');
-      if (!el) return;
-      let idx = Math.floor(Math.random() * TAGLINES.length);
-      el.textContent = TAGLINES[idx];
-      setInterval(() => {
-        idx = (idx + 1) % TAGLINES.length;
-        el.classList.add('fading');
-        setTimeout(() => { el.textContent = TAGLINES[idx]; el.classList.remove('fading'); }, 600);
-      }, 12000);
-    })();
-    */
-
     const API_URL    = '/api/nowplaying/kpab.fm';
     const STREAM_URL = '/radio.mp3';
     const POLL_MS    = 10000;
@@ -1615,7 +1080,6 @@
 
       if (!song) return;
 
-      // Update progress from API
       trackElapsed = np.elapsed || 0;
       trackDuration = np.duration || 0;
       timeElapsed.textContent = fmtTime(trackElapsed);
@@ -1628,8 +1092,6 @@
 
       if (songId !== lastSongId) {
         lastSongId = songId;
-
-        // Reset progress for new song
         progressFill.style.transition = 'none';
         progressFill.style.width = '0%';
         requestAnimationFrame(() => {
@@ -1649,17 +1111,9 @@
           trackArtist.textContent = song.artist || 'Unknown Artist';
           trackTitle.textContent = song.title || 'Unknown Track';
           trackAlbum.textContent = song.album || '';
+          genreTag.textContent = song.genre || '';
+          genreTag.style.display = song.genre ? 'inline-block' : 'none';
 
-          if (song.genre) {
-            genreTag.textContent = song.genre;
-            genreTag.style.display = 'inline-block';
-          } else {
-            genreTag.style.display = 'none';
-          }
-
-          trackArtist.style.transition = 'opacity 0.4s ease';
-          trackTitle.style.transition = 'opacity 0.4s ease';
-          trackAlbum.style.transition = 'opacity 0.4s ease';
           trackArtist.style.opacity = '1';
           trackTitle.style.opacity = '1';
           trackAlbum.style.opacity = '1';
@@ -1684,7 +1138,6 @@
           artPlaceholder.style.display = 'flex';
         }
 
-        // Update Media Session for lock screen / notification controls
         if ('mediaSession' in navigator) {
           navigator.mediaSession.metadata = new MediaMetadata({
             title: song.title || 'KPAB.FM',
@@ -1696,7 +1149,6 @@
       }
 
       if (history.length > 0) {
-        // Only re-render if history actually changed
         const historyKey = history.slice(0, 5).map(h => h.song?.id || h.song?.title || '').join('|');
         if (historyKey === lastHistoryKey) return;
         lastHistoryKey = historyKey;
@@ -1718,7 +1170,6 @@
             artEl.className = 'history-art';
             artEl.src = artUrl;
             artEl.alt = '';
-            artEl.loading = 'lazy';
             artEl.onerror = function() {
               const ph = document.createElement('div');
               ph.className = 'history-art-placeholder';
@@ -1735,14 +1186,12 @@
           textEl.className = 'history-text';
           textEl.innerHTML = '<span>' + escHtml(s.artist || '?') + '</span> \u2014 ' + escHtml(s.title || '?');
 
-          // Action buttons (show on hover / tap)
           const actions = document.createElement('div');
           actions.className = 'history-actions';
 
           const ytBtn = document.createElement('a');
           ytBtn.className = 'history-action-btn';
           ytBtn.textContent = '\u25B6 YT';
-          ytBtn.title = 'Search on YouTube';
           ytBtn.href = 'https://www.youtube.com/results?search_query=' + encodeURIComponent((s.artist || '') + ' ' + (s.title || ''));
           ytBtn.target = '_blank';
           ytBtn.rel = 'noopener noreferrer';
@@ -1751,7 +1200,6 @@
           const wikiBtn = document.createElement('a');
           wikiBtn.className = 'history-action-btn';
           wikiBtn.textContent = '\u24D8 Wiki';
-          wikiBtn.title = 'Search artist on Wikipedia';
           wikiBtn.href = 'https://en.wikipedia.org/wiki/Special:Search?search=' + encodeURIComponent(s.artist || '');
           wikiBtn.target = '_blank';
           wikiBtn.rel = 'noopener noreferrer';
@@ -1759,13 +1207,11 @@
 
           actions.appendChild(ytBtn);
           actions.appendChild(wikiBtn);
-
           div.appendChild(artEl);
           div.appendChild(textEl);
           div.appendChild(actions);
           historyList.appendChild(div);
 
-          // Touch support for mobile
           div.addEventListener('touchstart', function(e) {
             const wasActive = this.classList.contains('touch-active');
             document.querySelectorAll('.history-item.touch-active').forEach(function(el) { el.classList.remove('touch-active'); });
@@ -1803,7 +1249,6 @@
         console.warn('[KPAB.FM] Poll failed:', err.message);
         pollFailCount++;
         showSignalLost();
-        // After 6 consecutive failures (60s), redirect to offline page
         if (pollFailCount >= 6) {
           window.location.href = '/offline.html';
         }
@@ -1813,26 +1258,15 @@
     function startPolling() { poll(); pollTimer = setInterval(poll, POLL_MS); }
 
     audioEl.volume = parseFloat(volSlider.value);
-
     const playerChassis = document.getElementById('playerChassis');
 
     function setPlaying(state) {
       isPlaying = state;
-      if (state) {
-        playBtn.textContent = '\u23F8';
-        playBtn.classList.add('playing');
-        playBtn.setAttribute('aria-label', 'Pause stream');
-        visualizer.classList.add('active');
-        albumArt.classList.add('playing');
-        playerChassis.classList.add('playing');
-      } else {
-        playBtn.textContent = '\u25B6';
-        playBtn.classList.remove('playing');
-        playBtn.setAttribute('aria-label', 'Play stream');
-        visualizer.classList.remove('active');
-        albumArt.classList.remove('playing');
-        playerChassis.classList.remove('playing');
-      }
+      playBtn.textContent = state ? '\u23F8' : '\u25B6';
+      playBtn.classList.toggle('playing', state);
+      visualizer.classList.toggle('active', state);
+      albumArt.classList.toggle('playing', state);
+      playerChassis.classList.toggle('playing', state);
     }
 
     playBtn.addEventListener('click', () => {
@@ -1843,15 +1277,9 @@
       } else {
         audioEl.src = STREAM_URL;
         audioEl.load();
-        const p = audioEl.play();
-        if (p !== undefined) p.then(() => setPlaying(true)).catch(() => setPlaying(false));
+        audioEl.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
       }
     });
-
-    audioEl.addEventListener('playing', () => setPlaying(true));
-    audioEl.addEventListener('pause', () => setPlaying(false));
-    audioEl.addEventListener('ended', () => setPlaying(false));
-    audioEl.addEventListener('error', () => setPlaying(false));
 
     volSlider.addEventListener('input', () => {
       const v = parseFloat(volSlider.value);
@@ -1859,29 +1287,17 @@
       volIcon.textContent = v === 0 ? '\uD83D\uDD07' : v < 0.4 ? '\uD83D\uDD09' : '\uD83D\uDD0A';
     });
 
-    // Media Session API for lock screen / notification controls
-    if ('mediaSession' in navigator) {
-      navigator.mediaSession.setActionHandler('play', () => {
-        if (!isPlaying) playBtn.click();
-      });
-      navigator.mediaSession.setActionHandler('pause', () => {
-        if (isPlaying) playBtn.click();
-      });
-    }
-
     startPolling();
     startProgressTick();
 
-    // === SONG REQUEST SYSTEM ===
+    // REQUEST SYSTEM
     const CATALOG_URL = '/catalog.json';
     let reqCache = [];
     let reqLoaded = false;
     let reqDebounce = null;
 
-    const requestSection = document.getElementById('requestSection');
     const requestToggle = document.getElementById('requestToggle');
     const requestPanel = document.getElementById('requestPanel');
-    const requestClose = document.getElementById('requestClose');
     const requestSearch = document.getElementById('requestSearch');
     const requestResults = document.getElementById('requestResults');
     const requestEmpty = document.getElementById('requestEmpty');
@@ -1890,14 +1306,11 @@
 
     function toggleRequestPanel() {
       const isOpen = requestPanel.classList.contains('open');
-      if (isOpen) {
-        requestPanel.classList.remove('open');
-        requestToggle.innerHTML = '&#x1F4FB; Request a Song';
-      } else {
-        requestPanel.classList.add('open');
-        requestToggle.innerHTML = '&#x1F4FB; Close Requests';
+      requestPanel.classList.toggle('open');
+      requestToggle.innerHTML = isOpen ? '&#x1F4FB; Request a Song' : '&#x1F4FB; Close Requests';
+      if (!isOpen) {
         setTimeout(() => {
-          requestSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          document.getElementById('requestSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
           requestSearch.focus();
         }, 50);
         if (!reqLoaded) loadCatalog();
@@ -1905,17 +1318,6 @@
     }
 
     requestToggle.addEventListener('click', toggleRequestPanel);
-    requestClose.addEventListener('click', () => {
-      requestPanel.classList.remove('open');
-      requestToggle.innerHTML = '&#x1F4FB; Request a Song';
-    });
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && requestPanel.classList.contains('open')) {
-        requestPanel.classList.remove('open');
-        requestToggle.innerHTML = '&#x1F4FB; Request a Song';
-      }
-    });
 
     async function loadCatalog() {
       requestResults.innerHTML = '<div class="request-loading">LOADING CATALOG...</div>';
@@ -1924,18 +1326,15 @@
         if (!res.ok) throw new Error('HTTP ' + res.status);
         reqCache = await res.json();
         reqLoaded = true;
-        requestEmpty.querySelector('span:last-child').textContent =
-          'Search ' + reqCache.length.toLocaleString() + ' requestable tracks';
+        requestEmpty.querySelector('span:last-child').textContent = 'Search ' + reqCache.length.toLocaleString() + ' requestable tracks';
         showRequestResults('');
       } catch (err) {
-        console.warn('[KPAB] Catalog load failed:', err);
-        requestResults.innerHTML = '<div class="request-empty"><span class="empty-icon">&#x26A1;</span><span>Eep! Could not load the catalog. Try again in a bit!</span></div>';
+        requestResults.innerHTML = '<div class="request-empty"><span class="empty-icon">\u26A1</span><span>Eep! Could not load the catalog.</span></div>';
       }
     }
 
     function showRequestResults(query) {
       const q = query.trim().toLowerCase();
-
       if (!q) {
         requestResults.innerHTML = '';
         requestResults.appendChild(requestEmpty);
@@ -1943,9 +1342,7 @@
         searchCount.textContent = '';
         return;
       }
-
       requestEmpty.style.display = 'none';
-
       const terms = q.split(/\s+/);
       const matches = reqCache.filter(item => {
         const haystack = ((item.a || '') + ' ' + (item.t || '') + ' ' + (item.b || '')).toLowerCase();
@@ -1953,9 +1350,8 @@
       }).slice(0, 50);
 
       searchCount.textContent = matches.length + (matches.length === 50 ? '+' : '') + ' found';
-
       if (matches.length === 0) {
-        requestResults.innerHTML = '<div class="request-empty"><span class="empty-icon">&#x1F50D;</span><span>No matches \u2014 try different keywords</span></div>';
+        requestResults.innerHTML = '<div class="request-empty"><span class="empty-icon">\u1F50D</span><span>No matches</span></div>';
         return;
       }
 
@@ -1972,8 +1368,6 @@
           artEl = document.createElement('img');
           artEl.className = 'request-item-art';
           artEl.src = artUrl;
-          artEl.alt = '';
-          artEl.loading = 'lazy';
           artEl.onerror = function() {
             const ph = document.createElement('div');
             ph.className = 'request-item-art-ph';
@@ -2005,39 +1399,31 @@
         div.appendChild(btn);
         div.addEventListener('click', () => btn.click());
         frag.appendChild(div);
-
         requestAnimationFrame(() => { requestAnimationFrame(() => { div.style.opacity = '1'; }); });
       });
-
       requestResults.innerHTML = '';
       requestResults.appendChild(frag);
     }
 
-    async function submitRequest(reqUrl, btnEl, song) {
+    async function submitRequest(reqId, btnEl, song) {
       btnEl.textContent = '...';
       btnEl.style.pointerEvents = 'none';
-
       try {
-        const url = reqUrl.startsWith('/') ? reqUrl : '/api/station/1/request/' + reqUrl;
+        const url = reqId.startsWith('/') ? reqId : '/api/station/1/request/' + reqId;
         const res = await fetch(url, { method: 'POST' });
-
         if (res.ok) {
           btnEl.textContent = 'SENT \u2713';
           btnEl.classList.add('sent');
           showToast('Requested: ' + (song.a || '') + ' \u2014 ' + (song.t || ''), false);
         } else {
-          let msg = 'Request failed';
-          try { msg = (await res.json()).message || msg; } catch(e) {}
           btnEl.textContent = 'NOPE';
           btnEl.classList.add('failed');
-          showToast(msg, true);
-          setTimeout(() => { btnEl.textContent = 'REQUEST'; btnEl.className = 'request-item-btn'; btnEl.style.pointerEvents = ''; }, 3000);
+          setTimeout(() => { btnEl.textContent = 'REQUEST'; btnEl.classList.remove('failed'); btnEl.style.pointerEvents = ''; }, 3000);
         }
       } catch (err) {
         btnEl.textContent = 'ERROR';
         btnEl.classList.add('failed');
-        showToast('Network error \u2014 try again', true);
-        setTimeout(() => { btnEl.textContent = 'REQUEST'; btnEl.className = 'request-item-btn'; btnEl.style.pointerEvents = ''; }, 3000);
+        setTimeout(() => { btnEl.textContent = 'REQUEST'; btnEl.classList.remove('failed'); btnEl.style.pointerEvents = ''; }, 3000);
       }
     }
 
@@ -2052,18 +1438,7 @@
       reqDebounce = setTimeout(() => showRequestResults(requestSearch.value), 150);
     });
 
-    // Close touch-active on outside tap
-    document.addEventListener('touchstart', (e) => {
-      if (!e.target.closest('.history-item')) {
-        document.querySelectorAll('.history-item.touch-active').forEach(el => el.classList.remove('touch-active'));
-      }
-    });
-
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden && pollTimer) { clearInterval(pollTimer); startPolling(); }
-    });
-
-    // === ABOUT TOGGLE ===
+    // ABOUT TOGGLE
     const aboutToggle = document.getElementById('aboutToggle');
     const aboutPanel = document.getElementById('aboutPanel');
     aboutToggle.addEventListener('click', () => {
@@ -2072,7 +1447,7 @@
       aboutToggle.innerHTML = isOpen ? '&#x2139; About / FAQ' : '&#x2139; Close';
     });
 
-    // === MESSAGE DROP ===
+    // MESSAGE DROP
     const msgSection = document.getElementById('msgSection');
     const msgToggle = document.getElementById('msgToggle');
     const msgForm = document.getElementById('msgForm');
@@ -2084,60 +1459,39 @@
     msgToggle.addEventListener('click', () => {
       const isOpen = msgSection.classList.contains('open');
       msgSection.classList.toggle('open');
-      msgToggle.innerHTML = isOpen
-        ? '<span class="msg-toggle-text">&#x1F4EC; DROP A MESSAGE</span>'
-        : '&#x1F4EC; Close';
+      msgToggle.innerHTML = isOpen ? '<span class="msg-toggle-text">\uD83D\uDCEC DROP A MESSAGE</span>' : '&#x1F4EC; Close';
       if (!isOpen) setTimeout(() => msgText.focus(), 400);
     });
 
     msgSend.addEventListener('click', async () => {
       const text = msgText.value.trim();
       if (!text) return;
-
       msgSend.disabled = true;
       msgSend.textContent = '...';
-      msgStatus.textContent = '';
-      msgStatus.className = 'msg-status';
-
       try {
         const res = await fetch('/msg/drop', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: msgName.value.trim() || 'Anonymous listener',
-            message: text,
-            source: 'kpab.fm'
-          })
+          body: JSON.stringify({ name: msgName.value.trim() || 'Anonymous', message: text, source: 'kpab.fm' })
         });
-
         if (res.ok) {
           msgStatus.textContent = 'SENT \u2713';
           msgStatus.className = 'msg-status ok';
           msgText.value = '';
-          setTimeout(() => {
-            msgSection.classList.remove('open');
-            msgStatus.textContent = '';
-          }, 2000);
+          setTimeout(() => { msgSection.classList.remove('open'); msgStatus.textContent = ''; }, 2000);
         } else {
-          const data = await res.json().catch(() => ({}));
-          msgStatus.textContent = data.error || 'Failed to send';
+          msgStatus.textContent = 'Failed to send';
           msgStatus.className = 'msg-status err';
         }
       } catch (e) {
         msgStatus.textContent = 'Network error';
         msgStatus.className = 'msg-status err';
       }
-
       msgSend.disabled = false;
       msgSend.textContent = 'SEND';
     });
 
-    // Register service worker for PWA
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch(() => {});
-    }
-
-    // === MUTINY SKIP SYSTEM ===
+    // MUTINY
     const mutinyToggle = document.getElementById('mutinyToggle');
     const mutinyPanel = document.getElementById('mutinyPanel');
     const mutinyStatus = document.getElementById('mutinyStatus');
@@ -2146,51 +1500,18 @@
     const mutinyToast = document.getElementById('mutinyToast');
     let mutinyCooldown = false;
 
-    function showMutinyToast(msg, duration = 3000) {
+    function showMutinyToast(msg) {
       mutinyToast.textContent = msg;
       mutinyToast.classList.add('show');
-      setTimeout(() => mutinyToast.classList.remove('show'), duration);
+      setTimeout(() => mutinyToast.classList.remove('show'), 3000);
     }
 
-    function setMutinyCooldown(seconds) {
-      mutinyCooldown = true;
-      mutinyToggle.classList.add('cooldown');
-      mutinyToggle.classList.remove('voted');
-      mutinyFire.disabled = true;
-      mutinyFire.style.opacity = '0.3';
-      mutinyFire.style.cursor = 'not-allowed';
-      mutinyStatus.textContent = 'COOLING DOWN';
-      mutinyDesc.textContent = 'Mutiny on cooldown. Try again in a few minutes.';
-      const end = Date.now() + seconds * 1000;
-      const tick = setInterval(() => {
-        const left = Math.max(0, Math.ceil((end - Date.now()) / 1000));
-        if (left <= 0) {
-          clearInterval(tick);
-          mutinyCooldown = false;
-          mutinyToggle.classList.remove('cooldown');
-          mutinyToggle.innerHTML = '&#x2620; MUTINY';
-          mutinyFire.disabled = false;
-          mutinyFire.style.opacity = '1';
-          mutinyFire.style.cursor = 'pointer';
-          mutinyStatus.textContent = 'READY';
-          mutinyDesc.textContent = "Don't like what's playing? Call a mutiny.";
-          return;
-        }
-        const display = left > 60 ? Math.ceil(left/60) + 'm' : left + 's';
-        mutinyToggle.innerHTML = '&#x2620; MUTINY (' + display + ')';
-      }, 1000);
-    }
-
-    // Toggle opens/closes panel
     mutinyToggle.addEventListener('click', () => {
       const isOpen = mutinyPanel.classList.contains('open');
       mutinyPanel.classList.toggle('open');
-      if (!mutinyCooldown) {
-        mutinyToggle.innerHTML = isOpen ? '&#x2620; MUTINY' : '&#x2620; Close';
-      }
+      if (!mutinyCooldown) mutinyToggle.innerHTML = isOpen ? '&#x2620; MUTINY' : '&#x2620; Close';
     });
 
-    // Fire button triggers the skip
     mutinyFire.addEventListener('click', async () => {
       if (mutinyCooldown) return;
       mutinyFire.textContent = '...';
@@ -2199,67 +1520,40 @@
         const data = await res.json();
         if (res.status === 429) {
           showMutinyToast(data.message);
-          setMutinyCooldown(data.remaining);
           return;
         }
         if (data.action === 'skipped') {
           showMutinyToast(data.message);
-          setMutinyCooldown(300);
         } else if (data.action === 'voted') {
-          mutinyToggle.classList.add('voted');
           mutinyStatus.textContent = data.votes + '/' + data.needed + ' VOTES';
           mutinyDesc.textContent = data.message;
           mutinyFire.innerHTML = '&#x2620; VOTED';
-          showMutinyToast(data.message, 5000);
+          showMutinyToast(data.message);
         }
       } catch (e) {
-        showMutinyToast('Mutiny failed. Radio resists.');
-        mutinyFire.innerHTML = '&#x2620; WALK THE PLANK';
+        showMutinyToast('Mutiny failed.');
       }
+      mutinyFire.textContent = 'WALK THE PLANK';
     });
 
-    // === SHARE SYSTEM ===
+    // SHARE
     const shareBtn = document.getElementById('shareBtn');
-    const shareToast = document.getElementById('shareToast');
-
-    function showShareToast(msg, duration = 2500) {
-      shareToast.textContent = msg;
-      shareToast.classList.add('show');
-      setTimeout(() => shareToast.classList.remove('show'), duration);
-    }
-
     shareBtn.addEventListener('click', async () => {
       const artist = document.getElementById('trackArtist').textContent;
       const title = document.getElementById('trackTitle').textContent;
-      const nowPlaying = (artist && artist !== 'LOADING...') ? artist + ' \u2014 ' + title : '';
-      const shareText = nowPlaying
-        ? 'Listening to ' + nowPlaying + ' on KPAB.FM \u2014 pirate radio from Brunswick'
-        : 'KPAB.FM \u2014 24/7 pirate radio from Brunswick. No ads. No algorithms. Just tunes.';
-      const shareUrl = 'https://kpab.fm';
-
-      // Try native share (mobile)
+      const text = 'Listening to ' + artist + ' \u2014 ' + title + ' on KPAB.FM';
+      const url = 'https://kpab.fm';
       if (navigator.share) {
-        try {
-          await navigator.share({ title: 'KPAB.FM', text: shareText, url: shareUrl });
-          shareBtn.classList.add('shared');
-          setTimeout(() => shareBtn.classList.remove('shared'), 600);
-          return;
-        } catch (e) {
-          if (e.name === 'AbortError') return;
-        }
-      }
-
-      // Fallback: copy to clipboard
-      try {
-        await navigator.clipboard.writeText(shareText + '\n' + shareUrl);
-        showShareToast('LINK COPIED');
-        shareBtn.classList.add('shared');
-        setTimeout(() => shareBtn.classList.remove('shared'), 600);
-      } catch (e) {
-        showShareToast('kpab.fm');
+        try { await navigator.share({ title: 'KPAB.FM', text: text, url: url }); } catch (e) {}
+      } else {
+        navigator.clipboard.writeText(text + '\n' + url);
+        alert('Link copied to clipboard');
       }
     });
 
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
   </script>
 </body>
 </html>
