@@ -258,15 +258,25 @@ def download_torrent(magnet, output_dir, dry_run=False):
     print(f"  Downloading to {output_dir}...")
     print(f"  This runs in the foreground. Ctrl+C to background it.\n")
 
+    # Create a finish script that kills transmission-cli after download
+    finish_script = os.path.join(output_dir, ".finish.sh")
+    with open(finish_script, "w") as fs:
+        fs.write("#!/bin/bash\nkillall transmission-cli 2>/dev/null\n")
+    os.chmod(finish_script, 0o755)
+
     cmd = [
         "transmission-cli",
         magnet,
         "-w", output_dir,
         "--no-portmap",  # Don't try UPnP (Pi behind router)
+        "-f", finish_script,
     ]
 
     try:
         subprocess.run(cmd)
+        # Clean up finish script
+        try: os.remove(finish_script)
+        except: pass
         return True
     except KeyboardInterrupt:
         print("\n  Download interrupted. Resume by running the same command.")
