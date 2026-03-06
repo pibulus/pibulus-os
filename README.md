@@ -27,6 +27,8 @@ It's a few things at once:
 ## Services
 
 ### Public (no login)
+| The Deck | Cyberdeck portal (BBS/MUD/Rogue) | quickcat.club/terminal/ |
+| Shoutbox | Live anonymous chat | quickcat.club (bottom) |
 | Service | What | URL |
 |---------|------|-----|
 | Landing page | The front door | quickcat.club |
