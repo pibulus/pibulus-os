@@ -4,31 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>quickcat.club</title>
-  <meta name="description" content="quickcat.club — a self-hosted sanctuary for movies, books, games and pirate radio.">
-  <meta name="theme-color" content="#050505">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="quickcat">
-  
-  <meta property="og:title" content="quickcat.club">
-  <meta property="og:description" content="A self-hosted sanctuary from Melbourne. Pirate radio, movies, books, and arcade games.">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://quickcat.club">
-  <meta property="og:image" content="https://quickcat.club/kpab/icon-512.png">
-  
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="quickcat.club">
-  <meta name="twitter:description" content="A self-hosted sanctuary from Melbourne.">
-  <meta name="twitter:image" content="https://quickcat.club/kpab/icon-512.png">
-
-  <link rel="manifest" href="/manifest.json">
-  <link rel="apple-touch-icon" href="/kpab/icon-192.png">
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
       --bg: #050505;
       --cyan: #00ffea;
@@ -42,9 +21,7 @@
       --card-border: rgba(0, 255, 234, 0.3);
       --card-hover-bg: rgba(0, 255, 234, 0.05);
     }
-
     html { scrollbar-color: var(--cyan) var(--bg); scrollbar-width: thin; }
-
     body {
       background-color: var(--bg);
       color: var(--text);
@@ -54,31 +31,17 @@
       min-height: 100vh;
       overflow-x: hidden;
     }
-
     body::before {
       content: '';
       position: fixed; inset: 0;
       background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.12) 2px, rgba(0,0,0,0.12) 4px);
       pointer-events: none; z-index: 999;
     }
-
-    body::after {
-      content: '';
-      position: fixed; inset: 0;
-      background-image:
-        linear-gradient(rgba(0,255,234,0.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,255,234,0.025) 1px, transparent 1px);
-      background-size: 40px 40px;
-      pointer-events: none; z-index: 0;
-    }
-
     .wrapper {
       position: relative; z-index: 1;
       max-width: 880px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem;
     }
-
     header { text-align: center; padding: 3.5rem 0 1.5rem; }
-
     h1 {
       font-size: clamp(3rem, 11vw, 5.5rem);
       line-height: 1;
@@ -87,23 +50,12 @@
       letter-spacing: 4px;
       margin-bottom: 0.5rem;
     }
-
     .subtitle {
       font-size: clamp(1.1rem, 3.5vw, 1.5rem);
       color: var(--magenta);
       text-shadow: 0 0 8px rgba(255,0,255,0.5);
       letter-spacing: 2px;
     }
-
-    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-    .cursor {
-      display: inline-block; width: 0.65em; height: 0.95em;
-      background: var(--cyan); vertical-align: text-bottom;
-      animation: blink 1.2s step-end infinite;
-      box-shadow: 0 0 8px var(--cyan);
-    }
-
-    /* ALIVE BAR */
     .alive-bar {
       text-align: center;
       padding: 0.6rem 1rem;
@@ -113,8 +65,6 @@
       letter-spacing: 1px;
     }
     .alive-bar span { color: var(--cyan); }
-
-    /* SECTION DIVIDERS */
     .section-divider { display: flex; align-items: center; gap: 0.75rem; margin: 3rem 0 1.5rem; }
     .section-divider::before, .section-divider::after {
       content: ''; flex: 1; height: 1px;
@@ -124,18 +74,9 @@
       font-size: 1.2rem; color: var(--cyan); letter-spacing: 4px;
       white-space: nowrap; text-shadow: 0 0 8px rgba(0,255,234,0.5);
     }
-
     .grid { display: grid; gap: 1.1rem; }
     .grid-2 { grid-template-columns: repeat(2, 1fr); }
     .grid-3 { grid-template-columns: repeat(3, 1fr); }
-
-    @media (max-width: 560px) {
-      .grid-2, .grid-3 { grid-template-columns: 1fr; }
-    }
-    @media (min-width: 561px) and (max-width: 760px) {
-      .grid-3 { grid-template-columns: repeat(2, 1fr); }
-    }
-
     .card {
       display: block;
       background: var(--card-bg);
@@ -146,363 +87,188 @@
       color: var(--text);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-      position: relative; overflow: hidden;
+      transition: all 0.2s ease;
       text-align: center;
+      cursor: pointer;
     }
-
-    .card::before {
-      content: '';
-      position: absolute; top: 0; left: -100%; width: 60%; height: 1px;
-      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-      transition: left 0.4s ease;
-    }
-    .card:hover::before { left: 140%; }
     .card:hover {
       transform: translateY(-4px);
       background: var(--card-hover-bg);
       border-color: rgba(0,255,234,0.7);
-      box-shadow: 0 0 20px rgba(0,255,234,0.12), 0 8px 24px rgba(0,0,0,0.5);
+      box-shadow: 0 0 20px rgba(0,255,234,0.12);
+    }
+    .card-emoji { font-size: 2rem; display: block; margin-bottom: 0.4rem; }
+    .card-label { font-size: 1.7rem; color: var(--cyan); letter-spacing: 2px; display: block; }
+    .card-desc { font-size: 1.1rem; color: var(--dim); }
+    .card.fun .card-label { color: var(--yellow); }
+    .card.solidarity .card-label { color: var(--green); }
+    .card.deck .card-label { color: var(--magenta); text-shadow: 0 0 10px var(--magenta); }
+    .card.deck { border-color: rgba(255,0,255,0.3); }
+
+    /* SHOUTBOX */
+    .shoutbox {
+      background: rgba(0,0,0,0.8);
+      border: 1px solid var(--card-border);
+      margin-top: 2rem;
+    }
+    .shout-feed {
+      height: 180px; overflow-y: auto;
+      padding: 1rem; font-size: 0.9rem;
+      border-bottom: 1px solid rgba(0,255,234,0.1);
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .shout-msg { line-height: 1.2; }
+    .shout-name { color: var(--magenta); margin-right: 8px; }
+    .shout-time { color: var(--dim-soft); font-size: 0.7rem; margin-right: 8px; }
+    .shout-input-row { display: flex; padding: 8px; gap: 8px; }
+    .shout-input-row input {
+      background: #000; border: 1px solid rgba(0,255,234,0.3);
+      color: var(--text); font-family: 'VT323', monospace; padding: 4px 8px;
+    }
+    #shoutName { width: 120px; color: var(--magenta); }
+    #shoutText { flex: 1; }
+    .shout-btn {
+      background: rgba(0,255,234,0.1); border: 1px solid var(--cyan);
+      color: var(--cyan); font-family: 'VT323', monospace; cursor: pointer; padding: 0 15px;
     }
 
-    .card-emoji { font-size: 2rem; display: block; margin-bottom: 0.4rem; line-height: 1; }
-    .card-label { font-size: 1.7rem; color: var(--cyan); letter-spacing: 2px; display: block; margin-bottom: 0.15rem; }
-    .card-desc { font-size: 1.1rem; color: var(--dim); letter-spacing: 1px; }
-
-    .card.fun .card-label { color: var(--yellow); text-shadow: 0 0 6px rgba(255,255,0,0.4); }
-    .card.fun:hover { border-color: rgba(255,255,0,0.7); box-shadow: 0 0 20px rgba(255,255,0,0.1), 0 8px 24px rgba(0,0,0,0.5); }
-    .card.fun::before { background: linear-gradient(90deg, transparent, var(--yellow), transparent); }
-
-    .card.solidarity .card-label { color: var(--green); text-shadow: 0 0 6px rgba(85,204,85,0.4); }
-    .card.solidarity:hover { border-color: rgba(85,204,85,0.7); box-shadow: 0 0 20px rgba(85,204,85,0.12), 0 8px 24px rgba(0,0,0,0.5); }
-    .card.solidarity::before { background: linear-gradient(90deg, transparent, var(--green), transparent); }
-
-    footer { text-align: center; margin-top: 3.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(0,255,234,0.15); }
-    .footer-text { color: var(--dim-soft); font-size: 1rem; letter-spacing: 3px; }
-    .footer-text span { color: var(--cyan); }
-
-    .faq { display: flex; flex-direction: column; gap: 2px; }
-    .faq details {
-      background: var(--card-bg);
-      border: 1px solid rgba(0,255,234,0.15);
-      border-radius: 2px;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+    /* MODAL */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(8px);
+      z-index: 1000; display: none; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity 0.2s;
     }
-    .faq summary {
-      padding: 1rem 1.25rem;
-      cursor: pointer;
-      color: var(--cyan);
-      font-size: 1.3rem;
-      letter-spacing: 1px;
-      list-style: none;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      transition: background 0.15s;
+    .modal-overlay.active { display: flex; opacity: 1; }
+    .modal-card {
+      background: #111; border: 1px solid var(--cyan);
+      padding: 2rem; max-width: 500px; width: 90%;
+      text-align: center; position: relative;
+      box-shadow: 0 0 30px rgba(0,255,234,0.2);
     }
-    .faq summary:hover { background: rgba(0,255,234,0.03); }
-    .faq summary::before { content: '+'; color: var(--magenta); font-size: 1.5rem; flex-shrink: 0; width: 1.2em; text-align: center; }
-    .faq details[open] summary::before { content: '\2212'; }
-    .faq summary::-webkit-details-marker { display: none; }
-    .faq details p {
-      padding: 0 1.25rem 1rem 3rem;
-      color: var(--dim);
-      font-size: 1.1rem;
-      line-height: 1.5;
+    .modal-title { font-size: 1.8rem; color: var(--cyan); margin-bottom: 1rem; letter-spacing: 2px; }
+    .modal-input {
+      width: 100%; background: #000; border: 1px solid var(--card-border);
+      color: #fff; font-family: 'VT323', monospace; font-size: 1.2rem;
+      padding: 10px; margin-bottom: 1rem; outline: none;
     }
-    .faq details p a { color: var(--cyan); text-decoration: none; }
-    .faq details p a:hover { text-decoration: underline; }
-
-    /* MESSAGE DROP */
-    .msg-drop {
-      max-width: 600px;
-      margin: 2rem auto 0;
-      background: rgba(0,0,0,0.5);
-      border: 1px solid rgba(0,255,234,0.15);
-      border-radius: 2px;
-      overflow: hidden;
-    }
-    .msg-toggle {
-      width: 100%;
-      background: none;
-      border: none;
-      color: var(--cyan);
-      font-family: 'VT323', monospace;
-      font-size: 1.1rem;
-      padding: 0.8rem 1rem;
-      cursor: pointer;
-      letter-spacing: 2px;
-      text-align: left;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: background 0.15s;
-    }
-    .msg-toggle:hover { background: rgba(0,255,234,0.03); }
-    .msg-toggle .arrow { transition: transform 0.2s; }
-    .msg-toggle.open .arrow { transform: rotate(90deg); }
-    .msg-body { display: none; padding: 0 1rem 1rem; }
-    .msg-body.open { display: block; }
-    .msg-input-row { display: flex; gap: 8px; margin-bottom: 8px; }
-    .msg-input-row input, .msg-input-row textarea {
-      flex: 1;
-      background: rgba(0,0,0,0.6);
-      border: 1px solid rgba(0,255,234,0.2);
-      color: var(--text);
-      font-family: 'VT323', monospace;
-      font-size: 1rem;
-      padding: 8px 10px;
-      outline: none;
-    }
-    .msg-input-row input:focus, .msg-input-row textarea:focus { border-color: var(--cyan); }
-    .msg-input-row textarea { resize: vertical; min-height: 50px; }
-    .msg-send {
-      background: rgba(0,255,234,0.1);
-      border: 1px solid var(--cyan);
-      color: var(--cyan);
-      font-family: 'VT323', monospace;
-      font-size: 1rem;
-      padding: 8px 20px;
-      cursor: pointer;
-      letter-spacing: 2px;
-      transition: all 0.15s;
-    }
-    .msg-send:hover { background: rgba(0,255,234,0.2); }
-    .msg-status { font-size: 0.9rem; color: var(--dim); min-height: 1.2em; }
-    .msg-status.ok { color: #55cc55; }
-    .msg-status.err { color: #ff4444; }
+    .modal-input:focus { border-color: var(--cyan); }
+    .modal-actions { display: flex; gap: 1rem; justify-content: center; }
   </style>
 </head>
 <body>
-  <div class="wrapper">
+  <div class="modal-overlay" id="request-modal">
+    <div class="modal-card">
+      <h3 class="modal-title">LEVEL UP?</h3>
+      <p style="margin-bottom:1.5rem; color:var(--dim)">Request a personal account for full access to the vault.</p>
+      <input type="text" id="reqName" class="modal-input" placeholder="your handle">
+      <textarea id="reqReason" class="modal-input" style="height:80px" placeholder="why do you want in?"></textarea>
+      <div class="modal-actions">
+        <button class="shout-btn" onclick="closeRequest()" style="border-color:var(--dim); color:var(--dim)">CANCEL</button>
+        <button class="shout-btn" onclick="sendRequest()">SUBMIT</button>
+      </div>
+      <div id="reqStatus" style="margin-top:10px; font-size:0.9rem"></div>
+    </div>
+  </div>
 
+  <div class="wrapper">
     <header>
-      <h1>quick cat club<span class="cursor"></span></h1>
+      <h1>quick cat club</h1>
       <p class="subtitle">~(=^..^) a self-hosted sanctuary</p>
       <div class="alive-bar" id="alive"></div>
     </header>
 
-    <!-- THE ROOMS -->
-    <div class="section-divider">
-      <span class="section-label">[ THE ROOMS ]</span>
-    </div>
-
+    <div class="section-divider"><span class="section-label">[ THE ROOMS ]</span></div>
     <div class="grid grid-3">
-      <a class="card" href="https://watch.quickcat.club" target="_blank" rel="noopener">
-        <span class="card-emoji">&#9654;</span>
-        <span class="card-label">WATCH</span>
-        <span class="card-desc">200+ movies &amp; 170+ shows</span>
-      </a>
-      <a class="card" href="https://music.quickcat.club" target="_blank" rel="noopener">
-        <span class="card-emoji">&#9835;</span>
-        <span class="card-label">LISTEN</span>
-        <span class="card-desc">10,000+ tracks</span>
-      </a>
-      <a class="card" href="https://kpab.fm" target="_blank" rel="noopener">
-        <span class="card-emoji">&#128225;</span>
-        <span class="card-label">RADIO</span>
-        <span class="card-desc">KPAB.FM 24/7</span>
-      </a>
-    </div>
-
-    <div class="grid grid-2" style="margin-top: 1.1rem;">
-      <a class="card" href="https://read.quickcat.club" target="_blank" rel="noopener">
-        <span class="card-emoji">&#128214;</span>
-        <span class="card-label">READ</span>
-        <span class="card-desc">960+ books</span>
-      </a>
-      <a class="card" href="https://comics.quickcat.club" target="_blank" rel="noopener">
-        <span class="card-emoji">&#128165;</span>
-        <span class="card-label">COMICS</span>
-        <span class="card-desc">1,800+ issues</span>
-      </a>
-    </div>
-
-    <!-- EXPLORE -->
-    <div class="section-divider">
-      <span class="section-label">[ EXPLORE ]</span>
-    </div>
-
-    <div class="grid grid-2">
-      <a class="card fun" href="/arcade/">
-        <span class="card-emoji">&#127918;</span>
-        <span class="card-label">ARCADE</span>
-        <span class="card-desc">mega drive &amp; playstation</span>
-      </a>
-      <a class="card fun" href="/fiction/">
-        <span class="card-emoji">&#128377;</span>
-        <span class="card-label">FICTION</span>
-        <span class="card-desc">interactive text adventures</span>
-      </a>
+      <a class="card" href="https://watch.quickcat.club"><span class="card-emoji">▶</span><span class="card-label">WATCH</span><span class="card-desc">guest: guest/quickcat</span></a>
+      <a class="card" href="https://music.quickcat.club"><span class="card-emoji">♫</span><span class="card-label">LISTEN</span><span class="card-desc">guest: guest/quickcat</span></a>
+      <a class="card" href="https://kpab.fm"><span class="card-emoji">📡</span><span class="card-label">RADIO</span><span class="card-desc">KPAB.FM 24/7</span></a>
     </div>
 
     <div class="grid grid-3" style="margin-top: 1.1rem;">
-      <a class="card fun" href="/wiki/">
-        <span class="card-emoji">&#x1F4DA;</span>
-        <span class="card-label">WIKIPEDIA</span>
-        <span class="card-desc">offline encyclopedia</span>
-      </a>
-      <a class="card fun" href="/wall/">
-        <span class="card-emoji">&#x1F3A8;</span>
-        <span class="card-label">GRAFFITI WALL</span>
-        <span class="card-desc">leave your mark</span>
-      </a>
-      <a class="card fun" href="/drop/">
-        <span class="card-emoji">&#x1F4E6;</span>
-        <span class="card-label">DROP ZONE</span>
-        <span class="card-desc">gift the collection</span>
-      </a>
-    </div>
-
-    <div class="grid grid-2" style="margin-top: 1.1rem;">
-      <a class="card solidarity" href="/palestine/">
-        <span class="card-emoji">&#127477;&#127480;</span>
-        <span class="card-label">PALESTINE</span>
-        <span class="card-desc">films, books &amp; docs</span>
-      </a>
-      <a class="card fun" href="/conspiracy/">
-        <span class="card-emoji">&#x1F441;</span>
-        <span class="card-label">FORBIDDEN</span>
-        <span class="card-desc">occult &amp; esoterica</span>
-      </a>
-    </div>
-
-    <!-- FAQ -->
-    <div class="section-divider">
-      <span class="section-label">[ FAQ ]</span>
-    </div>
-
-    <div class="faq">
-      <details>
-        <summary>What is this place?</summary>
-        <p>Quick Cat Club is a self-hosted server running on a Raspberry Pi 5 in Melbourne. It runs pirate radio, a film library, a book collection, retro games, graphic novels/comics, Palestine resources, interactive fiction adventures, music collection, an offline copy of Wikipedia and more.. No cloud. No tracking. No subscriptions. Just a hard drive and some docker containers doing their best.</p>
-      </details>
-      <details>
-        <summary>Why does this exist?</summary>
-        <p>Because the internet used to be weird and personal and ours. Before everything became five websites full of screenshots of the other four. This is a tiny corner of the web that belongs to no platform, answers to no algorithm, and doesn't need your data to function. It's not about destroying the con &mdash; (tho i wish we could) it's about not being involved, and building something outside of it.</p>
-      </details>
-      <details>
-        <summary>How do I listen to the radio?</summary>
-        <p>Visit <a href="https://kpab.fm">kpab.fm</a> and hit play. 24/7 all tunes all time with 10,000+ curated tracks. Not knowing some tunes or being into some styles is a feature! not a bug! KPAB.FM plays hand picked tunes across genre and across eras, 24/7, jumping from Enya to Pantera *is the point, after a while it gets addictive. Give it half an hour it will start to make sense. You can search and request songs from the full catalog. No account needed. No ads. Just tunes. (Want a radio show? hit me up!)</p>
-      </details>
-      <details>
-        <summary>How do I get access to movies, books, and comics?</summary>
-        <p>Those are friend-tier services. If you know Pablo, ask for the login. If you're already here reading this, you're probably close enough. The public stuff &mdash; radio, arcade, Wikipedia &mdash; is open to everyone, no questions asked.</p>
-      </details>
-      <details>
-        <summary>Can I connect directly?</summary>
-        <p>Yes. If you're physically nearby, look for the <strong>KPAB-Hotspot</strong> wifi network. It connects you directly to the Pi &mdash; no internet needed. You get radio, games, Wikipedia, and the landing page. Like a digital zine table at a house show.</p>
-      </details>
-      <details>
-        <summary>Will this server go down?</summary>
-        <p>Almost certainly. It's a 4GB Raspberry Pi running 17 containers strapped to a hard drive. It crashes when you look at it funny. But it always comes back. That's the deal &mdash; it's imperfect, alive, and ours. Uptime is a corporate metric. We measure in vibes.</p>
-      </details>
-      <details>
-        <summary>Is my data being collected?</summary>
-        <p>No. There's no analytics, no cookies, no tracking pixels, no third-party scripts. The server doesn't know who you are and doesn't want to. Your visit exists only in an nginx log that gets rotated into oblivion.</p>
-      </details>
-      <details>
-        <summary>What's the philosophy here?</summary>
-        <p>Software is politics. Every platform you use is a statement about who owns your attention. This server runs on the idea that tools should help people and then leave them alone. One purpose, done well, with personality. Small is beautiful. Can't scale is a feature. The weird web we lost is the weird web we can rebuild.</p>
-      </details>
-      <details>
-        <summary>Can I build something like this?</summary>
-        <p>Absolutely. A Raspberry Pi 5, a hard drive, and a weekend. Docker makes it modular &mdash; add what you want, ignore what you don't. I built a pirate radio station and a film library from under a desk in Brunswick. You can too. The whole setup is on <a href="https://github.com/pibulus/pibulus-os">GitHub</a>.</p>
-      </details>
-      <details>
-        <summary>How can I contribute?</summary>
-        <p>Got music? Books? Comics? ROMs? Weird knowledge? Send it. There's an upload link up above. Leave a message if you'd lke or make a request and I'll try and get it into the server for ya. This is a D.I.T project, let's do it together!</p>
-      </details>
-    </div>
-
-
-    <!-- MESSAGE DROP -->
-    <div class="msg-drop">
-      <button class="msg-toggle" id="msgToggle" onclick="this.classList.toggle('open');document.getElementById('msgBody').classList.toggle('open');">
-        <span class="arrow">&#9654;</span>
-        <span>LEAVE A MESSAGE</span>
-      </button>
-      <div class="msg-body" id="msgBody">
-        <div class="msg-input-row">
-          <input type="text" id="msgName" placeholder="name" maxlength="30" style="max-width:120px;">
-          <textarea id="msgText" placeholder="request something, say hi, or tell pablo what to download next..." maxlength="500"></textarea>
-        </div>
-        <div style="display:flex;align-items:center;gap:12px;">
-          <button class="msg-send" onclick="sendMsg()">SEND</button>
-          <div class="msg-status" id="msgStatus"></div>
-        </div>
+      <a class="card" href="https://read.quickcat.club"><span class="card-emoji">📖</span><span class="card-label">READ</span><span class="card-desc">960+ books</span></a>
+      <a class="card" href="https://comics.quickcat.club"><span class="card-emoji">💥</span><span class="card-label">COMICS</span><span class="card-desc">1,800+ issues</span></a>
+      <div class="card deck" onclick="openRequest()">
+        <span class="card-emoji">🎟</span>
+        <span class="card-label">LEVEL UP</span>
+        <span class="card-desc">request personal access</span>
       </div>
     </div>
 
-    <footer>
-      <p class="footer-text"><span>QUICK CAT CLUB</span> &mdash; self-hosted &amp; sovereign &mdash; <a href="https://github.com/pibulus/pibulus-os" target="_blank" rel="noopener" style="color: var(--dim-soft); text-decoration: none; border-bottom: 1px solid var(--dim-soft);">source</a></p>
-    </footer>
+    <div class="section-divider"><span class="section-label">[ EXPLORE ]</span></div>
+    <div class="grid grid-3">
+      <a class="card deck" href="/terminal/"><span class="card-emoji">📟</span><span class="card-label">THE DECK</span><span class="card-desc">BBS, MUD & ROGUE</span></a>
+      <a class="card fun" href="/arcade/"><span class="card-emoji">🎮</span><span class="card-label">ARCADE</span><span class="card-desc">retro roms</span></a>
+      <a class="card fun" href="/fiction/"><span class="card-emoji">🕹</span><span class="card-label">FICTION</span><span class="card-desc">text adventures</span></a>
+    </div>
 
+    <div class="grid grid-3" style="margin-top: 1.1rem;">
+      <a class="card fun" href="/wall/"><span class="card-emoji">🎨</span><span class="card-label">THE WALL</span><span class="card-desc">pixel graffiti</span></a>
+      <a class="card solidarity" href="/palestine/"><span class="card-emoji">🇵🇸</span><span class="card-label">PALESTINE</span><span class="card-desc">resources</span></a>
+      <a class="card fun" href="/conspiracy/"><span class="card-emoji">👁</span><span class="card-label">FORBIDDEN</span><span class="card-desc">occult files</span></a>
+    </div>
+
+    <div class="shoutbox">
+      <div class="shout-feed" id="shoutFeed"></div>
+      <div class="shout-input-row">
+        <input type="text" id="shoutName" placeholder="duck_name">
+        <input type="text" id="shoutText" placeholder="shout something..." onkeydown="if(event.key==='Enter')sendShout()">
+        <button class="shout-btn" onclick="sendShout()">SHOUT</button>
+      </div>
+    </div>
+
+    <footer><p class="footer-text"><span>QUICK CAT CLUB</span> &mdash; self-hosted &amp; sovereign</p></footer>
   </div>
 
   <script>
-    // Alive bar — rotating flavour text + live radio data
-    var phrases = [
-      'broadcasting from a desk in brunswick',
-      'make the internet weird again.',
-      'corporate algorithms corrupt reality.',
-      'a $80 raspberry pi strapped to a hard drive',
-      'powered by docker, caffeine, and spite',
-      'build ya own, all the code is free',
-      'fun fact: this club runs on less power than a phone charger',
-      'the cloud is a lie.',
-      'can\'t scale. won\'t scale. that\'s the point.',
-      'zero tracking. zero cookies. zero sugar.',
-      'what if the internet was a zine?',
-      'pirate radio from the future of the past'
-    ];
-
-    var aliveEl = document.getElementById('alive');
-
-    function setAlive(text) {
-      aliveEl.innerHTML = text;
+    const PREFIXES = ['Mighty', 'Radical', 'SubGenius', 'Rogue', 'Neon', 'Cosmic', 'Chaos', 'Void'];
+    const DUCKS = ['Puddles', 'Quackers', 'Darkwing', 'Bill', 'Webby', 'Launchpad', 'Mallard', 'Drake'];
+    
+    let myName = localStorage.getItem('shout_name');
+    if(!myName) {
+      myName = PREFIXES[Math.floor(Math.random()*PREFIXES.length)] + '_' + DUCKS[Math.floor(Math.random()*DUCKS.length)] + '_' + Math.floor(Math.random()*99);
+      localStorage.setItem('shout_name', myName);
     }
+    document.getElementById('shoutName').value = myName;
 
-    // Try to get now playing from radio
-    fetch('/status.json', { cache: 'no-cache' })
-      .then(function(r) { return r.ok ? r.json() : null; })
-      .then(function(d) {
-        if (d && d.np_artist && d.np_title) {
-          setAlive('now playing on <span>KPAB.FM</span>: ' + d.np_artist + ' &mdash; ' + d.np_title);
-        } else {
-          setAlive(phrases[Math.floor(Math.random() * phrases.length)]);
-        }
-      })
-      .catch(function() {
-        setAlive(phrases[Math.floor(Math.random() * phrases.length)]);
+    function loadShouts() {
+      fetch('/msg/shouts.json').then(r => r.json()).then(data => {
+        const feed = document.getElementById('shoutFeed');
+        feed.innerHTML = data.map(s => `<div class="shout-msg"><span class="shout-time">${new Date(s.t*1000).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span><span class="shout-name">${s.n}:</span><span class="shout-text">${s.m}</span></div>`).join('');
+        feed.scrollTop = feed.scrollHeight;
       });
-
-    // Rotate phrase every 20 seconds if no radio data
-    setInterval(function() {
-      if (aliveEl.innerHTML.indexOf('KPAB.FM') === -1) {
-        setAlive(phrases[Math.floor(Math.random() * phrases.length)]);
-      }
-    }, 20000);
-
-    function sendMsg() {
-      var name = document.getElementById('msgName').value.trim() || 'anon';
-      var text = document.getElementById('msgText').value.trim();
-      var status = document.getElementById('msgStatus');
-      if (!text) { status.className = 'msg-status err'; status.textContent = 'write something first'; return; }
-      status.className = 'msg-status'; status.textContent = 'sending...';
-      fetch('/msg/drop', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: name, msg: text }) })
-        .then(function(r) {
-          if (r.ok) { status.className = 'msg-status ok'; status.textContent = 'sent! pablo will see it.'; document.getElementById('msgText').value = ''; }
-          else if (r.status === 429) { status.className = 'msg-status err'; status.textContent = 'easy tiger. wait a bit.'; }
-          else { status.className = 'msg-status err'; status.textContent = 'failed to send'; }
-        })
-        .catch(function() { status.className = 'msg-status err'; status.textContent = 'connection error'; });
     }
-  
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch(function() {});
+
+    function sendShout() {
+      const n = document.getElementById('shoutName').value;
+      const m = document.getElementById('shoutText').value;
+      if(!m) return;
+      localStorage.setItem('shout_name', n);
+      fetch('/msg/shout', { method: 'POST', body: JSON.stringify({n, m}) }).then(() => {
+        document.getElementById('shoutText').value = '';
+        loadShouts();
+      });
     }
+
+    function openRequest() { document.getElementById('request-modal').classList.add('active'); }
+    function closeRequest() { document.getElementById('request-modal').classList.remove('active'); }
+    function sendRequest() {
+      const name = document.getElementById('reqName').value;
+      const msg = document.getElementById('reqReason').value;
+      const status = document.getElementById('reqStatus');
+      if(!name || !msg) return;
+      status.style.color = 'var(--cyan)';
+      status.textContent = 'TRANSMITTING...';
+      fetch('/msg/drop', { method: 'POST', body: JSON.stringify({name, msg: 'REQUEST ACCESS: ' + msg}) }).then(r => {
+        if(r.ok) { status.style.color = 'var(--green)'; status.textContent = 'REQUEST LOGGED. WAIT FOR VETTING.'; setTimeout(closeRequest, 2000); }
+        else { status.style.color = 'var(--magenta)'; status.textContent = 'TRANSMISSION FAILED.'; }
+      });
+    }
+
+    setInterval(loadShouts, 5000);
+    loadShouts();
+
+    const phrases = ['corporate algorithms corrupt reality.', 'the cloud is a lie.', 'what if the internet was a zine?', 'build ya own, all the code is free'];
+    document.getElementById('alive').textContent = phrases[Math.floor(Math.random()*phrases.length)];
   </script>
 </body>
 </html>

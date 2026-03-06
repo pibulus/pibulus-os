@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>graffiti wall - quickcat.club</title>
+  <title>the wall - quickcat.club</title>
   <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -11,10 +11,9 @@
       --bg: #050505;
       --cyan: #00ffea;
       --magenta: #ff00ff;
-      --yellow: #f0e68c;
-      --purple: #9d50bb;
-      --text: #d8d8dc;
-      --dim: #555;
+      --text: #e0e0e0;
+      --dim: #666;
+      --panel: #0a0a0a;
     }
     body {
       background: var(--bg);
@@ -22,125 +21,130 @@
       font-family: 'VT323', monospace;
       min-height: 100vh;
       overflow-x: hidden;
-      touch-action: none;
     }
-    /* VHS Overlay */
     body::before {
       content: '';
       position: fixed; inset: 0;
-      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.15) 2px, rgba(0,0,0,0.15) 4px);
-      pointer-events: none; z-index: 1000;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.01) 2px, rgba(0,0,0,0.01) 4px);
+      pointer-events: none; z-index: 999;
     }
     .container {
-      max-width: 800px; margin: 0 auto; padding: 1rem;
+      max-width: 720px; margin: 0 auto; padding: 1rem;
       display: flex; flex-direction: column; align-items: center; gap: 12px;
     }
-    header { width: 100%; display: flex; justify-content: space-between; align-items: center; }
-    .back { color: var(--dim); text-decoration: none; font-size: 1.2rem; }
+    .back { color: var(--dim); text-decoration: none; font-size: 1rem; align-self: flex-start; }
     .back:hover { color: var(--cyan); }
-    
     h1 {
-      font-size: clamp(2.5rem, 8vw, 4rem);
-      color: var(--cyan);
-      text-shadow: 3px 3px var(--magenta), -1px -1px 0 #000;
-      letter-spacing: 4px; text-transform: uppercase;
+      font-size: clamp(2rem, 6vw, 3rem);
+      color: var(--magenta);
+      text-shadow: 0 0 10px rgba(255,0,255,0.4);
+      letter-spacing: 4px; text-align: center;
     }
+    .sub { color: var(--dim); font-size: 1rem; text-align: center; letter-spacing: 2px; }
 
-    .wall-container {
-      position: relative;
+    /* CANVAS */
+    .wall-frame {
+      border: 2px solid rgba(0,255,234,0.2);
       background: #000;
-      border: 2px solid #1a1a1a;
-      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      position: relative;
+      touch-action: none;
       cursor: crosshair;
-      overflow: hidden;
     }
-    
     canvas {
       display: block;
       image-rendering: pixelated;
-      image-rendering: crisp-edges;
-      max-width: 100%;
-      height: auto;
     }
 
-    .toolbar {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      align-items: center;
-      background: rgba(20,20,25,0.8);
-      padding: 15px;
-      border: 1px solid #222;
+    /* PALETTE */
+    .palette {
+      display: flex; flex-wrap: wrap; gap: 4px;
+      justify-content: center;
+      padding: 4px;
     }
-
-    .palette { display: flex; gap: 10px; }
     .swatch {
-      width: 45px; height: 45px;
-      border: 2px solid #333;
+      width: 28px; height: 28px;
+      border: 2px solid #222;
       cursor: pointer;
-      transition: all 0.1s;
-      position: relative;
+      transition: transform 0.1s, border-color 0.1s;
     }
-    .swatch:hover { transform: scale(1.1); border-color: #666; }
-    .swatch.active { border-color: #fff; transform: scale(1.15); box-shadow: 0 0 15px rgba(255,255,255,0.2); }
-    .swatch.active::after {
-      content: '✔'; position: absolute; inset: 0;
-      display: flex; align-items: center; justify-content: center;
-      color: #fff; text-shadow: 0 0 4px #000;
+    .swatch:hover { transform: scale(1.15); }
+    .swatch.active { border-color: #fff; transform: scale(1.2); box-shadow: 0 0 8px rgba(255,255,255,0.3); }
+
+    /* STATS */
+    .stats {
+      font-size: 0.85rem; color: var(--dim); letter-spacing: 2px; text-align: center;
+    }
+    .stats span { color: var(--cyan); }
+
+    /* COOLDOWN */
+    .cooldown-bar {
+      width: 100%; max-width: 300px; height: 4px;
+      background: #111; border-radius: 2px; overflow: hidden;
+    }
+    .cooldown-fill {
+      height: 100%; background: var(--cyan);
+      transition: width 0.1s linear;
+      box-shadow: 0 0 6px var(--cyan);
     }
 
-    .brush-controls { display: flex; align-items: center; gap: 15px; color: var(--dim); }
-    input[type=range] { cursor: pointer; }
-
-    .stats { font-size: 1rem; color: var(--dim); letter-spacing: 2px; }
-    .stats span { color: var(--magenta); }
-
-    footer { color: #222; font-size: 0.9rem; letter-spacing: 3px; margin-top: 10px; }
+    footer { color: #333; font-size: 0.8rem; letter-spacing: 2px; text-align: center; margin-top: 4px; }
   </style>
 </head>
 <body>
   <div class="container">
-    <header>
-      <a href="/" class="back">&larr; BACK</a>
-      <div class="stats"><span id="visitorCount">0</span> ARTISTS</div>
-    </header>
-    
-    <h1>GRAFFITI WALL</h1>
+    <a href="/" class="back">&larr; quickcat.club</a>
+    <h1>the wall</h1>
+    <p class="sub">leave a mark. drag to draw.</p>
 
-    <div class="wall-container" id="canvasWrap">
+    <div class="wall-frame">
       <canvas id="wall"></canvas>
     </div>
 
-    <div class="toolbar">
-      <div class="palette" id="palette"></div>
-      <div class="brush-controls">
-        <span>BRUSH SIZE</span>
-        <input type="range" id="brushSize" min="1" max="5" value="2">
-      </div>
+    <div class="palette" id="palette"></div>
+
+    <div class="cooldown-bar"><div class="cooldown-fill" id="cooldownFill" style="width:100%"></div></div>
+
+    <div class="stats">
+      <span id="pixelCount">0</span> pixels placed by <span id="visitorCount">0</span> visitors
     </div>
 
-    <footer>LEAVE YOUR MARK. FOREVER (MAYBE).</footer>
+    <footer>no accounts. no text. just colour.</footer>
   </div>
 
   <script>
     const GRID = 128;
-    const PALETTE = ['#ff00ff', '#00ffea', '#9d50bb', '#f0e68c', '#000000'];
+    const COOLDOWN_MS = 50; 
+    const STORAGE_KEY = 'qcc_wall_v2';
+    const VISITOR_KEY = 'qcc_wall_visitor';
+
+    const PALETTE = [
+      '#ff0000','#ff6600','#ffcc00','#33cc33','#00cccc',
+      '#0066ff','#9933ff','#ff00ff','#ff6699','#ffffff',
+      '#cccccc','#666666','#333333','#000000',
+      '#00ffea','#ffff00','#7bb2ff','#ffb27b'
+    ];
+
     const canvas = document.getElementById('wall');
     const ctx = canvas.getContext('2d', { alpha: false });
     
-    // Responsive canvas sizing
-    const size = Math.min(window.innerWidth - 40, 760);
-    const pixelSize = size / GRID;
-    canvas.width = size;
-    canvas.height = size;
+    let PIXEL_SIZE = 4;
+    function resizeCanvas() {
+      const container = document.querySelector('.container');
+      PIXEL_SIZE = Math.max(1, Math.floor((container.clientWidth - 32) / GRID));
+      canvas.width = GRID * PIXEL_SIZE;
+      canvas.height = GRID * PIXEL_SIZE;
+      render();
+    }
 
     let selectedColor = PALETTE[0];
-    let isDrawing = false;
+    let lastPlace = 0;
     let grid = new Array(GRID * GRID).fill(null);
     let visitors = new Set();
+    let isDrawing = false;
+    let pendingPixels = [];
+    let sendTimer = null;
 
-    // Init palette
+    // Build palette
     const palEl = document.getElementById('palette');
     PALETTE.forEach((c, i) => {
       const s = document.createElement('div');
@@ -154,93 +158,143 @@
       palEl.appendChild(s);
     });
 
-    function drawPixel(gx, gy, color) {
-      if (gx < 0 || gx >= GRID || gy < 0 || gy >= GRID) return;
-      grid[gy * GRID + gx] = color;
-      ctx.fillStyle = color;
-      ctx.fillRect(gx * pixelSize, gy * pixelSize, pixelSize, pixelSize);
-    }
-
-    function drawBrush(gx, gy) {
-      const radius = parseInt(document.getElementById('brushSize').value) - 1;
-      const points = [];
-      for (let i = -radius; i <= radius; i++) {
-        for (let j = -radius; j <= radius; j++) {
-          const nx = gx + i;
-          const ny = gy + j;
-          if (nx >= 0 && nx < GRID && ny >= 0 && ny < GRID) {
-            drawPixel(nx, ny, selectedColor);
-            points.push({ x: nx, y: ny, c: selectedColor });
+    function loadWall() {
+      fetch('/wall/state.json', { cache: 'no-cache' })
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (data && data.grid) {
+            grid = data.grid;
+            if (data.visitors) visitors = new Set(data.visitors);
+            render();
+            updateStats();
           }
+        })
+        .catch(() => {});
+    }
+
+    function render() {
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      let count = 0;
+      grid.forEach((c, i) => {
+        if (c) {
+          const x = (i % GRID) * PIXEL_SIZE;
+          const y = Math.floor(i / GRID) * PIXEL_SIZE;
+          ctx.fillStyle = c;
+          ctx.fillRect(x, y, PIXEL_SIZE, PIXEL_SIZE);
+          count++;
         }
-      }
-      return points;
+      });
+      document.getElementById('pixelCount').textContent = count;
     }
 
-    function handleMove(e) {
-      if (!isDrawing) return;
-      const rect = canvas.getBoundingClientRect();
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      const gx = Math.floor((clientX - rect.left) / pixelSize);
-      const gy = Math.floor((clientY - rect.top) / pixelSize);
-      
-      const points = drawBrush(gx, gy);
-      if (points.length > 0) {
-        syncToServer(points);
-      }
-    }
-
-    async function syncToServer(points) {
-      try {
-        await fetch('/wall/place', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ points, v: getVisitorId() })
-        });
-      } catch(e) {}
+    function updateStats() {
+      document.getElementById('visitorCount').textContent = visitors.size;
     }
 
     function getVisitorId() {
-      let id = localStorage.getItem('qcc_visitor');
+      let id = localStorage.getItem(VISITOR_KEY);
       if (!id) {
-        id = Math.random().toString(36).slice(2, 8);
-        localStorage.setItem('qcc_visitor', id);
+        id = Math.random().toString(36).slice(2, 10);
+        localStorage.setItem(VISITOR_KEY, id);
       }
       return id;
     }
 
-    canvas.addEventListener('mousedown', () => isDrawing = true);
-    window.addEventListener('mouseup', () => isDrawing = false);
-    canvas.addEventListener('mousemove', handleMove);
-    
-    canvas.addEventListener('touchstart', (e) => { isDrawing = true; handleMove(e); e.preventDefault(); }, { passive: false });
-    canvas.addEventListener('touchend', () => isDrawing = false);
-    canvas.addEventListener('touchmove', (e) => { handleMove(e); e.preventDefault(); }, { passive: false });
+    function placePixel(gx, gy) {
+      const now = Date.now();
+      if (now - lastPlace < COOLDOWN_MS) return;
 
-    // Load state
-    async function load() {
-      ctx.fillStyle = '#000';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      try {
-        const res = await fetch('/wall/state.json');
-        const data = await res.json();
-        if (data.grid) {
-          data.grid.forEach((c, i) => {
-            if (c) {
-              const x = i % GRID;
-              const y = Math.floor(i / GRID);
-              drawPixel(x, y, c);
-            }
-          });
-        }
-        document.getElementById('visitorCount').textContent = (data.visitors || []).length;
-      } catch(e) {}
+      const idx = gy * GRID + gx;
+      if (grid[idx] === selectedColor) return;
+      
+      grid[idx] = selectedColor;
+      lastPlace = now;
+
+      // Draw immediately on local canvas
+      ctx.fillStyle = selectedColor;
+      ctx.fillRect(gx * PIXEL_SIZE, gy * PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE);
+
+      pendingPixels.push({ x: gx, y: gy, c: selectedColor });
+      
+      if (!sendTimer) {
+        sendTimer = setTimeout(flushPixels, 100);
+      }
+
+      const fill = document.getElementById('cooldownFill');
+      fill.style.transition = 'none';
+      fill.style.width = '0%';
+      setTimeout(() => {
+        fill.style.transition = 'width ' + COOLDOWN_MS + 'ms linear';
+        fill.style.width = '100%';
+      }, 10);
     }
 
-    load();
-    // Poll for updates every 5s
-    setInterval(load, 5000);
+    function flushPixels() {
+      if (pendingPixels.length === 0) {
+        sendTimer = null;
+        return;
+      }
+
+      const vid = getVisitorId();
+      const payload = { points: pendingPixels, v: vid };
+      pendingPixels = [];
+      
+      fetch('/wall/place', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).catch(() => {});
+
+      sendTimer = setTimeout(flushPixels, 100);
+    }
+
+    function getGridPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const x = Math.floor((clientX - rect.left) / (rect.width / GRID));
+      const y = Math.floor((clientY - rect.top) / (rect.height / GRID));
+      return [Math.max(0, Math.min(GRID-1, x)), Math.max(0, Math.min(GRID-1, y))];
+    }
+
+    canvas.addEventListener('mousedown', e => {
+      isDrawing = true;
+      const [gx, gy] = getGridPos(e);
+      placePixel(gx, gy);
+    });
+
+    window.addEventListener('mousemove', e => {
+      if (!isDrawing) return;
+      const [gx, gy] = getGridPos(e);
+      placePixel(gx, gy);
+    });
+
+    window.addEventListener('mouseup', () => {
+      isDrawing = false;
+    });
+
+    canvas.addEventListener('touchstart', e => {
+      e.preventDefault();
+      isDrawing = true;
+      const [gx, gy] = getGridPos(e);
+      placePixel(gx, gy);
+    }, { passive: false });
+
+    window.addEventListener('touchmove', e => {
+      if (!isDrawing) return;
+      const [gx, gy] = getGridPos(e);
+      placePixel(gx, gy);
+    }, { passive: false });
+
+    window.addEventListener('touchend', () => {
+      isDrawing = false;
+    });
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+    loadWall();
+    setInterval(loadWall, 5000); // Polling for updates
   </script>
 </body>
 </html>

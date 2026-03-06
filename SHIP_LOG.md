@@ -435,3 +435,21 @@ v6.7 originals at ~/pibulus-os/modules/.backup-v6.7/
 - **Wikipedia fix**: Kiwix --urlRootLocation /wiki + nginx proxy_pass trailing slash removed
 - **Files**: retro/index.html, retro/player.html, retro/games.json, arcade/index.html, main index.html, deck index.html, hardening.conf
 - **Note**: Sonic 1/2/3 + Streets of Rage missing from nointro ROM set
+
+## 2026-03-05 - The Sovereign Sanctuary Polish
+- **Radio (KPAB.FM)**: Fixed broken request system. Re-indexed all 13,771 tracks. Hardened `gen_request_catalog.py` with atomic write safety.
+- **Frontend Refactor**: Standardized all radio buttons. Cleaned up FAQ.
+- **Graffiti Wall**: Overhaul to 128x128 resolution + VHS palette.
+- **PWA + SEO**: Added manifest, service worker, and metadata to quickcat.club.
+- **Media Cleanup**: Consolidated The Simpsons, Succession, and Cosmos.
+- **App Hygiene**: Calibre-Web password policy disabled. Kavita root-file errors fixed.
+- **Scripts Audit**: Fixed port extraction bug in `welcome.sh`.
+
+
+## 2026-03-05 — SESSION: THE NEURAL LINK UPGRADE
+- **The Wall Refactored**: Optimized 128x128 grid with debounced disk saves & batching. Smooth drawing enabled.
+- **Cyberdeck Portal**: Launched `/terminal/` with CRT scanlines, flicker, and a rainbow TUI launcher.
+- **Tiered Access**: Created restricted `deck` user for public SSH (`ssh deck@quickcat.club`).
+- **Live Shoutbox**: Added real-time anonymous chat with "Mighty Duck" name generator.
+- **The Deploy Deck**: Added one-click Git-to-Cloudflare deployment button on Admin Dashboard.
+- **Library Upgrades**: Added video preview with CRT overlays and download confirmation modals.

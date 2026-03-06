@@ -1,93 +1,109 @@
 #!/usr/bin/env python3
-"""Graffiti Wall — drawing backend for quickcat.club
-Stores a 128x128 grid. Smooth drawing enabled by lowering cooldown."""
+"""Graffiti Wall, Shoutbox & Deploy Spawner"""
 
-import json, os, time
+import json, os, time, threading, subprocess, socket
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 GRID = 128
-STATE_FILE = '/media/pibulus/passport/www/html/wall/state.json'
-COOLDOWN = 0.05  # Faster for smooth drawing
+WALL_FILE = '/media/pibulus/passport/www/html/wall/state.json'
+SHOUT_FILE = '/media/pibulus/passport/www/html/msg/shoutbox.json'
 PORT = 8086
 
 grid = [None] * (GRID * GRID)
+shouts = []
 visitors = set()
-last_place = {}
+dirty_wall = False
+dirty_shouts = False
+lock = threading.Lock()
 
 def load():
-    global grid, visitors
+    global grid, visitors, shouts
     try:
-        if os.path.exists(STATE_FILE):
-            with open(STATE_FILE) as f:
+        if os.path.exists(WALL_FILE):
+            with open(WALL_FILE) as f:
                 data = json.load(f)
-                loaded_grid = data.get('grid', [])
-                if len(loaded_grid) == GRID * GRID:
-                    grid = loaded_grid
-                elif len(loaded_grid) == 64 * 64:
-                    # Upscale old 64x64 to 128x128
-                    new_grid = [None] * (128 * 128)
-                    for y in range(64):
-                        for x in range(64):
-                            color = loaded_grid[y * 64 + x]
-                            if color:
-                                # Place 2x2 block
-                                new_grid[(y*2) * 128 + (x*2)] = color
-                                new_grid[(y*2) * 128 + (x*2+1)] = color
-                                new_grid[(y*2+1) * 128 + (x*2)] = color
-                                new_grid[(y*2+1) * 128 + (x*2+1)] = color
-                    grid = new_grid
+                grid = data.get('grid', [None] * (GRID * GRID))
                 visitors = set(data.get('visitors', []))
-    except Exception as e:
-        print(f'Load error: {e}')
+        if os.path.exists(SHOUT_FILE):
+            with open(SHOUT_FILE) as f:
+                shouts = json.load(f)
+    except Exception as e: print(f'Load error: {e}')
 
-def save():
-    try:
-        os.makedirs(os.path.dirname(STATE_FILE), exist_ok=True)
-        with open(STATE_FILE, 'w') as f:
-            json.dump({'grid': grid, 'visitors': list(visitors)}, f, separators=(',', ':'))
-    except Exception as e:
-        print(f'Save error: {e}')
+def save_loop():
+    global dirty_wall, dirty_shouts
+    while True:
+        time.sleep(5)
+        if dirty_wall:
+            with lock:
+                with open(WALL_FILE, 'w') as f:
+                    json.dump({'grid': grid, 'visitors': list(visitors)}, f, separators=(',', ':'))
+                dirty_wall = False
+        if dirty_shouts:
+            with lock:
+                with open(SHOUT_FILE, 'w') as f:
+                    json.dump(shouts[-50:], f, separators=(',', ':'))
+                dirty_shouts = False
+
+def find_free_port():
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(('', 0))
+        return s.getsockname()[1]
 
 class Handler(BaseHTTPRequestHandler):
     def log_message(self, *a): pass
+    
     def do_GET(self):
         if self.path == '/wall/state.json':
-            data = json.dumps({'grid': grid, 'visitors': list(visitors)}, separators=(',', ':')).encode()
+            with lock: data = json.dumps({'grid': grid, 'visitors': list(visitors)}, separators=(',', ':')).encode()
+            self.send_response(200); self.send_header('Content-Type', 'application/json'); self.send_header('Access-Control-Allow-Origin', '*'); self.end_headers(); self.wfile.write(data)
+        elif self.path == '/msg/shouts.json':
+            with lock: data = json.dumps(shouts, separators=(',', ':')).encode()
+            self.send_response(200); self.send_header('Content-Type', 'application/json'); self.send_header('Access-Control-Allow-Origin', '*'); self.end_headers(); self.wfile.write(data)
+        elif self.path == '/deploy/spawn':
+            # Spawn a one-time ttyd instance for deployment
+            port = 9000
+            while True:
+                try:
+                    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                        s.bind(('0.0.0.0', port))
+                    break
+                except: port += 1
+                if port > 9100: break
+            
+            # Run ttyd once (-O)
+            cmd = f'/usr/local/bin/ttyd -p {port} -O -W bash /home/pibulus/pibulus-os/scripts/deploy.sh'
+            subprocess.Popen(cmd, shell=True)
+            
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
-            self.wfile.write(data)
+            self.wfile.write(json.dumps({'url': f'http://pibulus.local:{port}'}).encode())
         else: self.send_response(404); self.end_headers()
 
     def do_POST(self):
+        global dirty_wall, dirty_shouts
+        length = int(self.headers.get('Content-Length', 0))
+        body = json.loads(self.rfile.read(length))
         if self.path == '/wall/place':
-            ip = self.headers.get('X-Real-IP', self.client_address[0])
-            now = time.time()
-            if ip in last_place and now - last_place[ip] < COOLDOWN:
-                self.send_response(429); self.end_headers(); return
-            try:
-                length = int(self.headers.get('Content-Length', 0))
-                body = json.loads(self.rfile.read(length))
-                # Support multiple points for smooth drawing
-                points = body.get('points', [])
-                if not points and 'x' in body: points = [body]
-                
-                for p in points:
+            with lock:
+                for p in body.get('points', [body]):
                     x, y, c = int(p['x']), int(p['y']), str(p['c'])[:7]
-                    if 0 <= x < GRID and 0 <= y < GRID:
-                        grid[y * GRID + x] = c
-                
+                    if 0 <= x < GRID and 0 <= y < GRID: grid[y * GRID + x] = c
                 v = str(body.get('v', ''))[:10]
                 if v: visitors.add(v)
-                last_place[ip] = now
-                save()
-                self.send_response(200); self.send_header('Access-Control-Allow-Origin', '*'); self.end_headers()
-                self.wfile.write(b'{"ok":true}')
-            except: self.send_response(400); self.end_headers()
+                dirty_wall = True
+            self.send_response(200); self.send_header('Access-Control-Allow-Origin', '*'); self.end_headers(); self.wfile.write(b'{"ok":true}')
+        elif self.path == '/msg/shout':
+            with lock:
+                shouts.append({'n': str(body['n'])[:20], 'm': str(body['m'])[:200], 't': int(time.time())})
+                dirty_shouts = True
+            self.send_response(200); self.send_header('Access-Control-Allow-Origin', '*'); self.end_headers(); self.wfile.write(b'{"ok":true}')
+
     def do_OPTIONS(self):
         self.send_response(200); self.send_header('Access-Control-Allow-Origin', '*'); self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS'); self.send_header('Access-Control-Allow-Headers', 'Content-Type'); self.end_headers()
 
 if __name__ == '__main__':
     load()
+    threading.Thread(target=save_loop, daemon=True).start()
     HTTPServer(('0.0.0.0', PORT), Handler).serve_forever()

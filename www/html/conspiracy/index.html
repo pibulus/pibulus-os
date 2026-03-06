@@ -3,19 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Forbidden Library - quickcat.club</title>
+  <title>The Forbidden Library - quickcat.club</title>
   <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --bg: #050505;
-      --accent: #9933ff;
-      --accent-dim: rgba(153,51,255,0.3);
+      --accent: #ff3333;
+      --accent-dim: rgba(255,51,51,0.3);
       --text: #e0e0e0;
       --dim: #888;
       --dim-soft: #555;
-      --panel: rgba(0,0,0,0.6);
-      --border: rgba(153,51,255,0.2);
+      --panel: rgba(10,0,0,0.8);
+      --border: rgba(255,51,51,0.2);
     }
     html { scrollbar-color: var(--accent) var(--bg); scrollbar-width: thin; }
     body {
@@ -29,7 +29,7 @@
     body::before {
       content: '';
       position: fixed; inset: 0;
-      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.12) 2px, rgba(0,0,0,0.12) 4px);
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.15) 2px, rgba(0,0,0,0.15) 4px);
       pointer-events: none; z-index: 999;
     }
     .wrapper {
@@ -42,8 +42,8 @@
     h1 {
       font-size: clamp(2.5rem, 8vw, 4rem);
       color: var(--accent);
-      text-shadow: 0 0 10px var(--accent), 0 0 30px rgba(153,51,255,0.3);
-      letter-spacing: 4px; line-height: 1;
+      text-shadow: 0 0 10px var(--accent), 0 0 30px rgba(255,0,0,0.4);
+      letter-spacing: 4px; line-height: 1; text-transform: uppercase;
     }
     .subtitle { color: var(--dim); font-size: 1.1rem; margin-top: 0.5rem; letter-spacing: 2px; }
     .intro {
@@ -57,8 +57,39 @@
     .breadcrumbs a { color: var(--accent); text-decoration: none; cursor: pointer; }
     .breadcrumbs a:hover { text-decoration: underline; }
     .breadcrumbs .sep { color: var(--dim-soft); margin: 0 2px; }
-    .count { font-size: 0.85rem; color: var(--dim); letter-spacing: 1px; margin: 1.5rem 0 0.5rem; text-align: right; }
-    .file-list { display: flex; flex-direction: column; gap: 4px; }
+
+    /* MODAL */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(5px);
+      z-index: 1000; display: none; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .modal-overlay.active { display: flex; opacity: 1; }
+    .modal-card {
+      background: #0a0000; border: 1px solid var(--accent);
+      padding: 2rem; max-width: 500px; width: 90%;
+      text-align: center; position: relative;
+      box-shadow: 0 0 40px rgba(255,0,0,0.2);
+    }
+    .modal-title { font-size: 1.5rem; color: var(--accent); margin-bottom: 1rem; }
+    .modal-text { color: var(--text); margin-bottom: 2rem; line-height: 1.5; }
+    .modal-actions { display: flex; gap: 1rem; justify-content: center; }
+    .btn {
+      background: transparent; border: 1px solid var(--dim); color: var(--dim);
+      padding: 0.5rem 1.5rem; cursor: pointer; font-family: inherit; font-size: 1rem;
+      transition: all 0.2s;
+    }
+    .btn:hover { border-color: var(--text); color: var(--text); }
+    .btn-primary { border-color: var(--accent); color: var(--accent); }
+    .btn-primary:hover { background: var(--accent); color: #000; box-shadow: 0 0 15px var(--accent); }
+    .close-preview {
+      position: absolute; top: 1rem; right: 1rem;
+      color: #fff; font-size: 2rem; cursor: pointer; z-index: 1001;
+    }
+    #preview-content { width: 90vw; height: 85vh; display: flex; justify-content: center; align-items: center; }
+    #preview-content iframe, #preview-content img { max-width: 100%; max-height: 100%; border: none; background: #fff; }
+
+    .file-list { display: flex; flex-direction: column; gap: 4px; margin-top: 1rem; }
     .file-item {
       display: flex; align-items: center; gap: 12px;
       padding: 14px 16px;
@@ -72,20 +103,24 @@
     }
     .file-item:hover {
       border-left-color: var(--accent);
-      background: rgba(153,51,255,0.04);
+      background: rgba(255,51,51,0.05);
+      transform: translateX(2px);
     }
     .file-icon { font-size: 1.5rem; flex-shrink: 0; width: 2rem; text-align: center; }
     .file-info { flex: 1; min-width: 0; }
     .file-name { font-size: 1.15rem; line-height: 1.3; }
-    .file-meta { font-size: 0.85rem; color: var(--dim); }
+    .file-meta { font-size: 0.85rem; color: var(--dim); margin-top: 2px; }
     .file-action {
       font-size: 0.85rem; color: var(--accent); letter-spacing: 2px;
-      flex-shrink: 0; opacity: 0; transition: opacity 0.15s;
+      flex-shrink: 0; opacity: 0;
+      transition: opacity 0.15s;
     }
     .file-item:hover .file-action { opacity: 1; }
     .loading { text-align: center; color: var(--dim); padding: 2rem 0; }
-    footer { text-align: center; margin-top: 3rem; padding-top: 1rem; border-top: 1px solid rgba(153,51,255,0.1); }
+    
+    footer { text-align: center; margin-top: 3rem; padding-top: 1rem; border-top: 1px solid rgba(255,51,51,0.1); }
     .footer-text { color: var(--dim-soft); font-size: 0.9rem; letter-spacing: 2px; }
+    
     @media (max-width: 560px) {
       .file-name { font-size: 1rem; }
       .file-action { opacity: 1; }
@@ -93,48 +128,65 @@
   </style>
 </head>
 <body>
+  <!-- Confirm Modal -->
+  <div class="modal-overlay" id="confirm-modal">
+    <div class="modal-card">
+      <h3 class="modal-title">Access File?</h3>
+      <p class="modal-text" id="confirm-text">Are you sure?</p>
+      <div class="modal-actions">
+        <button class="btn" onclick="closeModal('confirm-modal')">Retreat</button>
+        <button class="btn btn-primary" id="confirm-btn">Proceed</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Preview Modal -->
+  <div class="modal-overlay" id="preview-modal">
+    <span class="close-preview" onclick="closeModal('preview-modal')">&times;</span>
+    <div id="preview-content"></div>
+  </div>
+
   <div class="wrapper">
     <a href="/" class="back">&larr; quickcat.club</a>
     <header>
       <h1>Forbidden Library</h1>
-      <p class="subtitle">occult, esoterica &amp; fringe</p>
-      <p class="intro">grimoires, chaos magic, tarot, astrology, conspiracy archives, SubGenius recruitment materials. no judgement. no algorithms. just shelves.</p>
+      <p class="subtitle">esoteric &amp; suppressed knowledge</p>
+      <p class="intro">warning: these files are for research purposes only. question everything.</p>
     </header>
 
     <div class="breadcrumbs" id="breadcrumbs"></div>
+
     <div class="count" id="item-count"></div>
-    <div class="file-list" id="items"><div class="loading">scanning the vault...</div></div>
+    <div class="file-list" id="file-list"><div class="loading">decrypting manifest...</div></div>
 
     <footer>
-      <p class="footer-text">question everything &mdash; download freely</p>
+      <p class="footer-text">semper vigilo &mdash; trust no one</p>
     </footer>
   </div>
+
   <script>
     var currentPath = '';
-
-    function iconFor(name) {
-      var n = name.toLowerCase();
-      if (n.endsWith('.pdf') || n.endsWith('.epub') || n.endsWith('.mobi')) return '\u{1F4D6}';
-      if (n.endsWith('.cbr') || n.endsWith('.cbz')) return '\u{1F4DA}';
-      if (n.endsWith('.iso')) return '\u{1F4BF}';
-      if (n.endsWith('.avi') || n.endsWith('.mp4') || n.endsWith('.mkv')) return '\u{1F3AC}';
-      return '\u{1F4C1}';
-    }
-
-    function cleanName(name) {
-      return name
-        .replace(/\.(pdf|epub|mobi|iso|avi|mp4|mkv|cbr|cbz)$/i, '')
-        .replace(/\[.*?\]/g, '')
-        .replace(/\{.*?\}/g, '')
-        .replace(/\s{2,}/g, ' ')
-        .trim();
-    }
+    var PREVIEW_EXT = ['.pdf', '.jpg', '.png', '.jpeg'];
 
     function sizeStr(bytes) {
       if (bytes > 1073741824) return (bytes/1073741824).toFixed(1) + ' GB';
       if (bytes > 1048576) return (bytes/1048576).toFixed(0) + ' MB';
       if (bytes > 1024) return (bytes/1024).toFixed(0) + ' KB';
       return '';
+    }
+
+    function cleanName(name) {
+      return name
+        .replace(/_/g, ' ')
+        .replace(/\.(pdf|epub|mobi|txt|mp4|mkv)$/i, '')
+        .trim();
+    }
+
+    function iconFor(name, isDir) {
+      if (isDir) return '\u{1F4C1}';
+      if (name.endsWith('.pdf')) return '\u{1F4C4}';
+      if (name.endsWith('.mp4') || name.endsWith('.mkv')) return '\u{1F3AC}';
+      return '\u{1F4D6}'; // Default book
     }
 
     function buildPath(subpath) {
@@ -146,11 +198,11 @@
     function renderBreadcrumbs() {
       var bc = document.getElementById('breadcrumbs');
       if (!currentPath) {
-        bc.innerHTML = '';
+        bc.innerHTML = '<a onclick="navigate(\'\')">Root</a>';
         return;
       }
       var parts = currentPath.split('/').filter(Boolean);
-      var html = '<a onclick="navigate(\'\')">Vault</a>';
+      var html = '<a onclick="navigate(\'\')">Root</a>';
       var accumulated = '';
       for (var i = 0; i < parts.length; i++) {
         accumulated += (accumulated ? '/' : '') + parts[i];
@@ -164,63 +216,111 @@
       bc.innerHTML = html;
     }
 
-    function makeItem(entry, isDir) {
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+      if (id === 'preview-modal') document.getElementById('preview-content').innerHTML = '';
+    }
+
+    function askDownload(url, name, size) {
+      var niceSize = sizeStr(size);
+      document.getElementById('confirm-text').innerHTML = 'Download <b>' + name + '</b>?<br><br>Size: ' + niceSize;
+      var btn = document.getElementById('confirm-btn');
+      btn.onclick = function() {
+        window.location.href = url;
+        closeModal('confirm-modal');
+      };
+      document.getElementById('confirm-modal').classList.add('active');
+    }
+
+    function tryPreview(url, name) {
+      var ext = name.toLowerCase().match(/\.[a-z]+$/);
+      if (ext && PREVIEW_EXT.includes(ext[0])) {
+        var content = document.getElementById('preview-content');
+        if (ext[0] === '.pdf') {
+          content.innerHTML = '<iframe src="' + url + '" width="100%" height="100%"></iframe>';
+        } else {
+          content.innerHTML = '<img src="' + url + '" class="preview-img">';
+        }
+        document.getElementById('preview-modal').classList.add('active');
+      } else {
+        askDownload(url, name, 0);
+      }
+    }
+
+    function handleFileClick(entry) {
+      var url = buildPath(currentPath) + encodeURIComponent(entry.name);
+      var n = entry.name.toLowerCase();
+      if (PREVIEW_EXT.some(function(ext) { return n.endsWith(ext); })) {
+        tryPreview(url, entry.name);
+      } else {
+        askDownload(url, entry.name, entry.size);
+      }
+    }
+
+    function makeItem(entry) {
+      var isDir = entry.type === 'directory';
+      var displayName = cleanName(entry.name);
+      var meta = isDir ? 'Folder' : sizeStr(entry.size || 0);
+
       var a = document.createElement('a');
       a.className = 'file-item';
       if (isDir) {
         var newPath = currentPath ? currentPath + '/' + entry.name : entry.name;
         a.onclick = function() { navigate(newPath); };
       } else {
-        a.href = buildPath(currentPath) + encodeURIComponent(entry.name);
-        a.target = '_blank';
-        a.rel = 'noopener';
+        a.onclick = function() { handleFileClick(entry); };
       }
+      
       a.innerHTML =
-        '<span class="file-icon">' + (isDir ? '\u{1F4C1}' : iconFor(entry.name)) + '</span>' +
+        '<span class="file-icon">' + iconFor(entry.name, isDir) + '</span>' +
         '<span class="file-info">' +
-          '<span class="file-name">' + cleanName(entry.name) + '</span>' +
-          '<span class="file-meta">' + (isDir ? 'collection' : sizeStr(entry.size || 0)) + '</span>' +
+          '<span class="file-name">' + displayName + '</span>' +
+          '<span class="file-meta">' + meta + '</span>' +
         '</span>' +
-        '<span class="file-action">' + (isDir ? 'BROWSE' : 'DOWNLOAD') + '</span>';
+        '<span class="file-action">' + (isDir ? 'ENTER' : 'ACCESS') + '</span>';
       return a;
     }
 
     function navigate(path) {
       currentPath = path;
       renderBreadcrumbs();
-      load();
-    }
-
-    function load() {
       var url = buildPath(currentPath);
-      document.getElementById('items').innerHTML = '<div class="loading">scanning the vault...</div>';
+      var list = document.getElementById('file-list');
+      list.innerHTML = '<div class="loading">decrypting manifest...</div>';
 
       fetch(url, { cache: 'no-cache' })
-        .then(function(r) { return r.text(); })
+        .then(function(res) { return res.text(); })
         .then(function(text) {
           var entries;
           try {
             entries = JSON.parse(text);
           } catch(e) {
-            return;
+            var parser = new DOMParser();
+            var doc = parser.parseFromString(text, 'text/html');
+            var links = doc.querySelectorAll('a');
+            entries = [];
+            links.forEach(function(a) {
+              var name = decodeURIComponent(a.getAttribute('href') || '').replace(/\/$/, '');
+              if (name && name !== '..' && !name.startsWith('/')) {
+                entries.push({ name: name, type: a.getAttribute('href').endsWith('/') ? 'directory' : 'file', size: 0 });
+              }
+            });
           }
-
+          
+          list.innerHTML = '';
+          document.getElementById('item-count').textContent = entries.length + ' records found';
+          
           entries.sort(function(a,b) {
             if (a.type === 'directory' && b.type !== 'directory') return -1;
             if (a.type !== 'directory' && b.type === 'directory') return 1;
-            return cleanName(a.name).toLowerCase().localeCompare(cleanName(b.name).toLowerCase());
+            return a.name.localeCompare(b.name);
           });
 
-          var list = document.getElementById('items');
-          list.innerHTML = '';
-          document.getElementById('item-count').textContent = entries.length + ' items';
-
-          entries.forEach(function(e) {
-            list.appendChild(makeItem(e, e.type === 'directory'));
-          });
+          if (entries.length === 0) list.innerHTML = '<div class="loading">sector empty</div>';
+          entries.forEach(function(e) { list.appendChild(makeItem(e)); });
         })
         .catch(function() {
-          document.getElementById('items').innerHTML = '<div class="loading">could not load vault</div>';
+          list.innerHTML = '<div class="loading">access denied</div>';
         });
     }
 
