@@ -64,6 +64,8 @@ services:
       - ND_SCANSCHEDULE=1h
       - ND_LOGLEVEL=info
       - ND_MUSICFOLDER=/music
+      - ND_PUID=1000
+      - ND_PGID=1000
     volumes:
       - /home/pibulus/.config/navidrome:/data
       - "/media/pibulus/passport/Music/MusicBee/Music:/music/Library"
