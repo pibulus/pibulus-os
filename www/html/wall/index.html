@@ -7,294 +7,110 @@
   <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --bg: #050505;
-      --cyan: #00ffea;
-      --magenta: #ff00ff;
-      --text: #e0e0e0;
-      --dim: #666;
-      --panel: #0a0a0a;
-    }
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'VT323', monospace;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-    body::before {
-      content: '';
-      position: fixed; inset: 0;
-      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.01) 2px, rgba(0,0,0,0.01) 4px);
-      pointer-events: none; z-index: 999;
-    }
-    .container {
-      max-width: 720px; margin: 0 auto; padding: 1rem;
-      display: flex; flex-direction: column; align-items: center; gap: 12px;
-    }
-    .back { color: var(--dim); text-decoration: none; font-size: 1rem; align-self: flex-start; }
-    .back:hover { color: var(--cyan); }
-    h1 {
-      font-size: clamp(2rem, 6vw, 3rem);
-      color: var(--magenta);
-      text-shadow: 0 0 10px rgba(255,0,255,0.4);
-      letter-spacing: 4px; text-align: center;
-    }
-    .sub { color: var(--dim); font-size: 1rem; text-align: center; letter-spacing: 2px; }
-
-    /* CANVAS */
-    .wall-frame {
-      border: 2px solid rgba(0,255,234,0.2);
-      background: #000;
-      position: relative;
-      touch-action: none;
-      cursor: crosshair;
-    }
-    canvas {
-      display: block;
-      image-rendering: pixelated;
-    }
-
-    /* PALETTE */
-    .palette {
-      display: flex; flex-wrap: wrap; gap: 4px;
-      justify-content: center;
-      padding: 4px;
-    }
-    .swatch {
-      width: 28px; height: 28px;
-      border: 2px solid #222;
-      cursor: pointer;
-      transition: transform 0.1s, border-color 0.1s;
-    }
-    .swatch:hover { transform: scale(1.15); }
-    .swatch.active { border-color: #fff; transform: scale(1.2); box-shadow: 0 0 8px rgba(255,255,255,0.3); }
-
-    /* STATS */
-    .stats {
-      font-size: 0.85rem; color: var(--dim); letter-spacing: 2px; text-align: center;
-    }
-    .stats span { color: var(--cyan); }
-
-    /* COOLDOWN */
-    .cooldown-bar {
-      width: 100%; max-width: 300px; height: 4px;
-      background: #111; border-radius: 2px; overflow: hidden;
-    }
-    .cooldown-fill {
-      height: 100%; background: var(--cyan);
-      transition: width 0.1s linear;
-      box-shadow: 0 0 6px var(--cyan);
-    }
-
-    footer { color: #333; font-size: 0.8rem; letter-spacing: 2px; text-align: center; margin-top: 4px; }
+    :root { --bg: #050505; --cyan: #00ffea; --magenta: #ff00ff; --text: #e0e0e0; --dim: #666; }
+    body { background: var(--bg); color: var(--text); font-family: 'VT323', monospace; min-height: 100vh; overflow-x: hidden; display: flex; flex-direction: column; align-items: center; padding: 1rem; }
+    .back { align-self: flex-start; color: var(--dim); text-decoration: none; margin-bottom: 1rem; }
+    h1 { color: var(--magenta); font-size: 3rem; letter-spacing: 4px; }
+    .sub { color: var(--dim); margin-bottom: 1rem; }
+    .wall-frame { border: 2px solid rgba(0,255,234,0.2); background: #000; touch-action: none; cursor: crosshair; }
+    canvas { display: block; image-rendering: pixelated; }
+    .palette { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; padding: 8px; max-width: 400px; }
+    .swatch { width: 30px; height: 30px; border: 2px solid #222; cursor: pointer; }
+    .swatch.active { border-color: #fff; box-shadow: 0 0 8px rgba(255,255,255,0.5); }
+    .stats { color: var(--dim); font-size: 0.9rem; margin-top: 1rem; }
+    .cooldown-bar { width: 100%; max-width: 300px; height: 4px; background: #111; margin-top: 10px; overflow: hidden; }
+    .cooldown-fill { height: 100%; background: var(--cyan); width: 100%; transition: width 0.05s linear; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <a href="/" class="back">&larr; quickcat.club</a>
-    <h1>the wall</h1>
-    <p class="sub">leave a mark. drag to draw.</p>
-
-    <div class="wall-frame">
-      <canvas id="wall"></canvas>
-    </div>
-
-    <div class="palette" id="palette"></div>
-
-    <div class="cooldown-bar"><div class="cooldown-fill" id="cooldownFill" style="width:100%"></div></div>
-
-    <div class="stats">
-      <span id="pixelCount">0</span> pixels placed by <span id="visitorCount">0</span> visitors
-    </div>
-
-    <footer>no accounts. no text. just colour.</footer>
-  </div>
-
+  <a href="/" class="back">&larr; quickcat.club</a>
+  <h1>the wall</h1>
+  <p class="sub">drag to draw. one pixel at a time.</p>
+  <div class="wall-frame"><canvas id="wall"></canvas></div>
+  <div class="palette" id="palette"></div>
+  <div class="cooldown-bar"><div class="cooldown-fill" id="cooldownFill"></div></div>
+  <div class="stats"><span id="pixelCount">0</span> pixels placed by <span id="visitorCount">0</span> visitors</div>
   <script>
     const GRID = 128;
-    const COOLDOWN_MS = 50; 
-    const STORAGE_KEY = 'qcc_wall_v2';
-    const VISITOR_KEY = 'qcc_wall_visitor';
-
-    const PALETTE = [
-      '#ff0000','#ff6600','#ffcc00','#33cc33','#00cccc',
-      '#0066ff','#9933ff','#ff00ff','#ff6699','#ffffff',
-      '#cccccc','#666666','#333333','#000000',
-      '#00ffea','#ffff00','#7bb2ff','#ffb27b'
-    ];
-
     const canvas = document.getElementById('wall');
     const ctx = canvas.getContext('2d', { alpha: false });
+    const PALETTE = ['#ff0000','#ff6600','#ffcc00','#33cc33','#00cccc','#0066ff','#9933ff','#ff00ff','#ffffff','#000000','#00ffea','#ffff00'];
     
     let PIXEL_SIZE = 4;
-    function resizeCanvas() {
-      const container = document.querySelector('.container');
-      PIXEL_SIZE = Math.max(1, Math.floor((container.clientWidth - 32) / GRID));
-      canvas.width = GRID * PIXEL_SIZE;
-      canvas.height = GRID * PIXEL_SIZE;
-      render();
+    function resize() {
+      PIXEL_SIZE = Math.max(1, Math.floor((Math.min(window.innerWidth, 600) - 40) / GRID));
+      canvas.width = GRID * PIXEL_SIZE; canvas.height = GRID * PIXEL_SIZE;
+      load();
     }
 
     let selectedColor = PALETTE[0];
-    let lastPlace = 0;
     let grid = new Array(GRID * GRID).fill(null);
-    let visitors = new Set();
     let isDrawing = false;
-    let pendingPixels = [];
-    let sendTimer = null;
+    let pending = [];
 
-    // Build palette
-    const palEl = document.getElementById('palette');
     PALETTE.forEach((c, i) => {
       const s = document.createElement('div');
       s.className = 'swatch' + (i === 0 ? ' active' : '');
       s.style.background = c;
-      s.onclick = () => {
-        document.querySelectorAll('.swatch').forEach(x => x.classList.remove('active'));
-        s.classList.add('active');
-        selectedColor = c;
-      };
-      palEl.appendChild(s);
+      s.onclick = () => { document.querySelectorAll('.swatch').forEach(x => x.classList.remove('active')); s.classList.add('active'); selectedColor = c; };
+      document.getElementById('palette').appendChild(s);
     });
 
-    function loadWall() {
-      fetch('/wall/state.json', { cache: 'no-cache' })
-        .then(r => r.ok ? r.json() : null)
-        .then(data => {
-          if (data && data.grid) {
-            grid = data.grid;
-            if (data.visitors) visitors = new Set(data.visitors);
-            render();
-            updateStats();
-          }
-        })
-        .catch(() => {});
+    function load() {
+      fetch('/wall/state.json', { cache: 'no-cache' }).then(r => r.json()).then(data => {
+        if (data && data.grid) {
+          grid = data.grid;
+          document.getElementById('visitorCount').textContent = data.visitors ? data.visitors.length : 0;
+          render();
+        }
+      });
     }
 
     function render() {
-      ctx.fillStyle = '#000';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#000'; ctx.fillRect(0, 0, canvas.width, canvas.height);
       let count = 0;
       grid.forEach((c, i) => {
         if (c) {
-          const x = (i % GRID) * PIXEL_SIZE;
-          const y = Math.floor(i / GRID) * PIXEL_SIZE;
           ctx.fillStyle = c;
-          ctx.fillRect(x, y, PIXEL_SIZE, PIXEL_SIZE);
+          ctx.fillRect((i % GRID) * PIXEL_SIZE, Math.floor(i / GRID) * PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE);
           count++;
         }
       });
       document.getElementById('pixelCount').textContent = count;
     }
 
-    function updateStats() {
-      document.getElementById('visitorCount').textContent = visitors.size;
-    }
-
-    function getVisitorId() {
-      let id = localStorage.getItem(VISITOR_KEY);
-      if (!id) {
-        id = Math.random().toString(36).slice(2, 10);
-        localStorage.setItem(VISITOR_KEY, id);
-      }
-      return id;
-    }
-
-    function placePixel(gx, gy) {
-      const now = Date.now();
-      if (now - lastPlace < COOLDOWN_MS) return;
-
-      const idx = gy * GRID + gx;
-      if (grid[idx] === selectedColor) return;
-      
-      grid[idx] = selectedColor;
-      lastPlace = now;
-
-      // Draw immediately on local canvas
-      ctx.fillStyle = selectedColor;
-      ctx.fillRect(gx * PIXEL_SIZE, gy * PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE);
-
-      pendingPixels.push({ x: gx, y: gy, c: selectedColor });
-      
-      if (!sendTimer) {
-        sendTimer = setTimeout(flushPixels, 100);
-      }
-
-      const fill = document.getElementById('cooldownFill');
-      fill.style.transition = 'none';
-      fill.style.width = '0%';
-      setTimeout(() => {
-        fill.style.transition = 'width ' + COOLDOWN_MS + 'ms linear';
-        fill.style.width = '100%';
-      }, 10);
-    }
-
-    function flushPixels() {
-      if (pendingPixels.length === 0) {
-        sendTimer = null;
-        return;
-      }
-
-      const vid = getVisitorId();
-      const payload = { points: pendingPixels, v: vid };
-      pendingPixels = [];
-      
-      fetch('/wall/place', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      }).catch(() => {});
-
-      sendTimer = setTimeout(flushPixels, 100);
-    }
-
-    function getGridPos(e) {
+    function place(e) {
       const rect = canvas.getBoundingClientRect();
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
       const clientY = e.touches ? e.touches[0].clientY : e.clientY;
       const x = Math.floor((clientX - rect.left) / (rect.width / GRID));
       const y = Math.floor((clientY - rect.top) / (rect.height / GRID));
-      return [Math.max(0, Math.min(GRID-1, x)), Math.max(0, Math.min(GRID-1, y))];
+      if (x < 0 || x >= GRID || y < 0 || y >= GRID) return;
+      const i = y * GRID + x;
+      if (grid[i] === selectedColor) return;
+      grid[i] = selectedColor;
+      ctx.fillStyle = selectedColor;
+      ctx.fillRect(x * PIXEL_SIZE, y * PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE);
+      pending.push({x, y, c: selectedColor});
+      if (pending.length > 10) flush();
     }
 
-    canvas.addEventListener('mousedown', e => {
-      isDrawing = true;
-      const [gx, gy] = getGridPos(e);
-      placePixel(gx, gy);
-    });
+    function flush() {
+      if (!pending.length) return;
+      fetch('/wall/place', { method: 'POST', body: JSON.stringify({points: pending, v: localStorage.getItem('v_id') || Math.random().toString(36).slice(2,10)}) });
+      pending = [];
+    }
 
-    window.addEventListener('mousemove', e => {
-      if (!isDrawing) return;
-      const [gx, gy] = getGridPos(e);
-      placePixel(gx, gy);
-    });
+    canvas.addEventListener('mousedown', () => isDrawing = true);
+    window.addEventListener('mouseup', () => { isDrawing = false; flush(); });
+    canvas.addEventListener('mousemove', e => isDrawing && place(e));
+    canvas.addEventListener('touchstart', e => { isDrawing = true; place(e); e.preventDefault(); }, {passive:false});
+    canvas.addEventListener('touchmove', e => { isDrawing && place(e); e.preventDefault(); }, {passive:false});
+    canvas.addEventListener('touchend', () => { isDrawing = false; flush(); });
 
-    window.addEventListener('mouseup', () => {
-      isDrawing = false;
-    });
-
-    canvas.addEventListener('touchstart', e => {
-      e.preventDefault();
-      isDrawing = true;
-      const [gx, gy] = getGridPos(e);
-      placePixel(gx, gy);
-    }, { passive: false });
-
-    window.addEventListener('touchmove', e => {
-      if (!isDrawing) return;
-      const [gx, gy] = getGridPos(e);
-      placePixel(gx, gy);
-    }, { passive: false });
-
-    window.addEventListener('touchend', () => {
-      isDrawing = false;
-    });
-
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-    loadWall();
-    setInterval(loadWall, 5000); // Polling for updates
+    window.addEventListener('resize', resize);
+    resize();
+    setInterval(load, 5000);
   </script>
 </body>
 </html>
