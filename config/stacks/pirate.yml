@@ -14,6 +14,12 @@ services:
       - /media/pibulus/passport/Shows:/media/shows
       - /media/pibulus/passport/Audiobooks:/media/audiobooks
       - /media/pibulus/passport/Palestine:/media/palestine
+    devices:
+      - /dev/dri:/dev/dri
+      - /dev/video19:/dev/video19
+    group_add:
+      - "44"
+      - "992"
     restart: unless-stopped
 
   kavita:
@@ -111,6 +117,7 @@ services:
       - /media/pibulus/passport/www/html/msg:/usr/share/nginx/html/msg:ro
       - /media/pibulus/passport/www/html/wall/state.json:/usr/share/nginx/html/wall/state.json:ro
       - /media/pibulus/passport/www/html/kpab/catalog.json:/usr/share/nginx/html/kpab/catalog.json:ro
+      - /media/pibulus/passport/www/html/fiction/games:/usr/share/nginx/html/fiction/games:ro
       # Other passport content
       - /media/pibulus/passport/Roms:/usr/share/nginx/roms:ro
       - /media/pibulus/passport/Palestine:/usr/share/nginx/palestine:ro

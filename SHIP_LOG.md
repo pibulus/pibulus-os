@@ -453,3 +453,22 @@ v6.7 originals at ~/pibulus-os/modules/.backup-v6.7/
 - **Live Shoutbox**: Added real-time anonymous chat with "Mighty Duck" name generator.
 - **The Deploy Deck**: Added one-click Git-to-Cloudflare deployment button on Admin Dashboard.
 - **Library Upgrades**: Added video preview with CRT overlays and download confirmation modals.
+
+---
+## 2026-03-12 - Cyberdeck v0.9.2 - RECOVERY & ACCELERATION
+
+### Shipped
+- **Jellyfin HW Acceleration**: Mapped `/dev/dri` and `/dev/video19` (Pi 5 HEVC decoder) into `pirate.yml`. Added video/render groups (44/992).
+- **Calibre-Web Fix**: Repaired `app.db` by surgically re-inserting missing Guest user (ID 2) with ROLE_ANONYMOUS (32) to resolve Internal Server Error.
+- **Terminal Proxy**: Restored `/terminal/` in `hardening.conf` pointing to ttyd on port 7682 with proper WebSocket upgrade headers.
+- **Interactive Fiction**: Mounted `/fiction/games/` from Passport drive into `web_host` container. Zork and 29 other games now playable via iplayif.com.
+- **Nginx Hygiene**: Removed duplicate Cache-Control headers and escaped shell variables in `hardening.conf`.
+
+### Status
+- **Stack**: All 13 services in `pirate.yml` healthy and responding.
+- **Media**: Jellyfin library accessible with hardware-assisted decoding.
+- **Books**: Calibre-Web live at read.quickcat.club.
+- **Arcade**: Fiction library reachable at quickcat.club/fiction.
+- **Shell**: Web terminal live at quickcat.club/terminal.
+
+**Checkpoint**: v0.9.2 STABLE
