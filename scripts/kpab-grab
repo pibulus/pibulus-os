@@ -9,9 +9,35 @@ Usage:
   kpab-grab "Jao Selva" --dry-run          # Preview without downloading
   kpab-grab "Jao Selva" "Mango" --flac     # Prefer FLAC only
 """
-import json, urllib.request, urllib.error, time, sys
+import json, urllib.request, urllib.error, time, sys, socket, subprocess
 
 BASE = "http://localhost:5030/api/v0"
+
+
+def port_open(host, port):
+    try:
+        with socket.create_connection((host, port), timeout=2):
+            return True
+    except OSError:
+        return False
+
+
+def ensure_slskd(timeout=25):
+    if port_open("127.0.0.1", 5030):
+        return
+
+    print("  Waking slskd...")
+    subprocess.run(["docker", "start", "slskd"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
+
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        if port_open("127.0.0.1", 5030):
+            print("  slskd online.")
+            return
+        time.sleep(1)
+
+    raise RuntimeError("slskd did not come online in time")
+
 
 def get_token():
     req = urllib.request.Request(
@@ -20,6 +46,7 @@ def get_token():
         headers={"Content-Type": "application/json"}
     )
     return json.loads(urllib.request.urlopen(req, timeout=10).read())["token"]
+
 
 def search(token, query):
     req = urllib.request.Request(
@@ -49,8 +76,9 @@ def search(token, query):
     try:
         r = json.loads(urllib.request.urlopen(req, timeout=10).read())
         return r if isinstance(r, list) else []
-    except:
+    except Exception:
         return []
+
 
 def score(response, artist, album=None, flac_only=False):
     files = response.get("files", [])
@@ -81,6 +109,7 @@ def score(response, artist, album=None, flac_only=False):
         sc += 10
     return sc, files
 
+
 def queue(token, username, files, dry_run=False):
     audio = [f for f in files if f.get("filename","").lower().endswith((".flac",".mp3",".ogg",".m4a"))]
     if not audio:
@@ -102,9 +131,10 @@ def queue(token, username, files, dry_run=False):
             urllib.request.urlopen(req, timeout=10)
             queued += 1
         except urllib.error.HTTPError as e:
-            if e.code == 409:  # already queued
+            if e.code == 409:
                 queued += 1
     return queued
+
 
 def main():
     import argparse
@@ -133,6 +163,7 @@ def main():
     print()
 
     try:
+        ensure_slskd()
         token = get_token()
     except Exception as e:
         print(f"  Could not connect to slskd: {e}")
@@ -143,7 +174,6 @@ def main():
         print("  No results found. Try a different search term.")
         sys.exit(1)
 
-    # Score all responses
     scored = []
     for r in responses:
         s, files = score(r, args.artist, args.album, args.flac)
@@ -156,7 +186,6 @@ def main():
 
     scored.sort(key=lambda x: x[0], reverse=True)
 
-    # Show top results
     print(f"  Found {len(scored)} matching sources:\n")
     for i, (s, user, files, r) in enumerate(scored[:args.top]):
         audio = [f for f in files if f.get("filename","").lower().endswith((".flac",".mp3",".ogg",".m4a"))]
@@ -168,14 +197,12 @@ def main():
         marker = " <-- BEST" if i == 0 else ""
         print(f"  {i+1}. {user} | {len(audio)} {fmt} files | {speed_str} | {free} free slots | score={s}{marker}")
 
-        # Show folder path from first file
         if audio:
             path = audio[0].get("filename", "")
             folder = path.rsplit("\\", 1)[0] if "\\" in path else path.rsplit("/", 1)[0]
             print(f"     {folder}")
         print()
 
-    # Queue the best
     best_score, best_user, best_files, _ = scored[0]
     audio_count = len([f for f in best_files if f.get("filename","").lower().endswith((".flac",".mp3",".ogg",".m4a"))])
 

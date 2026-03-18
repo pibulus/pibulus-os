@@ -44,13 +44,13 @@ services:
     environment:
       - user=pibulus
       - group=pibulus
-      - apple_id=YOUR_EMAIL@icloud.com  # <--- CHANGE THIS!
+      - apple_id=pibulus@gmail.com  # <--- CHANGE THIS!
       - authentication_type=2FA
       - notification_days=7
       - synchronization_delay=86400
       - timezone=Australia/Melbourne
     volumes:
-      - /media/pibulus/passport/immich/icloud_backup:/data
+      - /media/pibulus/passport/immich/upload/icloud:/data
       - ./icloudpd_config:/config
     restart: always
 

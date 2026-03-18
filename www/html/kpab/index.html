@@ -839,10 +839,7 @@
       .request-item { padding: 8px 10px; gap: 10px; }
       .request-item-art, .request-item-art-ph { width: 36px; height: 36px; }
       .request-item-btn { font-size: 11px; padding: 3px 8px; }
-      .request-toggle { font-size: 16px; padding: 14px 20px; }
-      .about-toggle { font-size: 16px; padding: 12px 16px; }
-      .msg-toggle { font-size: 16px; padding: 12px 16px; }
-      .mutiny-toggle { font-size: 16px; padding: 12px 16px; }
+      .action-button { font-size: 16px; padding: 14px 18px; min-height: 52px; }
     }
 
     /* TAGLINE */
@@ -1259,8 +1256,9 @@
       }
     }
   
-    .action-button { width: 100%; justify-content: center; font-family: 'VT323', monospace; font-size: 18px; letter-spacing: 2px; text-transform: uppercase; padding: 14px 20px; border: 1px solid #333; color: #999; cursor: pointer; background: transparent; transition: all 0.2s ease; display: flex; align-items: center; gap: 8px; -webkit-tap-highlight-color: transparent; }
+    .action-button { width: 100%; min-height: 56px; justify-content: center; font-family: 'VT323', monospace; font-size: 18px; letter-spacing: 2px; line-height: 1; text-transform: uppercase; white-space: nowrap; padding: 14px 20px; border: 1px solid #333; color: #999; cursor: pointer; background: transparent; transition: all 0.2s ease; display: flex; align-items: center; gap: 8px; -webkit-tap-highlight-color: transparent; }
     .action-button:hover { border-color: var(--cyan); color: var(--cyan); text-shadow: 0 0 6px rgba(0,255,234,0.4); box-shadow: 0 0 14px rgba(0,255,234,0.2); }
+    .msg-toggle-text { display: inline-flex; align-items: center; line-height: 1; }
 </style>
 </head>
 <body>
