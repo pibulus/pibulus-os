@@ -3,6 +3,7 @@
 config/stacks/.env
 *.credentials
 .credentials/
+config/user-accounts.txt
 
 # iCloud sync config (contains auth tokens)
 config/stacks/icloudpd_config/
