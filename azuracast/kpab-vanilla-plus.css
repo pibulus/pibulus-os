@@ -1,0 +1,56 @@
+/* KPAB.FM - Vanilla Plus (Clean Glass) */
+
+/* 1. Modern Font Stack */
+body.public-page {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif !important;
+}
+
+/* 2. Glassmorphism Player Card */
+.public-page .radio-player-widget {
+    background-color: rgba(20, 20, 20, 0.75) !important; /* Darker, sleek */
+    backdrop-filter: blur(25px) !important; /* Heavy blur behind */
+    border-radius: 24px !important; /* Smooth corners */
+    border: 1px solid rgba(255, 255, 255, 0.1) !important; /* Subtle highlight */
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important; /* Deep shadow */
+}
+
+/* 3. Refined Play Button */
+.public-page .btn-play {
+    background-color: #ffffff !important; /* Stark white */
+    color: #000000 !important;
+    border-radius: 50% !important;
+    width: 80px !important; /* Good size, not massive */
+    height: 80px !important;
+    font-size: 2.5rem !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.public-page .btn-play:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.4);
+}
+
+/* 4. Crisp Typography */
+.public-page .now-playing-title {
+    font-weight: 800 !important;
+    letter-spacing: -0.5px !important;
+    margin-bottom: 4px !important;
+}
+
+.public-page .now-playing-artist {
+    font-weight: 500 !important;
+    opacity: 0.8 !important;
+    font-size: 1.1rem !important;
+}
+
+/* 5. Minimal Progress Bar */
+.public-page .progress-bar {
+    height: 6px !important;
+    border-radius: 3px !important;
+}
+
+/* 6. Hide Footer Clutter */
+.public-page .public-footer {
+    display: none !important;
+}

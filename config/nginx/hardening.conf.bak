@@ -1,0 +1,908 @@
+# ── SECURITY HARDENING ──
+server_tokens off;
+
+# ── RATE LIMITING ──
+limit_req_zone $binary_remote_addr zone=one:10m rate=1r/s;
+limit_conn_zone $binary_remote_addr zone=addr:10m;
+
+# ── CLOUDFLARE REAL IP ──
+# Trust Cloudflare tunnel to pass real client IPs
+set_real_ip_from 172.17.0.0/16;
+set_real_ip_from 127.0.0.1;
+real_ip_header X-Forwarded-For;
+real_ip_recursive on;
+
+
+# PUBLIC - quickcat.club
+server {
+    listen 80;
+    server_name quickcat.club;
+
+    limit_req zone=one burst=5;
+    limit_conn addr 10;
+
+    # Security headers
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+
+    root /usr/share/nginx/html;
+    index index.html;
+
+    location / {
+        add_header Cache-Control "no-cache, no-store, must-revalidate";
+        add_header Pragma "no-cache";
+        try_files $uri $uri/ =404;
+    }
+
+    # Cyberdeck Terminal (Deck)
+    location /deck/ {
+        proxy_pass http://172.17.0.1:7683/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_read_timeout 86400;
+        proxy_send_timeout 86400;
+    }
+
+    # Public Terminal (ttyd)
+    location /terminal/ {
+        proxy_pass http://172.17.0.1:7682/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_read_timeout 86400;
+        proxy_send_timeout 86400;
+    }
+
+    # Wikipedia offline (Kiwix)
+    location /wiki/ {
+        proxy_pass http://172.17.0.1:8084;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    # The Wall - pixel graffiti backend
+    location /wall/state.json {
+        proxy_pass http://wall:8086;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+
+    location = /wall/place {
+        client_max_body_size 1k;
+        proxy_pass http://wall:8086;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    # Shoutbox backend
+    location /msg/shout {
+        proxy_pass http://172.23.0.1:8087/msg/shout;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    location /msg/shouts.json {
+        proxy_pass http://172.23.0.1:8087/msg/shouts.json;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    # Message Drop backend
+    location /msg/drop {
+        client_max_body_size 1k;
+        proxy_pass http://172.23.0.1:8087;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    location /msg/inbox {
+        proxy_pass http://172.23.0.1:8087;
+        proxy_set_header Host $host;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+
+    location /msg/count {
+        proxy_pass http://172.23.0.1:8087;
+        proxy_set_header Host $host;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+
+    location /msg/dismiss {
+        client_max_body_size 1k;
+        proxy_pass http://172.23.0.1:8087;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    # Forbidden Library
+    location /conspiracy/files/ {
+        alias /usr/share/nginx/conspiracy/;
+        autoindex on;
+        autoindex_format json;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+
+    # Palestine library
+    location /palestine/files/ {
+        alias /usr/share/nginx/palestine/;
+        autoindex on;
+        autoindex_format json;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+
+    # CORS for arcade games
+    location /arcade/games/ {
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+
+    # Serve ROMs
+    location /arcade/roms/gb/ {
+        alias /usr/share/nginx/membot-roms/Game\ Boy/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+
+    location /arcade/roms/gba/ {
+        alias /usr/share/nginx/membot-roms/Game\ Boy\ Advance/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+
+    location /arcade/roms/nes/ {
+        alias /usr/share/nginx/membot-roms/Nintendo\ \(NES\)/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+
+    location /arcade/roms/n64/ {
+n    location /arcade/roms/psx/ {
+        alias /usr/share/nginx/membot-roms/Sony\ PlayStation/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+        alias /usr/share/nginx/membot-roms/Nintendo\ 64/;
+n    location /arcade/roms/psx/ {
+        alias /usr/share/nginx/membot-roms/Sony\ PlayStation/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+        add_header Access-Control-Allow-Origin *;
+n    location /arcade/roms/psx/ {
+        alias /usr/share/nginx/membot-roms/Sony\ PlayStation/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+n    location /arcade/roms/psx/ {
+        alias /usr/share/nginx/membot-roms/Sony\ PlayStation/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+        add_header Access-Control-Allow-Headers "Range";
+n    location /arcade/roms/psx/ {
+        alias /usr/share/nginx/membot-roms/Sony\ PlayStation/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+n    location /arcade/roms/psx/ {
+        alias /usr/share/nginx/membot-roms/Sony\ PlayStation/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+    }
+n    location /arcade/roms/psx/ {
+        alias /usr/share/nginx/membot-roms/Sony\ PlayStation/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+
+    location /arcade/roms/snes/ {
+        alias /usr/share/nginx/membot-roms/Super\ Nintendo\ \(SNES\)/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+
+    location /arcade/roms/tg16/ {
+        alias /usr/share/nginx/membot-roms/TurboGrafx-16/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+
+    location /arcade/roms/megadrive/ {
+n    location /arcade/roms/scummvm/ {
+        alias /media/pibulus/passport/roms/scummvm/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+        alias /usr/share/nginx/roms/megadrive/openemu/;
+n    location /arcade/roms/scummvm/ {
+        alias /media/pibulus/passport/roms/scummvm/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+        add_header Access-Control-Allow-Origin *;
+n    location /arcade/roms/scummvm/ {
+        alias /media/pibulus/passport/roms/scummvm/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+n    location /arcade/roms/scummvm/ {
+        alias /media/pibulus/passport/roms/scummvm/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+        add_header Access-Control-Allow-Headers "Range";
+n    location /arcade/roms/scummvm/ {
+        alias /media/pibulus/passport/roms/scummvm/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+n    location /arcade/roms/scummvm/ {
+        alias /media/pibulus/passport/roms/scummvm/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+    }
+n    location /arcade/roms/scummvm/ {
+        alias /media/pibulus/passport/roms/scummvm/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+
+    location /arcade/roms/ {
+        alias /usr/share/nginx/roms/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+
+    # ROM Vault
+    location /roms/ {
+        proxy_pass http://172.17.0.1:8080/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+    location /static/ {
+        proxy_pass http://172.17.0.1:8080/static/;
+        proxy_set_header Host $host;
+    }
+
+    # Drop Zone upload
+    location = /drop/upload {
+        client_max_body_size 500m;
+        proxy_pass http://172.17.0.1:8085;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_request_buffering off;
+    }
+}
+
+# ADMIN DECK
+server {
+    listen 80;
+    server_name deck.quickcat.club;
+
+    limit_req zone=one burst=5;
+    limit_conn addr 10;
+
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+
+    auth_basic "PIBULUS DECK";
+    auth_basic_user_file /etc/nginx/.htpasswd;
+
+    root /usr/share/nginx/html;
+    index index.html;
+
+    location = / {
+        rewrite ^/$ /deck/index.html break;
+    }
+
+    location / {
+        add_header Cache-Control "no-cache, no-store, must-revalidate";
+        add_header Pragma "no-cache";
+        try_files $uri $uri/ =404;
+    }
+
+    location /arcade/games/ {
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+
+    location /arcade/roms/gb/ {
+        alias /usr/share/nginx/membot-roms/Game\ Boy/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+
+    location /arcade/roms/gba/ {
+        alias /usr/share/nginx/membot-roms/Game\ Boy\ Advance/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+
+    location /arcade/roms/nes/ {
+        alias /usr/share/nginx/membot-roms/Nintendo\ \(NES\)/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+
+    location /arcade/roms/n64/ {
+n    location /arcade/roms/psx/ {
+        alias /usr/share/nginx/membot-roms/Sony\ PlayStation/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+        alias /usr/share/nginx/membot-roms/Nintendo\ 64/;
+n    location /arcade/roms/psx/ {
+        alias /usr/share/nginx/membot-roms/Sony\ PlayStation/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+        add_header Access-Control-Allow-Origin *;
+n    location /arcade/roms/psx/ {
+        alias /usr/share/nginx/membot-roms/Sony\ PlayStation/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+n    location /arcade/roms/psx/ {
+        alias /usr/share/nginx/membot-roms/Sony\ PlayStation/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+        add_header Access-Control-Allow-Headers "Range";
+n    location /arcade/roms/psx/ {
+        alias /usr/share/nginx/membot-roms/Sony\ PlayStation/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+n    location /arcade/roms/psx/ {
+        alias /usr/share/nginx/membot-roms/Sony\ PlayStation/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+    }
+n    location /arcade/roms/psx/ {
+        alias /usr/share/nginx/membot-roms/Sony\ PlayStation/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+
+    location /arcade/roms/snes/ {
+        alias /usr/share/nginx/membot-roms/Super\ Nintendo\ \(SNES\)/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+
+    location /arcade/roms/tg16/ {
+        alias /usr/share/nginx/membot-roms/TurboGrafx-16/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+
+    location /arcade/roms/megadrive/ {
+n    location /arcade/roms/scummvm/ {
+        alias /media/pibulus/passport/roms/scummvm/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+        alias /usr/share/nginx/roms/megadrive/openemu/;
+n    location /arcade/roms/scummvm/ {
+        alias /media/pibulus/passport/roms/scummvm/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+        add_header Access-Control-Allow-Origin *;
+n    location /arcade/roms/scummvm/ {
+        alias /media/pibulus/passport/roms/scummvm/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+n    location /arcade/roms/scummvm/ {
+        alias /media/pibulus/passport/roms/scummvm/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+        add_header Access-Control-Allow-Headers "Range";
+n    location /arcade/roms/scummvm/ {
+        alias /media/pibulus/passport/roms/scummvm/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+n    location /arcade/roms/scummvm/ {
+        alias /media/pibulus/passport/roms/scummvm/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+    }
+n    location /arcade/roms/scummvm/ {
+        alias /media/pibulus/passport/roms/scummvm/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+
+    location /arcade/roms/ {
+        alias /usr/share/nginx/roms/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+}
+
+# LOCAL - pibulus.local
+server {
+    listen 80;
+    server_name pibulus.local;
+
+    root /usr/share/nginx/html;
+    index index.html;
+
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+
+    location = / {
+        rewrite ^/$ /deck/index.html break;
+    }
+
+    location / {
+        add_header Cache-Control "no-cache, no-store, must-revalidate";
+        add_header Pragma "no-cache";
+        try_files $uri $uri/ =404;
+    }
+
+    location /deck/ {
+        proxy_pass http://172.17.0.1:7683/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_read_timeout 86400;
+        proxy_send_timeout 86400;
+    }
+
+    location /terminal/ {
+        proxy_pass http://172.17.0.1:7682/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_read_timeout 86400;
+        proxy_send_timeout 86400;
+    }
+
+    location /wiki/ {
+        proxy_pass http://172.17.0.1:8084;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    location /arcade/games/ {
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+
+    location /arcade/roms/gb/ {
+        alias /usr/share/nginx/membot-roms/Game\ Boy/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+
+    location /arcade/roms/gba/ {
+        alias /usr/share/nginx/membot-roms/Game\ Boy\ Advance/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+
+    location /arcade/roms/nes/ {
+        alias /usr/share/nginx/membot-roms/Nintendo\ \(NES\)/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+
+    location /arcade/roms/n64/ {
+n    location /arcade/roms/psx/ {
+        alias /usr/share/nginx/membot-roms/Sony\ PlayStation/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+        alias /usr/share/nginx/membot-roms/Nintendo\ 64/;
+n    location /arcade/roms/psx/ {
+        alias /usr/share/nginx/membot-roms/Sony\ PlayStation/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+        add_header Access-Control-Allow-Origin *;
+n    location /arcade/roms/psx/ {
+        alias /usr/share/nginx/membot-roms/Sony\ PlayStation/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+n    location /arcade/roms/psx/ {
+        alias /usr/share/nginx/membot-roms/Sony\ PlayStation/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+        add_header Access-Control-Allow-Headers "Range";
+n    location /arcade/roms/psx/ {
+        alias /usr/share/nginx/membot-roms/Sony\ PlayStation/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+n    location /arcade/roms/psx/ {
+        alias /usr/share/nginx/membot-roms/Sony\ PlayStation/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+    }
+n    location /arcade/roms/psx/ {
+        alias /usr/share/nginx/membot-roms/Sony\ PlayStation/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+
+    location /arcade/roms/snes/ {
+        alias /usr/share/nginx/membot-roms/Super\ Nintendo\ \(SNES\)/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+
+    location /arcade/roms/tg16/ {
+        alias /usr/share/nginx/membot-roms/TurboGrafx-16/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+
+    location /arcade/roms/megadrive/ {
+n    location /arcade/roms/scummvm/ {
+        alias /media/pibulus/passport/roms/scummvm/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+        alias /usr/share/nginx/roms/megadrive/openemu/;
+n    location /arcade/roms/scummvm/ {
+        alias /media/pibulus/passport/roms/scummvm/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+        add_header Access-Control-Allow-Origin *;
+n    location /arcade/roms/scummvm/ {
+        alias /media/pibulus/passport/roms/scummvm/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+n    location /arcade/roms/scummvm/ {
+        alias /media/pibulus/passport/roms/scummvm/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+        add_header Access-Control-Allow-Headers "Range";
+n    location /arcade/roms/scummvm/ {
+        alias /media/pibulus/passport/roms/scummvm/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+n    location /arcade/roms/scummvm/ {
+        alias /media/pibulus/passport/roms/scummvm/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+    }
+n    location /arcade/roms/scummvm/ {
+        alias /media/pibulus/passport/roms/scummvm/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+
+    location /arcade/roms/ {
+        alias /usr/share/nginx/roms/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+
+    location /roms/ {
+        proxy_pass http://172.17.0.1:8080/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+    location /static/ {
+        proxy_pass http://172.17.0.1:8080/static/;
+        proxy_set_header Host $host;
+    }
+
+    location /memos/ {
+        proxy_pass http://172.17.0.1:5230/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    location /go/ {
+        proxy_pass http://172.17.0.1:8088/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    location = /drop/upload {
+        client_max_body_size 500m;
+        proxy_pass http://172.17.0.1:8085;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_request_buffering off;
+    }
+}
+
+# KPAB.FM
+server {
+    listen 80;
+    server_name kpab.fm www.kpab.fm;
+    location = /catalog.json { alias /usr/share/nginx/html/kpab/catalog.json; }
+
+    root /usr/share/nginx/html/kpab;
+    index index.html;
+
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+
+    location / {
+        add_header Cache-Control "no-cache, no-store, must-revalidate";
+        add_header Pragma "no-cache";
+        try_files $uri $uri/ =404;
+    }
+
+    location /static/ {
+        proxy_pass http://172.23.0.1:8500;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+
+    location /api/ {
+        proxy_pass http://172.23.0.1:8500;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+    }
+
+    location /public/ {
+        proxy_pass http://172.23.0.1:8500;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /radio.mp3 {
+        proxy_pass http://172.23.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_buffering off;
+        proxy_read_timeout 3600s;
+        proxy_send_timeout 3600s;
+    }
+
+    location /listen/ {
+        proxy_pass http://172.23.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_buffering off;
+        proxy_read_timeout 3600s;
+        proxy_send_timeout 3600s;
+    }
+
+    location /mutiny/ {
+        proxy_pass http://172.23.0.1:8090/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    location /msg/shout {
+        proxy_pass http://172.23.0.1:8087/msg/shout;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    location /msg/shouts.json {
+        proxy_pass http://172.23.0.1:8087/msg/shouts.json;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    location /msg/drop {
+        client_max_body_size 1k;
+        proxy_pass http://172.23.0.1:8087;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS";
+        add_header Access-Control-Allow-Headers "Range";
+        add_header Access-Control-Expose-Headers "Content-Range, Content-Length";
+        add_header Access-Control-Allow-Methods "POST, OPTIONS";
+        add_header Access-Control-Allow-Headers "Content-Type";
+    }
+}

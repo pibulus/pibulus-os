@@ -1,0 +1,14 @@
+name: utilities
+
+services:
+  shortener:
+    image: python:3.11-slim
+    container_name: shortener
+    restart: unless-stopped
+    volumes:
+      - /home/pibulus/pibulus-os/scripts/shortener.py:/app/shortener.py
+      - /home/pibulus/pibulus-os/data:/home/pibulus/pibulus-os/data
+    working_dir: /app
+    ports:
+      - "8088:8088"
+    command: python3 shortener.py

@@ -1,0 +1,116 @@
+/* KPAB.FM - The Clean Cut (v4 - Request Fix) */
+
+/* --- GLOBAL --- */
+body.public-page {
+    font-family: system-ui, -apple-system, sans-serif !important;
+    color: #ffffff !important;
+}
+
+/* --- THE CARD --- */
+.public-page .radio-player-widget {
+    background-color: rgba(12, 12, 12, 0.95) !important;
+    backdrop-filter: blur(50px) !important;
+    border-radius: 32px !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    padding: 30px !important;
+    box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.9) !important;
+}
+
+/* --- TEXT --- */
+.public-page .now-playing-title {
+    color: #ffffff !important;
+    font-size: 1.6rem !important;
+    font-weight: 800 !important;
+    line-height: 1.2 !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    margin-bottom: 8px !important;
+}
+
+.public-page .now-playing-artist {
+    color: #cccccc !important;
+    font-size: 1.1rem !important;
+    font-weight: 500 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    opacity: 0.8 !important;
+}
+
+/* --- PLAY BUTTON FIX --- */
+/* Target the container to ensure flex centering */
+.public-page .radio-controls {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+    margin-top: 20px !important;
+}
+
+.public-page .btn-play {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border-radius: 50% !important;
+    width: 96px !important;
+    height: 96px !important;
+    min-width: 96px !important; /* Force size */
+    font-size: 3.5rem !important;
+    margin: 0 !important; /* Let flexbox handle positioning */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: none !important;
+    box-shadow: 0 10px 40px rgba(255, 255, 255, 0.15) !important;
+    transition: transform 0.2s ease !important;
+}
+
+.public-page .btn-play:hover {
+    transform: scale(1.05);
+}
+
+/* --- REQUEST MODAL UPGRADE --- */
+/* 1. Darken the modal background */
+.modal-content {
+    background-color: #1a1a1a !important;
+    color: #fff !important;
+    border-radius: 20px !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+}
+
+/* 2. Bigger Rows */
+#modal-request .data-table td {
+    padding: 15px 10px !important; /* Fat finger friendly */
+    vertical-align: middle !important;
+    border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+}
+
+/* 3. Hide Clutter on Mobile */
+@media (max-width: 768px) {
+    /* Hide Album and Duration columns */
+    #modal-request .data-table th:nth-child(4), /* Album Header */
+    #modal-request .data-table td:nth-child(4), /* Album Data */
+    #modal-request .data-table th:nth-child(5), /* Duration Header */
+    #modal-request .data-table td:nth-child(5)  /* Duration Data */
+    {
+        display: none !important;
+    }
+    
+    /* Make the Art bigger */
+    #modal-request .data-table img {
+        width: 50px !important;
+        height: 50px !important;
+        border-radius: 8px !important;
+    }
+    
+    /* Make Request Button HUGE */
+    #modal-request .btn-request {
+        width: 100% !important;
+        padding: 12px !important;
+        background-color: #00ff41 !important; /* Cyberpunk Green nod */
+        color: #000 !important;
+        font-weight: bold !important;
+        border: none !important;
+    }
+}
+
+/* --- FOOTER NUKE --- */
+.public-page .public-footer, #footer, .footer-alt { display: none !important; }

@@ -116,9 +116,9 @@ fi
 # Swap pressure
 SWAP_USED=$(free -m | awk '/^Swap:/{print $3}')
 SWAP_TOTAL=$(free -m | awk '/^Swap:/{print $2}')
-if [ "$SWAP_USED" -gt 1800 ]; then
+if [ "$SWAP_USED" -gt 3500 ]; then
   echo "  ⚠️  Swap: ${SWAP_USED}/${SWAP_TOTAL}MB (DANGER — things will die)"
-elif [ "$SWAP_USED" -gt 1200 ]; then
+elif [ "$SWAP_USED" -gt 2000 ]; then
   echo "  ⚡ Swap: ${SWAP_USED}/${SWAP_TOTAL}MB (heavy)"
 else
   echo "  ✅ Swap: ${SWAP_USED}/${SWAP_TOTAL}MB"

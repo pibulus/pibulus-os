@@ -1,0 +1,80 @@
+/* 
+  KPAB.FM - CYBERDECK VIBE 
+  Neon, dark, and LOUD.
+*/
+
+:root {
+    --kpab-neon: #00ff41; /* Cyberpunk Green */
+    --kpab-dark: #0a0a0a;
+    --kpab-text: #eeeeee;
+}
+
+/* 1. Make the background DARK */
+body.public-page {
+    background-color: var(--kpab-dark) !important;
+    color: var(--kpab-text) !important;
+    font-family: 'Courier New', Courier, monospace !important; /* Terminal feel */
+}
+
+/* 2. Hide the boring header/footer fluff */
+.public-page .public-header, 
+.public-page .public-footer {
+    display: none !important;
+}
+
+/* 3. THE PLAY BUTTON (Make it HUGE and GLOWING) */
+.public-page .btn-play {
+    background-color: transparent !important;
+    border: 2px solid var(--kpab-neon) !important;
+    color: var(--kpab-neon) !important;
+    font-size: 3rem !important; /* Massive icon */
+    width: 120px !important;
+    height: 120px !important;
+    border-radius: 50% !important;
+    box-shadow: 0 0 15px var(--kpab-neon), inset 0 0 15px var(--kpab-neon) !important;
+    transition: all 0.3s ease !important;
+    animation: pulse 2s infinite;
+}
+
+.public-page .btn-play:hover {
+    background-color: var(--kpab-neon) !important;
+    color: var(--kpab-dark) !important;
+    box-shadow: 0 0 30px var(--kpab-neon), inset 0 0 30px var(--kpab-neon) !important;
+    transform: scale(1.1);
+}
+
+/* 4. Song Title Styling */
+.public-page .now-playing-title {
+    font-size: 1.5rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 2px !important;
+    color: var(--kpab-neon) !important;
+    text-shadow: 0 0 5px var(--kpab-neon);
+}
+
+.public-page .now-playing-artist {
+    font-size: 1.2rem !important;
+    opacity: 0.8 !important;
+}
+
+/* 5. Progress Bar (Make it minimal) */
+.public-page .progress-bar {
+    background-color: var(--kpab-neon) !important;
+    box-shadow: 0 0 10px var(--kpab-neon);
+}
+
+/* Animation for the Play Button */
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(0, 255, 65, 0.7); }
+    70% { box-shadow: 0 0 0 20px rgba(0, 255, 65, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(0, 255, 65, 0); }
+}
+
+/* Mobile Tweaks */
+@media (max-width: 768px) {
+    .public-page .btn-play {
+        width: 100px !important;
+        height: 100px !important;
+        font-size: 2.5rem !important;
+    }
+}

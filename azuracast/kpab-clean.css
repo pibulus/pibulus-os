@@ -1,0 +1,90 @@
+/* KPAB.FM - The Clean Cut (v3) */
+
+/* 1. Global Clean */
+body.public-page {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+    color: #ffffff !important;
+}
+
+/* 2. The Card - Deeper & Darker */
+.public-page .radio-player-widget {
+    background-color: rgba(12, 12, 12, 0.9) !important;
+    backdrop-filter: blur(50px) !important;
+    -webkit-backdrop-filter: blur(50px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-radius: 32px !important;
+    padding: 30px !important;
+    box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.8) !important;
+}
+
+/* 3. Typography - Fix the "04 PARAC..." Truncation */
+.public-page .now-playing-title {
+    color: #ffffff !important; /* Force White (No more green) */
+    font-size: 1.5rem !important;
+    font-weight: 800 !important;
+    line-height: 1.2 !important;
+    white-space: normal !important; /* Allow text to wrap */
+    overflow: visible !important;
+    text-overflow: clip !important;
+    margin-bottom: 8px !important;
+}
+
+.public-page .now-playing-artist {
+    color: #cccccc !important;
+    font-size: 1.1rem !important;
+    font-weight: 500 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    opacity: 0.8 !important;
+}
+
+/* 4. Play Button - Tactile & Centered */
+.public-page .btn-play {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border-radius: 50% !important;
+    width: 96px !important;
+    height: 96px !important;
+    font-size: 3.5rem !important; /* Large Icon */
+    margin: 20px auto !important; /* Center it */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: none !important;
+    box-shadow: 0 10px 40px rgba(255, 255, 255, 0.15) !important;
+    transition: transform 0.2s ease !important;
+}
+
+.public-page .btn-play:hover {
+    transform: scale(1.05);
+    background-color: #f0f0f0 !important;
+}
+
+/* 5. Mobile Tweaks */
+@media (max-width: 768px) {
+    /* Hide the volume slider on phones (use hardware buttons) */
+    .public-page .volume-controls {
+        display: none !important;
+    }
+    
+    /* Make the card take up more space */
+    .public-page .radio-player-widget {
+        border-radius: 24px !important;
+        padding: 20px !important;
+    }
+}
+
+/* 6. Clean up the bottom buttons */
+.public-page .btn-secondary, 
+.public-page .btn-outline-secondary {
+    border: 1px solid rgba(255,255,255,0.15) !important;
+    background: transparent !important;
+    color: #aaaaaa !important;
+    border-radius: 12px !important;
+    font-size: 0.85rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+/* 7. Hide Footer */
+.public-page .public-footer, #footer, .footer-alt { display: none !important; }

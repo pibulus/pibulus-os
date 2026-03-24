@@ -259,3 +259,8 @@
 - Added MEMOS and SHORTENER cards to deck admin section
 - Fixed html volume mount — was :ro which broke overlay mounts, caused stale file cache
 - All 12 endpoints verified 200
+--- RECOVERY LOG 2026-03-24 ---
+✅ SD Card Recovery: Full services restored.
+✅ RAM/Swap Optimization: 4GB total swap (zram + file), swappiness 10.
+✅ Redundancy: Golden Image created on HDD.
+✅ UI/UX: Fixed deck terminal, gum, figlet, lolcat, and bunker alias.

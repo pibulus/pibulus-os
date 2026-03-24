@@ -120,6 +120,7 @@ while true; do
     '📡 Network Mode' \
     '🎵 Soulseek Wake/Sleep' \
     '🚀 Deploy App' \
+    '🤖 AI: Claude' \n    '🧠 AI: Gemini' \n    '📊 System: btop' \n    '📼 Storage: ncdu'
     '🧠 Scavenger (AI Search)' \
     '🎲 Roguelike (NetHack)' \
     '🐉 MUD (Genesis)' \
@@ -132,6 +133,7 @@ while true; do
     '📡 Network Mode') network_menu ;;
     '🎵 Soulseek Wake/Sleep') slskd_menu ;;
     '🚀 Deploy App') ~/pibulus-os/scripts/deploy.sh ;;
+    '🤖 AI: Claude' \n    '🧠 AI: Gemini' \n    '📊 System: btop' \n    '📼 Storage: ncdu'
     '🧠 Scavenger (AI Search)') source ~/pibulus-os/modules/scavenger_module.sh; manage_scavenger ;;
     '🎲 Roguelike (NetHack)') nethack || echo 'NetHack not installed.'; read -n 1 -s -r -p 'Press any key to return...' ;;
     '🐉 MUD (Genesis)') telnet genesismud.org 3030 ;;
