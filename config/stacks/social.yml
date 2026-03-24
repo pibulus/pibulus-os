@@ -12,6 +12,9 @@ services:
 
   memos:
     image: ghcr.io/usememos/memos:latest
+    environment:
+      - MEMOS_PUBLIC=true
+      - MEMOS_BASE_URL=/memos/
     container_name: memos
     restart: unless-stopped
     volumes:

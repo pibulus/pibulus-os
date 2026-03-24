@@ -24,3 +24,13 @@ docker-compose.override.yml
 www/html/wall/state.json
 www/html/msg/*.json
 data/
+
+# Cloudflare tunnel credentials
+.cloudflared/
+
+# macOS resource forks
+._*
+
+# Nginx passwords
+config/nginx/.htpasswd
+config/nginx/.htpasswd_terminal

@@ -10,7 +10,7 @@ from urllib.request import Request, urlopen
 from urllib.parse import urlparse
 
 AZURACAST_URL = "http://localhost:8500"
-API_KEY = "1af1d3bd54d6fcdd:4f2de147dd2362b844267fc12561998c"
+API_KEY = "08f9ae1eec055669:b706f0ae982fe6b779c899fbd3953a2e"
 STATION_ID = 1
 VOTE_WINDOW = 30        # seconds to collect votes
 COOLDOWN = 300           # 10 min cooldown per voter

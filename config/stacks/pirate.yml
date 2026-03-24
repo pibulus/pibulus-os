@@ -122,9 +122,9 @@ services:
       # Binary blobs & runtime state stay on passport (overlaid on top of repo)
       - /media/pibulus/passport/www/html/arcade/games:/usr/share/nginx/html/arcade/games:ro
       - /media/pibulus/passport/www/html/status.json:/usr/share/nginx/html/status.json:ro
-      - /media/pibulus/passport/www/html/msg:/usr/share/nginx/html/msg:ro
+      - /home/pibulus/pibulus-os/www/html/msg:/usr/share/nginx/html/msg:ro
       - /media/pibulus/passport/www/html/wall/state.json:/usr/share/nginx/html/wall/state.json:ro
-      - /media/pibulus/passport/www/html/kpab/catalog.json:/usr/share/nginx/html/kpab/catalog.json:ro
+      - /home/pibulus/pibulus-os/www/html/kpab/catalog.json:/usr/share/nginx/html/kpab/catalog.json:ro
       - /media/pibulus/passport/www/html/fiction/games:/usr/share/nginx/html/fiction/games:ro
       # Other passport content
       - /media/pibulus/passport/Roms:/usr/share/nginx/roms:ro

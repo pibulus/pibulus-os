@@ -2,16 +2,33 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>retro arcade - player</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>arcade - player</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
-    #game { width: 100%; height: 100%; }
+    html, body { 
+      width: 100%; height: 100%; background: #000; overflow: hidden; 
+      display: flex; flex-direction: column; 
+    }
+    #game { flex: 1; width: 100%; height: 100%; }
+    #controls-hint { 
+      background: #080808; color: #555; font-family: 'Share Tech Mono', monospace; 
+      font-size: 11px; padding: 6px 12px; text-align: center; border-top: 1px solid #1a1a1a;
+      display: flex; justify-content: space-around; flex-wrap: wrap; gap: 8px;
+    }
+    #controls-hint span { color: #00ffea; }
+    @media (max-width: 600px) { #controls-hint { font-size: 9px; } }
   </style>
 </head>
 <body>
   <div id="game"></div>
+  <div id="controls-hint">
+    <div><span>Arrows</span>: Move</div>
+    <div><span>Z/X/C/A/S/D</span>: Buttons</div>
+    <div><span>Enter</span>: Start</div>
+    <div><span>Shift</span>: Select</div>
+    <div><span>Q</span>: Quit</div>
+  </div>
   <script>
     const params = new URLSearchParams(window.location.search);
     const rom = params.get('rom');
@@ -19,6 +36,7 @@
     const name = params.get('name') || 'Game';
 
     const coreMap = {
+      'scummvm': 'scummvm',
       'megadrive': 'genesis_plus_gx',
       'genesis': 'genesis_plus_gx',
       'snes': 'snes9x',
@@ -41,6 +59,43 @@
     EJS_gameName = name;
     EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
     EJS_color = '#00ffea';
+    EJS_startOnLoaded = true;
+    EJS_mouse = false;
+    EJS_multitap = false;
+    
+    EJS_settings = {
+      gamepad: true,
+      fullscreen: true,
+      saveState: true,
+      loadState: true,
+      cache: true,
+      volume: 0.6
+    };
+
+    // System-specific button layouts for virtual controllers
+    if (system === 'snes') {
+      EJS_buttons = ['a', 'b', 'x', 'y', 'l', 'r', 'start', 'select'];
+    } else if (['megadrive', 'genesis'].includes(system)) {
+      EJS_buttons = ['a', 'b', 'c', 'x', 'y', 'z', 'start', 'mode'];
+    } else if (system === 'gba') {
+      EJS_buttons = ['a', 'b', 'l', 'r', 'start', 'select'];
+    } else if (system === 'nes' || system === 'gb' || system === 'gbc') {
+      EJS_buttons = ['a', 'b', 'start', 'select'];
+    } else if (system === 'n64') {
+      EJS_buttons = ['a', 'b', 'l', 'r', 'z', 'start', 'c-up', 'c-down', 'c-left', 'c-right'];
+    } else if (system === 'psx') {
+      EJS_buttons = ['cross', 'circle', 'square', 'triangle', 'l1', 'r1', 'l2', 'r2', 'start', 'select'];
+    } else if (system === 'tg16' || system === 'pcengine') {
+      EJS_buttons = ['i', 'ii', 'run', 'select'];
+    }
+
+    // Auto-focus the emulator iframe
+    window.onload = () => {
+      setTimeout(() => {
+        const gameDiv = document.querySelector('#game iframe');
+        if (gameDiv) gameDiv.focus();
+      }, 500);
+    };
   </script>
   <script src="https://cdn.emulatorjs.org/stable/data/loader.js"></script>
 </body>

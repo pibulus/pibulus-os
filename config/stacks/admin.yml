@@ -11,25 +11,6 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     restart: always
 
-  terminal:
-    image: tsl0922/ttyd:latest
-    container_name: web_terminal
-    ports:
-      - "7682:7681"
-    environment:
-      - TTYD_OPTS="-c user:Church0fTheSubgeniu5!" # Username 'user', Password 'Church0fTheSubgeniu5!'
-    volumes:
-      - /home/pibulus:/home/pibulus
-    command: ttyd -W bash -c "~/pibulus-os/launcher.sh"
-    restart: always
-
-  deck:
-    image: tsl0922/ttyd:latest
-    container_name: cyberdeck
-    ports:
-      - "7683:7681"
-    volumes:
-      - /home/pibulus/pibulus-os:/home/pibulus/pibulus-os
-      - /usr/bin/gum:/usr/bin/gum
-    command: ttyd -p 7681 -W bash -c "/home/pibulus/pibulus-os/launcher.sh"
-    restart: always
+  # NOTE: ttyd terminal + cyberdeck now run as systemd services
+  # ttyd-terminal.service → port 7682 (runs launcher.sh with full host access)
+  # See: /etc/systemd/system/ttyd-terminal.service
