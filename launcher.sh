@@ -102,6 +102,7 @@ HELP
 fi
 
 case "${1:-}" in
+  scavenge) source ~/pibulus-os/modules/scavenger_module.sh; shift; scavenge_oneshot "$@"; exit 0 ;;
   status) show_status; exit 0 ;;
   radio-status) radio_status; exit 0 ;;
   network) ~/pibulus-os/scripts/network_mode.sh status; exit 0 ;;

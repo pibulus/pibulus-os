@@ -1,7 +1,10 @@
-const CACHE_NAME = 'kpab-v3';
+const CACHE_NAME = 'kpab-v4';
 const STATIC_ASSETS = [
   '/',
-  '/manifest.json'
+  '/manifest.json',
+  '/icon-192.png',
+  '/icon-512.png',
+  '/offline.html'
 ];
 
 self.addEventListener('install', (e) => {
@@ -27,6 +30,8 @@ self.addEventListener('fetch', (e) => {
   if (url.pathname === '/radio.mp3' ||
       url.pathname.startsWith('/api/') ||
       url.pathname.startsWith('/listen/') ||
+      url.pathname.startsWith('/mutiny/') ||
+      url.pathname.startsWith('/msg/') ||
       url.pathname === '/catalog.json') {
     return;
   }
@@ -38,7 +43,7 @@ self.addEventListener('fetch', (e) => {
         const clone = res.clone();
         caches.open(CACHE_NAME).then(cache => cache.put(e.request, clone));
         return res;
-      }).catch(() => caches.match(e.request))
+      }).catch(() => caches.match(e.request).then(cached => cached || caches.match('/offline.html')))
     );
   } else {
     e.respondWith(

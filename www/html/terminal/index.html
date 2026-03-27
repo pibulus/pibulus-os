@@ -22,20 +22,16 @@
     }
     
     .crt-overlay {
-      position: fixed; inset: 0; pointer-events: none; z-index: 1000;
+      position: fixed; inset: 0; pointer-events: none; z-index: 2;
       background: repeating-linear-gradient(0deg, rgba(255,0,255,0.03), rgba(255,0,255,0.03) 2px, transparent 2px, transparent 4px);
-      background-size: 100% 4px;
-      animation: flicker 0.1s infinite;
-    }
-    @keyframes flicker {
-      0% { opacity: 0.9; } 50% { opacity: 1; } 100% { opacity: 0.95; }
+      will-change: transform; transform: translateZ(0);
     }
     
     .header {
       padding: 0.8rem 1.5rem; border-bottom: 2px solid var(--magenta);
       display: flex; justify-content: space-between; align-items: center;
       background: rgba(255,0,255,0.05);
-      z-index: 1001;
+      z-index: 3;
     }
     .header h1 { color: var(--magenta); font-size: 1.5rem; letter-spacing: 4px; text-shadow: 0 0 10px var(--magenta); }
     .header a { color: var(--cyan); text-decoration: none; font-size: 1rem; border: 1px solid var(--cyan); padding: 2px 8px; transition: all 0.2s; }
@@ -46,12 +42,6 @@
       width: 100%; height: 100%; border: none;
       filter: brightness(1.1) contrast(1.1);
     }
-    
-    .interference {
-      position: absolute; inset: 0;
-      background: url('https://media.giphy.com/media/oEI9uWU0WMrM4/giphy.gif');
-      opacity: 0.02; pointer-events: none;
-    }
   </style>
 </head>
 <body>
@@ -59,15 +49,12 @@
   <div class="header">
     <a href="/">&larr; BACK</a>
     <h1>THE CYBERDECK</h1>
-    <span style="color: var(--cyan)">v4.2</span>
+    <span style="color: var(--cyan)">v5.0</span>
   </div>
   <div id="terminal-container">
-    <div class="interference"></div>
-    <!-- Pointing at the ttyd instance -->
-    <iframe src="/ttyd/" id="terminal"></iframe>
+    <iframe src="/deck/" id="terminal"></iframe>
   </div>
   <script>
-    // Keep focus in terminal
     window.onclick = () => { document.getElementById('terminal').focus(); };
   </script>
 </body>

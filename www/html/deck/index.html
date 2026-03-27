@@ -12,13 +12,13 @@
       --bg: #050505;
       --cyan: #00ffea;
       --magenta: #ff00ff;
-      --yellow: #ffff00;
+      --yellow: #ffd700;
       --green: #55cc55;
       --red: #ff4444;
       --orange: #ff9900;
       --text: #e0e0e0;
       --dim: #888;
-      --dim-soft: #555;
+      --dim-soft: #777;
       --card-bg: rgba(0, 0, 0, 0.6);
       --card-border: rgba(0, 255, 234, 0.3);
       --card-hover-bg: rgba(0, 255, 234, 0.05);
@@ -40,7 +40,7 @@
       content: '';
       position: fixed; inset: 0;
       background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.12) 2px, rgba(0,0,0,0.12) 4px);
-      pointer-events: none; z-index: 999;
+      pointer-events: none; z-index: 10;
     }
 
     body::after {
@@ -169,11 +169,9 @@
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: 2px;
-      padding: 1.4rem 1rem;
+      padding: 1.5rem 1rem;
       text-decoration: none;
       color: var(--text);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
       transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
       position: relative; overflow: hidden;
       text-align: center;
@@ -202,8 +200,8 @@
     .card.admin:hover { border-color: rgba(255,0,255,0.7); box-shadow: 0 0 20px rgba(255,0,255,0.12), 0 8px 24px rgba(0,0,0,0.5); }
     .card.admin::before { background: linear-gradient(90deg, transparent, var(--magenta), transparent); }
 
-    .card.fun .card-label { color: var(--yellow); text-shadow: 0 0 6px rgba(255,255,0,0.4); }
-    .card.fun:hover { border-color: rgba(255,255,0,0.7); box-shadow: 0 0 20px rgba(255,255,0,0.1), 0 8px 24px rgba(0,0,0,0.5); }
+    .card.fun .card-label { color: var(--yellow); text-shadow: 0 0 6px rgba(255,215,0,0.4); }
+    .card.fun:hover { border-color: rgba(255,215,0,0.7); box-shadow: 0 0 20px rgba(255,215,0,0.1), 0 8px 24px rgba(0,0,0,0.5); }
     .card.fun::before { background: linear-gradient(90deg, transparent, var(--yellow), transparent); }
 
     .card.solidarity .card-label { color: var(--green); text-shadow: 0 0 6px rgba(85,204,85,0.4); }
@@ -388,6 +386,31 @@
       .radio-float { bottom: 16px; right: 16px; }
       .radio-btn { font-size: 0.9rem; padding: 8px 12px; }
     }
+
+    /* Accessibility: reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      body::before { display: none; }
+    }
+
+    /* Focus styles for keyboard nav */
+    :focus-visible {
+      outline: 2px solid var(--cyan);
+      outline-offset: 2px;
+    }
+    .card:focus-visible {
+      border-color: rgba(0,255,234,0.7);
+      box-shadow: 0 0 20px rgba(0,255,234,0.12), 0 8px 24px rgba(0,0,0,0.5);
+    }
+
+    /* Touch target minimums */
+    .radio-switch { min-width: 44px; min-height: 44px; }
+    .msg-item .mi-dismiss { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+
+    /* Section divider color overrides */
+    .admin-divider::before,.admin-divider::after{background:linear-gradient(90deg,transparent,rgba(255,0,255,0.4),transparent)!important;}
+    .kv-divider::before,.kv-divider::after{background:linear-gradient(90deg,transparent,rgba(85,204,85,0.4),transparent)!important;}
+    .fun-divider::before,.fun-divider::after{background:linear-gradient(90deg,transparent,rgba(255,215,0,0.4),transparent)!important;}
   </style>
 </head>
 <body>
@@ -427,7 +450,7 @@
     <div class="section-divider admin-divider">
       <span class="section-label" style="color:var(--magenta);text-shadow:0 0 8px rgba(255,0,255,0.5);">[ ADMIN ]</span>
     </div>
-    <style>.admin-divider::before,.admin-divider::after{background:linear-gradient(90deg,transparent,rgba(255,0,255,0.4),transparent)!important;}</style>
+
 
     <div class="grid grid-3">
       <a class="card admin" href="http://pibulus.local:8500/admin" target="_blank" rel="noopener">
@@ -445,27 +468,21 @@
         <span class="card-label">TERMINAL</span>
         <span class="card-desc">web shell</span>
       </a>
-    </div>
-
-    <div class="grid grid-3" style="margin-top: 1rem;">
       <a class="card admin" href="/drop/">
         <span class="card-emoji">&#x1F4E6;</span>
         <span class="card-label">DROP ZONE</span>
         <span class="card-desc">file uploads</span>
-      </a>
-      <a class="card admin" href="http://pibulus.local/memos/" target="_blank" rel="noopener">
-        <span class="card-emoji">&#x1F4DD;</span>
-        <span class="card-label">MEMOS</span>
-        <span class="card-desc">microblog</span>
       </a>
       <a class="card admin" href="http://pibulus.local/go/" target="_blank" rel="noopener">
         <span class="card-emoji">&#x1F517;</span>
         <span class="card-label">SHORTENER</span>
         <span class="card-desc">go.quickcat.club</span>
       </a>
-    </div>
-
-    <div class="grid grid-3" style="margin-top: 1rem;">
+      <a class="card admin" href="http://pibulus.local/memos/" target="_blank" rel="noopener">
+        <span class="card-emoji">&#x1F4DD;</span>
+        <span class="card-label">MEMOS</span>
+        <span class="card-desc">microblog</span>
+      </a>
       <a class="card admin" href="/status.json" target="_blank" rel="noopener">
         <span class="card-emoji">&#x1F4CA;</span>
         <span class="card-label">RAW DATA</span>
@@ -523,7 +540,7 @@
     <div class="section-divider kv-divider">
       <span class="section-label" style="color:var(--green);text-shadow:0 0 8px rgba(85,204,85,0.5);">[ KNOWLEDGE VAULT ]</span>
     </div>
-    <style>.kv-divider::before,.kv-divider::after{background:linear-gradient(90deg,transparent,rgba(85,204,85,0.4),transparent)!important;}</style>
+
 
     <div class="grid grid-3">
       <a class="card solidarity" href="/palestine/">
@@ -547,7 +564,7 @@
     <div class="section-divider fun-divider">
       <span class="section-label" style="color:var(--yellow);text-shadow:0 0 8px rgba(255,255,0,0.5);">[ FUN ]</span>
     </div>
-    <style>.fun-divider::before,.fun-divider::after{background:linear-gradient(90deg,transparent,rgba(255,255,0,0.4),transparent)!important;}</style>
+
 
     <div class="grid grid-3">
       <a class="card fun" href="/arcade/">
@@ -584,7 +601,7 @@
 
     <!-- MESSAGE INBOX (read-only viewer) -->
     <div class="msg-drop">
-      <button class="msg-toggle" id="msgToggle" onclick="toggleMsg()">
+      <button class="msg-toggle" id="msgToggle" onclick="toggleMsg()" aria-expanded="false" aria-controls="msgBody">
         <span class="arrow">&#9654;</span>
         <span>INBOX</span>
         <span class="msg-badge" id="msgBadge" style="display:none">0</span>
@@ -682,6 +699,21 @@
       }
     }
 
+    function skipSong() {
+      var skipBtn = document.querySelector('.radio-switch[title="skip current song"]');
+      if (skipBtn) skipBtn.textContent = '...';
+      var baseUrl = (location.hostname === 'pibulus.local') ? '' : 'https://radio.quickcat.club';
+      fetch(baseUrl + "/api/station/1/backend/skip", { method: "POST" })
+        .then(function(r) {
+          if (skipBtn) skipBtn.textContent = r.ok ? '\u2713' : '\u2717';
+          if (r.ok) setTimeout(function() { loadStatus(); if (skipBtn) skipBtn.innerHTML = '&#x21C4;'; }, 2000);
+          else setTimeout(function() { if (skipBtn) skipBtn.innerHTML = '&#x21C4;'; }, 2000);
+        })
+        .catch(function() {
+          if (skipBtn) { skipBtn.textContent = '\u2717'; setTimeout(function() { skipBtn.innerHTML = '&#x21C4;'; }, 2000); }
+        });
+    }
+
     function switchStation() {
       currentStation = (currentStation + 1) % stations.length;
       radioLabel.textContent = stations[currentStation].name;
@@ -697,9 +729,10 @@
     var msgBody = document.getElementById('msgBody');
 
     function toggleMsg() {
-      msgToggle.classList.toggle('open');
+      var isOpen = msgToggle.classList.toggle('open');
       msgBody.classList.toggle('open');
-      if (msgBody.classList.contains('open')) loadMessages();
+      msgToggle.setAttribute('aria-expanded', isOpen);
+      if (isOpen) loadMessages();
     }
 
     function loadMessages() {
@@ -723,11 +756,29 @@
             var timeStr = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
             var div = document.createElement('div');
             div.className = 'msg-item' + (m.read ? '' : ' unread');
-            div.innerHTML =
-              '<span class="mi-name">' + m.name + '</span>' +
-              '<span class="mi-text">' + m.msg.replace(/</g,'&lt;') + '</span>' +
-              '<span class="mi-time">' + timeStr + '</span>' +
-              '<button class="mi-dismiss" onclick="dismissMsg(\'' + m.id + '\',this)" title="mark read">\u2713</button>';
+
+            var nameSpan = document.createElement('span');
+            nameSpan.className = 'mi-name';
+            nameSpan.textContent = m.name;
+
+            var textSpan = document.createElement('span');
+            textSpan.className = 'mi-text';
+            textSpan.textContent = m.msg;
+
+            var timeSpan = document.createElement('span');
+            timeSpan.className = 'mi-time';
+            timeSpan.textContent = timeStr;
+
+            var dismissBtn = document.createElement('button');
+            dismissBtn.className = 'mi-dismiss';
+            dismissBtn.title = 'mark read';
+            dismissBtn.textContent = '\u2713';
+            dismissBtn.addEventListener('click', function() { dismissMsg(m.id, dismissBtn); });
+
+            div.appendChild(nameSpan);
+            div.appendChild(textSpan);
+            div.appendChild(timeSpan);
+            div.appendChild(dismissBtn);
             list.appendChild(div);
           });
         })
@@ -769,24 +820,48 @@
         '4533': 'https://music.quickcat.club',
         '8083': 'https://read.quickcat.club',
         '5000': 'https://comics.quickcat.club',
-        '8500': 'https://kpab.fm'
+        '8500': 'https://radio.quickcat.club'
       };
 
-      document.querySelectorAll('a[href*="pibulus.local:"]').forEach(function(a) {
+      var pathMap = {
+        '/go/': 'https://go.quickcat.club',
+        '/memos/': 'https://memo.quickcat.club'
+      };
+
+      document.querySelectorAll('a[href*="pibulus.local"]').forEach(function(a) {
+        // Match links with port
         var m = a.href.match(/pibulus\.local:(\d+)(\/.*)?$/);
-        if (!m) return;
-        var port = m[1], path = m[2] || '';
-        if (portMap[port]) {
-          a.href = portMap[port] + path;
-        } else {
-          var desc = a.querySelector('.card-desc');
-          if (desc) desc.textContent += ' (LAN)';
-          a.removeAttribute('href');
-          a.style.opacity = '0.35';
-          a.style.cursor = 'not-allowed';
-          a.title = 'LAN access only — connect to pibulus.local';
+        if (m) {
+          var port = m[1], path = m[2] || '';
+          if (portMap[port]) {
+            a.href = portMap[port] + path;
+          } else {
+            markLanOnly(a);
+          }
+          return;
+        }
+        // Match portless links by path
+        var pm = a.href.match(/pibulus\.local(\/[^\s]*)?$/);
+        if (pm) {
+          var p = pm[1] || '/';
+          if (pathMap[p]) {
+            a.href = pathMap[p];
+          } else {
+            markLanOnly(a);
+          }
         }
       });
+
+      function markLanOnly(a) {
+        var desc = a.querySelector('.card-desc');
+        if (desc) desc.textContent += ' (LAN)';
+        a.removeAttribute('href');
+        a.setAttribute('tabindex', '-1');
+        a.setAttribute('aria-disabled', 'true');
+        a.style.opacity = '0.35';
+        a.style.cursor = 'not-allowed';
+        a.title = 'LAN access only \u2014 connect to pibulus.local';
+      }
     })();
   </script>
 
@@ -796,7 +871,7 @@
         <span class="r-icon">&#128225;</span>
         <span id="radioLabel">KPAB.FM</span>
       </button>
-      <button class="radio-switch" onclick="switchStation()" title="switch station">&#x21C4;</button>
+      <button class="radio-switch" onclick="switchStation()" title="switch station">⏭</button><button class="radio-switch" onclick="skipSong()" title="skip current song">&#x21C4;</button>
     </div>
     <audio id="radioAudio" preload="none"></audio>
 </body>

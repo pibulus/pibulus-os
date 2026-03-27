@@ -9,17 +9,26 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="KPAB.FM">
+  <link rel="canonical" href="https://kpab.fm/">
   <meta property="og:title" content="KPAB.FM — Pirate Radio">
-  <meta property="og:description" content="Live pirate radio from Brunswick. Listen & request songs.">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://kpab.fm/"> 
-  <meta property="og:image" content="https://kpab.fm/icon-512.png"> 
-  <meta name="twitter:card" content="summary_large_image"> 
-  <meta name="twitter:title" content="KPAB.FM — Pirate Radio"> 
-  <meta name="twitter:description" content="Live pirate radio from Brunswick. Listen & request songs."> 
+  <meta property="og:description" content="Live pirate radio from Brunswick. 13,000+ tracks. Request songs, vote to skip, no account needed.">
+  <meta property="og:type" content="music.radio_station">
+  <meta property="og:url" content="https://kpab.fm/">
+  <meta property="og:image" content="https://kpab.fm/icon-512.png">
+  <meta property="og:image:width" content="512">
+  <meta property="og:image:height" content="512">
+  <meta property="og:image:alt" content="KPAB.FM pirate radio logo">
+  <meta property="og:site_name" content="KPAB.FM">
+  <meta property="og:locale" content="en_AU">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="KPAB.FM — Pirate Radio">
+  <meta name="twitter:description" content="Live pirate radio from Brunswick. 13,000+ tracks. Request songs, vote to skip.">
   <meta name="twitter:image" content="https://kpab.fm/icon-512.png">
+  <meta name="robots" content="index, follow">
   <link rel="manifest" href="/manifest.json">
   <link rel="apple-touch-icon" href="/icon-192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <style>
@@ -28,7 +37,7 @@
       --cyan: #00ffea;
       --magenta: #ff00ff;
       --text: #d8d8dc;
-      --dim: #5a5a66;
+      --dim: #8888a0;
       --panel: #0c0c10;
       --border: #1c1c24;
       --safe-top: env(safe-area-inset-top, 0px);
@@ -55,7 +64,9 @@
       top: 0; left: 0; width: 100%; height: 100%;
       background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.18) 2px, rgba(0,0,0,0.18) 4px);
       pointer-events: none;
-      z-index: 1000;
+      z-index: 2;
+      will-change: transform;
+      transform: translateZ(0);
     }
 
     /* CRT vignette */
@@ -65,7 +76,9 @@
       top: 0; left: 0; width: 100%; height: 100%;
       background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.7) 100%);
       pointer-events: none;
-      z-index: 999;
+      z-index: 1;
+      will-change: transform;
+      transform: translateZ(0);
     }
 
     .container {
@@ -87,13 +100,16 @@
       background: transparent;
       border: 1px solid var(--border);
       color: var(--dim);
-      padding: 6px 10px;
+      padding: 10px 14px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
       font-family: inherit;
       font-size: 0.8rem;
       cursor: pointer;
       border-radius: 4px;
       transition: all 0.2s;
-      z-index: 100;
+      z-index: 10;
     }
     .btn-share:hover { color: var(--cyan); border-color: var(--cyan); }
 
@@ -585,13 +601,13 @@
     .request-toggle::after {
       content: '';
       position: absolute;
-      top: 0; left: -100%;
+      top: 0; left: 0;
       width: 50%; height: 100%;
       background: linear-gradient(90deg, transparent, rgba(255,0,255,0.08), transparent);
       animation: shimmer 3s ease-in-out infinite;
     }
 
-    @keyframes shimmer { 0% { left: -100%; } 100% { left: 200%; } }
+    @keyframes shimmer { 0% { transform: translateX(-200%); } 100% { transform: translateX(400%); } }
 
     .request-panel {
       display: flex;
@@ -1141,7 +1157,7 @@
       background: rgba(10,10,14,0.95);
       border: 1px solid #c33;
       padding: 10px 20px;
-      z-index: 1000;
+      z-index: 1100;
       opacity: 0;
       transition: all 0.3s ease;
       text-shadow: 0 0 6px rgba(204,51,51,0.4);
@@ -1160,103 +1176,134 @@
       padding: 0;
     }
 
-    .msg-form-wrap {
-      max-height: 0;
-      overflow: hidden;
-      opacity: 0;
-      transform-origin: top center;
-      transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
-    }
-    .msg-section.open .msg-form-wrap {
-      max-height: 500px;
-      opacity: 1;
-      animation: panelSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-    }
-
-    .msg-toggle {
-      width: 100%;
-      justify-content: center;
-      font-family: 'VT323', monospace;
-      font-size: 18px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      padding: 14px 20px;
-      border: 1px solid #333;
-      color: #999;
-      cursor: pointer;
-      background: transparent;
-      transition: all 0.2s ease;
+    /* === TRANSMISSION WALL === */
+    .wall-header {
       display: flex;
       align-items: center;
-      gap: 8px;
-      -webkit-tap-highlight-color: transparent;
+      justify-content: space-between;
+      padding: 10px 16px;
+      border: 1px solid var(--border);
+      border-bottom: none;
+    }
+    .wall-label {
+      font-family: 'VT323', monospace;
+      font-size: 18px;
+      color: var(--cyan);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .wall-count {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      color: var(--magenta);
+      opacity: 0.7;
     }
 
-    .msg-toggle:hover {
-      border-color: var(--magenta);
-      color: var(--magenta);
-      text-shadow: 0 0 6px rgba(255,0,255,0.4);
-      box-shadow: 0 0 14px rgba(255,0,255,0.2);
+    .shout-wall {
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      overscroll-behavior-y: contain;
+      -webkit-overflow-scrolling: touch;
+      max-height: 320px;
+      min-height: 120px;
+      padding: 0;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      scrollbar-width: thin;
+      scrollbar-color: var(--magenta) #0a0a0a;
     }
-    .msg-toggle:active { transform: scale(0.98); }
+    .shout-wall::-webkit-scrollbar { width: 4px; }
+    .shout-wall::-webkit-scrollbar-track { background: #0a0a0a; }
+    .shout-wall::-webkit-scrollbar-thumb { background: var(--magenta); }
+
+    .shout-wall:empty::after {
+      content: '// no transmissions yet';
+      display: block;
+      text-align: center;
+      color: rgba(0,255,234,0.25);
+      font-size: 13px;
+      padding: 48px 16px;
+      font-style: italic;
+    }
+
+    .msg-form-wrap {
+      max-height: none;
+      overflow: visible;
+      opacity: 1;
+    }
 
     .msg-form {
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
       display: flex;
-      padding: 16px 18px;
+      padding: 12px 16px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-top: none;
+    }
+
+    .shout-form-row {
+      display: flex;
+      gap: 8px;
     }
 
     .msg-form input,
     .msg-form textarea {
-      width: 100%;
-      background: #111;
-      border: 1px solid #222;
-      color: var(--text);
+      background: rgba(0,255,234,0.04);
+      border: 1px solid rgba(0,255,234,0.3);
+      color: var(--cyan);
       font-family: 'Share Tech Mono', monospace;
-      font-size: 14px;
-      padding: 10px 12px;
+      font-size: 16px;
+      padding: 8px 12px;
       outline: none;
-      transition: border-color 0.2s;
+      transition: border-color 0.15s;
       border-radius: 0;
+      -webkit-appearance: none;
     }
+
+    .msg-form input { width: 140px; flex-shrink: 0; text-transform: uppercase; letter-spacing: 1px; }
 
     .msg-form input:focus,
     .msg-form textarea:focus {
-      border-color: var(--magenta);
-      box-shadow: 0 0 6px rgba(255,0,255,0.1);
+      border-color: var(--cyan);
+      background: rgba(0,255,234,0.08);
+      box-shadow: 0 0 6px rgba(0,255,234,0.15);
     }
 
     .msg-form textarea {
-      resize: vertical;
-      min-height: 60px;
-      max-height: 140px;
+      width: 100%;
+      resize: none;
+      line-height: 1.5;
       font-size: 13px;
     }
 
     .msg-form input::placeholder,
-    .msg-form textarea::placeholder { color: #444; }
+    .msg-form textarea::placeholder { color: rgba(0,255,234,0.25); text-transform: uppercase; letter-spacing: 1px; }
 
     .msg-send {
-      width: 100%;
+      flex: 1;
+      min-height: 40px;
       font-family: 'VT323', monospace;
       font-size: 18px;
       letter-spacing: 2px;
       color: var(--magenta);
       border: 1px solid var(--magenta);
       background: transparent;
-      padding: 14px 20px;
+      padding: 8px 16px;
       cursor: pointer;
       transition: all 0.15s;
     }
 
     .msg-send:hover {
-      background: rgba(255,0,255,0.1);
-      box-shadow: 0 0 10px rgba(255,0,255,0.2);
+      background: var(--magenta);
+      color: #0a0a0a;
+      box-shadow: 0 0 12px rgba(255,0,255,0.4);
     }
 
     .msg-send:disabled {
-      opacity: 0.4;
+      opacity: 0.35;
       pointer-events: none;
     }
 
@@ -1274,29 +1321,70 @@
       .msg-section { padding: 14px; }
     }
 
+    @media (max-width: 420px) {
+      .shout-wall { max-height: 280px; }
+      .shout-form-row { flex-direction: column; }
+      .msg-form input { width: 100%; }
+    }
+
     /* PWA standalone mode adjustments */
     @media (display-mode: standalone) {
       .container {
-        padding-top: calc(44px + var(--safe-top));
+        padding-top: 44px;
       }
     }
   
     .action-button { width: 100%; min-height: 56px; justify-content: center; font-family: 'VT323', monospace; font-size: 18px; letter-spacing: 2px; line-height: 1; text-transform: uppercase; white-space: nowrap; padding: 14px 20px; border: 1px solid #333; color: #999; cursor: pointer; background: transparent; transition: all 0.2s ease; display: flex; align-items: center; gap: 8px; -webkit-tap-highlight-color: transparent; }
     .action-button:hover { border-color: var(--cyan); color: var(--cyan); text-shadow: 0 0 6px rgba(0,255,234,0.4); box-shadow: 0 0 14px rgba(0,255,234,0.2); }
-    .msg-toggle-text { display: inline-flex; align-items: center; line-height: 1; }
-    .shout-list { margin-top: 16px; border-top: 1px solid var(--border); max-height: 45dvh; overflow-y: auto; overscroll-behavior-y: contain; padding-top: 12px; } 
-    .shout-item { padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 13px; } 
-    .shout-header { display: flex; justify-content: space-between; margin-bottom: 4px; } 
-    .shout-name { color: var(--magenta); font-weight: bold; } 
-    .shout-time { color: var(--dim); font-size: 11px; } 
-    .shout-msg { color: var(--text); line-height: 1.4; word-wrap: break-word; } 
-    .shout-track { color: var(--cyan); font-size: 11px; margin-top: 4px; opacity: 0.8; display: block; }
+    .shout-item { padding: 10px 16px; border-bottom: 1px solid rgba(0,255,234,0.08); font-size: 13px; transition: background 0.15s; }
+    .shout-item:last-child { border-bottom: none; }
+    .shout-item:hover { background: rgba(0,255,234,0.04); }
+    .shout-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 4px; }
+    .shout-name { font-family: 'VT323', monospace; font-size: 16px; color: var(--magenta); letter-spacing: 1px; text-transform: uppercase; }
+    .shout-time { color: rgba(0,255,234,0.4); font-size: 11px; flex-shrink: 0; }
+    .shout-msg { color: rgba(0,255,234,0.9); line-height: 1.5; word-break: break-word; margin: 0; }
+    .shout-track { color: rgba(255,0,255,0.5); font-size: 11px; margin-top: 4px; display: block; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Button hierarchy — Request gets magenta, Mutiny gets red */
+    #requestToggle { border-color: var(--magenta); color: var(--magenta); text-shadow: 0 0 6px rgba(255,0,255,0.4); position: relative; overflow: hidden; }
+    #requestToggle:hover { background: rgba(255,0,255,0.1); box-shadow: 0 0 14px rgba(255,0,255,0.3); border-color: var(--magenta); color: var(--magenta); }
+    #requestToggle::after { content: ''; position: absolute; top: 0; left: 0; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,0,255,0.08), transparent); animation: shimmer 3s ease-in-out infinite; }
+    #mutinyToggle { border-color: #882222; color: #bb3333; }
+    #mutinyToggle:hover { border-color: #cc3333; color: #ee4444; box-shadow: 0 0 12px rgba(200,50,50,0.25); text-shadow: 0 0 6px rgba(200,50,50,0.4); }
+
+    /* Touch target fixes */
+    .request-close { padding: 10px 12px; min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; }
+    .history-action-btn { padding: 8px 12px; min-height: 44px; display: inline-flex; align-items: center; }
+
+    /* Mutiny toast z-index fix */
+    .mutiny-toast { z-index: 30; }
+
+    /* About panel tighter max-height */
+    .about-panel.open { max-height: 900px; }
+
+    /* Footer contrast fix */
+    .footer, .footer a { color: var(--dim); }
+
+    /* Focus visible styles */
+    :focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+    .action-button:focus-visible { border-color: var(--cyan); box-shadow: 0 0 14px rgba(0,255,234,0.3); }
+    .play-btn:focus-visible { box-shadow: 0 0 20px rgba(0,255,234,0.5); }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      body::before { display: none; }
+      .status-dot { opacity: 1; }
+    }
 </style>
 </head>
 <body>
   <div class="container">
-    <button class="btn-share" onclick="shareStation()">SHARE</button>
-    <button class="btn-share" onclick="shareStation()">SHARE</button>
+    <button class="btn-share" id="shareBtn" aria-label="Share KPAB.FM">SHARE</button>
     <header class="header">
       <div class="station-name">KPAB.FM</div>
       <div class="station-subtitle">Broadcasting from Brunswick</div>
@@ -1346,9 +1434,8 @@
     </div>
 
 
-    <div class="mutiny-toast" id="mutinyToast"></div>
     <section class="request-section" id="requestSection">
-      <button class="action-button" id="requestToggle" aria-label="Request a song">&#x1F4FB; Request a Song</button>
+      <button class="action-button" id="requestToggle" aria-label="Request a song" aria-expanded="false" aria-controls="requestPanel">&#x1F4FB; Request a Song</button>
       <div class="request-panel" id="requestPanel" aria-label="Song request">
         <div class="request-header">
           <span class="request-title">REQUEST A TRACK</span>
@@ -1369,6 +1456,17 @@
       </div>
     </section>
 
+    <section class="mutiny-section" id="mutinySection">
+      <button class="action-button" id="mutinyToggle" title="Skip this track" aria-expanded="false" aria-controls="mutinyPanel">&#x2620; MUTINY</button>
+      <div class="mutiny-panel" id="mutinyPanel">
+        <div class="mutiny-info">
+          <div class="vote-status" id="mutinyStatus">READY</div>
+          <div id="mutinyDesc">Don't like what's playing? Call a mutiny. Solo listener = instant skip. Multiple listeners = majority vote.</div>
+          <button class="mutiny-fire" id="mutinyFire">&#x2620; WALK THE PLANK</button>
+        </div>
+      </div>
+    </section>
+
     <section class="history-section" aria-label="Song history">
       <div class="section-header">Recently Played</div>
       <div class="history-list" id="historyList">
@@ -1379,21 +1477,10 @@
       </div>
     </section>
 
-    <!-- <div class="tagline" id="taglineEl">Pretty good most of the time. Sometimes great.</div> -->
-
-    <section class="mutiny-section" id="mutinySection">
-      <button class="action-button" id="mutinyToggle" title="Skip this track">&#x2620; MUTINY</button>
-      <div class="mutiny-panel" id="mutinyPanel">
-        <div class="mutiny-info">
-          <div class="vote-status" id="mutinyStatus">READY</div>
-          <div id="mutinyDesc">Don't like what's playing? Call a mutiny. Solo listener = instant skip. Multiple listeners = majority vote.</div>
-          <button class="mutiny-fire" id="mutinyFire">&#x2620; WALK THE PLANK</button>
-        </div>
-      </div>
-    </section>
+    <div class="tagline" id="taglineEl">Pretty good most of the time. Sometimes great.</div>
 
     <section class="about-section">
-      <button class="action-button" id="aboutToggle">&#x2139; About / FAQ</button>
+      <button class="action-button" id="aboutToggle" aria-expanded="false" aria-controls="aboutPanel">&#x2139; About / FAQ</button>
       <div class="about-panel" id="aboutPanel">
         <div class="about-content">
           <div class="about-blurb">
@@ -1438,17 +1525,20 @@
       </div>
     </section>
 
-    <section class="msg-section" id="msgSection">
-      <button class="action-button" id="msgToggle">
-        <span class="msg-toggle-text">&#x1F4EC; DROP A MESSAGE</span>
-      </button>
+    <section class="msg-section open" id="msgSection">
+      <div class="wall-header">
+        <span class="wall-label">// TRANSMISSION WALL</span>
+        <span class="wall-count" id="wallCount"></span>
+      </div>
+      <div id="shoutList" class="shout-wall"></div>
       <div class="msg-form-wrap" id="msgFormWrap">
-        <div class="msg-form" id="msgForm" style="background:var(--panel);border:1px solid var(--border);border-top:none;">
-          <input type="text" id="msgName" placeholder="Name (optional)" maxlength="50">
-          <textarea id="msgText" placeholder="Say something..." maxlength="500" rows="3"></textarea>
+        <div class="msg-form" id="msgForm">
+          <div class="shout-form-row">
+            <input type="text" id="msgName" placeholder="HANDLE" maxlength="32">
+            <button class="msg-send" id="msgSend">TRANSMIT</button>
+          </div>
+          <textarea id="msgText" placeholder="leave a signal on the wall..." maxlength="280" rows="2"></textarea>
           <span class="msg-status" id="msgStatus"></span>
-          <button class="msg-send" id="msgSend">SEND</button>
-          <div id="shoutList" class="shout-list"></div>
         </div>
       </div>
     </section>
@@ -1461,8 +1551,7 @@
   <audio id="audioEl" preload="none" aria-hidden="true"></audio>
 
   <script>
-    /* ── ROTATING TAGLINES (disabled) ── */
-    /*
+    /* ── ROTATING TAGLINES ── */
     const TAGLINES = [
       'Pretty good most of the time. Sometimes great.',
       'It\'s like rage but for music.',
@@ -1486,7 +1575,6 @@
         setTimeout(() => { el.textContent = TAGLINES[idx]; el.classList.remove('fading'); }, 600);
       }, 12000);
     })();
-    */
 
     const API_URL    = '/api/nowplaying/kpab.fm';
     const STREAM_URL = '/radio.mp3';
@@ -1723,8 +1811,8 @@
           div.appendChild(actions);
           historyList.appendChild(div);
 
-          // Touch support for mobile
-          div.addEventListener('touchstart', function(e) {
+          // Touch support for mobile — use touchend to avoid blocking scroll
+          div.addEventListener('touchend', function(e) {
             const wasActive = this.classList.contains('touch-active');
             document.querySelectorAll('.history-item.touch-active').forEach(function(el) { el.classList.remove('touch-active'); });
             if (!wasActive) {
@@ -1761,9 +1849,11 @@
         console.warn('[KPAB.FM] Poll failed:', err.message);
         pollFailCount++;
         showSignalLost();
-        // After 6 consecutive failures (60s), redirect to offline page
-        if (pollFailCount >= 6) {
-          window.location.href = '/offline.html';
+        // Exponential backoff on failures — cap at 30s
+        if (pollFailCount > 2) {
+          clearInterval(pollTimer);
+          const backoffMs = Math.min(POLL_MS * Math.pow(2, pollFailCount - 2), 30000);
+          pollTimer = setInterval(poll, backoffMs);
         }
       }
     }
@@ -1801,8 +1891,10 @@
       } else {
         audioEl.src = STREAM_URL;
         audioEl.load();
+        playBtn.textContent = '...';
+        playBtn.disabled = true;
         const p = audioEl.play();
-        if (p !== undefined) p.then(() => setPlaying(true)).catch(() => setPlaying(false));
+        if (p !== undefined) p.then(() => { playBtn.disabled = false; setPlaying(true); }).catch(() => { playBtn.disabled = false; playBtn.textContent = '\u25B6'; setPlaying(false); });
       }
     });
 
@@ -1834,6 +1926,7 @@
     const CATALOG_URL = '/catalog.json';
     let reqCache = [];
     let reqLoaded = false;
+    let reqLoading = false;
     let reqDebounce = null;
 
     const requestSection = document.getElementById('requestSection');
@@ -1851,14 +1944,16 @@
       if (isOpen) {
         requestPanel.classList.remove('open');
         requestToggle.innerHTML = '&#x1F4FB; Request a Song';
+        requestToggle.setAttribute('aria-expanded', 'false');
       } else {
         requestPanel.classList.add('open');
         requestToggle.innerHTML = '&#x1F4FB; Close Requests';
+        requestToggle.setAttribute('aria-expanded', 'true');
         setTimeout(() => {
           requestSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
           requestSearch.focus();
-        }, 50);
-        if (!reqLoaded) loadCatalog();
+        }, 300);
+        if (!reqLoaded && !reqLoading) loadCatalog();
       }
     }
 
@@ -1869,13 +1964,28 @@
     });
 
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && requestPanel.classList.contains('open')) {
+      if (e.key !== 'Escape') return;
+      if (requestPanel.classList.contains('open')) {
         requestPanel.classList.remove('open');
         requestToggle.innerHTML = '&#x1F4FB; Request a Song';
+        requestToggle.setAttribute('aria-expanded', 'false');
       }
+      if (aboutPanel && aboutPanel.classList.contains('open')) {
+        aboutPanel.classList.remove('open');
+        document.getElementById('aboutToggle').innerHTML = '&#x2139; About / FAQ';
+        document.getElementById('aboutToggle').setAttribute('aria-expanded', 'false');
+      }
+      if (mutinyPanel && mutinyPanel.classList.contains('open')) {
+        mutinyPanel.classList.remove('open');
+        if (!mutinyCooldown) mutinyToggle.innerHTML = '&#x2620; MUTINY';
+        mutinyToggle.setAttribute('aria-expanded', 'false');
+      }
+      // msg section is always open now — no toggle to reset
     });
 
     async function loadCatalog() {
+      if (reqLoading) return;
+      reqLoading = true;
       requestResults.innerHTML = '<div class="request-loading">LOADING CATALOG...</div>';
       try {
         const res = await fetch(CATALOG_URL, { cache: 'no-cache' });
@@ -1888,6 +1998,8 @@
       } catch (err) {
         console.warn('[KPAB] Catalog load failed:', err);
         requestResults.innerHTML = '<div class="request-empty"><span class="empty-icon">&#x26A1;</span><span>Eep! Could not load the catalog. Try again in a bit!</span></div>';
+      } finally {
+        reqLoading = false;
       }
     }
 
@@ -1985,7 +2097,7 @@
           showToast('Requested: ' + (song.a || '') + ' \u2014 ' + (song.t || ''), false);
         } else {
           let msg = 'Request failed';
-          try { msg = (await res.json()).message || msg; } catch(e) {}
+          try { const body = await res.text(); try { msg = JSON.parse(body).message || msg; } catch(e) { if (body) msg = body.split(' on /')[0] || msg; } } catch(e) {}
           btnEl.textContent = 'NOPE';
           btnEl.classList.add('failed');
           showToast(msg, true);
@@ -2015,10 +2127,18 @@
       if (!e.target.closest('.history-item')) {
         document.querySelectorAll('.history-item.touch-active').forEach(el => el.classList.remove('touch-active'));
       }
-    });
+    }, { passive: true });
 
     document.addEventListener('visibilitychange', () => {
-      if (!document.hidden && pollTimer) { clearInterval(pollTimer); startPolling(); }
+      if (document.hidden) {
+        clearInterval(pollTimer);
+        visualizer.classList.remove('active');
+      } else {
+        pollFailCount = 0;
+        clearInterval(pollTimer);
+        startPolling();
+        if (isPlaying) visualizer.classList.add('active');
+      }
     });
 
     // === ABOUT TOGGLE ===
@@ -2028,25 +2148,20 @@
       const isOpen = aboutPanel.classList.contains('open');
       aboutPanel.classList.toggle('open');
       aboutToggle.innerHTML = isOpen ? '&#x2139; About / FAQ' : '&#x2139; Close';
+      aboutToggle.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
     });
 
     // === MESSAGE DROP ===
     const msgSection = document.getElementById('msgSection');
-    const msgToggle = document.getElementById('msgToggle');
     const msgForm = document.getElementById('msgForm');
     const msgName = document.getElementById('msgName');
     const msgText = document.getElementById('msgText');
     const msgSend = document.getElementById('msgSend');
     const msgStatus = document.getElementById('msgStatus');
 
-    msgToggle.addEventListener('click', () => {
-      const isOpen = msgSection.classList.contains('open');
-      msgSection.classList.toggle('open');
-      msgToggle.innerHTML = isOpen
-        ? '<span class="msg-toggle-text">&#x1F4EC; DROP A MESSAGE</span>'
-        : '&#x1F4EC; Close';
-      if (!isOpen) { loadShouts(); setTimeout(() => msgText.focus(), 400); }
-    });
+    // Auto-load shouts on page load (always visible)
+    loadShouts();
+    shoutsInterval = setInterval(loadShouts, 30000);
 
     msgSend.addEventListener('click', async () => {
       const text = msgText.value.trim();
@@ -2073,8 +2188,8 @@
           msgStatus.className = 'msg-status ok';
           msgText.value = '';
           setTimeout(() => {
-            msgSection.classList.remove('open');
             msgStatus.textContent = '';
+            loadShouts();
           }, 2000);
         } else {
           const data = await res.json().catch(() => ({}));
@@ -2087,7 +2202,7 @@
       }
 
       msgSend.disabled = false;
-      msgSend.textContent = 'SEND';
+      msgSend.textContent = 'TRANSMIT';
     });
 
     // Register service worker for PWA
@@ -2143,6 +2258,7 @@
     mutinyToggle.addEventListener('click', () => {
       const isOpen = mutinyPanel.classList.contains('open');
       mutinyPanel.classList.toggle('open');
+      mutinyToggle.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
       if (!mutinyCooldown) {
         mutinyToggle.innerHTML = isOpen ? '&#x2620; MUTINY' : '&#x2620; Close';
       }
@@ -2150,7 +2266,8 @@
 
     // Fire button triggers the skip
     mutinyFire.addEventListener('click', async () => {
-      if (mutinyCooldown) return;
+      if (mutinyCooldown || mutinyFire.disabled) return;
+      mutinyFire.disabled = true;
       mutinyFire.textContent = '...';
       try {
         const res = await fetch('/mutiny/mutiny', { method: 'POST' });
@@ -2169,18 +2286,26 @@
           mutinyDesc.textContent = data.message;
           mutinyFire.innerHTML = '&#x2620; VOTED';
           showMutinyToast(data.message, 5000);
+        } else {
+          showMutinyToast(data.message || 'Mutiny response unclear. Try again.');
+          mutinyFire.innerHTML = '&#x2620; WALK THE PLANK';
         }
       } catch (e) {
         showMutinyToast('Mutiny failed. Radio resists.');
         mutinyFire.innerHTML = '&#x2620; WALK THE PLANK';
+      } finally {
+        if (!mutinyCooldown) mutinyFire.disabled = false;
       }
     });
-    const shoutList = document.getElementById("shoutList"); 
+    const shoutList = document.getElementById("shoutList");
+    let shoutsInterval = null;
     async function loadShouts() { 
       try { 
         const res = await fetch("/msg/shouts.json"); 
         if (!res.ok) return; 
         const shouts = await res.json(); 
+        const countEl = document.getElementById('wallCount');
+        if (countEl) countEl.textContent = shouts.length + ' msg' + (shouts.length !== 1 ? 's' : '');
         shoutList.innerHTML = shouts.map(s => ` 
           <div class="shout-item"> 
             <div class="shout-header"> 
@@ -2188,15 +2313,16 @@
               <span class="shout-time">${new Date(s.t * 1000).toLocaleTimeString([], {hour: "2-digit", minute:"2-digit"})}</span> 
             </div> 
             <div class="shout-msg">${escHtml(s.m)}</div> 
-            <div class="shout-track">u266B ${escHtml(s.track)}</div> 
+            ${s.track ? `<div class="shout-track">♫ ${escHtml(s.track)}</div>` : ''} 
           </div> 
         `).join(""); 
-      } catch (e) {} 
-    } 
-    setInterval(loadShouts, 30000);
+      } catch (e) {
+      shoutList.innerHTML = '<div style="padding:20px;text-align:center;color:rgba(0,255,234,0.25);font-style:italic">// signal lost</div>';
+    }
+    }
   </script>
   <script>
-    async function shareStation() {
+    document.getElementById('shareBtn').addEventListener('click', async function() {
       if (navigator.share) {
         try {
           await navigator.share({
@@ -2205,18 +2331,18 @@
             url: "https://kpab.fm/"
           });
         } catch (err) {
-          console.log("Share failed:", err);
+          console.log("Share dismissed:", err);
         }
       } else {
-        const dummy = document.createElement("input");
-        document.body.appendChild(dummy);
-        dummy.value = "https://kpab.fm/";
-        dummy.select();
-        document.execCommand("copy");
-        document.body.removeChild(dummy);
-        alert("Link copied to clipboard!");
+        try {
+          await navigator.clipboard.writeText("https://kpab.fm/");
+          showMutinyToast("Link copied to clipboard!");
+        } catch (err) {
+          showMutinyToast("kpab.fm — copy it manually");
+        }
       }
-    }
+    });
   </script>
+  <div class="mutiny-toast" id="mutinyToast"></div>
 </body>
 </html>

@@ -24,7 +24,7 @@
   <div id="game"></div>
   <div id="controls-hint">
     <div><span>Arrows</span>: Move</div>
-    <div><span>Z/X/C/A/S/D</span>: Buttons</div>
+    <div><span>X</span>=A <span>Z</span>=B <span>C</span>=C <span>S</span>=X <span>A</span>=Y <span>D</span>=Z</div>
     <div><span>Enter</span>: Start</div>
     <div><span>Shift</span>: Select</div>
     <div><span>Q</span>: Quit</div>
@@ -53,6 +53,78 @@
       'atari2600': 'stella2014',
     };
 
+    // Per-system virtual gamepad layouts (touch/mobile)
+    const megadrivePad = [
+      { type: "zone", location: "left", left: "50%", top: "50%", joystickInput: false, inputValues: [4, 5, 6, 7] },
+      { type: "button", text: "A", id: "a", location: "right", left: 0, top: 80, bold: true, input_value: 8 },
+      { type: "button", text: "B", id: "b", location: "right", left: 45, top: 45, bold: true, input_value: 0 },
+      { type: "button", text: "C", id: "c", location: "right", left: 90, top: 10, bold: true, input_value: 9 },
+      { type: "button", text: "X", id: "x", location: "right", left: 0, top: 30, bold: true, input_value: 10 },
+      { type: "button", text: "Y", id: "y", location: "right", left: 45, top: 0, bold: true, input_value: 1 },
+      { type: "button", text: "Z", id: "z", location: "right", left: 90, top: -30, bold: true, input_value: 11 },
+      { type: "button", text: "Start", id: "start", location: "center", left: 30, fontSize: 15, input_value: 3 },
+      { type: "button", text: "Mode", id: "select", location: "center", left: -30, fontSize: 15, input_value: 2 }
+    ];
+
+    const snesPad = [
+      { type: "zone", location: "left", left: "50%", top: "50%", joystickInput: false, inputValues: [4, 5, 6, 7] },
+      { type: "button", text: "B", id: "b", location: "right", left: 40, top: 80, bold: true, input_value: 0 },
+      { type: "button", text: "A", id: "a", location: "right", left: 80, top: 40, bold: true, input_value: 8 },
+      { type: "button", text: "Y", id: "y", location: "right", left: 0, top: 40, bold: true, input_value: 1 },
+      { type: "button", text: "X", id: "x", location: "right", left: 40, top: 0, bold: true, input_value: 9 },
+      { type: "button", text: "L", id: "l", location: "left", left: 0, top: -40, bold: true, input_value: 10 },
+      { type: "button", text: "R", id: "r", location: "right", left: 120, top: 0, bold: true, input_value: 11 },
+      { type: "button", text: "Start", id: "start", location: "center", left: 30, fontSize: 15, input_value: 3 },
+      { type: "button", text: "Select", id: "select", location: "center", left: -30, fontSize: 15, input_value: 2 }
+    ];
+
+    const n64Pad = [
+      { type: "zone", location: "left", left: "50%", top: "50%", joystickInput: true, inputValues: [4, 5, 6, 7] },
+      { type: "button", text: "A", id: "a", location: "right", left: 40, top: 80, bold: true, input_value: 8 },
+      { type: "button", text: "B", id: "b", location: "right", left: 0, top: 40, bold: true, input_value: 0 },
+      { type: "button", text: "Z", id: "z", location: "left", left: 0, top: -40, bold: true, input_value: 10 },
+      { type: "button", text: "L", id: "l", location: "left", left: -50, top: -40, bold: true, input_value: 12 },
+      { type: "button", text: "R", id: "r", location: "right", left: 120, top: 0, bold: true, input_value: 11 },
+      { type: "button", text: "C\u2191", id: "cu", location: "right", left: 80, top: 0, bold: false, input_value: 1 },
+      { type: "button", text: "C\u2193", id: "cd", location: "right", left: 80, top: 80, bold: false, input_value: 14 },
+      { type: "button", text: "C\u2190", id: "cl", location: "right", left: 40, top: 40, bold: false, input_value: 13 },
+      { type: "button", text: "C\u2192", id: "cr", location: "right", left: 120, top: 40, bold: false, input_value: 9 },
+      { type: "button", text: "Start", id: "start", location: "center", left: 0, fontSize: 15, input_value: 3 }
+    ];
+
+    const psxPad = [
+      { type: "zone", location: "left", left: "50%", top: "50%", joystickInput: false, inputValues: [4, 5, 6, 7] },
+      { type: "button", text: "\u00d7", id: "cross", location: "right", left: 40, top: 80, bold: true, input_value: 0 },
+      { type: "button", text: "\u25cb", id: "circle", location: "right", left: 80, top: 40, bold: true, input_value: 8 },
+      { type: "button", text: "\u25a1", id: "square", location: "right", left: 0, top: 40, bold: true, input_value: 1 },
+      { type: "button", text: "\u25b3", id: "triangle", location: "right", left: 40, top: 0, bold: true, input_value: 9 },
+      { type: "button", text: "L1", id: "l1", location: "left", left: 0, top: -40, bold: true, input_value: 10 },
+      { type: "button", text: "R1", id: "r1", location: "right", left: 120, top: 0, bold: true, input_value: 11 },
+      { type: "button", text: "L2", id: "l2", location: "left", left: -50, top: -40, bold: true, input_value: 12 },
+      { type: "button", text: "R2", id: "r2", location: "right", left: 120, top: -40, bold: true, input_value: 13 },
+      { type: "button", text: "Start", id: "start", location: "center", left: 30, fontSize: 15, input_value: 3 },
+      { type: "button", text: "Select", id: "select", location: "center", left: -30, fontSize: 15, input_value: 2 }
+    ];
+
+    const gbaPad = [
+      { type: "zone", location: "left", left: "50%", top: "50%", joystickInput: false, inputValues: [4, 5, 6, 7] },
+      { type: "button", text: "A", id: "a", location: "right", left: 60, top: 40, bold: true, input_value: 8 },
+      { type: "button", text: "B", id: "b", location: "right", left: 20, top: 70, bold: true, input_value: 0 },
+      { type: "button", text: "L", id: "l", location: "left", left: 0, top: -40, bold: true, input_value: 10 },
+      { type: "button", text: "R", id: "r", location: "right", left: 100, top: 0, bold: true, input_value: 11 },
+      { type: "button", text: "Start", id: "start", location: "center", left: 30, fontSize: 15, input_value: 3 },
+      { type: "button", text: "Select", id: "select", location: "center", left: -30, fontSize: 15, input_value: 2 }
+    ];
+
+    const padMap = {
+      'megadrive': megadrivePad,
+      'genesis': megadrivePad,
+      'snes': snesPad,
+      'n64': n64Pad,
+      'psx': psxPad,
+      'gba': gbaPad,
+    };
+
     EJS_player = '#game';
     EJS_core = coreMap[system] || 'genesis_plus_gx';
     EJS_gameUrl = '/arcade/roms/' + rom;
@@ -60,36 +132,80 @@
     EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
     EJS_color = '#00ffea';
     EJS_startOnLoaded = true;
-    EJS_mouse = false;
-    EJS_multitap = false;
-    
-    EJS_settings = {
-      gamepad: true,
-      fullscreen: true,
-      saveState: true,
-      loadState: true,
-      cache: true,
-      volume: 0.6
-    };
 
-    // System-specific button layouts for virtual controllers
-    if (system === 'snes') {
-      EJS_buttons = ['a', 'b', 'x', 'y', 'l', 'r', 'start', 'select'];
-    } else if (['megadrive', 'genesis'].includes(system)) {
-      EJS_buttons = ['a', 'b', 'c', 'x', 'y', 'z', 'start', 'mode'];
-    } else if (system === 'gba') {
-      EJS_buttons = ['a', 'b', 'l', 'r', 'start', 'select'];
-    } else if (system === 'nes' || system === 'gb' || system === 'gbc') {
-      EJS_buttons = ['a', 'b', 'start', 'select'];
-    } else if (system === 'n64') {
-      EJS_buttons = ['a', 'b', 'l', 'r', 'z', 'start', 'c-up', 'c-down', 'c-left', 'c-right'];
-    } else if (system === 'psx') {
-      EJS_buttons = ['cross', 'circle', 'square', 'triangle', 'l1', 'r1', 'l2', 'r2', 'start', 'select'];
-    } else if (system === 'tg16' || system === 'pcengine') {
-      EJS_buttons = ['i', 'ii', 'run', 'select'];
+    // Apply system-specific virtual gamepad if available
+    if (padMap[system]) {
+      EJS_VirtualGamepadSettings = padMap[system];
     }
 
-    // Auto-focus the emulator iframe
+    // Default keyboard mappings per system (so control settings shows all buttons)
+    const keyboardMaps = {
+      'megadrive': {
+        0: { value: 'z', value2: '' },       // B
+        1: { value: 'a', value2: '' },        // Y  
+        2: { value: 'shift', value2: '' },    // Mode/Select
+        3: { value: 'enter', value2: '' },    // Start
+        4: { value: 'arrowup', value2: '' },  // Up
+        5: { value: 'arrowdown', value2: '' },// Down
+        6: { value: 'arrowleft', value2: '' },// Left
+        7: { value: 'arrowright', value2: '' },// Right
+        8: { value: 'x', value2: '' },        // A
+        9: { value: 'c', value2: '' },        // C
+        10: { value: 's', value2: '' },       // X
+        11: { value: 'd', value2: '' },       // Z
+      },
+      'snes': {
+        0: { value: 'z', value2: '' },        // B
+        1: { value: 'a', value2: '' },        // Y
+        2: { value: 'shift', value2: '' },    // Select
+        3: { value: 'enter', value2: '' },    // Start
+        4: { value: 'arrowup', value2: '' },
+        5: { value: 'arrowdown', value2: '' },
+        6: { value: 'arrowleft', value2: '' },
+        7: { value: 'arrowright', value2: '' },
+        8: { value: 'x', value2: '' },        // A
+        9: { value: 'c', value2: '' },        // X
+        10: { value: 'q', value2: '' },       // L
+        11: { value: 'w', value2: '' },       // R
+      },
+      'n64': {
+        0: { value: 'z', value2: '' },        // B
+        1: { value: 'i', value2: '' },        // C-Up
+        2: { value: 'shift', value2: '' },    // unused
+        3: { value: 'enter', value2: '' },    // Start
+        4: { value: 'arrowup', value2: '' },
+        5: { value: 'arrowdown', value2: '' },
+        6: { value: 'arrowleft', value2: '' },
+        7: { value: 'arrowright', value2: '' },
+        8: { value: 'x', value2: '' },        // A
+        9: { value: 'l', value2: '' },        // C-Right
+        10: { value: 'c', value2: '' },       // Z
+        11: { value: 'w', value2: '' },       // R
+        12: { value: 'q', value2: '' },       // L
+        13: { value: 'j', value2: '' },       // C-Left
+        14: { value: 'k', value2: '' },       // C-Down
+      },
+      'psx': {
+        0: { value: 'z', value2: '' },        // Cross
+        1: { value: 'a', value2: '' },        // Square
+        2: { value: 'shift', value2: '' },    // Select
+        3: { value: 'enter', value2: '' },    // Start
+        4: { value: 'arrowup', value2: '' },
+        5: { value: 'arrowdown', value2: '' },
+        6: { value: 'arrowleft', value2: '' },
+        7: { value: 'arrowright', value2: '' },
+        8: { value: 'x', value2: '' },        // Circle
+        9: { value: 'c', value2: '' },        // Triangle
+        10: { value: 'q', value2: '' },       // L1
+        11: { value: 'w', value2: '' },       // R1
+        12: { value: 'e', value2: '' },       // L2
+        13: { value: 'r', value2: '' },       // R2
+      }
+    };
+    if (keyboardMaps[system]) {
+      EJS_defaultControls = { 0: keyboardMaps[system] };
+    }
+
     window.onload = () => {
       setTimeout(() => {
         const gameDiv = document.querySelector('#game iframe');

@@ -333,3 +333,19 @@ manage_scavenger() {
         esac
     done
 }
+
+scavenge_oneshot() {
+    local request="$*"
+    [ -z "$request" ] && return 1
+
+    local tool=$(ai_decide_tool "$request")
+    local query=$(ai_craft_query "$request" "$tool")
+
+    case "$tool" in
+        soulseek) scavenge_soulseek "$query" ;;
+        ytdlp)    scavenge_ytdlp "$query" ;;
+        ia)       scavenge_ia "$query" ;;
+        aria2)    scavenge_aria2 "$query" ;;
+        *)        echo "Couldn't decide tool for: $request" ;;
+    esac
+}
