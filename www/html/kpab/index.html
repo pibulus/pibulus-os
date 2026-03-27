@@ -402,7 +402,6 @@
       to   { transform: scaleY(1); }
     }
 
-    .vol-wrapper { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
     .vol-icon { color: var(--dim); font-size: 14px; width: 18px; text-align: center; cursor: pointer; }
 
     input[type="range"] {
@@ -567,7 +566,6 @@
       .art-wrapper, .album-art, .art-placeholder { width: 72px; height: 72px; }
       .station-name { letter-spacing: 2px; }
       .status-bar { gap: 8px; font-size: 10px; }
-      .vol-wrapper { display: none; }
     }
 
     /* REQUEST PANEL */
@@ -843,9 +841,9 @@
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
     .request-toast {
-      position: absolute;
+      position: fixed;
       bottom: 0; left: 0; right: 0;
-      background: rgba(0,255,234,0.12);
+      background: rgba(0,255,234,0.95);
       border-top: 1px solid var(--cyan);
       color: var(--cyan);
       font-family: 'VT323', monospace;
@@ -856,10 +854,11 @@
       transform: translateY(100%);
       transition: transform 0.3s ease;
       pointer-events: none;
-      z-index: 10;
+      z-index: 4000;
+      display: none;
     }
 
-    .request-toast.show { transform: translateY(0); }
+    .request-toast.show { transform: translateY(0); display: block; }
     .request-toast.error {
       background: rgba(255,68,68,0.12);
       border-top-color: #ff4444;
@@ -1157,16 +1156,18 @@
       background: rgba(10,10,14,0.95);
       border: 1px solid #c33;
       padding: 10px 20px;
-      z-index: 2000;
+      z-index: 4000;
       opacity: 0;
       transition: all 0.3s ease;
       text-shadow: 0 0 6px rgba(204,51,51,0.4);
       box-shadow: 0 0 20px rgba(204,51,51,0.15);
+      display: none;
     }
 
     .mutiny-toast.show {
       transform: translateX(-50%) translateY(0);
       opacity: 1;
+      display: block;
     }
 
     /* MESSAGE DROP */
@@ -1534,6 +1535,7 @@
             
           </div>
           <textarea id="msgText" placeholder="leave a signal on the wall..." maxlength="280" rows="2"></textarea>
+          <button class="msg-send" id="msgSend" style="width:100%; margin-top:8px;">TRANSMIT</button>
           <button class="msg-send" id="msgSend" style="width:100%; margin-top:8px;">TRANSMIT</button>
           <span class="msg-status" id="msgStatus"></span>
         </div>
@@ -2300,6 +2302,9 @@
         if (shouts.length === 0) {
           shoutList.innerHTML = '<div style="padding:48px 16px;text-align:center;color:rgba(0,255,234,0.25);font-style:italic">// no transmissions yet</div>';
         } else {
+          if (shouts.length === 0) {
+          shoutList.innerHTML = '<div style="padding:48px 16px;text-align:center;color:rgba(0,255,234,0.25);font-style:italic">// no transmissions yet</div>';
+        } else {
           shoutList.innerHTML = shouts.map(s => ` 
           <div class="shout-item"> 
             <div class="shout-header"> 
@@ -2309,7 +2314,8 @@
             <div class="shout-msg">${escHtml(s.m)}</div> 
             ${s.track ? `<div class="shout-track">♫ ${escHtml(s.track)}</div>` : ''} 
           </div> 
-          `).join("");
+            `).join("");
+        }
         } 
       } catch (e) {
       shoutList.innerHTML = '<div style="padding:20px;text-align:center;color:rgba(0,255,234,0.25);font-style:italic">// signal lost</div>';
@@ -2338,6 +2344,8 @@
       }
     });
   </script>
+  
+  
   
   <div class="request-toast" id="requestToast" aria-live="polite"></div>
   <div class="mutiny-toast" id="mutinyToast"></div>
