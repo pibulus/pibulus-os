@@ -1157,7 +1157,7 @@
       background: rgba(10,10,14,0.95);
       border: 1px solid #c33;
       padding: 10px 20px;
-      z-index: 1100;
+      z-index: 2000;
       opacity: 0;
       transition: all 0.3s ease;
       text-shadow: 0 0 6px rgba(204,51,51,0.4);
@@ -1357,7 +1357,7 @@
     .history-action-btn { padding: 8px 12px; min-height: 44px; display: inline-flex; align-items: center; }
 
     /* Mutiny toast z-index fix */
-    .mutiny-toast { z-index: 30; }
+    .mutiny-toast { z-index: 2000; }
 
     /* About panel tighter max-height */
     .about-panel.open { max-height: 900px; }
@@ -1425,10 +1425,6 @@
     <section class="player-controls" aria-label="Player controls">
       <button class="play-btn" id="playBtn" aria-label="Play stream" title="Play / Pause">&#x25B6;</button>
       <div class="visualizer" id="visualizer" aria-hidden="true"></div>
-      <div class="vol-wrapper">
-        <span class="vol-icon" id="volIcon">&#x1F50A;</span>
-        <input type="range" id="volSlider" min="0" max="1" step="0.02" value="0.8" aria-label="Volume">
-      </div>
       <div class="listeners-badge">&#x1F465; <span class="listeners-count" id="listenerCount">&mdash;</span> listening</div>
     </section>
     </div>
@@ -1452,7 +1448,7 @@
             <span>Search 10,000+ requestable tracks</span>
           </div>
         </div>
-        <div class="request-toast" id="requestToast" aria-live="polite"></div>
+        
       </div>
     </section>
 
@@ -1535,9 +1531,10 @@
         <div class="msg-form" id="msgForm">
           <div class="shout-form-row">
             <input type="text" id="msgName" placeholder="HANDLE" maxlength="32">
-            <button class="msg-send" id="msgSend">TRANSMIT</button>
+            
           </div>
           <textarea id="msgText" placeholder="leave a signal on the wall..." maxlength="280" rows="2"></textarea>
+          <button class="msg-send" id="msgSend" style="width:100%; margin-top:8px;">TRANSMIT</button>
           <span class="msg-status" id="msgStatus"></span>
         </div>
       </div>
@@ -1591,8 +1588,6 @@
 
     const audioEl        = document.getElementById('audioEl');
     const playBtn        = document.getElementById('playBtn');
-    const volSlider      = document.getElementById('volSlider');
-    const volIcon        = document.getElementById('volIcon');
     const albumArt       = document.getElementById('albumArt');
     const artPlaceholder = document.getElementById('artPlaceholder');
     const trackArtist    = document.getElementById('trackArtist');
@@ -1860,7 +1855,7 @@
 
     function startPolling() { poll(); pollTimer = setInterval(poll, POLL_MS); }
 
-    audioEl.volume = parseFloat(volSlider.value);
+    audioEl.volume = 0.8;
 
     const playerChassis = document.getElementById('playerChassis');
 
@@ -1903,11 +1898,7 @@
     audioEl.addEventListener('ended', () => setPlaying(false));
     audioEl.addEventListener('error', () => setPlaying(false));
 
-    volSlider.addEventListener('input', () => {
-      const v = parseFloat(volSlider.value);
-      audioEl.volume = v;
-      volIcon.textContent = v === 0 ? '\uD83D\uDD07' : v < 0.4 ? '\uD83D\uDD09' : '\uD83D\uDD0A';
-    });
+
 
     // Media Session API for lock screen / notification controls
     if ('mediaSession' in navigator) {
@@ -2306,7 +2297,10 @@
         const shouts = await res.json(); 
         const countEl = document.getElementById('wallCount');
         if (countEl) countEl.textContent = shouts.length + ' msg' + (shouts.length !== 1 ? 's' : '');
-        shoutList.innerHTML = shouts.map(s => ` 
+        if (shouts.length === 0) {
+          shoutList.innerHTML = '<div style="padding:48px 16px;text-align:center;color:rgba(0,255,234,0.25);font-style:italic">// no transmissions yet</div>';
+        } else {
+          shoutList.innerHTML = shouts.map(s => ` 
           <div class="shout-item"> 
             <div class="shout-header"> 
               <span class="shout-name">${escHtml(s.n)}</span> 
@@ -2315,7 +2309,8 @@
             <div class="shout-msg">${escHtml(s.m)}</div> 
             ${s.track ? `<div class="shout-track">♫ ${escHtml(s.track)}</div>` : ''} 
           </div> 
-        `).join(""); 
+          `).join("");
+        } 
       } catch (e) {
       shoutList.innerHTML = '<div style="padding:20px;text-align:center;color:rgba(0,255,234,0.25);font-style:italic">// signal lost</div>';
     }
@@ -2343,6 +2338,8 @@
       }
     });
   </script>
+  
+  <div class="request-toast" id="requestToast" aria-live="polite"></div>
   <div class="mutiny-toast" id="mutinyToast"></div>
 </body>
 </html>
