@@ -58,16 +58,9 @@
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
-        // Audio context setup
-        window.addEventListener('load', function() {
-            var context = new (window.AudioContext || window.webkitAudioContext)();
-            if (context.state !== 'running') {
-                context.resume();
-            }
-        });
     </script>
     <script>
-        // Cart loader
+        // Cart globals expected by pico8 runtime
         var _cartname = [];
         var _cdpos = 0;
         var iii = 0;

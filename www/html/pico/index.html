@@ -59,7 +59,7 @@
     }
     .card:hover { transform:translateY(-3px); border-color:var(--yellow); box-shadow:0 4px 20px rgba(255,224,102,0.1); }
     .card img {
-      width:100%; aspect-ratio:128/128; object-fit:cover; object-position:top;
+      width:100%; aspect-ratio:1; object-fit:cover; object-position:top;
       display:block; image-rendering:pixelated; background:#111;
     }
     .card .info { padding:6px 8px; }
@@ -254,7 +254,7 @@ function cardHTML(g) {
   const imgUrl = '/pico/carts/' + encodeURI(g.file);
   const title = esc(g.title);
   const genre = esc(g.genre);
-  return '<div class="card" data-file="' + esc(g.file) + '" data-title="' + title + '" data-genre="' + genre + '">' +
+  return '<div class="card" tabindex="0" role="button" data-file="' + esc(g.file) + '" data-title="' + title + '" data-genre="' + genre + '">' +
     '<div class="img-wrap">' +
     '<img src="' + imgUrl + '" alt="' + title + '" loading="lazy" decoding="async">' +
     '<div class="play-badge"></div>' +
@@ -315,7 +315,10 @@ function openPlayer(file, title, genre) {
   player.innerHTML = '<iframe src="/pico/player.html?cart=' + encodeURIComponent(cartUrl) + '" allow="autoplay"></iframe>';
   modal.classList.add('active');
   document.body.style.overflow = 'hidden';
+  document.getElementById('modal-close').focus();
 }
+
+let lastFocusedCard = null;
 
 function closePlayer() {
   const modal = document.getElementById('modal');
@@ -323,13 +326,27 @@ function closePlayer() {
   modal.classList.remove('active');
   player.innerHTML = '';
   document.body.style.overflow = '';
+  if (lastFocusedCard) { lastFocusedCard.focus(); lastFocusedCard = null; }
 }
 
-// Event delegation for card clicks
+// Event delegation for card clicks + keyboard
+function handleCardActivate(card) {
+  lastFocusedCard = card;
+  openPlayer(card.dataset.file, card.dataset.title, card.dataset.genre);
+}
+
 document.getElementById('games').addEventListener('click', function(e) {
   const card = e.target.closest('.card');
   if (!card) return;
-  openPlayer(card.dataset.file, card.dataset.title, card.dataset.genre);
+  handleCardActivate(card);
+});
+
+document.getElementById('games').addEventListener('keydown', function(e) {
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  const card = e.target.closest('.card');
+  if (!card) return;
+  e.preventDefault();
+  handleCardActivate(card);
 });
 
 document.getElementById('modal-close').addEventListener('click', closePlayer);
