@@ -1,0 +1,35 @@
+tunnel: c79eb8a2-9791-4ece-8b54-bc9d0e6d01cd
+credentials-file: /etc/cloudflared/c79eb8a2-9791-4ece-8b54-bc9d0e6d01cd.json
+
+ingress:
+  # --- PUBLIC FACE ---
+  - hostname: quickcat.club
+    service: http://localhost:80
+  - hostname: www.kpab.fm
+    service: http://localhost:80
+  - hostname: kpab.fm
+    service: http://localhost:80
+
+  # --- ADMIN DECK (password protected via nginx basic auth) ---
+  - hostname: deck.quickcat.club
+    service: http://localhost:80
+
+  # --- BROADCAST & MEDIA ---
+  - hostname: radio.quickcat.club
+    service: http://localhost:8500
+  - hostname: watch.quickcat.club
+    service: http://localhost:8096
+  - hostname: music.quickcat.club
+    service: http://localhost:4533
+  - hostname: read.quickcat.club
+    service: http://localhost:8083
+  - hostname: comics.quickcat.club
+    service: http://localhost:5000
+
+  - hostname: memo.quickcat.club
+    service: http://localhost:5230
+
+  - hostname: go.quickcat.club
+    service: http://localhost:8088
+
+  - service: http_status:404

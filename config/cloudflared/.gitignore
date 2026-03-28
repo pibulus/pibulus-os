@@ -1,0 +1,2 @@
+# NOTE: credentials JSON (tunnel secret) is NOT tracked in git.
+*.json
