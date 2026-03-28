@@ -89,10 +89,10 @@ def resolve_votes(song_id):
         needed = (listeners // 2) + 1
         print(f"[MUTINY] Vote window closed: {voter_count}/{needed} ({listeners} listeners)")
         if voter_count >= needed:
-            do_skip()
-            now = time.time()
-            for fp in votes[song_id]:
-                cooldowns[fp] = now
+            if do_skip():
+                now = time.time()
+                for fp in votes[song_id]:
+                    cooldowns[fp] = now
         votes.pop(song_id, None)
         vote_timers.pop(song_id, None)
 
@@ -170,12 +170,17 @@ class MutinyHandler(BaseHTTPRequestHandler):
 
         with lock:
             if listeners <= 1:
-                do_skip()
-                cooldowns[fp] = time.time()
-                self._json(200, {
-                    "action": "skipped",
-                    "message": "Solo mutiny! Track walked the plank."
-                })
+                if do_skip():
+                    cooldowns[fp] = time.time()
+                    self._json(200, {
+                        "action": "skipped",
+                        "message": "Solo mutiny! Track walked the plank."
+                    })
+                else:
+                    self._json(500, {
+                        "action": "failed",
+                        "message": "Mutiny failed — AzuraCast refused the skip."
+                    })
                 return
 
             needed = (listeners // 2) + 1
@@ -186,18 +191,25 @@ class MutinyHandler(BaseHTTPRequestHandler):
             vote_count = len(votes[song_id])
 
             if vote_count >= needed:
-                do_skip()
-                now = time.time()
-                for vfp in votes[song_id]:
-                    cooldowns[vfp] = now
+                skipped = do_skip()
+                if skipped:
+                    now = time.time()
+                    for vfp in votes[song_id]:
+                        cooldowns[vfp] = now
                 votes.pop(song_id, None)
                 if song_id in vote_timers:
                     vote_timers[song_id].cancel()
                     vote_timers.pop(song_id, None)
-                self._json(200, {
-                    "action": "skipped",
-                    "message": f"Mutiny successful! {vote_count}/{needed} voted. Track overboard."
-                })
+                if skipped:
+                    self._json(200, {
+                        "action": "skipped",
+                        "message": f"Mutiny successful! {vote_count}/{needed} voted. Track overboard."
+                    })
+                else:
+                    self._json(500, {
+                        "action": "failed",
+                        "message": "Votes reached but AzuraCast refused the skip."
+                    })
                 return
 
             if song_id not in vote_timers:
