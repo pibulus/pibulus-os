@@ -8,8 +8,6 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: #000; overflow: hidden; }
         #canvas {
-            width: 100vw;
-            height: 100vh;
             display: block;
             image-rendering: optimizeSpeed;
             image-rendering: -moz-crisp-edges;
@@ -29,8 +27,24 @@
 <body>
     <div id="loading">loading cart...</div>
     <canvas id="canvas" width="128" height="128"></canvas>
+
+    <script src="pako.min.js"></script>
+    <script src="UPNG.js"></script>
+
     <script>
-        // Module config — must match mesa.html pattern exactly
+        // Size the canvas to fill the viewport, maintaining square aspect ratio
+        function sizeCanvas() {
+            var c = document.getElementById('canvas');
+            var s = Math.min(window.innerWidth, window.innerHeight);
+            c.style.width = s + 'px';
+            c.style.height = s + 'px';
+            c.style.position = 'absolute';
+            c.style.left = ((window.innerWidth - s) / 2) + 'px';
+            c.style.top = ((window.innerHeight - s) / 2) + 'px';
+        }
+        sizeCanvas();
+        window.addEventListener('resize', sizeCanvas);
+
         var Module = {
             canvas: (function() { return document.getElementById('canvas'); })(),
             preRun: [],
@@ -43,12 +57,10 @@
             }
         };
 
-        // Touch handling
         document.addEventListener('touchstart', function(e) { e.preventDefault(); }, { passive: false });
         document.addEventListener('touchmove', function(e) { e.preventDefault(); }, { passive: false });
     </script>
     <script>
-        // Cart globals expected by pico8 runtime
         var _cartname = [];
         var _cdpos = 0;
         var iii = 0;
@@ -63,53 +75,37 @@
                 return;
             }
 
-            // Decode .p8.png: extract cart data from pixel low bits
-            // Format: each pixel stores 1 byte in the 2 lowest bits of BGRA channels
-            // byte = (B & 3) | ((G & 3) << 2) | ((R & 3) << 4) | ((A & 3) << 6)
-            // Source: picotool (dansanderson/picotool) p8png.py
-            //
-            // CRITICAL: must use createImageBitmap with premultiplyAlpha:'none'
-            // otherwise browser premultiplies alpha, zeroing RGB when A=0,
-            // which corrupts the steganographic data in ~100% of carts.
-
             fetch(cartUrl)
-                .then(function(r) { return r.blob(); })
-                .then(function(blob) {
-                    return createImageBitmap(blob, { premultiplyAlpha: 'none' });
-                })
-                .then(function(bitmap) {
-                    var c = document.createElement('canvas');
-                    c.width = bitmap.width;
-                    c.height = bitmap.height;
-                    var ctx = c.getContext('2d');
-                    ctx.drawImage(bitmap, 0, 0);
-                    var data = ctx.getImageData(0, 0, bitmap.width, bitmap.height).data;
-                    var totalPixels = bitmap.width * bitmap.height;
+                .then(function(r) { return r.arrayBuffer(); })
+                .then(function(buffer) {
+                    var img = UPNG.decode(buffer);
+                    var rgba = new Uint8Array(UPNG.toRGBA8(img)[0]);
+
+                    var totalPixels = img.width * img.height;
                     var cartSize = Math.min(32768, totalPixels);
                     _cartdat = new Array(cartSize);
+
                     for (var i = 0; i < cartSize; i++) {
                         var pi = i * 4;
-                        var r = data[pi], g = data[pi+1], b = data[pi+2], a = data[pi+3];
+                        var r = rgba[pi], g = rgba[pi+1], b = rgba[pi+2], a = rgba[pi+3];
                         _cartdat[i] = (b & 3) | ((g & 3) << 2) | ((r & 3) << 4) | ((a & 3) << 6);
                     }
 
-                    // Extract cart name from URL
                     var parts = cartUrl.split('/');
                     var name = decodeURIComponent(parts[parts.length - 1]);
                     name = name.replace('.p8.png', '.p8');
                     _cartname = [name];
                     _cdpos = 0;
 
-                    // Hide loading
                     document.getElementById('loading').classList.add('hidden');
 
-                    // Load the runtime
                     var script = document.createElement('script');
                     script.src = 'pico8-runtime.js';
                     script.async = true;
                     document.body.appendChild(script);
                 })
                 .catch(function(e) {
+                    console.error('Cart load error:', e);
                     document.getElementById('loading').textContent = 'failed to load cart';
                 });
         })();
