@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>PICO-8 Carts — quickcat.club</title>
-  <meta name="description" content="Browse 3,000+ curated PICO-8 cartridges. PICOwesome collection organized by genre.">
+  <meta name="description" content="Browse and play 3,000+ curated PICO-8 cartridges. PICOwesome collection organized by genre.">
   <meta name="theme-color" content="#050505">
   <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
   <style>
@@ -59,8 +59,8 @@
     }
     .card:hover { transform:translateY(-3px); border-color:var(--yellow); box-shadow:0 4px 20px rgba(255,224,102,0.1); }
     .card img {
-      width:100%; aspect-ratio:1; object-fit:cover; display:block;
-      image-rendering:pixelated; background:#111;
+      width:100%; aspect-ratio:128/128; object-fit:cover; object-position:top;
+      display:block; image-rendering:pixelated; background:#111;
     }
     .card .info { padding:6px 8px; }
     .card .title {
@@ -68,6 +68,29 @@
       overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
     }
     .card .genre { font-size:0.7rem; color:var(--dim); margin-top:2px; }
+    .card .play-badge {
+      position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+      width:40px; height:40px; background:rgba(255,224,102,0.85);
+      border-radius:50%; display:none; align-items:center; justify-content:center;
+    }
+    .card .img-wrap { position:relative; }
+    .card:hover .play-badge { display:flex; }
+    .card .play-badge::after {
+      content:''; width:0; height:0;
+      border-left:14px solid #050505; border-top:9px solid transparent; border-bottom:9px solid transparent;
+      margin-left:3px;
+    }
+
+    .load-more {
+      grid-column: 1 / -1; text-align:center; padding:16px;
+    }
+    .load-more button {
+      background:var(--card-bg); border:1px solid var(--card-border);
+      border-radius:6px; padding:10px 32px; color:var(--yellow);
+      font-family:'VT323',monospace; font-size:1.1rem; cursor:pointer;
+      transition:all 0.2s;
+    }
+    .load-more button:hover { border-color:var(--yellow); box-shadow:0 0 12px rgba(255,224,102,0.15); }
 
     .no-results { text-align:center; padding:48px 0; color:var(--dim); font-size:1.2rem; display:none; }
     .footer { text-align:center; padding:24px 0 48px; color:var(--dim); font-size:0.9rem; }
@@ -80,8 +103,49 @@
     }
     .note a { color:var(--yellow); text-decoration:none; }
 
+    /* Player modal */
+    .modal-overlay {
+      display:none; position:fixed; inset:0; z-index:10000;
+      background:rgba(0,0,0,0.92); backdrop-filter:blur(4px);
+      align-items:center; justify-content:center; flex-direction:column;
+    }
+    .modal-overlay.active { display:flex; }
+    .modal-header {
+      display:flex; align-items:center; gap:16px;
+      margin-bottom:12px; width:100%; max-width:520px; padding:0 10px;
+    }
+    .modal-title { color:var(--yellow); font-size:1.4rem; flex:1; }
+    .modal-genre { color:var(--dim); font-size:0.9rem; }
+    .modal-close {
+      background:none; border:1px solid var(--card-border); border-radius:4px;
+      color:var(--text); font-family:'VT323',monospace; font-size:1rem;
+      padding:4px 12px; cursor:pointer;
+    }
+    .modal-close:hover { border-color:var(--yellow); color:var(--yellow); }
+    .modal-player {
+      width:min(512px, 95vw); height:min(512px, 95vw);
+      border:2px solid var(--card-border); border-radius:4px;
+      background:#000;
+    }
+    .modal-player iframe { width:100%; height:100%; border:none; }
+    .modal-controls {
+      display:flex; gap:12px; margin-top:12px; color:var(--dim); font-size:0.85rem;
+      align-items:center;
+    }
+    .modal-controls kbd {
+      background:var(--card-bg); border:1px solid var(--card-border);
+      border-radius:3px; padding:1px 6px; font-family:'VT323',monospace;
+    }
+    .modal-download {
+      background:none; border:1px solid var(--card-border); border-radius:4px;
+      color:var(--cyan); font-family:'VT323',monospace; font-size:0.85rem;
+      padding:3px 10px; cursor:pointer; text-decoration:none;
+    }
+    .modal-download:hover { border-color:var(--cyan); }
+
     @media (max-width:480px) {
       .games { grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:8px; }
+      .modal-controls { flex-wrap:wrap; justify-content:center; }
     }
   </style>
 </head>
@@ -95,11 +159,8 @@
   </div>
 
   <div class="note">
-    Cart images are screenshots from the games. PICO-8 requires the
-    <a href="https://www.lexaloffle.com/pico-8.php" target="_blank" rel="noopener">official runtime</a>
-    ($15) or the free
-    <a href="https://www.lexaloffle.com/bbs/?tid=47278" target="_blank" rel="noopener">Education Edition</a>
-    to play. Download carts and load them locally.
+    Click any cart to play in-browser.
+    <kbd>Arrow keys</kbd> to move, <kbd>Z</kbd>/<kbd>X</kbd> for buttons, <kbd>Enter</kbd> for pause menu.
   </div>
 
   <div class="controls">
@@ -115,14 +176,32 @@
 
 <div class="container">
   <div class="footer">
-    <p>Collection: <a href="https://github.com/" target="_blank" rel="noopener">PICOwesome v1.5</a> &middot; 3,000+ curated carts</p>
-    <p style="margin-top:6px">Cart images are valid .p8.png files &mdash; right-click to save &amp; load in PICO-8</p>
+    <p>Collection: PICOwesome v1.5 &middot; <span id="total-count">3,000+</span> curated carts</p>
+    <p style="margin-top:6px">Personal PICO-8 library &mdash; <a href="https://www.lexaloffle.com/pico-8.php" target="_blank" rel="noopener">lexaloffle.com</a></p>
+  </div>
+</div>
+
+<!-- Player Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal-header">
+    <span class="modal-title" id="modal-title">Game Title</span>
+    <span class="modal-genre" id="modal-genre">Genre</span>
+    <button class="modal-close" id="modal-close">close [esc]</button>
+  </div>
+  <div class="modal-player" id="modal-player"></div>
+  <div class="modal-controls">
+    <span><kbd>&larr;&uarr;&darr;&rarr;</kbd> move</span>
+    <span><kbd>Z</kbd> / <kbd>X</kbd> buttons</span>
+    <span><kbd>Enter</kbd> pause</span>
+    <a class="modal-download" id="modal-download" download>download .p8.png</a>
   </div>
 </div>
 
 <script>
 let games = [];
 let activeFilter = 'all';
+let displayCount = 60;
+const BATCH_SIZE = 60;
 
 async function init() {
   try {
@@ -130,8 +209,9 @@ async function init() {
     games = await r.json();
   } catch(e) { games = []; }
   document.getElementById('count').textContent = games.length.toLocaleString() + ' curated carts';
+  document.getElementById('total-count').textContent = games.length.toLocaleString();
   buildFilters();
-  renderGames(games);
+  renderGames();
 }
 
 function buildFilters() {
@@ -139,18 +219,20 @@ function buildFilters() {
   games.forEach(g => { genres[g.genre] = (genres[g.genre]||0) + 1; });
   const sorted = Object.entries(genres).sort((a,b) => b[1] - a[1]);
   const el = document.getElementById('filters');
-  let html = '<button class="filter-btn active" onclick="setFilter(\'all\',this)">all (' + games.length + ')</button>';
+  let html = '<button class="filter-btn active" data-genre="all">all (' + games.length + ')</button>';
   sorted.forEach(([g, n]) => {
-    html += '<button class="filter-btn" onclick="setFilter(\'' + g.replace(/'/g,"\\'") + '\',this)">' + g + ' (' + n + ')</button>';
+    html += '<button class="filter-btn" data-genre="' + g.replace(/"/g,'&quot;') + '">' + g + ' (' + n + ')</button>';
   });
   el.innerHTML = html;
-}
-
-function setFilter(genre, btn) {
-  activeFilter = genre;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  filterGames();
+  el.addEventListener('click', function(e) {
+    const btn = e.target.closest('.filter-btn');
+    if (!btn) return;
+    activeFilter = btn.dataset.genre;
+    el.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    displayCount = BATCH_SIZE;
+    renderGames();
+  });
 }
 
 function getFiltered() {
@@ -161,30 +243,110 @@ function getFiltered() {
   return list;
 }
 
-function renderGames(list) {
+function renderGames() {
   const container = document.getElementById('games');
   const nr = document.getElementById('no-results');
-  if (!list.length) { container.innerHTML = ''; nr.style.display = 'block'; return; }
+  const filtered = getFiltered();
+
+  if (!filtered.length) {
+    container.innerHTML = '';
+    nr.style.display = 'block';
+    return;
+  }
   nr.style.display = 'none';
-  // Render in batches for performance (3000+ items)
-  const max = 200;
-  const show = list.slice(0, max);
-  container.innerHTML = show.map(g => {
+
+  const show = filtered.slice(0, displayCount);
+  let html = show.map(g => {
     const imgUrl = '/pico/carts/' + encodeURI(g.file);
-    const safe = g.title.replace(/&/g,'&amp;').replace(/</g,'&lt;');
-    return '<div class="card" title="' + safe + '">' +
+    const safe = g.title.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+    return '<div class="card" data-file="' + g.file.replace(/"/g,'&quot;') + '" data-title="' + safe + '" data-genre="' + g.genre + '">' +
+      '<div class="img-wrap">' +
       '<img src="' + imgUrl + '" alt="' + safe + '" loading="lazy" decoding="async">' +
+      '<div class="play-badge"></div>' +
+      '</div>' +
       '<div class="info"><div class="title">' + safe + '</div>' +
       '<div class="genre">' + g.genre + (g.source === 'itch' ? ' (itch)' : '') + '</div></div></div>';
   }).join('');
-  if (list.length > max) {
-    container.insertAdjacentHTML('beforeend',
-      '<div style="grid-column:1/-1;text-align:center;color:var(--dim);padding:16px">Showing ' + max + ' of ' + list.length + ' — refine your search</div>');
+
+  if (filtered.length > displayCount) {
+    html += '<div class="load-more"><button id="load-more-btn">show more (' + (filtered.length - displayCount) + ' remaining)</button></div>';
+  }
+
+  container.innerHTML = html;
+
+  const loadMoreBtn = document.getElementById('load-more-btn');
+  if (loadMoreBtn) {
+    loadMoreBtn.addEventListener('click', function() {
+      displayCount += BATCH_SIZE;
+      renderGames();
+    });
   }
 }
 
-function filterGames() { renderGames(getFiltered()); }
-document.getElementById('search').addEventListener('input', filterGames);
+// Player modal
+function openPlayer(file, title, genre) {
+  const modal = document.getElementById('modal');
+  const player = document.getElementById('modal-player');
+  const cartUrl = '/pico/carts/' + encodeURI(file);
+
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-genre').textContent = genre;
+  document.getElementById('modal-download').href = cartUrl;
+
+  player.innerHTML = '<iframe src="/pico/player.html?cart=' + encodeURIComponent(cartUrl) + '" allow="autoplay"></iframe>';
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closePlayer() {
+  const modal = document.getElementById('modal');
+  const player = document.getElementById('modal-player');
+  modal.classList.remove('active');
+  player.innerHTML = '';
+  document.body.style.overflow = '';
+}
+
+// Event delegation for card clicks
+document.getElementById('games').addEventListener('click', function(e) {
+  const card = e.target.closest('.card');
+  if (!card) return;
+  openPlayer(card.dataset.file, card.dataset.title, card.dataset.genre);
+});
+
+document.getElementById('modal-close').addEventListener('click', closePlayer);
+document.getElementById('modal').addEventListener('click', function(e) {
+  if (e.target === this) closePlayer();
+});
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closePlayer();
+});
+
+// Search with debounce
+let searchTimeout;
+document.getElementById('search').addEventListener('input', function() {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(function() {
+    displayCount = BATCH_SIZE;
+    renderGames();
+  }, 150);
+});
+
+// Infinite scroll
+let scrollTimeout;
+window.addEventListener('scroll', function() {
+  if (scrollTimeout) return;
+  scrollTimeout = setTimeout(function() {
+    scrollTimeout = null;
+    const filtered = getFiltered();
+    if (displayCount >= filtered.length) return;
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 800) {
+      displayCount += BATCH_SIZE;
+      renderGames();
+    }
+  }, 100);
+});
+
 init();
 </script>
 </body>
