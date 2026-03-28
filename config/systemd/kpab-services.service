@@ -1,0 +1,14 @@
+[Unit]
+Description=KPAB.FM Microservices (Mutiny + Shoutbox)
+After=network.target docker.service
+Wants=docker.service
+
+[Service]
+Type=forking
+ExecStart=/bin/bash /media/pibulus/passport/pibulus-os/scripts/start-kpab-services.sh
+Restart=on-failure
+RestartSec=30
+User=pibulus
+
+[Install]
+WantedBy=multi-user.target
