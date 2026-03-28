@@ -1521,11 +1521,16 @@
       return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
+    let lastTickWall = 0;
     function startProgressTick() {
       clearInterval(progressTimer);
+      lastTickWall = Date.now();
       progressTimer = setInterval(() => {
         if (trackDuration > 0) {
-          trackElapsed = Math.min(trackElapsed + 1, trackDuration);
+          const now = Date.now();
+          const delta = Math.round((now - lastTickWall) / 1000);
+          lastTickWall = now;
+          trackElapsed = Math.min(trackElapsed + delta, trackDuration);
           const pct = (trackElapsed / trackDuration) * 100;
           progressFill.style.width = pct + '%';
           timeElapsed.textContent = fmtTime(trackElapsed);
@@ -1991,7 +1996,13 @@
     });
 
     document.addEventListener('visibilitychange', () => {
-      if (!document.hidden && pollTimer) { clearInterval(pollTimer); startPolling(); }
+      if (document.hidden) {
+        clearInterval(pollTimer);
+        clearInterval(progressTimer);
+      } else {
+        startPolling();
+        startProgressTick();
+      }
     });
 
     // === ABOUT TOGGLE ===
