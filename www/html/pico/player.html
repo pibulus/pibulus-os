@@ -8,6 +8,8 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: #000; overflow: hidden; }
         #canvas {
+            width: 100vw;
+            height: 100vh;
             display: block;
             image-rendering: optimizeSpeed;
             image-rendering: -moz-crisp-edges;
@@ -28,7 +30,7 @@
     <div id="loading">loading cart...</div>
     <canvas id="canvas" width="128" height="128"></canvas>
     <script>
-        // Module config (must be global var, not inside IIFE)
+        // Module config — must match mesa.html pattern exactly
         var Module = {
             canvas: (function() { return document.getElementById('canvas'); })(),
             preRun: [],
@@ -41,23 +43,9 @@
             }
         };
 
-        // Prevent default touch behavior
+        // Touch handling
         document.addEventListener('touchstart', function(e) { e.preventDefault(); }, { passive: false });
         document.addEventListener('touchmove', function(e) { e.preventDefault(); }, { passive: false });
-
-        // Resize canvas
-        function resizeCanvas() {
-            var canvas = document.getElementById('canvas');
-            var scale = Math.min(window.innerWidth / 128, window.innerHeight / 128);
-            canvas.style.width = (128 * scale) + 'px';
-            canvas.style.height = (128 * scale) + 'px';
-            canvas.style.position = 'absolute';
-            canvas.style.left = ((window.innerWidth - 128 * scale) / 2) + 'px';
-            canvas.style.top = ((window.innerHeight - 128 * scale) / 2) + 'px';
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
     </script>
     <script>
         // Cart globals expected by pico8 runtime
@@ -76,6 +64,9 @@
             }
 
             // Decode .p8.png: extract cart data from pixel low bits
+            // Format: each pixel stores 1 byte in the 2 lowest bits of BGRA channels
+            // byte = (B & 3) | ((G & 3) << 2) | ((R & 3) << 4) | ((A & 3) << 6)
+            // Source: picotool (dansanderson/picotool) p8png.py
             var img = new Image();
             img.crossOrigin = 'anonymous';
             img.onload = function() {
@@ -91,7 +82,7 @@
                 for (var i = 0; i < cartSize; i++) {
                     var pi = i * 4;
                     var r = data[pi], g = data[pi+1], b = data[pi+2], a = data[pi+3];
-                    _cartdat[i] = (a & 3) << 6 | (b & 3) << 4 | (g & 3) << 2 | (r & 3);
+                    _cartdat[i] = (b & 3) | ((g & 3) << 2) | ((r & 3) << 4) | ((a & 3) << 6);
                 }
 
                 // Extract cart name from URL
