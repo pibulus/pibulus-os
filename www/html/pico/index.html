@@ -203,6 +203,10 @@ let activeFilter = 'all';
 let displayCount = 60;
 const BATCH_SIZE = 60;
 
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 async function init() {
   try {
     const r = await fetch('/pico/games.json');
@@ -221,7 +225,7 @@ function buildFilters() {
   const el = document.getElementById('filters');
   let html = '<button class="filter-btn active" data-genre="all">all (' + games.length + ')</button>';
   sorted.forEach(([g, n]) => {
-    html += '<button class="filter-btn" data-genre="' + g.replace(/"/g,'&quot;') + '">' + g + ' (' + n + ')</button>';
+    html += '<button class="filter-btn" data-genre="' + esc(g) + '">' + esc(g) + ' (' + n + ')</button>';
   });
   el.innerHTML = html;
   el.addEventListener('click', function(e) {
@@ -231,6 +235,7 @@ function buildFilters() {
     el.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     displayCount = BATCH_SIZE;
+    renderedCount = 0;
     renderGames();
   });
 }
@@ -243,7 +248,22 @@ function getFiltered() {
   return list;
 }
 
-function renderGames() {
+let renderedCount = 0;
+
+function cardHTML(g) {
+  const imgUrl = '/pico/carts/' + encodeURI(g.file);
+  const title = esc(g.title);
+  const genre = esc(g.genre);
+  return '<div class="card" data-file="' + esc(g.file) + '" data-title="' + title + '" data-genre="' + genre + '">' +
+    '<div class="img-wrap">' +
+    '<img src="' + imgUrl + '" alt="' + title + '" loading="lazy" decoding="async">' +
+    '<div class="play-badge"></div>' +
+    '</div>' +
+    '<div class="info"><div class="title">' + title + '</div>' +
+    '<div class="genre">' + genre + (g.source === 'itch' ? ' (itch)' : '') + '</div></div></div>';
+}
+
+function renderGames(append) {
   const container = document.getElementById('games');
   const nr = document.getElementById('no-results');
   const filtered = getFiltered();
@@ -251,34 +271,33 @@ function renderGames() {
   if (!filtered.length) {
     container.innerHTML = '';
     nr.style.display = 'block';
+    renderedCount = 0;
     return;
   }
   nr.style.display = 'none';
 
-  const show = filtered.slice(0, displayCount);
-  let html = show.map(g => {
-    const imgUrl = '/pico/carts/' + encodeURI(g.file);
-    const safe = g.title.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
-    return '<div class="card" data-file="' + g.file.replace(/"/g,'&quot;') + '" data-title="' + safe + '" data-genre="' + g.genre + '">' +
-      '<div class="img-wrap">' +
-      '<img src="' + imgUrl + '" alt="' + safe + '" loading="lazy" decoding="async">' +
-      '<div class="play-badge"></div>' +
-      '</div>' +
-      '<div class="info"><div class="title">' + safe + '</div>' +
-      '<div class="genre">' + g.genre + (g.source === 'itch' ? ' (itch)' : '') + '</div></div></div>';
-  }).join('');
+  if (append && renderedCount > 0) {
+    // Remove old load-more button
+    const oldBtn = container.querySelector('.load-more');
+    if (oldBtn) oldBtn.remove();
+    // Append only new cards
+    const newCards = filtered.slice(renderedCount, displayCount);
+    if (newCards.length) {
+      container.insertAdjacentHTML('beforeend', newCards.map(cardHTML).join(''));
+    }
+  } else {
+    // Full rebuild (filter/search changed)
+    const show = filtered.slice(0, displayCount);
+    container.innerHTML = show.map(cardHTML).join('');
+  }
+  renderedCount = Math.min(displayCount, filtered.length);
 
   if (filtered.length > displayCount) {
-    html += '<div class="load-more"><button id="load-more-btn">show more (' + (filtered.length - displayCount) + ' remaining)</button></div>';
-  }
-
-  container.innerHTML = html;
-
-  const loadMoreBtn = document.getElementById('load-more-btn');
-  if (loadMoreBtn) {
-    loadMoreBtn.addEventListener('click', function() {
+    container.insertAdjacentHTML('beforeend',
+      '<div class="load-more"><button id="load-more-btn">show more (' + (filtered.length - displayCount) + ' remaining)</button></div>');
+    document.getElementById('load-more-btn').addEventListener('click', function() {
       displayCount += BATCH_SIZE;
-      renderGames();
+      renderGames(true);
     });
   }
 }
@@ -328,6 +347,7 @@ document.getElementById('search').addEventListener('input', function() {
   clearTimeout(searchTimeout);
   searchTimeout = setTimeout(function() {
     displayCount = BATCH_SIZE;
+    renderedCount = 0;
     renderGames();
   }, 150);
 });
@@ -342,7 +362,7 @@ window.addEventListener('scroll', function() {
     if (displayCount >= filtered.length) return;
     if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 800) {
       displayCount += BATCH_SIZE;
-      renderGames();
+      renderGames(true);
     }
   }, 100);
 });

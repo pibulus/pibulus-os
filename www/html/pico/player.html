@@ -77,8 +77,8 @@
         (function() {
             var params = new URLSearchParams(window.location.search);
             var cartUrl = params.get('cart');
-            if (!cartUrl) {
-                document.getElementById('loading').textContent = 'no cart specified';
+            if (!cartUrl || !cartUrl.startsWith('/pico/carts/')) {
+                document.getElementById('loading').textContent = 'invalid cart path';
                 return;
             }
 
