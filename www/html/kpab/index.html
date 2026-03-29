@@ -1529,7 +1529,7 @@
 
     const API_URL    = '/api/nowplaying/kpab.fm';
     const STREAM_URL = '/radio.mp3';
-    const POLL_MS    = 10000;
+    const POLL_MS    = 5000;
 
     let isPlaying    = false;
     let lastSongId   = null;
@@ -1659,13 +1659,13 @@
             genreTag.style.display = 'none';
           }
 
-          trackArtist.style.transition = 'opacity 0.4s ease';
-          trackTitle.style.transition = 'opacity 0.4s ease';
-          trackAlbum.style.transition = 'opacity 0.4s ease';
+          trackArtist.style.transition = 'opacity 0.2s ease';
+          trackTitle.style.transition = 'opacity 0.2s ease';
+          trackAlbum.style.transition = 'opacity 0.2s ease';
           trackArtist.style.opacity = '1';
           trackTitle.style.opacity = '1';
           trackAlbum.style.opacity = '1';
-        }, 200);
+        }, 80);
 
         const artUrl = fixArtUrl(song.art);
         if (artUrl) {
@@ -1688,11 +1688,21 @@
 
         // Update Media Session for lock screen / notification controls
         if ('mediaSession' in navigator) {
+          const msArt = artUrl
+            ? [
+                { src: artUrl, sizes: '96x96', type: 'image/jpeg' },
+                { src: artUrl, sizes: '128x128', type: 'image/jpeg' },
+                { src: artUrl, sizes: '192x192', type: 'image/jpeg' },
+                { src: artUrl, sizes: '256x256', type: 'image/jpeg' },
+                { src: artUrl, sizes: '384x384', type: 'image/jpeg' },
+                { src: artUrl, sizes: '512x512', type: 'image/jpeg' }
+              ]
+            : [{ src: '/icon-512.png', sizes: '512x512', type: 'image/png' }];
           navigator.mediaSession.metadata = new MediaMetadata({
             title: song.title || 'KPAB.FM',
             artist: song.artist || 'Pirate Radio',
             album: song.album || 'KPAB.FM',
-            artwork: artUrl ? [{ src: artUrl, sizes: '512x512', type: 'image/jpeg' }] : []
+            artwork: msArt
           });
         }
       }
@@ -1855,7 +1865,16 @@
       }
     });
 
-    audioEl.addEventListener('playing', () => setPlaying(true));
+    audioEl.addEventListener('playing', () => {
+      setPlaying(true);
+      // Re-push metadata to lock screen on play — iOS often drops it on reconnect
+      if ('mediaSession' in navigator && navigator.mediaSession.metadata) {
+        const m = navigator.mediaSession.metadata;
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: m.title, artist: m.artist, album: m.album, artwork: Array.from(m.artwork)
+        });
+      }
+    });
     audioEl.addEventListener('pause', () => setPlaying(false));
     audioEl.addEventListener('ended', () => setPlaying(false));
     audioEl.addEventListener('error', () => setPlaying(false));
