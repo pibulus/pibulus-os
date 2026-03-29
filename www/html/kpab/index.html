@@ -1376,6 +1376,57 @@
       .msg-form input { width: 100%; }
     }
 
+    /* LOVE BUTTON */
+    .love-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 8px;
+      position: relative;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .love-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 6px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .love-btn svg {
+      width: 28px;
+      height: 28px;
+      color: #444;
+      transition: color 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), filter 0.3s ease;
+    }
+    .love-btn:hover svg {
+      color: #666;
+      filter: drop-shadow(0 0 4px rgba(255,0,255,0.2));
+    }
+    .love-btn.active svg {
+      color: var(--magenta);
+      filter: drop-shadow(0 0 8px rgba(255,0,255,0.4));
+    }
+    @keyframes lovePop {
+      0%   { transform: scale(1); }
+      20%  { transform: scale(0.8); }
+      50%  { transform: scale(1.25); }
+      75%  { transform: scale(0.95); }
+      100% { transform: scale(1); }
+    }
+    .love-btn.pop svg { animation: lovePop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .love-count {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 12px;
+      color: #555;
+      min-width: 16px;
+      transition: color 0.3s;
+    }
+    .love-btn.active ~ .love-count { color: var(--magenta); }
+
     /* Focus visible styles (keyboard accessibility) */
     :focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
     .play-btn:focus-visible { box-shadow: 0 0 20px rgba(0,255,234,0.5); }
@@ -1424,6 +1475,12 @@
     <header class="header">
       <div class="station-name">KPAB.FM</div>
       <div class="station-subtitle">Broadcasting from Brunswick</div>
+      <div class="love-wrap">
+        <button class="love-btn" id="loveBtn" aria-label="Show some love" type="button">
+          <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="currentColor"/></svg>
+        </button>
+        <span class="love-count" id="loveCount"></span>
+      </div>
       <div class="status-bar">
         <span class="status-dot"></span>
         <span>LIVE TRANSMISSION</span>
@@ -2390,6 +2447,47 @@
         mutinyFire.innerHTML = '&#x2620; WALK THE PLANK';
         mutinyFire.disabled = false;
       }
+    });
+
+    // === LOVE BUTTON ===
+    const loveBtn = document.getElementById('loveBtn');
+    const loveCount = document.getElementById('loveCount');
+    let loveTotal = parseInt(localStorage.getItem('kpab-love') || '0');
+    if (loveTotal > 0) {
+      loveBtn.classList.add('active');
+      loveCount.textContent = loveTotal;
+    }
+
+    function spawnParticles(btn) {
+      const colors = ['var(--magenta)', 'var(--cyan)', '#ff66cc', '#66ffee', '#ffcc00', '#ff4488'];
+      const count = 8 + Math.floor(Math.random() * 5);
+      for (let i = 0; i < count; i++) {
+        const p = document.createElement('span');
+        const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
+        const dist = 25 + Math.random() * 35;
+        const dx = Math.cos(angle) * dist;
+        const dy = Math.sin(angle) * dist;
+        const size = 2 + Math.random() * 4;
+        p.style.cssText = `position:absolute;left:50%;top:50%;width:${size}px;height:${size}px;background:${colors[i % colors.length]};border-radius:${Math.random()>0.5?'50%':'1px'};pointer-events:none;z-index:10;`;
+        btn.appendChild(p);
+        p.animate([
+          { transform: 'translate(-50%,-50%) scale(1)', opacity: 1 },
+          { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(0)`, opacity: 0 }
+        ], { duration: 450 + Math.random() * 250, easing: 'cubic-bezier(0, 0.9, 0.57, 1)', fill: 'forwards' });
+        setTimeout(() => p.remove(), 800);
+      }
+    }
+
+    loveBtn.addEventListener('click', () => {
+      loveTotal++;
+      localStorage.setItem('kpab-love', loveTotal);
+      loveBtn.classList.add('active');
+      loveBtn.classList.remove('pop');
+      void loveBtn.offsetWidth;
+      loveBtn.classList.add('pop');
+      loveCount.textContent = loveTotal;
+      spawnParticles(loveBtn);
+      if (navigator.vibrate) navigator.vibrate(12);
     });
 
     // Haptic feedback — subtle vibration on interactive taps
