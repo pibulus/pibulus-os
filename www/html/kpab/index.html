@@ -1677,9 +1677,14 @@
       const np = data.now_playing;
       const song = np?.song;
       const history = data.song_history || [];
-      const listeners = data.listeners?.current ?? '\u2014';
-
-      listenerCount.textContent = listeners;
+      const listeners = data.listeners?.current ?? 0;
+      const badge = listenerCount.closest('.listeners-badge');
+      if (listeners < 3) {
+        badge.style.display = 'none';
+      } else {
+        badge.style.display = '';
+        listenerCount.textContent = listeners;
+      }
       signalLost.style.display = 'none';
       trackArtist.style.display = '';
       trackTitle.style.display = '';
