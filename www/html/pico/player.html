@@ -9,14 +9,25 @@
         html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
         #canvas {
             display: block;
-            width: 100% !important;
-            height: 100% !important;
-            object-fit: contain;
             image-rendering: optimizeSpeed;
             image-rendering: -moz-crisp-edges;
             image-rendering: -webkit-optimize-contrast;
             image-rendering: pixelated;
             -ms-interpolation-mode: nearest-neighbor;
+        }
+        /* Desktop: canvas fills everything */
+        .no-touch #canvas {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: contain;
+        }
+        /* Mobile: canvas on top, controls below */
+        .has-touch { display: flex; flex-direction: column; height: 100%; }
+        .has-touch #canvas {
+            width: 100% !important;
+            flex: 1 1 auto;
+            min-height: 0;
+            object-fit: contain;
         }
         #loading {
             position: fixed; inset: 0;
@@ -25,31 +36,174 @@
             background: #000; z-index: 10;
         }
         #loading.hidden { display: none; }
+
+        /* Touch controls — hidden on desktop */
+        #touch-controls {
+            display: none;
+            flex: 0 0 auto;
+            height: 140px;
+            padding: 10px 16px;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
+        }
+        .has-touch #touch-controls { display: flex; }
+
+        /* D-pad */
+        .dpad {
+            position: relative;
+            width: 120px; height: 120px;
+        }
+        .dpad-btn {
+            position: absolute;
+            width: 40px; height: 40px;
+            background: rgba(255,224,102,0.15);
+            border: 1px solid rgba(255,224,102,0.3);
+            border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            color: rgba(255,224,102,0.6);
+            font-size: 18px;
+            font-family: monospace;
+            touch-action: none;
+        }
+        .dpad-btn.active { background: rgba(255,224,102,0.4); border-color: rgba(255,224,102,0.7); }
+        .dpad-up    { top: 0;    left: 40px; }
+        .dpad-down  { bottom: 0; left: 40px; }
+        .dpad-left  { top: 40px; left: 0; }
+        .dpad-right { top: 40px; right: 0; }
+
+        /* Action buttons */
+        .action-btns { display: flex; gap: 12px; align-items: center; }
+        .action-btn {
+            width: 56px; height: 56px;
+            border-radius: 50%;
+            border: 2px solid rgba(0,255,234,0.4);
+            background: rgba(0,255,234,0.1);
+            color: rgba(0,255,234,0.7);
+            font-family: monospace;
+            font-size: 20px; font-weight: bold;
+            display: flex; align-items: center; justify-content: center;
+            touch-action: none;
+        }
+        .action-btn.active { background: rgba(0,255,234,0.35); border-color: rgba(0,255,234,0.8); }
+
+        /* Pause button */
+        .pause-btn {
+            width: 36px; height: 28px;
+            border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.05);
+            color: rgba(255,255,255,0.4);
+            font-family: monospace; font-size: 10px;
+            display: flex; align-items: center; justify-content: center;
+            touch-action: none;
+        }
+        .pause-btn.active { background: rgba(255,255,255,0.15); }
+
+        /* Landscape on short screens */
+        @media (orientation: landscape) and (max-height: 500px) {
+            #touch-controls { height: 100px; padding: 4px 16px; }
+            .dpad { width: 90px; height: 90px; }
+            .dpad-btn { width: 30px; height: 30px; font-size: 14px; }
+            .dpad-up    { left: 30px; }
+            .dpad-down  { left: 30px; }
+            .dpad-right { top: 30px; }
+            .dpad-left  { top: 30px; }
+            .action-btn { width: 44px; height: 44px; font-size: 16px; }
+        }
     </style>
 </head>
 <body>
     <div id="loading">loading cart...</div>
     <canvas id="canvas" width="128" height="128"></canvas>
 
+    <div id="touch-controls">
+        <div class="dpad" id="dpad">
+            <div class="dpad-btn dpad-up" data-btn="up">&#9650;</div>
+            <div class="dpad-btn dpad-down" data-btn="down">&#9660;</div>
+            <div class="dpad-btn dpad-left" data-btn="left">&#9664;</div>
+            <div class="dpad-btn dpad-right" data-btn="right">&#9654;</div>
+        </div>
+        <div class="pause-btn" data-btn="pause">&#9612;&#9612;</div>
+        <div class="action-btns">
+            <div class="action-btn" data-btn="o">O</div>
+            <div class="action-btn" data-btn="x">X</div>
+        </div>
+    </div>
+
     <script src="pako.min.js"></script>
     <script src="UPNG.js"></script>
 
     <script>
-        // Override Emscripten's canvas sizing — force CSS to fill viewport
-        // The runtime sets canvas.width/height (drawing buffer) but we want
-        // CSS to scale it up to fill the iframe while keeping pixel-perfect rendering
-        var _origSetAttribute = HTMLCanvasElement.prototype.setAttribute;
-        var _canvas = document.getElementById('canvas');
+        // Detect touch device
+        var isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+        document.body.classList.add(isTouchDevice ? 'has-touch' : 'no-touch');
 
-        // Prevent the runtime from setting style.width/height directly
-        Object.defineProperty(_canvas.style, 'width', {
-            set: function() { /* blocked — CSS handles this */ },
-            get: function() { return '100%'; }
-        });
-        Object.defineProperty(_canvas.style, 'height', {
-            set: function() { /* blocked — CSS handles this */ },
-            get: function() { return '100%'; }
-        });
+        // Canvas sizing override for desktop (block runtime from setting CSS size)
+        if (!isTouchDevice) {
+            var _canvas = document.getElementById('canvas');
+            Object.defineProperty(_canvas.style, 'width', {
+                set: function() {},
+                get: function() { return '100%'; }
+            });
+            Object.defineProperty(_canvas.style, 'height', {
+                set: function() {},
+                get: function() { return '100%'; }
+            });
+        }
+
+        // pico8_buttons: bitmask per player
+        // bit 0=left, 1=right, 2=up, 3=down, 4=O(z), 5=X, 6=pause
+        var pico8_buttons = [0, 0, 0, 0, 0, 0, 0, 0];
+
+        var btnBits = {
+            left:  1,
+            right: 2,
+            up:    4,
+            down:  8,
+            o:     16,
+            x:     32,
+            pause: 64
+        };
+
+        function updateButton(name, pressed) {
+            var bit = btnBits[name];
+            if (!bit) return;
+            if (pressed) {
+                pico8_buttons[0] |= bit;
+            } else {
+                pico8_buttons[0] &= ~bit;
+            }
+            var el = document.querySelector('[data-btn="' + name + '"]');
+            if (el) el.classList.toggle('active', pressed);
+        }
+
+        function handleTouch(e) {
+            e.preventDefault();
+            var currentlyPressed = {};
+
+            for (var i = 0; i < e.touches.length; i++) {
+                var touch = e.touches[i];
+                var el = document.elementFromPoint(touch.clientX, touch.clientY);
+                if (el && el.dataset && el.dataset.btn) {
+                    currentlyPressed[el.dataset.btn] = true;
+                }
+            }
+
+            Object.keys(btnBits).forEach(function(name) {
+                updateButton(name, !!currentlyPressed[name]);
+            });
+        }
+
+        if (isTouchDevice) {
+            var controls = document.getElementById('touch-controls');
+            controls.addEventListener('touchstart', handleTouch, { passive: false });
+            controls.addEventListener('touchmove', handleTouch, { passive: false });
+            controls.addEventListener('touchend', handleTouch, { passive: false });
+            controls.addEventListener('touchcancel', handleTouch, { passive: false });
+        }
 
         var Module = {
             canvas: (function() { return document.getElementById('canvas'); })(),
@@ -63,8 +217,9 @@
             }
         };
 
-        document.addEventListener('touchstart', function(e) { e.preventDefault(); }, { passive: false });
-        document.addEventListener('touchmove', function(e) { e.preventDefault(); }, { passive: false });
+        // Prevent scroll/zoom on canvas
+        document.getElementById('canvas').addEventListener('touchstart', function(e) { e.preventDefault(); }, { passive: false });
+        document.getElementById('canvas').addEventListener('touchmove', function(e) { e.preventDefault(); }, { passive: false });
     </script>
     <script>
         var _cartname = [];
