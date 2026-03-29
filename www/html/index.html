@@ -27,11 +27,33 @@
     }
     html { scrollbar-color: var(--cyan) var(--bg); scrollbar-width: thin; }
     body { background-color: var(--bg); color: var(--text); font-family: 'VT323', monospace; font-size: 20px; line-height: 1.6; min-height: 100vh; overflow-x: hidden; }
-    body::before { content: ''; position: fixed; inset: 0; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.12) 2px, rgba(0,0,0,0.12) 4px); pointer-events: none; z-index: 10; }
+
+    /* ─── SCANLINE: slow drift downward ─── */
+    @keyframes scanDrift {
+      from { background-position-y: 0; }
+      to   { background-position-y: 80px; }
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.12) 2px, rgba(0,0,0,0.12) 4px);
+      pointer-events: none;
+      z-index: 10;
+      animation: scanDrift 6s linear infinite;
+    }
     body::after { content: ''; position: fixed; inset: 0; background-image: linear-gradient(rgba(0,255,234,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,234,0.025) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; z-index: 0; }
+
     .wrapper { position: relative; z-index: 1; max-width: 880px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
     header { text-align: center; padding: 3.5rem 0 1.5rem; }
-    h1 { font-size: clamp(3rem, 11vw, 5.5rem); line-height: 1; color: var(--cyan); text-shadow: 0 0 10px var(--cyan), 0 0 30px rgba(0,255,234,0.4); letter-spacing: 4px; margin-bottom: 0.5rem; }
+
+    /* ─── H1 BREATHING GLOW ─── */
+    @keyframes breathe {
+      0%, 100% { text-shadow: 0 0 10px var(--cyan), 0 0 30px rgba(0,255,234,0.4); }
+      50%       { text-shadow: 0 0 18px var(--cyan), 0 0 55px rgba(0,255,234,0.65), 0 0 90px rgba(0,255,234,0.2); }
+    }
+    h1 { font-size: clamp(3rem, 11vw, 5.5rem); line-height: 1; color: var(--cyan); text-shadow: 0 0 10px var(--cyan), 0 0 30px rgba(0,255,234,0.4); letter-spacing: 4px; margin-bottom: 0.5rem; animation: breathe 4s ease-in-out infinite; }
+
     .subtitle { font-size: clamp(1.1rem, 3.5vw, 1.5rem); color: var(--magenta); text-shadow: 0 0 8px rgba(255,0,255,0.5); letter-spacing: 2px; }
     @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
     .cursor { display: inline-block; width: 0.65em; height: 0.95em; background: var(--cyan); vertical-align: text-bottom; animation: blink 1.2s step-end infinite; }
@@ -44,14 +66,66 @@
     .grid-2 { grid-template-columns: repeat(2, 1fr); }
     .grid-3 { grid-template-columns: repeat(3, 1fr); }
     @media (max-width: 560px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
-    .card { display: block; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 2px; padding: 1.5rem 1.25rem; text-decoration: none; color: var(--text); transition: transform 0.2s, border-color 0.2s; position: relative; overflow: hidden; text-align: center; }
-    .card:hover { transform: translateY(-4px); border-color: rgba(0,255,234,0.7); }
+
+    /* ─── CARD ENTRANCE ─── */
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .card {
+      display: block;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 2px;
+      padding: 1.5rem 1.25rem;
+      text-decoration: none;
+      color: var(--text);
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+      /* spring physics: linear() approximation of a fast spring */
+      transition:
+        transform 0.45s linear(0,0.009,0.035,0.076,0.128,0.189,0.255,0.323,0.39,0.454,0.514,0.569,0.619,0.663,0.7,0.731,0.757,0.778,0.795,0.808,0.818,0.825,0.83,0.833,0.835,0.836,0.836,0.835,0.833,0.831,1),
+        border-color 0.2s ease,
+        box-shadow 0.25s ease;
+      /* entrance: paused until IntersectionObserver fires */
+      opacity: 0;
+      animation: cardIn 0.5s ease-out forwards paused;
+    }
+    .card.visible { animation-play-state: running; }
+
+    /* ─── CARD HOVER GLOW from cursor position ─── */
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      background: radial-gradient(circle 80px at var(--mx, 50%) var(--my, 50%), rgba(0,255,234,0.12), transparent 70%);
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+      border-radius: inherit;
+    }
+    .card:hover::before { opacity: 1; }
+    .card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(0,255,234,0.7);
+      box-shadow: 0 8px 24px rgba(0,255,234,0.12);
+    }
+
+    /* stagger delays for entrance — applied per grid position */
+    .grid .card:nth-child(1) { animation-delay: 0ms; }
+    .grid .card:nth-child(2) { animation-delay: 60ms; }
+    .grid .card:nth-child(3) { animation-delay: 120ms; }
+    .grid .card:nth-child(4) { animation-delay: 180ms; }
+    .grid .card:nth-child(5) { animation-delay: 240ms; }
+    .grid .card:nth-child(6) { animation-delay: 300ms; }
+
     .card-emoji { font-size: 2rem; display: block; margin-bottom: 0.4rem; line-height: 1; }
     .card-label { font-size: 1.7rem; color: var(--cyan); letter-spacing: 2px; display: block; margin-bottom: 0.15rem; }
     .card-desc { font-size: 1.1rem; color: var(--dim); letter-spacing: 1px; }
     .card.fun .card-label { color: var(--yellow); text-shadow: 0 0 6px rgba(255,215,0,0.4); }
     .card.solidarity .card-label { color: var(--green); text-shadow: 0 0 6px rgba(85,204,85,0.4); }
-    
+
     /* MODAL */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(8px); z-index: 1000; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; }
     .modal-overlay.active { display: flex; opacity: 1; }
@@ -83,23 +157,56 @@
     footer { text-align: center; margin-top: 3.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(0,255,234,0.15); }
     .footer-text { color: var(--dim-soft); font-size: 1rem; letter-spacing: 3px; }
     .footer-text span { color: var(--cyan); }
+
+    /* ─── FAQ SMOOTH ACCORDION ─── */
     .faq { display: flex; flex-direction: column; gap: 2px; }
     .faq details { background: var(--card-bg); border: 1px solid rgba(0,255,234,0.15); border-radius: 2px; }
     .faq summary { padding: 1rem 1.25rem; cursor: pointer; color: var(--cyan); font-size: 1.3rem; letter-spacing: 1px; list-style: none; display: flex; align-items: center; gap: 0.75rem; }
-    .faq summary::before { content: '+'; color: var(--magenta); font-size: 1.5rem; flex-shrink: 0; width: 1.2em; text-align: center; }
+    .faq summary::before { content: '+'; color: var(--magenta); font-size: 1.5rem; flex-shrink: 0; width: 1.2em; text-align: center; transition: transform 0.3s ease; }
     .faq details[open] summary::before { content: '\2212'; }
-    .faq details p { padding: 0 1.25rem 1rem 3rem; color: var(--dim); font-size: 1.1rem; line-height: 1.5; }
+    .faq details p {
+      padding: 0 1.25rem 0 3rem;
+      color: var(--dim);
+      font-size: 1.1rem;
+      line-height: 1.5;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease, padding-bottom 0.35s ease;
+    }
+    .faq details[open] p { max-height: 300px; padding-bottom: 1rem; }
     .faq details p a { color: var(--cyan); text-decoration: none; }
 
+    /* ─── CURSOR GLOW ─── */
+    #cursor-glow {
+      position: fixed;
+      top: 0; left: 0;
+      width: 320px; height: 320px;
+      background: radial-gradient(circle, rgba(0,255,234,0.045) 0%, transparent 65%);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 5;
+      transform: translate(-50%, -50%);
+      transition: opacity 0.4s ease;
+      will-change: transform;
+    }
+
+    /* ─── REDUCED MOTION: kill everything ─── */
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation: none !important; transition: none !important; }
-      body::before { display: none; }
+      body::before { animation: none !important; }
+      .card { opacity: 1 !important; animation: none !important; }
+      #cursor-glow { display: none; }
+      .faq details p { max-height: none; overflow: visible; padding-bottom: 1rem; }
     }
+
     :focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
     .card:focus-visible { border-color: rgba(0,255,234,0.7); }
   </style>
 </head>
 <body>
+  <!-- cursor glow blob -->
+  <div id="cursor-glow" aria-hidden="true"></div>
+
   <div class="modal-overlay" id="request-modal">
     <div class="modal-card">
       <span class="modal-close" onclick="closeRequest()">&times;</span>
@@ -175,6 +282,46 @@
   </div>
 
   <script>
+    // ─── CARD ENTRANCE via IntersectionObserver ───
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!prefersReduced) {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
+      }, { threshold: 0.1 });
+      document.querySelectorAll('.card').forEach(c => io.observe(c));
+    } else {
+      document.querySelectorAll('.card').forEach(c => c.classList.add('visible'));
+    }
+
+    // ─── CARD HOVER GLOW: track cursor position per card ───
+    if (!prefersReduced) {
+      document.querySelectorAll('.card').forEach(card => {
+        card.addEventListener('mousemove', e => {
+          const r = card.getBoundingClientRect();
+          card.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
+          card.style.setProperty('--my', ((e.clientY - r.top)  / r.height * 100) + '%');
+        });
+      });
+    }
+
+    // ─── CURSOR GLOW ───
+    if (!prefersReduced) {
+      const glow = document.getElementById('cursor-glow');
+      let rx = -500, ry = -500, cx = -500, cy = -500, rafId;
+      document.addEventListener('mousemove', e => { rx = e.clientX; ry = e.clientY; });
+      (function loop() {
+        cx += (rx - cx) * 0.1;
+        cy += (ry - cy) * 0.1;
+        glow.style.transform = `translate(${cx - 160}px, ${cy - 160}px)`;
+        rafId = requestAnimationFrame(loop);
+      })();
+    }
+
+    // ─── FAQ: prevent native instant-open so CSS transition plays ───
+    // The CSS max-height transition works natively via details[open] attribute,
+    // no JS needed. The marker + transition handles it cleanly.
+
+    // ─── EXISTING LOGIC (unchanged) ───
     const PREFIXES = ['Mighty', 'Radical', 'SubGenius', 'Rogue', 'Neon', 'Cosmic', 'Chaos', 'Void'];
     const DUCKS = ['Puddles', 'Quackers', 'Darkwing', 'Bill', 'Webby', 'Launchpad', 'Mallard', 'Drake'];
     let myName = localStorage.getItem('shout_name') || PREFIXES[Math.floor(Math.random()*PREFIXES.length)] + '_' + DUCKS[Math.floor(Math.random()*DUCKS.length)] + '_' + Math.floor(Math.random()*99);
@@ -199,7 +346,6 @@
     }
     setInterval(loadShouts, 5000); loadShouts();
 
-    // Radio Logic
     const aliveEl = document.getElementById('alive');
     function updateNP() {
       fetch('/status.json').then(r => r.json()).then(d => {
@@ -208,10 +354,9 @@
     }
     setInterval(updateNP, 30000); updateNP();
 
-    // Request Modal
     function openRequest() { document.getElementById('request-modal').classList.add('active'); }
     function closeRequest() { document.getElementById('request-modal').classList.remove('active'); }
-    
+
     let searchTimer = null;
     function searchSongs() {
       clearTimeout(searchTimer);
