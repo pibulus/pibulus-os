@@ -1249,7 +1249,7 @@
       width: 100%;
       resize: none;
       line-height: 1.5;
-      font-size: 13px;
+      font-size: 16px;
     }
 
     .msg-form input::placeholder,
@@ -1436,7 +1436,7 @@
 
           <div class="faq-item">
             <div class="faq-q">WHAT KIND OF MUSIC?</div>
-            <div class="faq-a">All of it. Punk, jazz, salsa, metal, ambient, hip-hop, Afrobeat, hyperpop, country, dub, soul, whatever. The curation guarantees a floor &mdash; nothing evil, nothing obvious &mdash; but within that, anything can happen. The fun is in not knowing what's next.</div>
+            <div class="faq-a">All of it. Punk, jazz, salsa, metal, ambient, hip-hop, Afrobeat, hyperpop, country, dub, soul, whatever. The curation guarantees a floor &mdash; nothing evil, nothing obvious &mdash; but within that, anything can happen. It's fun not knowing what's next!</div>
           </div>
 
           <div class="faq-item">
@@ -1444,6 +1444,7 @@
             <div class="faq-a">Because Spotify's algorithms are a con. Because radio compartmentalises people into taste categories. Because every dollar or minute taken away from platforms that exploit musicians is worth it. We're bigger than genre. It's time to build our own platforms and think local digitally.</div>
           </div>
 
+          <!--
           <div class="faq-item">
             <div class="faq-q">HOW SHOULD I LISTEN?</div>
             <div class="faq-a">Hit play and let it ride. Not recognising half the songs is a feature, not a bug &mdash; jumping from Enya to Pantera <em>is</em> the point. Give it half an hour, it starts to make sense. You can search and request from the full catalog, no account needed. If something catches you, stay with it. If it doesn't, something better is 3 minutes away. Want a radio show? Hit me up.</div>
@@ -1458,6 +1459,7 @@
             <div class="faq-q">WHAT'S COMING?</div>
             <div class="faq-a">Track voting that shapes rotation. Station IDs. Wacky podcasts. Experimental hours. More music. Whatever! &mdash; it's pirate radio. The frequency must grow.</div>
           </div>
+          -->
 
           <div class="faq-item">
             <div class="faq-q">WILL IT GO DOWN?</div>
@@ -1484,7 +1486,7 @@
             <input type="text" id="msgName" placeholder="HANDLE" maxlength="32">
             <textarea id="msgText" placeholder="leave a signal on the wall..." maxlength="280" rows="2"></textarea>
           </div>
-          <button class="msg-send" id="msgSend" style="width:100%; margin-top:8px;">TRANSMIT</button>
+          <button type="button" class="msg-send" id="msgSend" style="width:100%; margin-top:8px; -webkit-tap-highlight-color: transparent; touch-action: manipulation;">TRANSMIT</button>
           <span class="msg-status" id="msgStatus"></span>
         </div>
       </div>
@@ -2138,7 +2140,7 @@
     loadShouts();
     shoutsInterval = setInterval(loadShouts, 30000);
 
-    msgSend.addEventListener('click', async () => {
+    async function submitShout() {
       const text = msgText.value.trim();
       if (!text) return;
 
@@ -2176,7 +2178,9 @@
 
       msgSend.disabled = false;
       msgSend.textContent = 'TRANSMIT';
-    });
+    }
+    msgSend.addEventListener('click', submitShout);
+    msgSend.addEventListener('touchend', (e) => { e.preventDefault(); submitShout(); });
 
     // Register service worker for PWA
     if ('serviceWorker' in navigator) {
