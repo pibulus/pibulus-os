@@ -440,10 +440,7 @@
         <div class="stat-value" id="d-up">--</div>
         <div class="stat-label">UPTIME</div>
       </div>
-      <div class="now-playing">
-        <span class="np-label"><span class="live-dot" id="np-dot"></span>KPAB admin</span>
-        <div class="np-song" id="np-song">loading...</div>
-      </div>
+
     </div>
 
     <!-- ADMIN -->
@@ -649,17 +646,6 @@
           document.getElementById('d-up').textContent = d.uptime;
 
           // Now playing
-          var npDot = document.getElementById('np-dot');
-          var npSong = document.getElementById('np-song');
-          if (d.np_artist && d.np_title) {
-            npSong.innerHTML = '<a href="https://kpab.fm" target="_blank">' +
-              d.np_artist + ' &mdash; ' + d.np_title + '</a>' +
-              (d.np_listeners > 0 ? ' <span style="color:var(--dim);font-size:0.85rem;">(' + d.np_listeners + ' listening)</span>' : '');
-            npDot.className = 'live-dot';
-          } else {
-            npSong.textContent = 'offline';
-            npDot.className = 'live-dot off';
-          }
 
           // Footer
           document.getElementById('f-containers').textContent = d.containers;

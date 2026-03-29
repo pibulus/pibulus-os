@@ -21,6 +21,9 @@ echo "Dropzone (8085) PID: $!"
 python3 $SCRIPTS/scripts/wall_server.py &
 echo "Wall Server (8086) PID: $!"
 
+python3 $SCRIPTS/scripts/kpab_hearts.py &
+echo "Hearts (8092) PID: $!"
+
 # Public Cyberdeck — no auth, sandboxed to game launcher only
 /usr/local/bin/ttyd -p 7683 -t fontSize=16 -t fontFamily=monospace   -t 'theme={"background":"#050505","foreground":"#e0e0e0","cursor":"#ff00ff"}'   --max-clients 5 $SCRIPTS/public-deck.sh &
 echo "Public Deck (7683) PID: $!"
