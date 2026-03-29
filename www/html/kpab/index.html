@@ -108,6 +108,29 @@
       text-shadow: 0 0 10px var(--cyan), 0 0 30px rgba(0,255,234,0.4), 0 0 60px rgba(0,255,234,0.1);
       line-height: 1;
       letter-spacing: 4px;
+      animation: titleGlitch 6s ease-in-out infinite;
+      position: relative;
+    }
+    @keyframes titleGlitch {
+      0%, 89%, 91%, 93%, 95%, 100% {
+        text-shadow: 0 0 10px var(--cyan), 0 0 30px rgba(0,255,234,0.4), 0 0 60px rgba(0,255,234,0.1);
+        transform: translate(0);
+        filter: none;
+      }
+      90% {
+        text-shadow: -2px 0 var(--magenta), 2px 0 var(--cyan), 0 0 20px var(--cyan);
+        transform: translate(-2px, 1px);
+        filter: hue-rotate(10deg);
+      }
+      92% {
+        text-shadow: 2px 0 var(--magenta), -1px 0 var(--cyan), 0 0 30px rgba(255,0,255,0.3);
+        transform: translate(1px, -1px);
+        filter: hue-rotate(-10deg);
+      }
+      94% {
+        text-shadow: -1px 0 var(--magenta), 1px 0 var(--cyan), 0 0 40px var(--cyan);
+        transform: translate(2px, 0);
+      }
     }
 
     .station-subtitle {
@@ -118,6 +141,13 @@
       text-transform: uppercase;
       margin-top: 4px;
       text-shadow: 0 0 8px rgba(255,0,255,0.5);
+      animation: subtitleFlicker 4s ease-in-out infinite;
+    }
+    @keyframes subtitleFlicker {
+      0%, 92%, 96%, 100% { opacity: 1; }
+      93% { opacity: 0.6; }
+      94% { opacity: 1; }
+      95% { opacity: 0.4; }
     }
 
     .status-bar {
@@ -368,8 +398,8 @@
       background: var(--cyan);
       border-radius: 1px;
       min-height: 3px;
-      opacity: 0.3;
-      transition: height 0.1s ease;
+      opacity: 0.15;
+      animation: vizIdle var(--dur, 2s) ease-in-out infinite alternate;
     }
 
     .visualizer.active .viz-bar {
@@ -377,13 +407,16 @@
       animation: vizPulse var(--dur, 0.6s) ease-in-out infinite alternate;
     }
 
+    @keyframes vizIdle {
+      from { transform: scaleY(0.08); opacity: 0.1; }
+      to   { transform: scaleY(0.25); opacity: 0.2; }
+    }
+
     @keyframes vizPulse {
       from { transform: scaleY(0.15); }
       to   { transform: scaleY(1); }
     }
 
-    .vol-wrapper { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-    .vol-icon { color: var(--dim); font-size: 14px; width: 18px; text-align: center; cursor: pointer; }
 
     input[type="range"] {
       -webkit-appearance: none; appearance: none;
@@ -547,7 +580,6 @@
       .art-wrapper, .album-art, .art-placeholder { width: 72px; height: 72px; }
       .station-name { letter-spacing: 2px; }
       .status-bar { gap: 8px; font-size: 10px; }
-      .vol-wrapper { display: none; }
     }
 
     /* REQUEST PANEL */
@@ -1393,10 +1425,6 @@
     <section class="player-controls" aria-label="Player controls">
       <button class="play-btn" id="playBtn" aria-label="Play stream" title="Play / Pause">&#x25B6;</button>
       <div class="visualizer" id="visualizer" aria-hidden="true"></div>
-      <div class="vol-wrapper">
-        <span class="vol-icon" id="volIcon">&#x1F50A;</span>
-        <input type="range" id="volSlider" min="0" max="1" step="0.02" value="0.8" aria-label="Volume">
-      </div>
       <div class="listeners-badge">&#x1F465; <span class="listeners-count" id="listenerCount">&mdash;</span> listening</div>
     </section>
     </div>
@@ -1570,8 +1598,6 @@
 
     const audioEl        = document.getElementById('audioEl');
     const playBtn        = document.getElementById('playBtn');
-    const volSlider      = document.getElementById('volSlider');
-    const volIcon        = document.getElementById('volIcon');
     const albumArt       = document.getElementById('albumArt');
     const artPlaceholder = document.getElementById('artPlaceholder');
     const trackArtist    = document.getElementById('trackArtist');
@@ -1590,8 +1616,9 @@
     for (let i = 0; i < 18; i++) {
       const bar = document.createElement('div');
       bar.className = 'viz-bar';
-      bar.style.setProperty('--dur', (0.35 + Math.random() * 0.55).toFixed(2) + 's');
-      bar.style.animationDelay = (Math.random() * 0.4).toFixed(2) + 's';
+      bar.dataset.activeDur = (0.35 + Math.random() * 0.55).toFixed(2) + 's';
+      bar.style.setProperty('--dur', (1.5 + Math.random() * 2).toFixed(2) + 's');
+      bar.style.animationDelay = (Math.random() * 1.5).toFixed(2) + 's';
       bar.style.height = '100%';
       visualizer.appendChild(bar);
     }
@@ -1862,12 +1889,16 @@
 
     function startPolling() { poll(); pollTimer = setInterval(poll, POLL_MS); }
 
-    audioEl.volume = parseFloat(volSlider.value);
+    audioEl.volume = 0.8;
 
     const playerChassis = document.getElementById('playerChassis');
 
     function setPlaying(state) {
       isPlaying = state;
+      // Swap viz bar durations between idle (slow) and active (fast)
+      visualizer.querySelectorAll('.viz-bar').forEach(bar => {
+        bar.style.setProperty('--dur', state ? bar.dataset.activeDur : (1.5 + Math.random() * 2).toFixed(2) + 's');
+      });
       if (state) {
         playBtn.textContent = '\u23F8';
         playBtn.classList.add('playing');
@@ -1914,11 +1945,6 @@
     audioEl.addEventListener('ended', () => setPlaying(false));
     audioEl.addEventListener('error', () => setPlaying(false));
 
-    volSlider.addEventListener('input', () => {
-      const v = parseFloat(volSlider.value);
-      audioEl.volume = v;
-      volIcon.textContent = v === 0 ? '\uD83D\uDD07' : v < 0.4 ? '\uD83D\uDD09' : '\uD83D\uDD0A';
-    });
 
     // Media Session API for lock screen / notification controls
     if ('mediaSession' in navigator) {
