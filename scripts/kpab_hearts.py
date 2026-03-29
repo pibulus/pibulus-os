@@ -8,7 +8,7 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 
 PORT = 8092
 HEARTS_FILE = "/home/pibulus/pibulus-os/data/hearts.json"
-COOLDOWN = 3600  # 1 heart per song per IP per hour
+COOLDOWN = 0  # one heart per song per person, no time limit
 
 os.makedirs(os.path.dirname(HEARTS_FILE), exist_ok=True)
 
@@ -123,16 +123,14 @@ class HeartHandler(BaseHTTPRequestHandler):
             last_vote = entry.get("voters", {}).get(fp, 0)
             now = time.time()
 
-            if now - last_vote < COOLDOWN:
-                remaining = int(COOLDOWN - (now - last_vote))
+            if last_vote > 0:
                 self.send_response(429)
                 self.send_header("Content-Type", "application/json")
                 self._cors()
                 self.end_headers()
                 self.wfile.write(json.dumps({
-                    "error": "already hearted",
-                    "hearts": entry["hearts"],
-                    "retry_after": remaining
+                    "error": "already hearted this track",
+                    "hearts": entry["hearts"]
                 }).encode())
                 return
 
