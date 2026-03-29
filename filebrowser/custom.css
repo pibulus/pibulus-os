@@ -1,0 +1,636 @@
+/*
+ * THE VAULT — Pastel Punk Theme v2
+ * vault.quickcat.club
+ * Soft neo-toybrut + whimsical micro-interactions
+ */
+
+/* ═══════════════════════════════════════════
+   FONTS
+   ═══════════════════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* ═══════════════════════════════════════════
+   THE PALETTE
+   ═══════════════════════════════════════════ */
+:root {
+  --vault-bg: #1a1625;
+  --vault-surface: #231e30;
+  --vault-surface-hover: #2d2640;
+  --vault-border: #3d3555;
+  --vault-text: #e8e0f0;
+  --vault-text-dim: #9a8fb5;
+  --vault-pink: #ff6b9d;
+  --vault-lavender: #c4a7ff;
+  --vault-mint: #7dffca;
+  --vault-peach: #ffb088;
+  --vault-sky: #88d1ff;
+  --vault-yellow: #ffe088;
+  --vault-glow: rgba(196, 167, 255, 0.15);
+  --vault-radius: 12px;
+  --vault-radius-sm: 8px;
+  --vault-transition: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ═══════════════════════════════════════════
+   ANIMATIONS — The soul of it
+   ═══════════════════════════════════════════ */
+@keyframes vault-fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes vault-shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes vault-pulse-soft {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes vault-wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-2deg); }
+  75% { transform: rotate(2deg); }
+}
+
+@keyframes vault-breathe {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(196, 167, 255, 0); }
+  50% { box-shadow: 0 0 20px 2px rgba(196, 167, 255, 0.08); }
+}
+
+/* ═══════════════════════════════════════════
+   GLOBAL
+   ═══════════════════════════════════════════ */
+body, html {
+  background: var(--vault-bg) !important;
+  color: var(--vault-text) !important;
+  font-family: 'Space Grotesk', -apple-system, sans-serif !important;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Smooth everything */
+*, *::before, *::after {
+  transition: background-color 0.2s var(--vault-transition),
+              border-color 0.2s var(--vault-transition),
+              color 0.15s var(--vault-transition),
+              box-shadow 0.25s var(--vault-transition),
+              transform 0.2s var(--vault-transition) !important;
+}
+
+/* ═══════════════════════════════════════════
+   HEADER / NAVBAR
+   ═══════════════════════════════════════════ */
+header, #header, nav, .navbar {
+  background: var(--vault-surface) !important;
+  border-bottom: 1px solid var(--vault-border) !important;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3) !important;
+  animation: vault-breathe 4s ease-in-out infinite;
+}
+
+header *, nav *, .navbar * {
+  color: var(--vault-text) !important;
+}
+
+/* ═══════════════════════════════════════════
+   SIDEBAR
+   ═══════════════════════════════════════════ */
+aside, .sidebar, nav.sidebar, [class*="sidebar"] {
+  background: var(--vault-surface) !important;
+  border-right: 1px solid var(--vault-border) !important;
+}
+
+aside *, .sidebar * {
+  color: var(--vault-text-dim) !important;
+}
+
+aside a:hover, .sidebar a:hover,
+aside button:hover, .sidebar button:hover {
+  color: var(--vault-lavender) !important;
+  background: var(--vault-glow) !important;
+  padding-left: 4px !important;
+}
+
+/* ═══════════════════════════════════════════
+   MAIN CONTENT
+   ═══════════════════════════════════════════ */
+main, #main, .main, [id="listing"], #listing, .listing {
+  background: var(--vault-bg) !important;
+  animation: vault-fade-up 0.35s ease-out !important;
+}
+
+/* ═══════════════════════════════════════════
+   BREADCRUMBS
+   ═══════════════════════════════════════════ */
+[class*="breadcrumb"], .breadcrumbs {
+  background: var(--vault-surface) !important;
+  border-radius: var(--vault-radius) !important;
+  padding: 8px 16px !important;
+  margin: 8px !important;
+  border: 1px solid var(--vault-border) !important;
+}
+
+[class*="breadcrumb"] a,
+[class*="breadcrumb"] span {
+  color: var(--vault-lavender) !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 0.85em !important;
+}
+
+[class*="breadcrumb"] a:hover {
+  color: var(--vault-pink) !important;
+  text-shadow: 0 0 8px rgba(255, 107, 157, 0.3) !important;
+}
+
+/* ═══════════════════════════════════════════
+   FILE/FOLDER ITEMS — The main event
+   ═══════════════════════════════════════════ */
+.item, [class*="item"], .listing .item,
+#listing .item, .list-item {
+  border-radius: var(--vault-radius-sm) !important;
+  border: 1px solid transparent !important;
+  margin: 2px 4px !important;
+  position: relative;
+}
+
+/* Staggered fade-in for list items */
+.item:nth-child(1) { animation: vault-fade-up 0.25s ease-out both !important; }
+.item:nth-child(2) { animation: vault-fade-up 0.3s ease-out both !important; }
+.item:nth-child(3) { animation: vault-fade-up 0.35s ease-out both !important; }
+.item:nth-child(4) { animation: vault-fade-up 0.4s ease-out both !important; }
+.item:nth-child(5) { animation: vault-fade-up 0.45s ease-out both !important; }
+.item:nth-child(n+6) { animation: vault-fade-up 0.5s ease-out both !important; }
+
+/* Hover — the good stuff */
+.item:hover, [class*="item"]:hover,
+.listing .item:hover, .list-item:hover {
+  background: var(--vault-surface-hover) !important;
+  border-color: var(--vault-border) !important;
+  transform: translateX(4px) !important;
+  box-shadow: -3px 0 0 var(--vault-lavender),
+              0 4px 16px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Active press — satisfying squish */
+.item:active, [class*="item"]:active {
+  transform: translateX(2px) scale(0.99) !important;
+}
+
+/* File/folder names */
+.item .name, .item a, .item span,
+[class*="item"] .name {
+  color: var(--vault-text) !important;
+  font-weight: 500 !important;
+}
+
+.item:hover .name, .item:hover a {
+  color: var(--vault-lavender) !important;
+}
+
+/* Folder icons — mint with hover wiggle */
+i.material-icons {
+  color: var(--vault-mint) !important;
+  opacity: 0.9;
+}
+
+.item:hover i.material-icons {
+  animation: vault-wiggle 0.4s ease-in-out !important;
+  color: var(--vault-mint) !important;
+  opacity: 1;
+  filter: drop-shadow(0 0 4px rgba(125, 255, 202, 0.3));
+}
+
+/* File metadata — dim mono */
+.item .size, .item .modified, .item .date,
+[class*="size"], [class*="modified"] {
+  color: var(--vault-text-dim) !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 0.8em !important;
+}
+
+/* ═══════════════════════════════════════════
+   MOSAIC / GRID VIEW — Cards
+   ═══════════════════════════════════════════ */
+[class*="mosaic"] .item,
+[class*="grid"] .item {
+  background: var(--vault-surface) !important;
+  border: 1px solid var(--vault-border) !important;
+  border-radius: var(--vault-radius) !important;
+  overflow: hidden;
+}
+
+[class*="mosaic"] .item:hover,
+[class*="grid"] .item:hover {
+  border-color: var(--vault-lavender) !important;
+  transform: translateY(-4px) scale(1.02) !important;
+  box-shadow: 0 8px 30px rgba(196, 167, 255, 0.12),
+              0 0 0 1px var(--vault-lavender) !important;
+}
+
+[class*="mosaic"] .item:active,
+[class*="grid"] .item:active {
+  transform: translateY(-1px) scale(0.98) !important;
+}
+
+/* Thumbnail hover zoom */
+[class*="mosaic"] img, .thumb img,
+[class*="grid"] img {
+  border-radius: var(--vault-radius-sm) var(--vault-radius-sm) 0 0 !important;
+  transition: transform 0.4s var(--vault-transition) !important;
+}
+
+[class*="mosaic"] .item:hover img,
+[class*="grid"] .item:hover img {
+  transform: scale(1.05) !important;
+}
+
+/* ═══════════════════════════════════════════
+   BUTTONS — Chunky pastel with hover glow
+   ═══════════════════════════════════════════ */
+button, .button, [class*="button"],
+input[type="submit"] {
+  background: var(--vault-surface) !important;
+  color: var(--vault-lavender) !important;
+  border: 2px solid var(--vault-border) !important;
+  border-radius: var(--vault-radius-sm) !important;
+  font-family: 'Space Grotesk', sans-serif !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Shimmer effect on hover */
+button::after, .button::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(196, 167, 255, 0.08) 50%,
+    transparent 100%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease !important;
+}
+
+button:hover::after, .button:hover::after {
+  opacity: 1;
+  animation: vault-shimmer 1.5s ease-in-out infinite !important;
+}
+
+button:hover, .button:hover, [class*="button"]:hover {
+  background: var(--vault-glow) !important;
+  border-color: var(--vault-lavender) !important;
+  color: var(--vault-pink) !important;
+  box-shadow: 0 0 20px rgba(196, 167, 255, 0.15) !important;
+  transform: translateY(-1px) !important;
+}
+
+button:active, .button:active {
+  transform: translateY(1px) scale(0.97) !important;
+}
+
+/* Primary/action buttons — gradient */
+button.action, [class*="action"] button,
+button[class*="primary"] {
+  background: linear-gradient(135deg, var(--vault-lavender), var(--vault-pink)) !important;
+  color: var(--vault-bg) !important;
+  border: none !important;
+  font-weight: 700 !important;
+}
+
+button.action:hover, button[class*="primary"]:hover {
+  box-shadow: 0 6px 25px rgba(255, 107, 157, 0.3) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* ═══════════════════════════════════════════
+   INPUTS
+   ═══════════════════════════════════════════ */
+input, textarea, select {
+  background: var(--vault-bg) !important;
+  color: var(--vault-text) !important;
+  border: 2px solid var(--vault-border) !important;
+  border-radius: var(--vault-radius-sm) !important;
+  font-family: 'Space Grotesk', sans-serif !important;
+  padding: 10px 14px !important;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--vault-lavender) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px var(--vault-glow),
+              0 0 15px rgba(196, 167, 255, 0.1) !important;
+}
+
+/* ═══════════════════════════════════════════
+   LOGIN PAGE — Grand entrance
+   ═══════════════════════════════════════════ */
+[id="login"], .login, form[action*="login"] {
+  background: var(--vault-surface) !important;
+  border: 2px solid var(--vault-border) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4),
+              0 0 40px rgba(196, 167, 255, 0.05) !important;
+  padding: 40px !important;
+  animation: vault-fade-up 0.5s ease-out !important;
+}
+
+/* Login title shimmer */
+[id="login"] h1, .login h1,
+[id="login"] .title, .login .title {
+  background: linear-gradient(
+    90deg,
+    var(--vault-lavender),
+    var(--vault-pink),
+    var(--vault-sky),
+    var(--vault-lavender)
+  ) !important;
+  background-size: 200% auto !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  animation: vault-shimmer 4s linear infinite !important;
+  font-weight: 700 !important;
+}
+
+/* Login button — extra juicy */
+[id="login"] button[type="submit"],
+.login button[type="submit"] {
+  background: linear-gradient(135deg, var(--vault-pink), var(--vault-lavender)) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: var(--vault-radius) !important;
+  padding: 12px 32px !important;
+  font-size: 1.05em !important;
+  font-weight: 700 !important;
+  letter-spacing: 1px !important;
+  text-transform: uppercase !important;
+  position: relative;
+  overflow: hidden;
+}
+
+[id="login"] button[type="submit"]:hover,
+.login button[type="submit"]:hover {
+  box-shadow: 0 8px 30px rgba(255, 107, 157, 0.35),
+              0 0 60px rgba(196, 167, 255, 0.15) !important;
+  transform: translateY(-3px) !important;
+}
+
+/* ═══════════════════════════════════════════
+   SEARCH BAR — Pill shape
+   ═══════════════════════════════════════════ */
+[class*="search"] input, #search input {
+  background: var(--vault-bg) !important;
+  border: 2px solid var(--vault-border) !important;
+  border-radius: 20px !important;
+  color: var(--vault-text) !important;
+  font-family: 'JetBrains Mono', monospace !important;
+}
+
+[class*="search"] input:focus, #search input:focus {
+  border-color: var(--vault-sky) !important;
+  box-shadow: 0 0 0 3px rgba(136, 209, 255, 0.15),
+              0 0 20px rgba(136, 209, 255, 0.08) !important;
+}
+
+/* ═══════════════════════════════════════════
+   MODALS / OVERLAYS — Frosted glass
+   ═══════════════════════════════════════════ */
+[class*="overlay"], [class*="modal"],
+[class*="prompt"], .overlay, .modal {
+  background: rgba(26, 22, 37, 0.8) !important;
+  backdrop-filter: blur(12px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(150%) !important;
+}
+
+[class*="card"], .card, [class*="modal"] > div,
+[class*="prompt"] > div {
+  background: var(--vault-surface) !important;
+  border: 1px solid var(--vault-border) !important;
+  border-radius: var(--vault-radius) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) !important;
+  animation: vault-fade-up 0.3s ease-out !important;
+}
+
+/* ═══════════════════════════════════════════
+   SCROLLBAR — Thin and sleek
+   ═══════════════════════════════════════════ */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--vault-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--vault-border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--vault-lavender);
+  box-shadow: 0 0 6px rgba(196, 167, 255, 0.3);
+}
+
+/* ═══════════════════════════════════════════
+   SELECTION
+   ═══════════════════════════════════════════ */
+::selection {
+  background: rgba(255, 107, 157, 0.3);
+  color: white;
+}
+
+/* ═══════════════════════════════════════════
+   FILE TYPE COLOR CODING
+   ═══════════════════════════════════════════ */
+
+/* Audio — warm peach */
+[data-type="audio"] i,
+a[href$=".mp3"] i, a[href$=".flac"] i,
+a[href$=".m4a"] i, a[href$=".ogg"] i,
+a[href$=".opus"] i, a[href$=".wav"] i {
+  color: var(--vault-peach) !important;
+}
+
+/* Video — hot pink */
+[data-type="video"] i,
+a[href$=".mp4"] i, a[href$=".mkv"] i,
+a[href$=".avi"] i, a[href$=".webm"] i {
+  color: var(--vault-pink) !important;
+}
+
+/* Images — sky */
+[data-type="image"] i,
+a[href$=".jpg"] i, a[href$=".png"] i,
+a[href$=".gif"] i, a[href$=".webp"] i {
+  color: var(--vault-sky) !important;
+}
+
+/* Docs/books — gold */
+a[href$=".pdf"] i, a[href$=".epub"] i,
+a[href$=".cbz"] i, a[href$=".cbr"] i,
+a[href$=".txt"] i, a[href$=".md"] i {
+  color: var(--vault-yellow) !important;
+}
+
+/* ═══════════════════════════════════════════
+   LINKS
+   ═══════════════════════════════════════════ */
+a {
+  color: var(--vault-lavender) !important;
+  text-decoration: none !important;
+}
+
+a:hover {
+  color: var(--vault-pink) !important;
+  text-shadow: 0 0 8px rgba(255, 107, 157, 0.2) !important;
+}
+
+/* ═══════════════════════════════════════════
+   CHIPS / BADGES
+   ═══════════════════════════════════════════ */
+[class*="chip"], [class*="badge"], [class*="tag"] {
+  background: var(--vault-glow) !important;
+  color: var(--vault-lavender) !important;
+  border-radius: 20px !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 0.75em !important;
+}
+
+/* ═══════════════════════════════════════════
+   USAGE / PROGRESS BAR
+   ═══════════════════════════════════════════ */
+[class*="usage"] [class*="bar"],
+[class*="progress"] {
+  background: var(--vault-border) !important;
+  border-radius: 10px !important;
+  overflow: hidden;
+}
+
+[class*="usage"] [class*="bar"] > div,
+[class*="progress"] > div {
+  background: linear-gradient(90deg, var(--vault-mint), var(--vault-sky)) !important;
+  border-radius: 10px !important;
+}
+
+/* ═══════════════════════════════════════════
+   EDITOR / CODE VIEWER
+   ═══════════════════════════════════════════ */
+[class*="editor"], .editor, pre, code {
+  background: var(--vault-bg) !important;
+  color: var(--vault-text) !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  border-radius: var(--vault-radius-sm) !important;
+}
+
+/* ═══════════════════════════════════════════
+   VIDEO/AUDIO PLAYER — Native player styling
+   ═══════════════════════════════════════════ */
+video, audio {
+  border-radius: var(--vault-radius) !important;
+  background: var(--vault-surface) !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3) !important;
+  max-width: 100% !important;
+}
+
+video:focus, audio:focus {
+  outline: 2px solid var(--vault-lavender) !important;
+  outline-offset: 2px;
+}
+
+/* ═══════════════════════════════════════════
+   IMAGE PREVIEW
+   ═══════════════════════════════════════════ */
+[class*="preview"] img {
+  border-radius: var(--vault-radius) !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* ═══════════════════════════════════════════
+   PDF VIEWER
+   ═══════════════════════════════════════════ */
+iframe, embed, object {
+  border-radius: var(--vault-radius) !important;
+  border: 1px solid var(--vault-border) !important;
+}
+
+/* ═══════════════════════════════════════════
+   CHECKBOXES — Selected items glow
+   ═══════════════════════════════════════════ */
+.item.selected, [class*="item"].selected,
+.item[aria-selected="true"] {
+  background: rgba(196, 167, 255, 0.1) !important;
+  border-color: var(--vault-lavender) !important;
+  box-shadow: 0 0 0 1px var(--vault-lavender),
+              0 0 15px rgba(196, 167, 255, 0.1) !important;
+}
+
+/* ═══════════════════════════════════════════
+   EMPTY STATE
+   ═══════════════════════════════════════════ */
+[class*="empty"], .empty {
+  color: var(--vault-text-dim) !important;
+  font-style: italic;
+  animation: vault-pulse-soft 3s ease-in-out infinite !important;
+}
+
+/* ═══════════════════════════════════════════
+   CONTEXT MENU / DROPDOWN
+   ═══════════════════════════════════════════ */
+[class*="dropdown"], [class*="menu"],
+[class*="context"] {
+  background: var(--vault-surface) !important;
+  border: 1px solid var(--vault-border) !important;
+  border-radius: var(--vault-radius-sm) !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4) !important;
+  animation: vault-fade-up 0.15s ease-out !important;
+}
+
+[class*="dropdown"] a:hover,
+[class*="menu"] a:hover,
+[class*="dropdown"] button:hover,
+[class*="menu"] button:hover {
+  background: var(--vault-glow) !important;
+}
+
+/* ═══════════════════════════════════════════
+   TOOLTIPS
+   ═══════════════════════════════════════════ */
+[class*="tooltip"] {
+  background: var(--vault-surface) !important;
+  color: var(--vault-text) !important;
+  border: 1px solid var(--vault-border) !important;
+  border-radius: var(--vault-radius-sm) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+  font-size: 0.8em !important;
+}
+
+/* ═══════════════════════════════════════════
+   KILL ALL WHITE
+   ═══════════════════════════════════════════ */
+div, section, article, header, footer, aside, main, nav {
+  color: var(--vault-text);
+}
+
+[style*="background: white"],
+[style*="background:#fff"],
+[style*="background-color: white"],
+[style*="background-color:#fff"] {
+  background: var(--vault-surface) !important;
+}
+
+/* ═══════════════════════════════════════════
+   LOADING SPINNER — Lavender
+   ═══════════════════════════════════════════ */
+.spinner > div {
+  background-color: var(--vault-lavender) !important;
+}
