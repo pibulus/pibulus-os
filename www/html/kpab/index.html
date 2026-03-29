@@ -42,7 +42,7 @@
       --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
     html, body { height: 100%; width: 100%; overflow-x: hidden; }
 
     body {
@@ -358,19 +358,19 @@
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      transition: all 0.15s ease;
+      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
       text-shadow: 0 0 8px var(--cyan);
       box-shadow: 0 0 10px rgba(0,255,234,0.2), inset 0 0 10px rgba(0,255,234,0.05);
       -webkit-tap-highlight-color: transparent;
     }
 
     .play-btn:hover {
-      background: rgba(0,255,234,0.1);
-      box-shadow: 0 0 20px rgba(0,255,234,0.4), inset 0 0 15px rgba(0,255,234,0.1);
-      transform: scale(1.05);
+      background: rgba(0,255,234,0.08);
+      box-shadow: 0 0 25px rgba(0,255,234,0.3), 0 0 50px rgba(0,255,234,0.1), inset 0 0 15px rgba(0,255,234,0.08);
+      transform: scale(1.06);
     }
 
-    .play-btn:active { transform: scale(0.97); }
+    .play-btn:active { transform: scale(0.94); box-shadow: inset 0 0 20px rgba(0,255,234,0.15); }
 
     .play-btn.playing {
       border-color: var(--magenta);
@@ -465,7 +465,7 @@
       background: var(--panel);
       border: 1px solid var(--border);
       border-left: 2px solid #1a1a1a;
-      transition: border-left-color 0.2s ease, background 0.2s ease, transform 0.15s ease;
+      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
       min-width: 0;
       cursor: pointer;
       position: relative;
@@ -474,7 +474,13 @@
     .history-item:hover {
       border-left-color: var(--cyan);
       background: rgba(0,255,234,0.03);
-      transform: translateX(2px);
+      transform: translateX(3px);
+      box-shadow: -3px 0 12px rgba(0,255,234,0.08), inset 0 0 30px rgba(0,255,234,0.02);
+    }
+
+    .history-item:active {
+      transform: translateX(1px);
+      background: rgba(0,255,234,0.05);
     }
 
     .history-art {
@@ -614,15 +620,15 @@
       text-shadow: 0 0 6px rgba(255,0,255,0.4);
       cursor: pointer;
       background: transparent;
-      transition: all 0.15s ease;
+      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
       display: flex;
       align-items: center;
       gap: 8px;
       -webkit-tap-highlight-color: transparent;
     }
 
-    .request-toggle:hover { background: rgba(255,0,255,0.1); box-shadow: 0 0 14px rgba(255,0,255,0.3); }
-    .request-toggle:active { transform: scale(0.98); }
+    .request-toggle:hover { background: rgba(255,0,255,0.06); box-shadow: 0 0 20px rgba(255,0,255,0.2), 0 0 40px rgba(255,0,255,0.08); }
+    .request-toggle:active { transform: scale(0.97); box-shadow: inset 0 0 15px rgba(255,0,255,0.1); }
 
     .request-toggle::after {
       content: '';
@@ -758,16 +764,18 @@
       padding: 10px 14px;
       border-bottom: 1px solid #111;
       cursor: pointer;
-      transition: background 0.12s, border-left 0.12s;
+      transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
       border-left: 2px solid transparent;
     }
 
     .request-item:hover {
-      background: rgba(255,0,255,0.04);
+      background: rgba(255,0,255,0.03);
       border-left-color: var(--magenta);
+      box-shadow: -2px 0 10px rgba(255,0,255,0.06);
+      transform: translateX(2px);
     }
 
-    .request-item:active { background: rgba(255,0,255,0.08); }
+    .request-item:active { background: rgba(255,0,255,0.06); transform: translateX(1px); }
 
     .request-item-art {
       width: 44px; height: 44px;
@@ -988,7 +996,7 @@
       color: #999;
       cursor: pointer;
       background: transparent;
-      transition: all 0.2s ease;
+      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
       display: flex;
       align-items: center;
       gap: 8px;
@@ -998,10 +1006,10 @@
     .about-toggle:hover {
       border-color: var(--cyan);
       color: var(--cyan);
-      text-shadow: 0 0 6px rgba(0,255,234,0.4);
-      box-shadow: 0 0 14px rgba(0,255,234,0.2);
+      text-shadow: 0 0 8px rgba(0,255,234,0.3);
+      box-shadow: 0 0 20px rgba(0,255,234,0.15), 0 0 40px rgba(0,255,234,0.05);
     }
-    .about-toggle:active { transform: scale(0.98); }
+    .about-toggle:active { transform: scale(0.97); box-shadow: inset 0 0 12px rgba(0,255,234,0.08); }
 
     .about-panel {
       background: var(--panel);
@@ -1040,6 +1048,12 @@
 
     .faq-item {
       margin-bottom: 16px;
+      padding: 8px 0;
+      transition: all 0.3s ease;
+    }
+    .faq-item:hover {
+      padding-left: 6px;
+      border-left: 1px solid rgba(0,255,234,0.15);
     }
 
     .faq-q {
@@ -1080,7 +1094,7 @@
       color: #999;
       cursor: pointer;
       background: transparent;
-      transition: all 0.2s ease;
+      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
       display: flex;
       align-items: center;
       gap: 8px;
@@ -1088,12 +1102,12 @@
     }
 
     .mutiny-toggle:hover {
-      border-color: var(--cyan);
-      color: var(--cyan);
-      text-shadow: 0 0 6px rgba(0,255,234,0.4);
-      box-shadow: 0 0 14px rgba(0,255,234,0.2);
+      border-color: #cc3333;
+      color: #ee4444;
+      text-shadow: 0 0 8px rgba(200,50,50,0.3);
+      box-shadow: 0 0 20px rgba(200,50,50,0.15), 0 0 40px rgba(200,50,50,0.05);
     }
-    .mutiny-toggle:active { transform: scale(0.98); }
+    .mutiny-toggle:active { transform: scale(0.97); box-shadow: inset 0 0 12px rgba(200,50,50,0.1); }
 
     .mutiny-toggle.voted {
       border-color: #c33;
@@ -1295,8 +1309,8 @@
     .msg-form input:focus,
     .msg-form textarea:focus {
       border-color: var(--cyan);
-      background: rgba(0,255,234,0.08);
-      box-shadow: 0 0 6px rgba(0,255,234,0.15);
+      background: rgba(0,255,234,0.06);
+      box-shadow: 0 0 12px rgba(0,255,234,0.1), 0 0 30px rgba(0,255,234,0.03);
     }
 
     .msg-form textarea {
@@ -1320,13 +1334,21 @@
       background: transparent;
       padding: 8px 16px;
       cursor: pointer;
-      transition: all 0.15s;
+      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
 
     .msg-send:hover {
+      background: rgba(255,0,255,0.12);
+      color: var(--magenta);
+      box-shadow: 0 0 20px rgba(255,0,255,0.2), 0 0 40px rgba(255,0,255,0.08);
+      text-shadow: 0 0 6px rgba(255,0,255,0.4);
+    }
+
+    .msg-send:active {
+      transform: scale(0.97);
       background: var(--magenta);
       color: #0a0a0a;
-      box-shadow: 0 0 12px rgba(255,0,255,0.4);
+      box-shadow: inset 0 0 15px rgba(0,0,0,0.3);
     }
 
     .msg-send:disabled {
@@ -2375,6 +2397,14 @@
         mutinyFire.innerHTML = '&#x2620; WALK THE PLANK';
       }
     });
+
+    // Haptic feedback — subtle vibration on interactive taps
+    function haptic(ms) { if (navigator.vibrate) navigator.vibrate(ms); }
+    document.querySelectorAll('.play-btn, .request-toggle, .about-toggle, .mutiny-toggle, .msg-send, .mutiny-fire, .history-action-btn').forEach(el => {
+      el.addEventListener('touchstart', () => haptic(8), { passive: true });
+    });
+    // Stronger haptic on play button
+    playBtn.addEventListener('touchstart', () => haptic(15), { passive: true });
   </script>
 </body>
 </html>
