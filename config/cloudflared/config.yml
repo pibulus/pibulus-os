@@ -15,8 +15,10 @@ ingress:
     service: http://localhost:80
 
   # --- BROADCAST & MEDIA ---
-  - hostname: radio.quickcat.club
+  - hostname: radio-admin.quickcat.club
     service: http://localhost:8500
+  - hostname: radio.quickcat.club
+    service: http://localhost:8000
   - hostname: watch.quickcat.club
     service: http://localhost:8096
   - hostname: music.quickcat.club
@@ -32,4 +34,9 @@ ingress:
   - hostname: go.quickcat.club
     service: http://localhost:8088
 
+
+  - hostname: tv.quickcat.club
+    service: http://localhost:8100
+  - hostname: vault.quickcat.club
+    service: http://localhost:8091
   - service: http_status:404
