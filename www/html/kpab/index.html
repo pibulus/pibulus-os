@@ -1765,8 +1765,8 @@
           div.appendChild(actions);
           historyList.appendChild(div);
 
-          // Touch support for mobile
-          div.addEventListener('touchstart', function(e) {
+          // Touch support for mobile — use touchend to avoid blocking scroll
+          div.addEventListener('touchend', function(e) {
             const wasActive = this.classList.contains('touch-active');
             document.querySelectorAll('.history-item.touch-active').forEach(function(el) { el.classList.remove('touch-active'); });
             if (!wasActive) {
@@ -1797,15 +1797,18 @@
         const res = await fetch(API_URL, { mode: 'cors', cache: 'no-store', headers: { 'Accept': 'application/json' } });
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const data = await res.json();
+        if (pollFailCount > 2) { clearInterval(pollTimer); pollTimer = setInterval(poll, POLL_MS); }
         pollFailCount = 0;
         updateNowPlaying(data);
       } catch (err) {
         console.warn('[KPAB.FM] Poll failed:', err.message);
         pollFailCount++;
         showSignalLost();
-        // After 6 consecutive failures (60s), redirect to offline page
-        if (pollFailCount >= 6) {
-          window.location.href = '/offline.html';
+        // Exponential backoff on failures — cap at 30s
+        if (pollFailCount > 2) {
+          clearInterval(pollTimer);
+          const backoffMs = Math.min(POLL_MS * Math.pow(2, pollFailCount - 2), 30000);
+          pollTimer = setInterval(poll, backoffMs);
         }
       }
     }
@@ -1843,8 +1846,10 @@
       } else {
         audioEl.src = STREAM_URL;
         audioEl.load();
+        playBtn.textContent = '...';
+        playBtn.disabled = true;
         const p = audioEl.play();
-        if (p !== undefined) p.then(() => setPlaying(true)).catch(() => setPlaying(false));
+        if (p !== undefined) p.then(() => { playBtn.disabled = false; setPlaying(true); }).catch(() => { playBtn.disabled = false; playBtn.textContent = '\u25B6'; setPlaying(false); });
       }
     });
 
@@ -1876,6 +1881,7 @@
     const CATALOG_URL = '/catalog.json';
     let reqCache = [];
     let reqLoaded = false;
+    let reqLoading = false;
     let reqDebounce = null;
 
     const requestSection = document.getElementById('requestSection');
@@ -1900,7 +1906,7 @@
           requestSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
           requestSearch.focus();
         }, 50);
-        if (!reqLoaded) loadCatalog();
+        if (!reqLoaded && !reqLoading) loadCatalog();
       }
     }
 
@@ -1911,13 +1917,25 @@
     });
 
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && requestPanel.classList.contains('open')) {
+      if (e.key !== 'Escape') return;
+      if (requestPanel.classList.contains('open')) {
         requestPanel.classList.remove('open');
         requestToggle.innerHTML = '&#x1F4FB; Request a Song';
+      }
+      const aboutPanel = document.getElementById('aboutPanel');
+      if (aboutPanel && aboutPanel.classList.contains('open')) {
+        aboutPanel.classList.remove('open');
+        document.getElementById('aboutToggle').innerHTML = '&#x2139; About / FAQ';
+      }
+      if (mutinyPanel && mutinyPanel.classList.contains('open')) {
+        mutinyPanel.classList.remove('open');
+        if (!mutinyCooldown) mutinyToggle.innerHTML = '&#x2620; MUTINY';
       }
     });
 
     async function loadCatalog() {
+      if (reqLoading) return;
+      reqLoading = true;
       requestResults.innerHTML = '<div class="request-loading">LOADING CATALOG...</div>';
       try {
         const res = await fetch(CATALOG_URL, { cache: 'no-cache' });
@@ -1930,6 +1948,8 @@
       } catch (err) {
         console.warn('[KPAB] Catalog load failed:', err);
         requestResults.innerHTML = '<div class="request-empty"><span class="empty-icon">&#x26A1;</span><span>Eep! Could not load the catalog. Try again in a bit!</span></div>';
+      } finally {
+        reqLoading = false;
       }
     }
 
