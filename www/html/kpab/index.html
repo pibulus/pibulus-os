@@ -441,6 +441,56 @@
     /* HISTORY */
     .history-section { flex: 1; }
 
+    .history-toggle {
+      background: none;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      width: 100%;
+      gap: 10px;
+      -webkit-tap-highlight-color: transparent;
+      transition: all 0.25s ease;
+    }
+    .history-toggle:hover {
+      border-color: var(--cyan);
+      background: rgba(0,255,234,0.03);
+      box-shadow: 0 0 12px rgba(0,255,234,0.12), inset 0 0 20px rgba(0,255,234,0.02);
+    }
+    .history-toggle:hover .history-chevron {
+      color: var(--cyan);
+      text-shadow: 0 0 6px rgba(0,255,234,0.5);
+    }
+    .history-toggle:active { transform: scale(0.98); }
+    .history-toggle:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+    .history-chevron {
+      font-size: 11px;
+      color: var(--dim);
+      transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), color 0.25s ease, text-shadow 0.25s ease;
+      flex-shrink: 0;
+    }
+    .history-section.expanded .history-chevron {
+      transform: rotate(90deg);
+      color: var(--cyan);
+      text-shadow: 0 0 6px rgba(0,255,234,0.5);
+    }
+    .history-section.expanded .history-toggle {
+      border-color: rgba(0,255,234,0.2);
+      margin-bottom: 4px;
+    }
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 64px;
+      overflow: hidden;
+      transition: max-height 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    .history-section.expanded .history-list {
+      max-height: 500px;
+    }
+
     .section-header {
       font-family: 'VT323', monospace;
       font-size: 14px;
@@ -455,7 +505,6 @@
 
     .section-header::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-    .history-list { display: flex; flex-direction: column; gap: 8px; }
 
     .history-item {
       display: flex;
@@ -1376,43 +1425,43 @@
       .msg-form input { width: 100%; }
     }
 
-    /* LOVE BUTTON */
+    /* LOVE BUTTON — animated heart v3 */
     .love-btn {
       position: absolute;
-      top: 10px;
-      right: 12px;
+      top: 6px;
+      right: 8px;
       background: none;
       border: none;
       cursor: pointer;
-      padding: 8px;
+      padding: 4px;
       z-index: 10;
       display: flex;
       align-items: center;
       justify-content: center;
       -webkit-tap-highlight-color: transparent;
+      width: 32px;
+      height: 32px;
     }
-    .love-btn svg {
-      width: 22px;
-      height: 22px;
-      color: #333;
-      transition: color 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), filter 0.3s ease;
+    .love-heart-wrap {
+      position: relative;
+      width: 24px;
+      height: 24px;
     }
-    .love-btn:hover svg {
-      color: #555;
-      filter: drop-shadow(0 0 4px rgba(255,0,255,0.2));
+    .love-heart-wrap svg {
+      overflow: visible;
+      filter: drop-shadow(0 0 0px rgba(220,60,180,0));
+      transition: filter 0.3s ease;
     }
-    .love-btn.active svg {
-      color: var(--magenta);
-      filter: drop-shadow(0 0 8px rgba(255,0,255,0.4));
+    .love-btn:hover .love-heart-wrap svg {
+      filter: drop-shadow(0 0 4px rgba(220,60,180,0.3));
     }
-    @keyframes lovePop {
-      0%   { transform: scale(1); }
-      20%  { transform: scale(0.8); }
-      50%  { transform: scale(1.25); }
-      75%  { transform: scale(0.95); }
-      100% { transform: scale(1); }
+    .love-sparks {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 9999;
     }
-    .love-btn.pop svg { animation: lovePop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 
     /* Focus visible styles (keyboard accessibility) */
     :focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
@@ -1472,8 +1521,21 @@
 
     <div class="player-chassis" id="playerChassis">
     <button class="love-btn" id="loveBtn" aria-label="Show some love" type="button">
-      <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="currentColor"/></svg>
+      <div class="love-heart-wrap" id="loveHeartWrap">
+        <svg id="loveHeartSvg" viewBox="0 0 64 64" width="24" height="24" style="overflow:visible;filter:drop-shadow(0 0 0px rgba(220,60,180,0))">
+          <defs>
+            <clipPath id="loveHeartClip">
+              <path d="M32 58 C20 46, 0 38, 0 22 C0 8, 12 2, 21 2 C26 2, 30 5, 32 10 C34 5, 38 2, 43 2 C52 2, 64 8, 64 22 C64 38, 44 46, 32 58Z"/>
+            </clipPath>
+          </defs>
+          <path d="M32 58 C20 46, 0 38, 0 22 C0 8, 12 2, 21 2 C26 2, 30 5, 32 10 C34 5, 38 2, 43 2 C52 2, 64 8, 64 22 C64 38, 44 46, 32 58Z" fill="rgba(220,60,180,0.15)" stroke="rgba(220,60,180,0.5)" stroke-width="1.5"/>
+          <g clip-path="url(#loveHeartClip)">
+            <rect id="loveHeartFill" x="0" y="64" width="64" height="64" fill="#DC3CB4"/>
+          </g>
+        </svg>
+      </div>
     </button>
+    <div class="love-sparks" id="loveSparks"></div>
     <section class="now-playing" id="nowPlaying" aria-label="Now playing">
       <span class="now-playing-label">NOW PLAYING</span>
       <div class="art-wrapper">
@@ -1508,7 +1570,19 @@
 
 
     <div class="mutiny-toast" id="mutinyToast"></div>
-    <section class="request-section" id="requestSection">
+    <section class="history-section" aria-label="Song history">
+      <button class="section-header history-toggle" id="historyToggle" aria-expanded="false" aria-controls="historyList">
+        <span class="history-chevron">&#x25B6;</span>Recently Played
+      </button>
+      <div class="history-list" id="historyList">
+        <div class="history-item">
+          <div class="history-art-placeholder">&#x266A;</div>
+          <div class="history-text">Loading history...</div>
+        </div>
+      </div>
+    </section>
+
+        <section class="request-section" id="requestSection">
       <button class="request-toggle" id="requestToggle" aria-label="Request a song">&#x1F4FB; Request a Song</button>
       <div class="request-panel" id="requestPanel" aria-label="Song request">
         <div class="request-header">
@@ -1530,15 +1604,6 @@
       </div>
     </section>
 
-    <section class="history-section" aria-label="Song history">
-      <div class="section-header">Recently Played</div>
-      <div class="history-list" id="historyList">
-        <div class="history-item">
-          <div class="history-art-placeholder">&#x266A;</div>
-          <div class="history-text">Loading history...</div>
-        </div>
-      </div>
-    </section>
 
     <!-- <div class="tagline" id="taglineEl">Pretty good most of the time. Sometimes great.</div> -->
 
@@ -2433,39 +2498,131 @@
       }
     });
 
-    // === LOVE BUTTON ===
-    const loveBtn = document.getElementById('loveBtn');
-    if (localStorage.getItem('kpab-love')) loveBtn.classList.add('active');
-
-    function spawnParticles(btn) {
-      const colors = ['var(--magenta)', 'var(--cyan)', '#ff66cc', '#66ffee', '#ffcc00', '#ff4488'];
-      const count = 8 + Math.floor(Math.random() * 5);
-      for (let i = 0; i < count; i++) {
-        const p = document.createElement('span');
-        const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
-        const dist = 25 + Math.random() * 35;
-        const dx = Math.cos(angle) * dist;
-        const dy = Math.sin(angle) * dist;
-        const size = 2 + Math.random() * 4;
-        p.style.cssText = `position:absolute;left:50%;top:50%;width:${size}px;height:${size}px;background:${colors[i % colors.length]};border-radius:${Math.random()>0.5?'50%':'1px'};pointer-events:none;z-index:10;`;
-        btn.appendChild(p);
-        p.animate([
-          { transform: 'translate(-50%,-50%) scale(1)', opacity: 1 },
-          { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(0)`, opacity: 0 }
-        ], { duration: 450 + Math.random() * 250, easing: 'cubic-bezier(0, 0.9, 0.57, 1)', fill: 'forwards' });
-        setTimeout(() => p.remove(), 800);
+    // === HISTORY TOGGLE ===
+    const historyToggle = document.getElementById('historyToggle');
+    const historySection = historyToggle.closest('.history-section');
+    function toggleHistory() {
+      const expanded = historySection.classList.toggle('expanded');
+      historyToggle.setAttribute('aria-expanded', expanded);
+    }
+    historyToggle.addEventListener('click', toggleHistory);
+    // Toggle when clicking a history item (skip if clicking YT/Wiki buttons)
+    historyList.addEventListener('click', (e) => {
+      if (!e.target.closest('.history-action-btn')) {
+        toggleHistory();
       }
+    });
+
+        // === LOVE BUTTON — animated heart v3 ===
+    const loveBtn = document.getElementById('loveBtn');
+    const loveWrap = document.getElementById('loveHeartWrap');
+    const loveSvg = document.getElementById('loveHeartSvg');
+    const loveFill = document.getElementById('loveHeartFill');
+    const loveSparks = document.getElementById('loveSparks');
+    let loveLevel = 0;
+    const loveMax = 10;
+    let lovePopped = false;
+    let loveScl = 1;
+    let loveVel = 0;
+    let loveTarget = 1;
+    let loveAnimating = false;
+    const loveStiffness = 0.18;
+    const loveDamping = 0.62;
+
+    function loveSpringTick() {
+      const force = (loveTarget - loveScl) * loveStiffness;
+      loveVel = (loveVel + force) * loveDamping;
+      loveScl += loveVel;
+      loveWrap.style.transform = 'scale(' + loveScl + ')';
+      if (Math.abs(loveVel) > 0.0005 || Math.abs(loveTarget - loveScl) > 0.001) {
+        requestAnimationFrame(loveSpringTick);
+      } else {
+        loveScl = loveTarget;
+        loveWrap.style.transform = 'scale(' + loveScl + ')';
+        loveAnimating = false;
+      }
+    }
+    function loveStartSpring(t) {
+      loveTarget = t;
+      if (!loveAnimating) { loveAnimating = true; requestAnimationFrame(loveSpringTick); }
+    }
+    function loveKick() {
+      loveScl = 0.82; loveVel = 0.08; loveTarget = 1;
+      if (!loveAnimating) { loveAnimating = true; requestAnimationFrame(loveSpringTick); }
+    }
+    function loveUpdateFill() {
+      const pct = loveLevel / loveMax;
+      const y = 64 - (64 * pct);
+      loveFill.setAttribute('y', y);
+      loveFill.setAttribute('fill', 'rgba(220,60,180,' + (0.15 + pct * 0.85) + ')');
+      loveSvg.style.filter = 'drop-shadow(0 0 ' + (pct * 12) + 'px rgba(220,60,180,' + (pct * 0.6) + '))';
+    }
+    function loveBurst() {
+      const r = loveWrap.getBoundingClientRect();
+      const cx = r.left + r.width / 2;
+      const cy = r.top + r.height / 2;
+      const cols = ['#DC3CB4','#F472D0','#F9A8D4','#E879C8','#FF6EBF','#C026D3'];
+      for (let i = 0; i < 14; i++) {
+        const s = document.createElement('div');
+        const sz = Math.random() * 4 + 2;
+        const ang = Math.random() * Math.PI * 2;
+        const v = Math.random() * 70 + 30;
+        const vx = Math.cos(ang) * v;
+        const vy = Math.sin(ang) * v;
+        s.style.cssText = 'position:fixed;left:' + (cx - sz/2) + 'px;top:' + (cy - sz/2) + 'px;width:' + sz + 'px;height:' + sz + 'px;border-radius:50%;background:' + cols[i%cols.length] + ';pointer-events:none;z-index:10000;';
+        loveSparks.appendChild(s);
+        let t0 = null;
+        const dur = 400 + Math.random() * 200;
+        function anim(ts) {
+          if (!t0) t0 = ts;
+          const p = (ts - t0) / dur;
+          if (p >= 1) { s.remove(); return; }
+          const e = 1 - Math.pow(1 - p, 2);
+          s.style.transform = 'translate(' + vx*e + 'px,' + (vy*e + 80*p*p) + 'px) scale(' + (1-p) + ')';
+          s.style.opacity = (1 - p*p);
+          requestAnimationFrame(anim);
+        }
+        requestAnimationFrame(anim);
+      }
+    }
+    function lovePop() {
+      lovePopped = true;
+      loveVel = 0.15; loveTarget = 1.7;
+      if (!loveAnimating) { loveAnimating = true; requestAnimationFrame(loveSpringTick); }
+      loveSvg.style.filter = 'drop-shadow(0 0 18px rgba(220,60,180,0.8))';
+      setTimeout(function() { loveTarget = 0; loveVel = -0.1; loveBurst(); }, 380);
+      setTimeout(function() {
+        loveLevel = 0; lovePopped = false; loveUpdateFill();
+        loveScl = 0; loveVel = 0; loveTarget = 1; loveStartSpring(1);
+      }, 1400);
+    }
+
+    // Restore state from localStorage
+    if (localStorage.getItem('kpab-love')) {
+      loveLevel = loveMax;
+      loveUpdateFill();
     }
 
     loveBtn.addEventListener('click', () => {
       localStorage.setItem('kpab-love', '1');
-      loveBtn.classList.add('active');
-      loveBtn.classList.remove('pop');
-      void loveBtn.offsetWidth;
-      loveBtn.classList.add('pop');
-      spawnParticles(loveBtn);
+      if (lovePopped) return;
+      loveLevel++;
+      if (loveLevel >= loveMax) {
+        loveUpdateFill();
+        lovePop();
+      } else {
+        loveUpdateFill();
+        loveKick();
+      }
       if (navigator.vibrate) navigator.vibrate(12);
     });
+    loveBtn.addEventListener('mouseenter', function() {
+      if (!lovePopped && loveLevel === 0) loveStartSpring(1.15);
+    });
+    loveBtn.addEventListener('mouseleave', function() {
+      if (!lovePopped) loveStartSpring(1);
+    });
+    loveUpdateFill();
 
     // Haptic feedback — subtle vibration on interactive taps
     function haptic(ms) { if (navigator.vibrate) navigator.vibrate(ms); }
