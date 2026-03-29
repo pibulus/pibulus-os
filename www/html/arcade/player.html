@@ -133,6 +133,27 @@
     EJS_color = '#00ffea';
     EJS_startOnLoaded = true;
 
+    // Performance: enable multi-threading if SharedArrayBuffer is available
+    // (requires COOP/COEP headers — set in nginx for this page)
+    if (window.SharedArrayBuffer) {
+      EJS_threads = true;
+    }
+
+    // Per-core RetroArch options for better performance
+    EJS_defaultOptions = {};
+    if (system === 'psx') {
+      EJS_defaultOptions = {
+        'pcsx_rearmed_frameskip_type': 'auto',
+        'pcsx_rearmed_frameskip': '1',
+        'pcsx_rearmed_drc': 'enabled',
+      };
+    } else if (system === 'n64') {
+      EJS_defaultOptions = {
+        'mupen64plus-cpucore': 'dynamic_recompiler',
+        'mupen64plus-43screensize': '640x480',
+      };
+    }
+
     // Apply system-specific virtual gamepad if available
     if (padMap[system]) {
       EJS_VirtualGamepadSettings = padMap[system];
