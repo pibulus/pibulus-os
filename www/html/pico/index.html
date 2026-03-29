@@ -6,6 +6,20 @@
   <title>PICO-8 Carts — quickcat.club</title>
   <meta name="description" content="Browse and play 3,000+ curated PICO-8 cartridges. PICOwesome collection organized by genre.">
   <meta name="theme-color" content="#050505">
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="PICO-8 Carts — quickcat.club">
+  <meta property="og:description" content="Browse and play 3,000+ curated PICO-8 cartridges in your browser. Keyboard and gamepad supported.">
+  <meta property="og:image" content="https://quickcat.club/pico/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:url" content="https://quickcat.club/pico/">
+  <meta property="og:site_name" content="QuickCat Club">
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="PICO-8 Carts — quickcat.club">
+  <meta name="twitter:description" content="Browse and play 3,000+ curated PICO-8 cartridges in your browser.">
+  <meta name="twitter:image" content="https://quickcat.club/pico/og-image.png">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🕹️</text></svg>">
   <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
   <style>
@@ -355,6 +369,9 @@ function openPlayer(globalIndex) {
 
   // allow="gamepad" lets the iframe access Bluetooth/USB controllers
   player.innerHTML = '<iframe id="game-iframe" src="/pico/player.html?cart=' + encodeURIComponent(cartUrl) + '" allow="autoplay; gamepad; fullscreen"></iframe>';
+  // Auto-focus iframe for keyboard input
+  var iframe = document.getElementById("game-iframe");
+  iframe.addEventListener("load", function() { iframe.focus(); });
   modal.classList.add('active');
   document.body.style.overflow = 'hidden';
 
@@ -378,8 +395,11 @@ function closePlayer() {
 function goFullscreen() {
   var iframe = document.getElementById('game-iframe');
   if (!iframe) return;
-  if (iframe.requestFullscreen) iframe.requestFullscreen();
-  else if (iframe.webkitRequestFullscreen) iframe.webkitRequestFullscreen();
+  var p = null;
+  if (iframe.requestFullscreen) p = iframe.requestFullscreen();
+  else if (iframe.webkitRequestFullscreen) p = iframe.webkitRequestFullscreen();
+  if (p && p.then) p.then(function() { iframe.focus(); });
+  else setTimeout(function() { iframe.focus(); }, 100);
 }
 
 function navigateCart(direction) {

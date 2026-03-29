@@ -6,9 +6,12 @@
     <title>PICO-8 Player</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #000; overflow: hidden; }
+        html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
         #canvas {
             display: block;
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: contain;
             image-rendering: optimizeSpeed;
             image-rendering: -moz-crisp-edges;
             image-rendering: -webkit-optimize-contrast;
@@ -32,18 +35,21 @@
     <script src="UPNG.js"></script>
 
     <script>
-        // Size the canvas to fill the viewport, maintaining square aspect ratio
-        function sizeCanvas() {
-            var c = document.getElementById('canvas');
-            var s = Math.min(window.innerWidth, window.innerHeight);
-            c.style.width = s + 'px';
-            c.style.height = s + 'px';
-            c.style.position = 'absolute';
-            c.style.left = ((window.innerWidth - s) / 2) + 'px';
-            c.style.top = ((window.innerHeight - s) / 2) + 'px';
-        }
-        sizeCanvas();
-        window.addEventListener('resize', sizeCanvas);
+        // Override Emscripten's canvas sizing — force CSS to fill viewport
+        // The runtime sets canvas.width/height (drawing buffer) but we want
+        // CSS to scale it up to fill the iframe while keeping pixel-perfect rendering
+        var _origSetAttribute = HTMLCanvasElement.prototype.setAttribute;
+        var _canvas = document.getElementById('canvas');
+
+        // Prevent the runtime from setting style.width/height directly
+        Object.defineProperty(_canvas.style, 'width', {
+            set: function() { /* blocked — CSS handles this */ },
+            get: function() { return '100%'; }
+        });
+        Object.defineProperty(_canvas.style, 'height', {
+            set: function() { /* blocked — CSS handles this */ },
+            get: function() { return '100%'; }
+        });
 
         var Module = {
             canvas: (function() { return document.getElementById('canvas'); })(),
