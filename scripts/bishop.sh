@@ -1,10 +1,12 @@
 #!/bin/bash
 # ╔══════════════════════════════════════════╗
-# ║  BISHOP — Pibulus AI Companion v2        ║
-# ║  aichat + gum + the full Pi toolkit      ║
+# ║  BISHOP — Pibulus AI Companion v3        ║
+# ║  aichat + gum + scavenger + Pi toolkit   ║
 # ╚══════════════════════════════════════════╝
 
 export GEMINI_API_KEY="${GEMINI_API_KEY:-AIzaSyBAScrXEbuOKBbNpIog02_tpcXuYdPXeO0}"
+export PATH="$HOME/.local/bin:$PATH"
+PASSPORT="/media/pibulus/passport"
 
 # Colors
 Y='\033[1;33m'; C='\033[0;36m'; M='\033[0;35m'; D='\033[2m'; G='\033[0;32m'
@@ -282,6 +284,238 @@ fun_zone() {
     esac
 }
 
+scavenger() {
+    echo -e "${M}🤖 SCAVENGER — Tell me what you want. I'll find it.${RST}"
+    echo -e "${D}Uses AI to pick the right tool: Soulseek, yt-dlp, Internet Archive, torrents${RST}"
+    echo ""
+
+    ACTION=$(gum choose \
+        "🧠 Smart search (AI picks the tool)" \
+        "🎵 Soulseek search" \
+        "📹 yt-dlp (YouTube/audio)" \
+        "📚 Internet Archive" \
+        "🏴 Pirate grab (movies/shows)" \
+        "Back")
+
+    case "$ACTION" in
+        *"Smart"*)
+            REQUEST=$(gum input --placeholder "what do you want? (e.g., 'Jung - Red Book', 'Laws of the Sun movie')" --width 70)
+            [ -z "$REQUEST" ] && return
+
+            # AI decides tool
+            echo -e "${D}thinking about the best approach...${RST}"
+            if command -v claude &>/dev/null; then
+                TOOL=$(claude -p --model haiku --no-session-persistence --max-budget-usd 0.02 \
+                    --append-system-prompt "You are a tool selector. Respond with ONLY one word: soulseek, ytdlp, ia, pirate, or aria2. Rules: Music/albums/songs = soulseek. YouTube/video URLs = ytdlp. Books/ebooks/academic/PDF = ia. Movies/TV shows = pirate. Direct URLs = aria2." \
+                    "$REQUEST" 2>/dev/null | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')
+                QUERY=$(claude -p --model haiku --no-session-persistence --max-budget-usd 0.02 \
+                    --append-system-prompt "You craft search queries. Output ONLY the optimal search query — no explanation, no quotes." \
+                    "Request: $REQUEST | Tool: $TOOL" 2>/dev/null)
+            else
+                # Fallback: keyword heuristics
+                case "$REQUEST" in
+                    *youtube*|*youtu.be*|*soundcloud*|*http*) TOOL="ytdlp" ;;
+                    *book*|*pdf*|*epub*|*ebook*|*archive*) TOOL="ia" ;;
+                    *movie*|*film*|*season*|*episode*|*show*) TOOL="pirate" ;;
+                    *) TOOL="soulseek" ;;
+                esac
+                QUERY="$REQUEST"
+            fi
+
+            echo -e "${Y}Strategy: ${TOOL}${RST}"
+            echo -e "${D}Query: ${QUERY}${RST}"
+            echo ""
+
+            case "$TOOL" in
+                soulseek)
+                    _scav_soulseek "$QUERY" ;;
+                ytdlp)
+                    _scav_ytdlp "$QUERY" ;;
+                ia)
+                    _scav_ia "$QUERY" ;;
+                pirate)
+                    _scav_pirate "$QUERY" ;;
+                aria2)
+                    _scav_aria2 "$QUERY" ;;
+                *)
+                    echo -e "${R}Couldn't decide. Try a direct search.${RST}" ;;
+            esac
+            ;;
+
+        *"Soulseek"*)
+            Q=$(gum input --placeholder "search Soulseek..." --width 60)
+            [ -n "$Q" ] && _scav_soulseek "$Q"
+            ;;
+        *"yt-dlp"*)
+            Q=$(gum input --placeholder "YouTube URL or search..." --width 70)
+            [ -n "$Q" ] && _scav_ytdlp "$Q"
+            ;;
+        *"Internet Archive"*)
+            Q=$(gum input --placeholder "search Internet Archive..." --width 60)
+            [ -n "$Q" ] && _scav_ia "$Q"
+            ;;
+        *"Pirate"*)
+            Q=$(gum input --placeholder "movie or show name..." --width 60)
+            [ -n "$Q" ] && _scav_pirate "$Q"
+            ;;
+    esac
+}
+
+_scav_soulseek() {
+    local query="$1"
+    echo -e "${C}🎵 Searching Soulseek: $query${RST}"
+
+    # Auth with slskd
+    local token=$(curl -s -X POST "http://localhost:5030/api/v0/session" \
+        -H "Content-Type: application/json" \
+        -d '{"username":"slskd","password":"slskd"}' 2>/dev/null \
+        | python3 -c "import sys,json; print(json.load(sys.stdin).get('token',''))" 2>/dev/null)
+
+    if [ -z "$token" ]; then
+        echo -e "${R}slskd not responding. Is it running? (docker ps | grep slskd)${RST}"
+        return
+    fi
+
+    # Start search
+    local search_id=$(curl -s -X POST "http://localhost:5030/api/v0/searches" \
+        -H "Authorization: Bearer $token" \
+        -H "Content-Type: application/json" \
+        -d "{\"searchText\":\"$query\"}" 2>/dev/null \
+        | python3 -c "import sys,json; print(json.load(sys.stdin).get('id',''))" 2>/dev/null)
+
+    echo -e "${D}Searching the network (~12s)...${RST}"
+    sleep 12
+
+    # Get results
+    local results=$(curl -s "http://localhost:5030/api/v0/searches/$search_id/responses" \
+        -H "Authorization: Bearer $token" 2>/dev/null \
+        | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+for resp in data[:10]:
+    user = resp.get('username', '?')
+    for f in resp.get('files', [])[:3]:
+        name = f.get('filename', '').split('\\\\')[-1]
+        size = f.get('size', 0)
+        size_mb = f'{size/1024/1024:.1f}MB' if size else '?'
+        print(f'{name} ({size_mb}) from {user}|||{user}|||{f.get(\"filename\",\"\")}')
+" 2>/dev/null)
+
+    if [ -z "$results" ]; then
+        echo -e "${Y}No results. Try different terms.${RST}"
+        return
+    fi
+
+    # Show display names for picking
+    local display=$(echo "$results" | cut -d'|' -f1)
+    local pick=$(echo "$display" | gum choose --height 15 --header "pick a file:")
+    [ -z "$pick" ] && return
+
+    # Find matching line and download
+    local match=$(echo "$results" | grep "^${pick}|||" | head -1)
+    local username=$(echo "$match" | cut -d'|' -f4)
+    local filepath=$(echo "$match" | cut -d'|' -f7)
+
+    if [ -n "$username" ] && [ -n "$filepath" ]; then
+        curl -s -X POST "http://localhost:5030/api/v0/transfers/downloads/$username" \
+            -H "Authorization: Bearer $token" \
+            -H "Content-Type: application/json" \
+            -d "[{\"filename\":\"$filepath\"}]" &>/dev/null
+        echo -e "${G}✅ Download queued! Check slskd at pibulus.local:5030${RST}"
+        echo -e "${D}Downloads land in: $PASSPORT/Soulseek/${RST}"
+    fi
+}
+
+_scav_ytdlp() {
+    local query="$1"
+    echo -e "${C}📹 yt-dlp: $query${RST}"
+
+    if ! command -v yt-dlp &>/dev/null; then
+        echo -e "${R}yt-dlp not found${RST}"
+        return
+    fi
+
+    local format=$(gum choose "🎵 Audio (mp3)" "📹 Video (mp4)")
+    local dest=$(gum choose "Music" "Movies" "Downloads")
+    local DEST="$PASSPORT/$dest"
+    mkdir -p "$DEST"
+
+    case "$format" in
+        *Audio*)
+            echo -e "${D}Extracting audio...${RST}"
+            yt-dlp -x --audio-format mp3 --audio-quality 0 -o "$DEST/%(title)s.%(ext)s" "$query" 2>&1 | tail -3
+            ;;
+        *Video*)
+            echo -e "${D}Downloading video...${RST}"
+            yt-dlp -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best' \
+                -o "$DEST/%(title)s.%(ext)s" "$query" 2>&1 | tail -3
+            ;;
+    esac
+    echo -e "${G}✅ Saved to $DEST${RST}"
+}
+
+_scav_ia() {
+    local query="$1"
+    echo -e "${C}📚 Searching Internet Archive: $query${RST}"
+
+    local results=$(~/.local/bin/ia search "$query" --itemlist 2>/dev/null | head -15)
+    if [ -z "$results" ]; then
+        echo -e "${Y}No results on IA.${RST}"
+        return
+    fi
+
+    local pick=$(echo "$results" | gum choose --height 15 --header "pick an item:")
+    [ -z "$pick" ] && return
+
+    # Show details
+    ~/.local/bin/ia metadata "$pick" 2>/dev/null | python3 -c "
+import sys, json
+m = json.load(sys.stdin).get('metadata', {})
+print(f\"Title: {m.get('title', '?')}\")
+print(f\"Size: {int(m.get('item_size', 0))/1024/1024:.0f}MB\")
+print(f\"Type: {m.get('mediatype', '?')}\")
+" 2>/dev/null
+
+    local dest=$(gum choose "Ebooks" "Music" "Movies" "Downloads")
+    local DEST="$PASSPORT/$dest"
+    mkdir -p "$DEST"
+
+    if gum confirm "Download '$pick' to $dest?"; then
+        echo -e "${D}Downloading...${RST}"
+        ~/.local/bin/ia download "$pick" --destdir="$DEST" --no-directories 2>&1 | tail -5
+        echo -e "${G}✅ Downloaded to $DEST${RST}"
+    fi
+}
+
+_scav_pirate() {
+    local query="$1"
+    echo -e "${C}🏴 Pirate grab: $query${RST}"
+
+    local type=$(gum choose "🎬 Movie" "📺 TV Show")
+    case "$type" in
+        *Movie*)
+            python3 ~/pibulus-os/scripts/pirate_grab.py "$query" --movie --dry-run 2>&1 | gum format
+            gum confirm "Download?" && python3 ~/pibulus-os/scripts/pirate_grab.py "$query" --movie 2>&1 | tail -5
+            ;;
+        *TV*)
+            local season=$(gum input --placeholder "season number (e.g., 2)")
+            [ -z "$season" ] && return
+            python3 ~/pibulus-os/scripts/pirate_grab.py "$query" --season "$season" --dry-run 2>&1 | gum format
+            gum confirm "Download?" && python3 ~/pibulus-os/scripts/pirate_grab.py "$query" --season "$season" 2>&1 | tail -5
+            ;;
+    esac
+}
+
+_scav_aria2() {
+    local url="$1"
+    echo -e "${C}⬇️ Direct download: $url${RST}"
+    local dest=$(gum choose "Downloads" "Music" "Movies" "Ebooks")
+    local DEST="$PASSPORT/$dest"
+    mkdir -p "$DEST"
+    aria2c -x 16 -s 16 -d "$DEST" "$url" 2>&1 | tail -5
+    echo -e "${G}✅ Downloaded to $DEST${RST}"
+}
+
 # ═══════════════════════════════════════
 # MAIN LOOP
 # ═══════════════════════════════════════
@@ -296,6 +530,7 @@ while true; do
         "🔍 System diagnostics" \
         "🐳 Docker operations" \
         "📻 KPAB.FM radio" \
+        "🤖 Scavenger (smart search)" \
         "📥 Media & downloads" \
         "📝 Quick note" \
         "🎲 Fun zone" \
@@ -308,6 +543,7 @@ while true; do
         *"diagnostics"*)diagnose ;;
         *"Docker"*)     docker_ops ;;
         *"KPAB"*)       radio_ops ;;
+        *"Scavenger"*)  scavenger ;;
         *"Media"*)      media_tools ;;
         *"note"*)       quick_note ;;
         *"Fun"*)        fun_zone ;;
