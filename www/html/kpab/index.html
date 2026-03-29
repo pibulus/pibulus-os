@@ -1139,86 +1139,114 @@
       padding: 0;
     }
 
-    .msg-form-wrap {
-      max-height: 0;
-      overflow: hidden;
-      opacity: 0;
-      transform-origin: top center;
-      transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
-    }
-    .msg-section.open .msg-form-wrap {
-      max-height: 500px;
-      opacity: 1;
-      animation: panelSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-    }
-
-    .msg-toggle {
-      width: 100%;
-      justify-content: center;
-      font-family: 'VT323', monospace;
-      font-size: 18px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      padding: 14px 20px;
-      border: 1px solid #333;
-      color: #999;
-      cursor: pointer;
-      background: transparent;
-      transition: all 0.2s ease;
+    /* === TRANSMISSION WALL === */
+    .wall-header {
       display: flex;
       align-items: center;
-      gap: 8px;
-      -webkit-tap-highlight-color: transparent;
+      justify-content: space-between;
+      padding: 10px 16px;
+      border: 1px solid var(--border);
+      border-bottom: none;
+    }
+    .wall-label {
+      font-family: 'VT323', monospace;
+      font-size: 18px;
+      color: var(--cyan);
+      letter-spacing: 2px;
+    }
+    .wall-count {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      color: var(--magenta);
+      opacity: 0.7;
     }
 
-    .msg-toggle:hover {
-      border-color: var(--magenta);
-      color: var(--magenta);
-      text-shadow: 0 0 6px rgba(255,0,255,0.4);
-      box-shadow: 0 0 14px rgba(255,0,255,0.2);
+    .shout-wall {
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      overscroll-behavior-y: contain;
+      -webkit-overflow-scrolling: touch;
+      max-height: 320px;
+      min-height: 120px;
+      padding: 0;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      scrollbar-width: thin;
+      scrollbar-color: var(--magenta) #0a0a0a;
     }
-    .msg-toggle:active { transform: scale(0.98); }
+    .shout-wall::-webkit-scrollbar { width: 4px; }
+    .shout-wall::-webkit-scrollbar-track { background: #0a0a0a; }
+    .shout-wall::-webkit-scrollbar-thumb { background: var(--magenta); }
+
+    .shout-item { padding: 10px 16px; border-bottom: 1px solid rgba(0,255,234,0.08); font-size: 13px; transition: background 0.15s; }
+    .shout-item:last-child { border-bottom: none; }
+    .shout-item:hover { background: rgba(0,255,234,0.04); }
+    .shout-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 4px; }
+    .shout-name { font-family: 'VT323', monospace; font-size: 16px; color: var(--magenta); letter-spacing: 1px; text-transform: uppercase; }
+    .shout-time { color: rgba(0,255,234,0.4); font-size: 11px; flex-shrink: 0; }
+    .shout-msg { color: rgba(0,255,234,0.9); line-height: 1.5; word-break: break-word; margin: 0; }
+    .shout-track { color: rgba(255,0,255,0.5); font-size: 11px; margin-top: 4px; display: block; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .msg-form-wrap {
+      max-height: none;
+      overflow: visible;
+      opacity: 1;
+    }
 
     .msg-form {
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
       display: flex;
-      padding: 16px 18px;
+      padding: 12px 16px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-top: none;
+    }
+
+    .shout-form-row {
+      display: flex;
+      gap: 8px;
     }
 
     .msg-form input,
     .msg-form textarea {
-      width: 100%;
-      background: #111;
-      border: 1px solid #222;
-      color: var(--text);
+      background: rgba(0,255,234,0.04);
+      border: 1px solid rgba(0,255,234,0.3);
+      color: var(--cyan);
       font-family: 'Share Tech Mono', monospace;
-      font-size: 14px;
-      padding: 10px 12px;
+      font-size: 16px;
+      padding: 8px 12px;
       outline: none;
-      transition: border-color 0.2s;
+      transition: border-color 0.15s;
       border-radius: 0;
+      -webkit-appearance: none;
     }
+    .msg-form input { width: 140px; flex-shrink: 0; text-transform: uppercase; letter-spacing: 1px; }
 
     .msg-form input:focus,
     .msg-form textarea:focus {
-      border-color: var(--magenta);
-      box-shadow: 0 0 6px rgba(255,0,255,0.1);
+      border-color: var(--cyan);
+      background: rgba(0,255,234,0.08);
+      box-shadow: 0 0 6px rgba(0,255,234,0.15);
     }
 
     .msg-form textarea {
-      resize: vertical;
-      min-height: 60px;
-      max-height: 140px;
+      width: 100%;
+      resize: none;
+      line-height: 1.5;
       font-size: 13px;
     }
 
     .msg-form input::placeholder,
-    .msg-form textarea::placeholder { color: #444; }
+    .msg-form textarea::placeholder { color: rgba(0,255,234,0.25); text-transform: uppercase; letter-spacing: 1px; }
 
     .msg-send {
+      flex: 1;
+      min-height: 40px;
       font-family: 'VT323', monospace;
-      font-size: 15px;
+      font-size: 18px;
       letter-spacing: 2px;
       color: var(--magenta);
       border: 1px solid var(--magenta);
@@ -1226,16 +1254,16 @@
       padding: 8px 16px;
       cursor: pointer;
       transition: all 0.15s;
-      align-self: flex-end;
     }
 
     .msg-send:hover {
-      background: rgba(255,0,255,0.1);
-      box-shadow: 0 0 10px rgba(255,0,255,0.2);
+      background: var(--magenta);
+      color: #0a0a0a;
+      box-shadow: 0 0 12px rgba(255,0,255,0.4);
     }
 
     .msg-send:disabled {
-      opacity: 0.4;
+      opacity: 0.35;
       pointer-events: none;
     }
 
@@ -1251,6 +1279,12 @@
     @media (max-width: 560px) {
       .about-content { padding: 16px 14px; }
       .msg-section { padding: 14px; }
+    }
+
+    @media (max-width: 420px) {
+      .shout-wall { max-height: 280px; }
+      .shout-form-row { flex-direction: column; }
+      .msg-form input { width: 100%; }
     }
 
     /* PWA standalone mode adjustments */
@@ -1410,18 +1444,20 @@
       </div>
     </section>
 
-    <section class="msg-section" id="msgSection">
-      <button class="msg-toggle" id="msgToggle">
-        <span class="msg-toggle-text">&#x1F4EC; DROP A MESSAGE</span>
-      </button>
+    <section class="msg-section open" id="msgSection">
+      <div class="wall-header">
+        <span class="wall-label">// TRANSMISSION WALL</span>
+        <span class="wall-count" id="wallCount"></span>
+      </div>
+      <div id="shoutList" class="shout-wall"></div>
       <div class="msg-form-wrap" id="msgFormWrap">
-        <div class="msg-form" id="msgForm" style="background:var(--panel);border:1px solid var(--border);border-top:none;">
-          <input type="text" id="msgName" placeholder="Name (optional)" maxlength="50">
-          <textarea id="msgText" placeholder="Say something..." maxlength="500" rows="3"></textarea>
-          <div style="display:flex; align-items:center; justify-content:space-between;">
-            <span class="msg-status" id="msgStatus"></span>
-            <button class="msg-send" id="msgSend">SEND</button>
+        <div class="msg-form" id="msgForm">
+          <div class="shout-form-row">
+            <input type="text" id="msgName" placeholder="HANDLE" maxlength="32">
+            <textarea id="msgText" placeholder="leave a signal on the wall..." maxlength="280" rows="2"></textarea>
           </div>
+          <button class="msg-send" id="msgSend" style="width:100%; margin-top:8px;">TRANSMIT</button>
+          <span class="msg-status" id="msgStatus"></span>
         </div>
       </div>
     </section>
@@ -2014,23 +2050,45 @@
       aboutToggle.innerHTML = isOpen ? '&#x2139; About / FAQ' : '&#x2139; Close';
     });
 
-    // === MESSAGE DROP ===
+    // === TRANSMISSION WALL ===
     const msgSection = document.getElementById('msgSection');
-    const msgToggle = document.getElementById('msgToggle');
     const msgForm = document.getElementById('msgForm');
     const msgName = document.getElementById('msgName');
     const msgText = document.getElementById('msgText');
     const msgSend = document.getElementById('msgSend');
     const msgStatus = document.getElementById('msgStatus');
+    const shoutList = document.getElementById('shoutList');
+    let shoutsInterval = null;
 
-    msgToggle.addEventListener('click', () => {
-      const isOpen = msgSection.classList.contains('open');
-      msgSection.classList.toggle('open');
-      msgToggle.innerHTML = isOpen
-        ? '<span class="msg-toggle-text">&#x1F4EC; DROP A MESSAGE</span>'
-        : '&#x1F4EC; Close';
-      if (!isOpen) setTimeout(() => msgText.focus(), 400);
-    });
+    async function loadShouts() {
+      try {
+        const res = await fetch('/msg/shouts.json');
+        if (!res.ok) return;
+        const shouts = await res.json();
+        const countEl = document.getElementById('wallCount');
+        if (countEl) countEl.textContent = shouts.length + ' msg' + (shouts.length !== 1 ? 's' : '');
+        if (shouts.length === 0) {
+          shoutList.innerHTML = '<div style="padding:48px 16px;text-align:center;color:rgba(0,255,234,0.25);font-style:italic">// no transmissions yet</div>';
+        } else {
+          shoutList.innerHTML = shouts.map(s => `
+            <div class="shout-item">
+              <div class="shout-header">
+                <span class="shout-name">${escHtml(s.n)}</span>
+                <span class="shout-time">${new Date(s.t * 1000).toLocaleTimeString([], {hour: "2-digit", minute:"2-digit"})}</span>
+              </div>
+              <div class="shout-msg">${escHtml(s.m)}</div>
+              ${s.track ? `<div class="shout-track">\u266B ${escHtml(s.track)}</div>` : ''}
+            </div>
+          `).join('');
+        }
+      } catch (e) {
+        shoutList.innerHTML = '<div style="padding:20px;text-align:center;color:rgba(0,255,234,0.25);font-style:italic">// signal lost</div>';
+      }
+    }
+
+    // Auto-load shouts on page load (always visible)
+    loadShouts();
+    shoutsInterval = setInterval(loadShouts, 30000);
 
     msgSend.addEventListener('click', async () => {
       const text = msgText.value.trim();
@@ -2047,19 +2105,17 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             name: msgName.value.trim() || 'Anonymous listener',
-            message: text,
+            msg: text,
             source: 'kpab.fm'
           })
         });
 
         if (res.ok) {
-          msgStatus.textContent = 'SENT \u2713';
+          msgStatus.textContent = 'TRANSMITTED \u2713';
           msgStatus.className = 'msg-status ok';
           msgText.value = '';
-          setTimeout(() => {
-            msgSection.classList.remove('open');
-            msgStatus.textContent = '';
-          }, 2000);
+          loadShouts();
+          setTimeout(() => { msgStatus.textContent = ''; }, 2000);
         } else {
           const data = await res.json().catch(() => ({}));
           msgStatus.textContent = data.error || 'Failed to send';
@@ -2071,7 +2127,7 @@
       }
 
       msgSend.disabled = false;
-      msgSend.textContent = 'SEND';
+      msgSend.textContent = 'TRANSMIT';
     });
 
     // Register service worker for PWA
