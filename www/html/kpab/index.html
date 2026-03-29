@@ -455,7 +455,7 @@
 
     .section-header::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-    .history-list { display: flex; flex-direction: column; gap: 4px; }
+    .history-list { display: flex; flex-direction: column; gap: 8px; }
 
     .history-item {
       display: flex;
@@ -526,12 +526,11 @@
 
     .history-action-btn {
       font-family: 'VT323', monospace;
-      font-size: 12px;
+      font-size: 14px;
       letter-spacing: 1px;
-      color: var(--dim);
-      border: 1px solid #333;
       background: var(--bg);
-      padding: 3px 8px;
+      padding: 0 12px;
+      min-height: 36px;
       cursor: pointer;
       transition: all 0.15s;
       white-space: nowrap;
@@ -539,12 +538,27 @@
       display: inline-flex;
       align-items: center;
       gap: 4px;
+      -webkit-tap-highlight-color: transparent;
     }
-
-    .history-action-btn:hover {
+    .history-action-btn--yt {
       color: var(--cyan);
-      border-color: var(--cyan);
-      box-shadow: 0 0 6px rgba(0,255,234,0.2);
+      border: 1px solid var(--cyan);
+      box-shadow: 0 0 4px rgba(0,255,234,0.15);
+    }
+    .history-action-btn--yt:hover {
+      background: rgba(0,255,234,0.1);
+      box-shadow: 0 0 10px rgba(0,255,234,0.3);
+      text-shadow: 0 0 4px var(--cyan);
+    }
+    .history-action-btn--wiki {
+      color: var(--magenta);
+      border: 1px solid var(--magenta);
+      box-shadow: 0 0 4px rgba(255,0,255,0.15);
+    }
+    .history-action-btn--wiki:hover {
+      background: rgba(255,0,255,0.1);
+      box-shadow: 0 0 10px rgba(255,0,255,0.3);
+      text-shadow: 0 0 4px var(--magenta);
     }
 
     /* FOOTER */
@@ -573,7 +587,7 @@
       input[type="range"]::-webkit-slider-thumb { width: 18px; height: 18px; }
       .progress-times { font-size: 13px; }
       .btn { justify-content: center; font-size: 16px; padding: 12px 20px; }
-      .history-action-btn { font-size: 11px; padding: 2px 6px; }
+      .history-action-btn { font-size: 14px; padding: 0 10px; min-height: 36px; }
     }
 
     @media (max-width: 380px) {
@@ -615,8 +629,8 @@
       position: absolute;
       top: 0; left: -100%;
       width: 50%; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,0,255,0.15), transparent);
-      animation: shimmer 4s ease-in-out infinite;
+      background: linear-gradient(90deg, transparent, rgba(255,0,255,0.08), transparent);
+      animation: shimmer 8s ease-in-out infinite;
     }
 
     @keyframes shimmer { 0% { left: -100%; } 100% { left: 200%; } }
@@ -1814,7 +1828,7 @@
           actions.className = 'history-actions';
 
           const ytBtn = document.createElement('a');
-          ytBtn.className = 'history-action-btn';
+          ytBtn.className = 'history-action-btn history-action-btn--yt';
           ytBtn.textContent = '\u25B6 YT';
           ytBtn.title = 'Search on YouTube';
           ytBtn.href = 'https://www.youtube.com/results?search_query=' + encodeURIComponent((s.artist || '') + ' ' + (s.title || ''));
@@ -1823,8 +1837,8 @@
           ytBtn.addEventListener('click', (e) => e.stopPropagation());
 
           const wikiBtn = document.createElement('a');
-          wikiBtn.className = 'history-action-btn';
-          wikiBtn.textContent = '\u24D8 Wiki';
+          wikiBtn.className = 'history-action-btn history-action-btn--wiki';
+          wikiBtn.textContent = '? WIKI';
           wikiBtn.title = 'Search artist on Wikipedia';
           wikiBtn.href = 'https://en.wikipedia.org/wiki/Special:Search?search=' + encodeURIComponent(s.artist || '');
           wikiBtn.target = '_blank';
