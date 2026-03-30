@@ -32,6 +32,12 @@ NP_LISTENERS=$(echo "$NP_JSON" | python3 -c "import sys,json; print(json.load(sy
 # Load average
 LOAD=$(uptime | awk -F'load average:' '{print $2}' | awk -F',' '{print $1}' | tr -d ' ')
 
+# Connected users — unique real IPs from nginx logs in last 10 minutes
+# X-Forwarded-For is the last quoted field in combined+proxy log format
+USERS_ONLINE=$(docker logs web_host --since 10m 2>/dev/null | \
+  grep -oP '"\d+\.\d+\.\d+\.\d+"$' | tr -d '"' | \
+  grep -v '^-$' | sort -u | wc -l | tr -d ' ')
+
 cat > /media/pibulus/passport/www/html/status.json <<JSON
 {
   "temp": "${TEMP}",
@@ -49,6 +55,7 @@ cat > /media/pibulus/passport/www/html/status.json <<JSON
   "np_artist": "$(echo "$NP_ARTIST" | sed 's/"/\\"/g')",
   "np_title": "$(echo "$NP_TITLE" | sed 's/"/\\"/g')",
   "np_listeners": ${NP_LISTENERS:-0},
+  "users_online": ${USERS_ONLINE:-0},
   "ts": "$(date '+%H:%M:%S')",
   "date": "$(date '+%Y-%m-%d')"
 }

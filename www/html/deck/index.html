@@ -114,10 +114,24 @@
       box-shadow: 0 0 8px var(--cyan);
     }
 
+
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+    .alive-bar {
+      text-align: center; padding: 0.6rem 1rem; margin: 0.3rem 0 0;
+      font-size: 0.95rem; color: var(--dim); letter-spacing: 1px; min-height: 1.5em;
+    }
+    .alive-bar::before {
+      content: ''; display: inline-block; width: 0.5em; height: 0.5em;
+      background: var(--amber); border-radius: 50%; margin-right: 0.5em;
+      vertical-align: middle; animation: pulse 2s ease-in-out infinite;
+    }
+    .alive-bar:empty::before { display: none; }
+    .alive-bar span { color: var(--amber); }
+
     /* LIVE DASHBOARD */
     .dashboard {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(5, 1fr);
       gap: 0.75rem;
       margin: 1.5rem 0;
       padding: 1rem;
@@ -127,7 +141,7 @@
     }
 
     @media (max-width: 560px) {
-      .dashboard { grid-template-columns: repeat(2, 1fr); }
+      .dashboard { grid-template-columns: repeat(3, 1fr); }
     }
 
     .stat {
@@ -437,6 +451,7 @@
       <a class="public-link" href="https://quickcat.club" target="_blank" rel="noopener">quickcat.club &rarr;</a>
       <h1>pibulus deck<span class="cursor"></span></h1>
       <p class="subtitle">~(=^..^) command &amp; control</p>
+      <div class="alive-bar" id="alive">live on <span>KPAB.FM</span></div>
     </header>
 
     <!-- LIVE DASHBOARD -->
@@ -456,6 +471,10 @@
       <div class="stat">
         <div class="stat-value" id="d-up">--</div>
         <div class="stat-label">UPTIME</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="d-users">--</div>
+        <div class="stat-label">USERS</div>
       </div>
 
     </div>
@@ -637,6 +656,8 @@
   </div>
 
   <script>
+    function esc(str) { var d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
+
     // Live dashboard — polls status.json every 30s
     function loadStatus() {
       fetch('/status.json', { cache: 'no-cache' })
@@ -663,7 +684,20 @@
           // Uptime
           document.getElementById('d-up').textContent = d.uptime;
 
+          // Users online
+          var usersEl = document.getElementById('d-users');
+          if (d.users_online !== undefined) {
+            usersEl.textContent = d.users_online;
+            usersEl.className = 'stat-value' + (d.users_online > 0 ? '' : '');
+          }
+
           // Now playing
+          var aliveEl = document.getElementById('alive');
+          if (d.np_artist && d.np_title) {
+            aliveEl.innerHTML = 'now playing on <span>KPAB.FM</span>: ' + esc(d.np_artist) + ' \u2014 ' + esc(d.np_title);
+          } else {
+            aliveEl.innerHTML = 'live on <span>KPAB.FM</span>';
+          }
 
           // Footer
           document.getElementById('f-containers').textContent = d.containers;
