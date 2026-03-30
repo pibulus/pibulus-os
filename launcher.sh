@@ -126,7 +126,7 @@ sleep 1.5
 
 while true; do
   render_hud
-  choice=$(tactile_choose \
+  choice=$(tactile_choose --height 20 \
     '📻 Radio Status' \
     '📡 Network Mode' \
     '🎵 Soulseek Wake/Sleep' \
@@ -134,11 +134,10 @@ while true; do
     '🏴‍☠️ Pirate Grab (Media)' \
     '📂 Passport Navigator (Files)' \
     '🚀 Deploy App' \
-    '🌐 Activate Domain' \
     '🧹 Flush RAM' \
     '🧠 Scavenger (AI Search)' \
     '🐉 Red Dragon BBS' \
-    '📟 BBS: Dura-Europos' \
+    '📟 BBS: Fozz (Retro)' \
     '🎲 Roguelike (NetHack)' \
     '💬 Chat (IRC)' \
     '📖 Cheat Sheet' \
@@ -152,12 +151,11 @@ while true; do
     '🏴‍☠️ Pirate Grab (Media)') manage_pirate_grab ;;
     '📂 Passport Navigator (Files)') nnn /media/pibulus/passport ;;
     '🚀 Deploy App') ~/pibulus-os/scripts/deploy.sh ;;
-    '🌐 Activate Domain') ~/pibulus-os/scripts/deploy.sh ;;
     '🧹 Flush RAM') ~/pibulus-os/scripts/flush_ram.sh; gum input --placeholder 'RAM Purged. Enter...' >/dev/null ;;
     '🧠 Scavenger (AI Search)') manage_scavenger ;;
-    '🐉 Red Dragon BBS') telnet darkrealms.ca ;;
-    '📟 BBS: Dura-Europos') telnet dura-europos.org ;;
-    '🎲 Roguelike (NetHack)') nethack || echo 'NetHack not installed.'; gum input --placeholder 'Enter...' >/dev/null ;;
+    '🐉 Red Dragon BBS') TERM=ansi telnet darkrealms.ca ;;
+    '📟 BBS: Fozz (Retro)') TERM=ansi telnet bbs.fozztexx.com ;;
+    '🎲 Roguelike (NetHack)') nethack || { echo 'NetHack not installed.'; gum input --placeholder 'Enter...' >/dev/null; } ;;
     '💬 Chat (IRC)') irssi ;;
     '📖 Cheat Sheet') gum pager < ~/pibulus-os/FIELD_MANUAL.md ;;
     '🚪 Exit'|'') clear; echo 'Neural link severed.'; exit 0 ;;

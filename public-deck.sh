@@ -13,7 +13,7 @@ show_banner() {
 
 while true; do
   show_banner
-  choice=$(gum choose --cursor.foreground 212 --selected.foreground 51     '🎲 NetHack — classic dungeon crawler'     '📖 Text Adventures — interactive fiction'     '🐉 Genesis MUD — multiplayer fantasy RPG'     '📟 Dura-Europos BBS — community board'     '⭐ Star Wars — ASCII movie (telnet)'     '🚪 Disconnect')
+  choice=$(gum choose --cursor.foreground 212 --selected.foreground 51     '🎲 NetHack — classic dungeon crawler'     '📖 Text Adventures — interactive fiction'     '🐉 Genesis MUD — multiplayer fantasy RPG'     '📟 Fozz BBS (Retro) — retro computing board'     '⭐ Star Wars — ASCII movie (telnet)'     '🚪 Disconnect')
 
   case "$choice" in
     *'NetHack'*)
@@ -46,11 +46,11 @@ while true; do
       echo
       telnet genesismud.org 3030
       ;;
-    *'Dura-Europos'*)
+    *'Fozz'*)
       clear
-      gum style --foreground 51 '=== DURA-EUROPOS BBS ==='
+      gum style --foreground 51 '=== FOZZ BBS ==='
       echo
-      telnet dura-europos.org
+      TERM=ansi telnet bbs.fozztexx.com
       ;;
     *'Star Wars'*)
       clear
