@@ -257,55 +257,6 @@
     .live-dot.warn { background: var(--orange); }
     .live-dot.off { background: var(--red); animation: none; }
 
-    /* FLOATING RADIO */
-    .radio-float {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      z-index: 900;
-      display: flex;
-      align-items: center;
-      gap: 0;
-    }
-    .radio-btn {
-      background: rgba(0,0,0,0.85);
-      border: 2px solid rgba(77,255,210,0.4);
-      color: var(--cyan);
-      font-family: 'VT323', monospace;
-      font-size: 1rem;
-      padding: 10px 16px;
-      cursor: pointer;
-      letter-spacing: 2px;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      transition: all 0.2s;
-      white-space: nowrap;
-    }
-    .radio-btn:hover {
-      border-color: var(--cyan);
-      box-shadow: 0 0 15px rgba(77,255,210,0.2);
-    }
-    .radio-btn.playing {
-      border-color: var(--magenta);
-      color: var(--magenta);
-      box-shadow: 0 0 15px rgba(224,64,251,0.2);
-    }
-    .radio-btn .r-icon { margin-right: 6px; }
-    .radio-switch {
-      background: rgba(0,0,0,0.85);
-      border: 2px solid rgba(77,255,210,0.4);
-      border-left: none;
-      color: var(--dim);
-      font-family: 'VT323', monospace;
-      font-size: 0.85rem;
-      padding: 10px 12px;
-      cursor: pointer;
-      letter-spacing: 1px;
-      backdrop-filter: blur(12px);
-      transition: all 0.2s;
-    }
-    .radio-switch:hover { color: var(--cyan); border-color: var(--cyan); }
-
     /* MESSAGE DROP */
     .msg-drop {
       margin-top: 2rem;
@@ -516,10 +467,10 @@
         <span class="card-label">MEMOS</span>
         <span class="card-desc">microblog</span>
       </a>
-      <a class="card admin" href="/status.json" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click">
-        <span class="card-emoji">&#x1F4CA;</span>
-        <span class="card-label">RAW DATA</span>
-        <span class="card-desc">status API</span>
+      <a class="card admin" href="http://pibulus.local:8100" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click">
+        <span class="card-emoji">📺</span>
+        <span class="card-label">TUNARR</span>
+        <span class="card-desc">TV channels</span>
       </a>
       <a class="card admin" href="https://github.com/pibulus/pibulus-os" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click">
         <span class="card-emoji">&#x1F4BB;</span>
@@ -549,6 +500,11 @@
         <span class="card-emoji">&#128225;</span>
         <span class="card-label">RADIO</span>
         <span class="card-desc">public radio</span>
+      </a>
+      <a class="card" href="http://pibulus.local:3099" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click">
+        <span class="card-emoji">&#128250;</span>
+        <span class="card-label">RETRO TV</span>
+        <span class="card-desc">90s cable simulator</span>
       </a>
     </div>
 
@@ -709,59 +665,6 @@
     loadStatus();
     setInterval(loadStatus, 30000);
 
-
-    // === FLOATING RADIO ===
-    var stations = [
-      { name: 'KPAB.FM', url: 'https://kpab.fm/listen/kpab.fm/radio.mp3' },
-      { name: 'GROOVE SALAD', url: 'https://ice4.somafm.com/groovesalad-256-mp3' }
-    ];
-    var currentStation = 0;
-    var isPlaying = false;
-    var radioAudio = document.getElementById('radioAudio');
-    var radioBtn = document.getElementById('radioBtn');
-    var radioLabel = document.getElementById('radioLabel');
-
-    function toggleRadio() {
-      if (isPlaying) {
-        radioAudio.pause();
-        radioAudio.src = '';
-        isPlaying = false;
-        radioBtn.classList.remove('playing');
-        radioLabel.textContent = stations[currentStation].name;
-      } else {
-        radioAudio.src = stations[currentStation].url;
-        radioAudio.play().catch(function(){});
-        isPlaying = true;
-        radioBtn.classList.add('playing');
-        radioLabel.textContent = '\u25A0 ' + stations[currentStation].name;
-      }
-    }
-
-    function skipSong() {
-      var skipBtn = document.querySelector('.radio-switch[title="skip current song"]');
-      if (skipBtn) skipBtn.textContent = '...';
-      var baseUrl = (location.hostname === 'pibulus.local') ? '' : 'https://radio.quickcat.club';
-      fetch(baseUrl + "/api/station/1/backend/skip", { method: "POST" })
-        .then(function(r) {
-          if (skipBtn) skipBtn.textContent = r.ok ? '\u2713' : '\u2717';
-          if (r.ok) setTimeout(function() { loadStatus(); if (skipBtn) skipBtn.innerHTML = '&#x21C4;'; }, 2000);
-          else setTimeout(function() { if (skipBtn) skipBtn.innerHTML = '&#x21C4;'; }, 2000);
-        })
-        .catch(function() {
-          if (skipBtn) { skipBtn.textContent = '\u2717'; setTimeout(function() { skipBtn.innerHTML = '&#x21C4;'; }, 2000); }
-        });
-    }
-
-    function switchStation() {
-      currentStation = (currentStation + 1) % stations.length;
-      radioLabel.textContent = stations[currentStation].name;
-      if (isPlaying) {
-        radioAudio.src = stations[currentStation].url;
-        radioAudio.play().catch(function(){});
-        radioLabel.textContent = '\u25A0 ' + stations[currentStation].name;
-      }
-    }
-
     // === MESSAGE INBOX (read-only) ===
     var msgToggle = document.getElementById('msgToggle');
     var msgBody = document.getElementById('msgBody');
@@ -859,7 +762,10 @@
         '8083': 'https://read.quickcat.club',
         '5000': 'https://comics.quickcat.club',
         '8500': 'https://radio.quickcat.club',
-        '8091': 'https://vault.quickcat.club'
+        '8091': 'https://vault.quickcat.club',
+        '5030': 'https://slskd.quickcat.club',
+        '8100': 'https://tv.quickcat.club',
+        '3099': 'https://retro.quickcat.club'
       };
 
       var pathMap = {
@@ -904,18 +810,8 @@
     })();
   </script>
 
-    <!-- FLOATING RADIO WIDGET -->
-    <div class="radio-float">
-      <button class="radio-btn" id="radioBtn" onclick="toggleRadio()">
-        <span class="r-icon">&#128225;</span>
-        <span id="radioLabel">KPAB.FM</span>
-      </button>
-      <button class="radio-switch" onclick="switchStation()" title="switch station">⏭</button><button class="radio-switch" onclick="skipSong()" title="skip current song">&#x21C4;</button>
-    </div>
-    <audio id="radioAudio" preload="none"></audio>
-
   <!-- UI Sounds — Kenney CC0 -->
   <script src="ui-sounds.js"></script>
-  <script>UISounds.init({ basePath: "sounds/" });</script>
+  <script>UISounds.init();</script>
 </body>
 </html>
