@@ -14,7 +14,6 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --bg: #0D0F14;
-      --bg-dark: #050505;
       --cyan: #4DFFD2;
       --magenta: #E040FB;
       --yellow: #F5C842;
@@ -219,14 +218,11 @@
     .faq details[open] p { max-height: 300px; padding-bottom: 1rem; }
     .faq details p a { color: var(--cyan); text-decoration: none; }
 
-    /* cursor-glow removed — was causing sluggish feel */
-
     /* ─── REDUCED MOTION: kill everything ─── */
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation: none !important; transition: none !important; }
       body::before { animation: none !important; }
       .card { opacity: 1 !important; animation: none !important; }
-      /* cursor-glow removed */
       .faq details p { max-height: none; overflow: visible; padding-bottom: 1rem; }
     }
 
@@ -313,18 +309,12 @@
       document.querySelectorAll('.card').forEach(c => c.classList.add('visible'));
     }
 
-    // card mousemove glow removed — pure CSS hover now
-
     // ─── THEME TOGGLE via cursor block ───
     document.querySelector('.cursor').addEventListener('click', () => {
       document.documentElement.classList.toggle('dark');
       localStorage.setItem('qcc-theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
     });
     if (localStorage.getItem('qcc-theme') === 'dark') document.documentElement.classList.add('dark');
-
-    // ─── FAQ: prevent native instant-open so CSS transition plays ───
-    // The CSS max-height transition works natively via details[open] attribute,
-    // no JS needed. The marker + transition handles it cleanly.
 
     // ─── TRANSMISSION WALL ───
     function esc(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
