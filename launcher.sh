@@ -1,6 +1,10 @@
 #!/bin/bash
 export TERM=xterm-256color
 
+# Source modules for availability
+[ -f ~/pibulus-os/modules/pirate_grab_module.sh ] && source ~/pibulus-os/modules/pirate_grab_module.sh
+[ -f ~/pibulus-os/modules/scavenger_module.sh ] && source ~/pibulus-os/modules/scavenger_module.sh
+
 case "$TERM" in
   xterm-ghostty|xterm-kitty) export TERM=xterm-256color ;;
 esac
@@ -11,6 +15,31 @@ get_status() {
   else
     echo "🔴"
   fi
+}
+
+get_storage_bar() {
+  local usage=$(df -h /media/pibulus/passport | awk 'NR==2 {print $5}' | sed 's/%//')
+  local filled=$((usage / 10))
+  local empty=$((10 - filled))
+  local bar="["
+  for ((i=0; i<filled; i++)); do bar+="■"; done
+  for ((i=0; i<empty; i++)); do bar+="□"; done
+  bar+="] $usage%"
+  echo "$bar"
+}
+
+roll_fascination() {
+  local roll=$(( ( RANDOM % 20 )  + 1 ))
+  local interests=(
+    "Amiga Demoscene Aesthetics" "Pastel-Punk Interface Design" "Palestine Solidarity Tech"
+    "The Church of the SubGenius" "80/20 Compression Logic" "Vampire Coding Hours"
+    "Garage Punk Energy" "Weaponized Simplicity" "Non-Scalable Software"
+    "Retro BBS Culture" "Cyberdeck Hardware" "Low-Fi Social Networks"
+    "The Magic of SQLite" "Deno vs Node Drama" "Utility-First CSS"
+    "The Joy of Small Tools" "ADHD Project Hopping" "Mexican-Australian Fusion"
+    "Analog Synth Patches" "The Mystery of the Nat 20"
+  )
+  echo "🎲 Roll: $roll | Today's Fascination: ${interests[$((roll-1))]}"
 }
 
 render_hud() {
@@ -24,19 +53,11 @@ render_hud() {
   fi
 
   gum style --border rounded --border-foreground 212 --padding '0 2' --margin '1 0' \
-    "🌡️ $temp  |  🧠 $mem  |  🧵 load $load  |  📻 $(get_status azuracast) azuracast  |  🎵 $(get_status slskd) slskd"
+    "🌡️ $temp  |  🧠 $mem  |  🧵 load $load  |  💾 $(get_storage_bar)  |  📻 $(get_status azuracast) azuracast"
 }
 
 tactile_choose() {
   gum choose "$@"
-}
-
-show_status() {
-  vcgencmd measure_temp 2>/dev/null || true
-  free -h
-  df -h / /media/pibulus/passport 2>/dev/null || true
-  echo
-  docker ps --format 'table {{.Names}}\t{{.Status}}' | sed -n '1,25p'
 }
 
 radio_status() {
@@ -49,16 +70,11 @@ network_menu() {
   while true; do
     render_hud
     local action
-    action=$(tactile_choose \
-      '📡 Status' \
-      '🏠 Home Mode' \
-      '🧳 Away Mode' \
-      'Back')
-
+    action=$(tactile_choose '📡 Status' '🏠 Home Mode' '🧳 Away Mode' 'Back')
     case "$action" in
-      '📡 Status') ~/pibulus-os/scripts/network_mode.sh status; gum input --placeholder 'Press Enter...' >/dev/null ;;
-      '🏠 Home Mode') ~/pibulus-os/scripts/network_mode.sh home; gum input --placeholder 'Press Enter...' >/dev/null ;;
-      '🧳 Away Mode') ~/pibulus-os/scripts/network_mode.sh away; gum input --placeholder 'Press Enter...' >/dev/null ;;
+      '📡 Status') ~/pibulus-os/scripts/network_mode.sh status; gum input --placeholder 'Enter...' >/dev/null ;;
+      '🏠 Home Mode') ~/pibulus-os/scripts/network_mode.sh home; gum input --placeholder 'Enter...' >/dev/null ;;
+      '🧳 Away Mode') ~/pibulus-os/scripts/network_mode.sh away; gum input --placeholder 'Enter...' >/dev/null ;;
       'Back'|'') return ;;
     esac
   done
@@ -68,51 +84,41 @@ slskd_menu() {
   while true; do
     render_hud
     local action
-    action=$(tactile_choose \
-      '🎵 Start slskd' \
-      '😴 Stop slskd' \
-      '🔎 Status' \
-      'Back')
-
+    action=$(tactile_choose '🎵 Start slskd' '😴 Stop slskd' '🔎 Status' 'Back')
     case "$action" in
-      '🎵 Start slskd') docker start slskd; gum input --placeholder 'Press Enter...' >/dev/null ;;
-      '😴 Stop slskd') docker stop slskd; gum input --placeholder 'Press Enter...' >/dev/null ;;
-      '🔎 Status') docker ps --filter 'name=slskd' --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'; gum input --placeholder 'Press Enter...' >/dev/null ;;
+      '🎵 Start slskd') docker start slskd; gum input --placeholder 'Enter...' >/dev/null ;;
+      '😴 Stop slskd') docker stop slskd; gum input --placeholder 'Enter...' >/dev/null ;;
+      '🔎 Status') docker ps --filter 'name=slskd' --format 'table {{.Names}}\t{{.Status}}'; gum input --placeholder 'Enter...' >/dev/null ;;
       'Back'|'') return ;;
     esac
   done
 }
 
-if [[ "${1:-}" =~ ^(-h|--help|help)$ ]]; then
-  cat <<'HELP'
-PIBULUS DECK
-Usage: deck [command]
+club_menu() {
+  while true; do
+    render_hud
+    local action
+    action=$(tactile_choose '➕ Add Club Member' '🔎 Check Counts' 'Back')
+    case "$action" in
+      '➕ Add Club Member')
+        local name=$(gum input --placeholder 'Username...')
+        [ -n "$name" ] && echo "meringue" | sudo -S python3 ~/pibulus-os/scripts/add_club_member.py "$name" && gum input --placeholder 'Enter...' >/dev/null ;;
+      '🔎 Check Counts')
+        echo 'Account Parity:'
+        echo '  Jellyfin:    ' $(echo "meringue" | sudo -S sqlite3 /home/pibulus/.config/jellyfin/data/jellyfin.db 'SELECT COUNT(*) FROM Users')
+        echo '  Calibre-web: ' $(echo "meringue" | sudo -S sqlite3 /home/pibulus/.config/calibre-web/app.db 'SELECT COUNT(*) FROM user')
+        echo '  Kavita:      ' $(echo "meringue" | sudo -S sqlite3 /home/pibulus/.config/kavita/kavita.db 'SELECT COUNT(*) FROM AspNetUsers')
+        echo '  Navidrome:   ' $(echo "meringue" | sudo -S sqlite3 /home/pibulus/.config/navidrome/navidrome.db 'SELECT COUNT(*) FROM user')
+        gum input --placeholder 'Enter...' >/dev/null ;;
+      'Back'|'') return ;;
+    esac
+  done
+}
 
-  status        System status snapshot
-  radio-status  AzuraCast status + recent logs
-  network       Show network status
-  away          Enable hotspot mode
-  home          Disable hotspot and join home Wi-Fi
-  slskd-on      Start slskd
-  slskd-off     Stop slskd
-  flush-ram     Drop caches
-  deploy        Launch app deploy wizard
-HELP
-  exit 0
-fi
-
-case "${1:-}" in
-  scavenge) source ~/pibulus-os/modules/scavenger_module.sh; shift; scavenge_oneshot "$@"; exit 0 ;;
-  status) show_status; exit 0 ;;
-  radio-status) radio_status; exit 0 ;;
-  network) ~/pibulus-os/scripts/network_mode.sh status; exit 0 ;;
-  away) ~/pibulus-os/scripts/network_mode.sh away; exit 0 ;;
-  home) ~/pibulus-os/scripts/network_mode.sh home; exit 0 ;;
-  slskd-on) docker start slskd; exit 0 ;;
-  slskd-off) docker stop slskd; exit 0 ;;
-  flush-ram) ~/pibulus-os/scripts/flush_ram.sh; exit 0 ;;
-  deploy) ~/pibulus-os/scripts/deploy.sh; exit 0 ;;
-esac
+# STARTUP ROLL
+render_hud
+gum style --foreground 212 "$(roll_fascination)"
+sleep 1.5
 
 while true; do
   render_hud
@@ -120,27 +126,35 @@ while true; do
     '📻 Radio Status' \
     '📡 Network Mode' \
     '🎵 Soulseek Wake/Sleep' \
+    '🐱 Quick Cat Club (Identity)' \
+    '🏴‍☠️ Pirate Grab (Media)' \
+    '📂 Passport Navigator (Files)' \
     '🚀 Deploy App' \
-    '🤖 AI: Claude' \n    '🧠 AI: Gemini' \n    '📊 System: btop' \n    '📼 Storage: ncdu'
+    '🧹 Flush RAM' \
     '🧠 Scavenger (AI Search)' \
+    '🐉 Red Dragon BBS' \
+    '📟 BBS: Dura-Europos' \
     '🎲 Roguelike (NetHack)' \
-    '🐉 MUD (Genesis)' \
-    '📟 BBS (Dura-Europos)' \
     '💬 Chat (IRC)' \
+    '📖 Cheat Sheet' 
     '🚪 Exit')
 
   case "$choice" in
-    '📻 Radio Status') radio_status; gum input --placeholder 'Press Enter...' >/dev/null ;;
+    '📻 Radio Status') radio_status; gum input --placeholder 'Enter...' >/dev/null ;;
     '📡 Network Mode') network_menu ;;
     '🎵 Soulseek Wake/Sleep') slskd_menu ;;
+    '🐱 Quick Cat Club (Identity)') club_menu ;;
+    '🏴‍☠️ Pirate Grab (Media)') manage_pirate_grab ;;
+    '📂 Passport Navigator (Files)') nnn /media/pibulus/passport ;;
     '🚀 Deploy App') ~/pibulus-os/scripts/deploy.sh ;;
-    '🤖 AI: Claude' \n    '🧠 AI: Gemini' \n    '📊 System: btop' \n    '📼 Storage: ncdu'
+    '🧹 Flush RAM') ~/pibulus-os/scripts/flush_ram.sh; gum input --placeholder 'RAM Purged. Enter...' >/dev/null ;;
     '🧠 Scavenger (AI Search)') source ~/pibulus-os/modules/scavenger_module.sh; manage_scavenger ;;
-    '🎲 Roguelike (NetHack)') nethack || echo 'NetHack not installed.'; read -n 1 -s -r -p 'Press any key to return...' ;;
-    '🐉 MUD (Genesis)') telnet genesismud.org 3030 ;;
-    '📟 BBS (Dura-Europos)') telnet dura-europos.org ;;
+    '🐉 Red Dragon BBS') telnet darkrealms.ca ;;
+    '📟 BBS: Dura-Europos') telnet dura-europos.org ;;
+    '🎲 Roguelike (NetHack)') nethack || echo 'NetHack not installed.'; read -n 1 -s -r -p 'Press any key...' ;;
     '💬 Chat (IRC)') irssi ;;
+    '📖 Cheat Sheet') clear; cat ~/pibulus-os/FIELD_MANUAL.md | gum pager ;;
+    '📖 Cheat Sheet' 
     '🚪 Exit'|'') clear; echo 'Neural link severed.'; exit 0 ;;
   esac
-
 done
