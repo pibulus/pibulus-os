@@ -1,13 +1,16 @@
 #!/bin/bash
-export TERM=xterm-256color
+
+# Normalize terminal for Pi compatibility
+case "$TERM" in
+  xterm-ghostty|xterm-kitty) export TERM=xterm-256color ;;
+  '') export TERM=xterm-256color ;;
+esac
+
+command -v gum >/dev/null 2>&1 || { echo "gum not found. Install: https://github.com/charmbracelet/gum"; exit 1; }
 
 # Source modules for availability
 [ -f ~/pibulus-os/modules/pirate_grab_module.sh ] && source ~/pibulus-os/modules/pirate_grab_module.sh
 [ -f ~/pibulus-os/modules/scavenger_module.sh ] && source ~/pibulus-os/modules/scavenger_module.sh
-
-case "$TERM" in
-  xterm-ghostty|xterm-kitty) export TERM=xterm-256color ;;
-esac
 
 get_status() {
   if docker ps --format '{{.Names}}' | grep -qx "$1"; then
@@ -18,7 +21,8 @@ get_status() {
 }
 
 get_storage_bar() {
-  local usage=$(df -h /media/pibulus/passport | awk 'NR==2 {print $5}' | sed 's/%//')
+  local usage=$(df -h /media/pibulus/passport 2>/dev/null | awk 'NR==2 {print $5}' | sed 's/%//')
+  usage="${usage:-0}"
   local filled=$((usage / 10))
   local empty=$((10 - filled))
   local bar="["
@@ -102,13 +106,13 @@ club_menu() {
     case "$action" in
       '➕ Add Club Member')
         local name=$(gum input --placeholder 'Username...')
-        [ -n "$name" ] && echo "meringue" | sudo -S python3 ~/pibulus-os/scripts/add_club_member.py "$name" && gum input --placeholder 'Enter...' >/dev/null ;;
+        [ -n "$name" ] && sudo python3 ~/pibulus-os/scripts/add_club_member.py "$name" && gum input --placeholder 'Enter...' >/dev/null ;;
       '🔎 Check Counts')
         echo 'Account Parity:'
-        echo '  Jellyfin:    ' $(echo "meringue" | sudo -S sqlite3 /home/pibulus/.config/jellyfin/data/jellyfin.db 'SELECT COUNT(*) FROM Users')
-        echo '  Calibre-web: ' $(echo "meringue" | sudo -S sqlite3 /home/pibulus/.config/calibre-web/app.db 'SELECT COUNT(*) FROM user')
-        echo '  Kavita:      ' $(echo "meringue" | sudo -S sqlite3 /home/pibulus/.config/kavita/kavita.db 'SELECT COUNT(*) FROM AspNetUsers')
-        echo '  Navidrome:   ' $(echo "meringue" | sudo -S sqlite3 /home/pibulus/.config/navidrome/navidrome.db 'SELECT COUNT(*) FROM user')
+        echo '  Jellyfin:    ' $(sudo sqlite3 /home/pibulus/.config/jellyfin/data/jellyfin.db 'SELECT COUNT(*) FROM Users')
+        echo '  Calibre-web: ' $(sudo sqlite3 /home/pibulus/.config/calibre-web/app.db 'SELECT COUNT(*) FROM user')
+        echo '  Kavita:      ' $(sudo sqlite3 /home/pibulus/.config/kavita/kavita.db 'SELECT COUNT(*) FROM AspNetUsers')
+        echo '  Navidrome:   ' $(sudo sqlite3 /home/pibulus/.config/navidrome/navidrome.db 'SELECT COUNT(*) FROM user')
         gum input --placeholder 'Enter...' >/dev/null ;;
       'Back'|'') return ;;
     esac
@@ -137,7 +141,7 @@ while true; do
     '📟 BBS: Dura-Europos' \
     '🎲 Roguelike (NetHack)' \
     '💬 Chat (IRC)' \
-    '📖 Cheat Sheet' 
+    '📖 Cheat Sheet' \
     '🚪 Exit')
 
   case "$choice" in
@@ -147,16 +151,15 @@ while true; do
     '🐱 Quick Cat Club (Identity)') club_menu ;;
     '🏴‍☠️ Pirate Grab (Media)') manage_pirate_grab ;;
     '📂 Passport Navigator (Files)') nnn /media/pibulus/passport ;;
-    '🚀 Deploy App' \
+    '🚀 Deploy App') ~/pibulus-os/scripts/deploy.sh ;;
     '🌐 Activate Domain') ~/pibulus-os/scripts/deploy.sh ;;
     '🧹 Flush RAM') ~/pibulus-os/scripts/flush_ram.sh; gum input --placeholder 'RAM Purged. Enter...' >/dev/null ;;
-    '🧠 Scavenger (AI Search)') source ~/pibulus-os/modules/scavenger_module.sh; manage_scavenger ;;
+    '🧠 Scavenger (AI Search)') manage_scavenger ;;
     '🐉 Red Dragon BBS') telnet darkrealms.ca ;;
     '📟 BBS: Dura-Europos') telnet dura-europos.org ;;
-    '🎲 Roguelike (NetHack)') nethack || echo 'NetHack not installed.'; read -n 1 -s -r -p 'Press any key...' ;;
+    '🎲 Roguelike (NetHack)') nethack || echo 'NetHack not installed.'; gum input --placeholder 'Enter...' >/dev/null ;;
     '💬 Chat (IRC)') irssi ;;
-    '📖 Cheat Sheet') clear; cat ~/pibulus-os/FIELD_MANUAL.md | gum pager ;;
-    '📖 Cheat Sheet' 
+    '📖 Cheat Sheet') gum pager < ~/pibulus-os/FIELD_MANUAL.md ;;
     '🚪 Exit'|'') clear; echo 'Neural link severed.'; exit 0 ;;
   esac
 done

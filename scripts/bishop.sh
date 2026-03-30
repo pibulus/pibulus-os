@@ -1,6 +1,6 @@
 #!/bin/bash
 # ╔══════════════════════════════════════════╗
-# ║  BISHOP — Pibulus AI Companion v3.1      ║
+# ║  BISHOP — Pibulus AI Companion v3.2      ║
 # ║  aichat + gum + scavenger + Pi toolkit   ║
 # ║  hardened: no injection, no leaked keys  ║
 # ╚══════════════════════════════════════════╝
@@ -17,7 +17,7 @@ fi
 
 # Safe temp file with cleanup
 BISHOP_TMP=$(mktemp /tmp/bishop_reply.XXXXXX)
-trap 'rm -f "$BISHOP_TMP"' EXIT
+trap 'rm -f "$BISHOP_TMP" /tmp/bishop_health.??????' EXIT
 
 # Colors
 Y='\033[1;33m'; C='\033[0;36m'; M='\033[0;35m'; D='\033[2m'; G='\033[0;32m'
@@ -29,9 +29,21 @@ R='\033[0;31m'; W='\033[1;37m'; RST='\033[0m'
 
 _now_playing() {
     local np=$(curl -s 'http://localhost:8500/api/nowplaying/1' 2>/dev/null)
-    local title=$(echo "$np" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['now_playing']['song']['title'])" 2>/dev/null)
-    local artist=$(echo "$np" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['now_playing']['song']['artist'])" 2>/dev/null)
-    [ -n "$title" ] && echo -e "${Y}♪ $artist — $title${RST}" || echo -e "${D}couldn't fetch now playing${RST}"
+    local info=$(echo "$np" | python3 -c "
+import sys,json
+try:
+    d=json.load(sys.stdin)
+    s=d['now_playing']['song']
+    print(s.get('artist','?') + '|||' + s.get('title','?'))
+except: pass
+" 2>/dev/null)
+    if [ -n "$info" ]; then
+        local artist="${info%%|||*}"
+        local title="${info##*|||}"
+        echo -e "${Y}♪ $artist — $title${RST}"
+    else
+        echo -e "${D}couldn't fetch now playing${RST}"
+    fi
 }
 
 header() {
@@ -110,7 +122,7 @@ diagnose() {
         echo "=== TOP RAM ===" && ps aux --sort=-%mem | head -8
     } > "$health_tmp" 2>&1
     gum spin --spinner dot --title "bishop is interpreting..." -- \
-        bash -c 'aichat "You are the sysadmin AI for a Raspberry Pi 5 home server called PIBULUS. Give a brief, friendly system health report. Flag anything concerning. Use emoji sparingly. Be concise." < "$1" > "$2" 2>&1' _ "$health_tmp" "$BISHOP_TMP"
+        aichat "You are the sysadmin AI for a Raspberry Pi 5 home server called PIBULUS. Give a brief, friendly system health report. Flag anything concerning. Use emoji sparingly. Be concise." < "$health_tmp" > "$BISHOP_TMP" 2>&1
     echo -e "${C}bishop:${RST}"
     gum format < "$BISHOP_TMP"
     rm -f "$health_tmp"
@@ -297,7 +309,7 @@ fun_zone() {
             local q=$(gum input --placeholder "ask your question..." --width 50)
             [ -z "$q" ] && return
             gum spin --spinner dot --title "the oracle ponders..." -- \
-                aichat -- "You are a mystical oracle. Answer this question cryptically but helpfully in 2-3 sentences: $q" > "$BISHOP_TMP" 2>&1
+                aichat --prompt "You are a mystical oracle. Answer questions cryptically but helpfully in 2-3 sentences." -- "$q" > "$BISHOP_TMP" 2>&1
             echo ""
             echo -e "${M}The oracle speaks:${RST}"
             gum format < "$BISHOP_TMP"
