@@ -6,536 +6,878 @@
   <title>PIBULUS DECK // PI 5 CYBERDECK</title>
   <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
   <style>
-    *, *::before, *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #050505;
-      --cyan: #00ffea;
-      --magenta: #ff00ff;
-      --text: #e0e0e0;
-      --dim: #666;
-      --card-bg: rgba(0, 0, 0, 0.6);
-      --card-border: rgba(0, 255, 234, 0.3);
-      --card-hover-bg: rgba(0, 255, 234, 0.05);
+      --bg: #0D0F14;
+      --cyan: #4DFFD2;
+      --magenta: #E040FB;
+      --yellow: #F5C842;
+      --green: #39d98a;
+      --red: #ff4455;
+      --orange: #ff9900;
+      --amber: #F5A623;
+      --text: #C8D8E8;
+      --dim: #7A9AB8;
+      --dim-soft: #5A7A98;
+      --card-bg: rgba(22, 25, 34, 0.85);
+      --card-border: rgba(77, 255, 210, 0.18);
+      --card-hover-bg: rgba(77, 255, 210, 0.06);
     }
 
-    html {
-      scrollbar-color: var(--cyan) var(--bg);
-      scrollbar-width: thin;
-    }
+    html { scrollbar-color: var(--cyan) var(--bg); scrollbar-width: thin; }
 
     body {
       background-color: var(--bg);
       color: var(--text);
       font-family: 'VT323', monospace;
-      font-size: 18px;
+      font-size: 20px;
       line-height: 1.6;
       min-height: 100vh;
       overflow-x: hidden;
-      position: relative;
     }
 
-    /* scanlines overlay */
     body::before {
       content: '';
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 2px,
-        rgba(0, 0, 0, 0.15) 2px,
-        rgba(0, 0, 0, 0.15) 4px
-      );
-      pointer-events: none;
-      z-index: 999;
+      position: fixed; inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.12) 2px, rgba(0,0,0,0.12) 4px);
+      pointer-events: none; z-index: 10;
     }
 
-    /* subtle noise / grid bg texture */
     body::after {
       content: '';
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      position: fixed; inset: 0;
       background-image:
-        linear-gradient(rgba(0,255,234,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,255,234,0.03) 1px, transparent 1px);
+        linear-gradient(rgba(77,255,210,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(77,255,210,0.025) 1px, transparent 1px);
       background-size: 40px 40px;
-      pointer-events: none;
-      z-index: 0;
+      pointer-events: none; z-index: 0;
     }
 
     .wrapper {
-      position: relative;
-      z-index: 1;
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 2rem 1.25rem 4rem;
+      position: relative; z-index: 1;
+      max-width: 880px; margin: 0 auto; padding: 2rem 1.5rem 4rem;
     }
 
-    /* ── HEADER ── */
-    header {
-      text-align: center;
-      padding: 2.5rem 0 1rem;
-      margin-bottom: 0.5rem;
-    }
+    /* HEADER */
+    header { text-align: center; padding: 2rem 0 0.5rem; }
 
     .public-link {
-      display: inline-block;
-      font-size: 0.9rem;
-      color: var(--dim);
-      text-decoration: none;
-      letter-spacing: 1px;
-      border-bottom: 1px solid transparent;
-      transition: color 0.2s, border-color 0.2s;
-      margin-bottom: 1.2rem;
+      display: inline-block; font-size: 0.9rem; color: var(--dim);
+      text-decoration: none; letter-spacing: 1px;
+      border-bottom: 1px solid transparent; transition: color 0.2s, border-color 0.2s;
+      margin-bottom: 1rem;
     }
+    .public-link:hover { color: var(--magenta); border-color: var(--magenta); }
 
-    .public-link:hover {
-      color: var(--magenta);
-      border-color: var(--magenta);
+    /* ─── NEON GLITCH (chromatic aberration) ─── */
+    @keyframes titleGlitch {
+      0%, 89%, 91%, 93%, 95%, 100% {
+        text-shadow: 0 0 10px var(--cyan), 0 0 30px rgba(77,255,210,0.4), 0 0 60px rgba(77,255,210,0.1);
+        transform: translate(0); filter: none;
+      }
+      90% { text-shadow: -2px 0 var(--magenta), 2px 0 var(--cyan), 0 0 20px var(--cyan); transform: translate(-2px, 1px); filter: hue-rotate(10deg); }
+      92% { text-shadow: 2px 0 var(--magenta), -1px 0 var(--cyan), 0 0 30px rgba(224,64,251,0.3); transform: translate(1px, -1px); filter: hue-rotate(-10deg); }
+      94% { text-shadow: -1px 0 var(--magenta), 1px 0 var(--cyan), 0 0 40px var(--cyan); transform: translate(2px, 0); }
     }
-
+    @keyframes subtitleFlicker {
+      0%, 92%, 96%, 100% { opacity: 0.75; }
+      93% { opacity: 0.4; }
+      94% { opacity: 0.75; }
+      95% { opacity: 0.3; }
+    }
     h1 {
-      font-size: clamp(2.8rem, 10vw, 5.5rem);
+      font-size: clamp(2.5rem, 9vw, 4.5rem);
       line-height: 1;
       color: var(--cyan);
-      text-shadow:
-        0 0 10px var(--cyan),
-        0 0 30px rgba(0, 255, 234, 0.4),
-        0 0 60px rgba(0, 255, 234, 0.15);
+      text-shadow: 0 0 10px var(--cyan), 0 0 30px rgba(77,255,210,0.4), 0 0 60px rgba(77,255,210,0.1);
       letter-spacing: 4px;
-      margin-bottom: 0.4rem;
+      margin-bottom: 0.3rem;
+      animation: titleGlitch 6s ease-in-out infinite;
+      position: relative;
     }
 
     .subtitle {
-      font-size: clamp(1rem, 3vw, 1.4rem);
+      font-size: clamp(1rem, 3vw, 1.3rem);
       color: var(--magenta);
-      text-shadow: 0 0 8px rgba(255, 0, 255, 0.5);
+      opacity: 0.75;
+      text-shadow: 0 0 8px rgba(224,64,251,0.4);
       letter-spacing: 2px;
-      margin-bottom: 0.5rem;
+      animation: subtitleFlicker 4s ease-in-out infinite;
     }
 
-    .header-meta {
-      color: var(--dim);
-      font-size: 0.95rem;
-      letter-spacing: 1px;
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+    .cursor {
+      display: inline-block; width: 0.6em; height: 0.9em;
+      background: var(--cyan); vertical-align: text-bottom;
+      animation: blink 1.2s step-end infinite;
+      box-shadow: 0 0 8px var(--cyan);
     }
 
-    /* ── SECTION DIVIDERS ── */
-    .section-divider {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin: 2.5rem 0 1.25rem;
-    }
-
-    .section-divider::before,
-    .section-divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(0, 255, 234, 0.4), transparent);
-    }
-
-    .section-label {
-      font-size: 1.1rem;
-      color: var(--cyan);
-      letter-spacing: 4px;
-      white-space: nowrap;
-      text-shadow: 0 0 8px rgba(0, 255, 234, 0.5);
-    }
-
-    /* ── GRID ── */
-    .grid {
+    /* LIVE DASHBOARD */
+    .dashboard {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1rem;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.75rem;
+      margin: 1.5rem 0;
+      padding: 1rem;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 2px;
     }
 
-    @media (max-width: 640px) {
-      .grid {
-        grid-template-columns: 1fr;
-      }
+    @media (max-width: 560px) {
+      .dashboard { grid-template-columns: repeat(2, 1fr); }
     }
 
-    @media (min-width: 641px) and (max-width: 860px) {
-      .grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
+    .stat {
+      text-align: center;
+      padding: 0.5rem 0.25rem;
+    }
+    .stat-value {
+      font-size: 1.8rem;
+      color: var(--cyan);
+      line-height: 1;
+      text-shadow: 0 0 6px rgba(77,255,210,0.4);
+    }
+    .stat-value.warn { color: var(--orange); text-shadow: 0 0 6px rgba(255,153,0,0.4); }
+    .stat-value.crit { color: var(--red); text-shadow: 0 0 6px rgba(255,68,85,0.4); }
+    .stat-label {
+      font-size: 0.85rem;
+      color: var(--dim);
+      letter-spacing: 2px;
+      margin-top: 0.15rem;
     }
 
-    /* ── CARDS ── */
+    .now-playing {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 0.5rem;
+      border-top: 1px solid rgba(77,255,210,0.1);
+      margin-top: 0.25rem;
+    }
+    .np-label { color: var(--dim); font-size: 0.8rem; letter-spacing: 2px; }
+    .np-song { color: var(--magenta); font-size: 1.1rem; letter-spacing: 1px; }
+    .np-song a { color: var(--magenta); text-decoration: none; }
+    .np-song a:hover { text-decoration: underline; }
+
+    /* SECTION DIVIDERS */
+    .section-divider { display: flex; align-items: center; gap: 0.75rem; margin: 2.5rem 0 1.25rem; }
+    .section-divider::before, .section-divider::after {
+      content: ''; flex: 1; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(77,255,210,0.4), transparent);
+    }
+    .section-label {
+      font-size: 1.1rem; color: var(--cyan); letter-spacing: 0.2em;
+      white-space: nowrap; text-shadow: 0 0 8px rgba(77,255,210,0.5);
+    }
+
+    /* GRID */
+    .grid { display: grid; gap: 1rem; }
+    .grid-2 { grid-template-columns: repeat(2, 1fr); }
+    .grid-3 { grid-template-columns: repeat(3, 1fr); }
+
+    @media (max-width: 560px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    }
+    @media (min-width: 561px) and (max-width: 760px) {
+      .grid-3 { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* CARDS */
     .card {
       display: block;
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: 2px;
-      padding: 1.1rem 1.25rem;
+      padding: 1.75rem 1.25rem;
       text-decoration: none;
       color: var(--text);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
       transition:
-        transform 0.2s ease,
-        background 0.2s ease,
+        transform 0.45s linear(0,0.009,0.035,0.076,0.128,0.189,0.255,0.323,0.39,0.454,0.514,0.569,0.619,0.663,0.7,0.731,0.757,0.778,0.795,0.808,0.818,0.825,0.83,0.833,0.835,0.836,0.836,0.835,0.833,0.831,1),
         border-color 0.2s ease,
-        box-shadow 0.2s ease;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 60%;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-      transition: left 0.4s ease;
-    }
-
-    .card:hover::before {
-      left: 140%;
-    }
-
-    .card:hover {
-      transform: translateY(-5px);
-      background: var(--card-hover-bg);
-      border-color: rgba(0, 255, 234, 0.7);
-      box-shadow:
-        0 0 20px rgba(0, 255, 234, 0.12),
-        0 8px 24px rgba(0, 0, 0, 0.5);
-    }
-
-    .card-emoji {
-      font-size: 1.6rem;
-      display: block;
-      margin-bottom: 0.3rem;
-      line-height: 1;
-    }
-
-    .card-label {
-      font-size: 1.3rem;
-      color: var(--cyan);
-      letter-spacing: 2px;
-      display: block;
-    }
-
-    .card-name {
-      font-size: 1rem;
-      color: var(--dim);
-      letter-spacing: 1px;
-    }
-
-    /* admin cards get magenta accent */
-    .card.admin .card-label {
-      color: var(--magenta);
-      text-shadow: 0 0 6px rgba(255, 0, 255, 0.4);
-    }
-
-    .card.admin:hover {
-      border-color: rgba(255, 0, 255, 0.7);
-      box-shadow:
-        0 0 20px rgba(255, 0, 255, 0.12),
-        0 8px 24px rgba(0, 0, 0, 0.5);
-    }
-
-    .card.admin::before {
-      background: linear-gradient(90deg, transparent, var(--magenta), transparent);
-    }
-
-    /* fun / special cards */
-    .card.fun .card-label {
-      color: #ffff00;
-      text-shadow: 0 0 6px rgba(255, 255, 0, 0.4);
-    }
-
-    .card.fun:hover {
-      border-color: rgba(255, 255, 0, 0.7);
-      box-shadow:
-        0 0 20px rgba(255, 255, 0, 0.1),
-        0 8px 24px rgba(0, 0, 0, 0.5);
-    }
-
-    .card.fun::before {
-      background: linear-gradient(90deg, transparent, #ffff00, transparent);
-    }
-
-    /* ── GAME OF THE WEEK (full-width featured card) ── */
-    .gotw-card {
-      display: block;
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 2px;
-      padding: 1.4rem 1.5rem;
-      text-decoration: none;
-      color: var(--text);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      transition:
-        transform 0.2s ease,
-        background 0.2s ease,
-        border-color 0.2s ease,
-        box-shadow 0.2s ease;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .gotw-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 60%;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, #ffff00, transparent);
-      transition: left 0.4s ease;
-    }
-
-    .gotw-card:hover::before {
-      left: 140%;
-    }
-
-    .gotw-card:hover {
-      transform: translateY(-3px);
-      background: rgba(255, 255, 0, 0.04);
-      border-color: rgba(255, 255, 0, 0.6);
-      box-shadow:
-        0 0 20px rgba(255, 255, 0, 0.1),
-        0 8px 24px rgba(0, 0, 0, 0.5);
-    }
-
-    .gotw-badge {
-      font-size: 0.85rem;
-      color: var(--dim);
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      margin-bottom: 0.3rem;
-      display: block;
-    }
-
-    .gotw-title {
-      font-size: clamp(1.4rem, 4vw, 2rem);
-      color: #ffff00;
-      text-shadow: 0 0 10px rgba(255, 255, 0, 0.4);
-      letter-spacing: 2px;
-      display: block;
-      margin-bottom: 0.3rem;
-    }
-
-    .gotw-desc {
-      color: var(--dim);
-      font-size: 1rem;
-      letter-spacing: 1px;
-    }
-
-    /* ── FOOTER ── */
-    footer {
+        box-shadow 0.25s ease,
+        background 0.25s ease;
+      position: relative; overflow: hidden;
       text-align: center;
-      margin-top: 3.5rem;
-      padding-top: 1.5rem;
-      border-top: 1px solid rgba(0, 255, 234, 0.15);
+    }
+    .card:hover {
+      transform: translateY(-6px) scale(1.03);
+      border-color: rgba(77,255,210,0.7);
+      box-shadow: 0 4px 20px rgba(77,255,210,0.18), 0 0 40px rgba(77,255,210,0.08);
+      background: rgba(30, 34, 48, 0.95);
     }
 
-    .footer-text {
-      color: var(--dim);
-      font-size: 0.9rem;
-      letter-spacing: 3px;
-    }
+    .card-emoji { font-size: 1.8rem; display: block; margin-bottom: 0.35rem; line-height: 1; }
+    .card-label { font-size: 1.4rem; color: var(--cyan); letter-spacing: 2px; display: block; margin-bottom: 0.1rem; }
+    .card-desc { font-size: 1rem; color: var(--dim); letter-spacing: 1px; }
 
-    .footer-text span {
+    /* card colours */
+    .card.admin .card-label { color: var(--magenta); text-shadow: 0 0 6px rgba(224,64,251,0.4); }
+    .card.admin:hover { border-color: rgba(224,64,251,0.6); box-shadow: 0 4px 20px rgba(224,64,251,0.15), 0 0 40px rgba(224,64,251,0.06); }
+
+    .card.fun .card-label { color: var(--yellow); text-shadow: 0 0 6px rgba(245,200,66,0.4); }
+    .card.fun:hover { border-color: rgba(245,200,66,0.6); box-shadow: 0 4px 20px rgba(245,200,66,0.15), 0 0 40px rgba(245,200,66,0.06); }
+
+    .card.solidarity .card-label { color: var(--green); text-shadow: 0 0 6px rgba(57,217,138,0.4); }
+    .card.solidarity:hover { border-color: rgba(57,217,138,0.6); box-shadow: 0 4px 20px rgba(57,217,138,0.15), 0 0 40px rgba(57,217,138,0.06); }
+
+    .card.danger .card-label { color: var(--red); text-shadow: 0 0 6px rgba(255,68,85,0.4); }
+    .card.danger:hover { border-color: rgba(255,68,85,0.6); box-shadow: 0 4px 20px rgba(255,68,85,0.15), 0 0 40px rgba(255,68,85,0.06); }
+
+    /* FOOTER */
+    footer { text-align: center; margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid rgba(77,255,210,0.15); }
+    .footer-text { color: var(--dim-soft); font-size: 0.9rem; letter-spacing: 3px; }
+    .footer-text a { color: var(--dim-soft); text-decoration: none; border-bottom: 1px solid rgba(77,255,210,0.2); }
+    .footer-text a:hover { color: var(--cyan); }
+    .footer-text span { color: var(--cyan); }
+
+    /* pulse on live indicator */
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .live-dot {
+      display: inline-block; width: 6px; height: 6px;
+      background: var(--green); border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+      margin-right: 4px; vertical-align: middle;
+    }
+    .live-dot.warn { background: var(--orange); }
+    .live-dot.off { background: var(--red); animation: none; }
+
+    /* FLOATING RADIO */
+    .radio-float {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 900;
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+    .radio-btn {
+      background: rgba(0,0,0,0.85);
+      border: 2px solid rgba(77,255,210,0.4);
       color: var(--cyan);
+      font-family: 'VT323', monospace;
+      font-size: 1rem;
+      padding: 10px 16px;
+      cursor: pointer;
+      letter-spacing: 2px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .radio-btn:hover {
+      border-color: var(--cyan);
+      box-shadow: 0 0 15px rgba(77,255,210,0.2);
+    }
+    .radio-btn.playing {
+      border-color: var(--magenta);
+      color: var(--magenta);
+      box-shadow: 0 0 15px rgba(224,64,251,0.2);
+    }
+    .radio-btn .r-icon { margin-right: 6px; }
+    .radio-switch {
+      background: rgba(0,0,0,0.85);
+      border: 2px solid rgba(77,255,210,0.4);
+      border-left: none;
+      color: var(--dim);
+      font-family: 'VT323', monospace;
+      font-size: 0.85rem;
+      padding: 10px 12px;
+      cursor: pointer;
+      letter-spacing: 1px;
+      backdrop-filter: blur(12px);
+      transition: all 0.2s;
+    }
+    .radio-switch:hover { color: var(--cyan); border-color: var(--cyan); }
+
+    /* MESSAGE DROP */
+    .msg-drop {
+      margin-top: 2rem;
+      background: rgba(0,0,0,0.5);
+      border: 1px solid rgba(77,255,210,0.15);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .msg-toggle {
+      width: 100%;
+      background: none;
+      border: none;
+      color: var(--cyan);
+      font-family: 'VT323', monospace;
+      font-size: 1.1rem;
+      padding: 0.8rem 1rem;
+      cursor: pointer;
+      letter-spacing: 2px;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.15s;
+    }
+    .msg-toggle:hover { background: rgba(77,255,210,0.03); }
+    .msg-toggle .arrow { transition: transform 0.2s; }
+    .msg-toggle.open .arrow { transform: rotate(90deg); }
+    .msg-badge {
+      background: var(--magenta);
+      color: #000;
+      font-size: 0.8rem;
+      padding: 1px 6px;
+      border-radius: 2px;
+      margin-left: auto;
+    }
+    .msg-body {
+      display: none;
+      padding: 0 1rem 1rem;
+    }
+    .msg-body.open { display: block; }
+    .msg-input-row {
+      display: flex; gap: 8px; margin-bottom: 8px;
+    }
+    .msg-input-row input, .msg-input-row textarea {
+      flex: 1;
+      background: rgba(0,0,0,0.6);
+      border: 1px solid rgba(77,255,210,0.2);
+      color: var(--text);
+      font-family: 'VT323', monospace;
+      font-size: 1rem;
+      padding: 8px 10px;
+      outline: none;
+    }
+    .msg-input-row input:focus, .msg-input-row textarea:focus {
+      border-color: var(--cyan);
+    }
+    .msg-input-row textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+    .msg-send {
+      background: rgba(77,255,210,0.1);
+      border: 1px solid var(--cyan);
+      color: var(--cyan);
+      font-family: 'VT323', monospace;
+      font-size: 1rem;
+      padding: 8px 20px;
+      cursor: pointer;
+      letter-spacing: 2px;
+      transition: all 0.15s;
+    }
+    .msg-send:hover { background: rgba(77,255,210,0.2); }
+    .msg-status {
+      font-size: 0.9rem;
+      color: var(--dim);
+      min-height: 1.2em;
+    }
+    .msg-status.ok { color: var(--green); }
+    .msg-status.err { color: var(--red); }
+    .msg-list {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .msg-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 8px 10px;
+      background: rgba(0,0,0,0.3);
+      border-left: 2px solid rgba(77,255,210,0.2);
+      font-size: 0.95rem;
+    }
+    .msg-item.unread { border-left-color: var(--magenta); }
+    .msg-item .mi-name { color: var(--cyan); flex-shrink: 0; }
+    .msg-item .mi-text { color: var(--dim); flex: 1; word-break: break-word; }
+    .msg-item .mi-time { color: var(--dim-soft); font-size: 0.8rem; flex-shrink: 0; }
+    .msg-item .mi-dismiss {
+      color: var(--dim-soft); cursor: pointer; font-size: 0.8rem;
+      flex-shrink: 0; border: none; background: none;
+      font-family: 'VT323', monospace;
+    }
+    .msg-item .mi-dismiss:hover { color: var(--cyan); }
+
+    @media (max-width: 560px) {
+      .radio-float { bottom: 16px; right: 16px; }
+      .radio-btn { font-size: 0.9rem; padding: 8px 12px; }
     }
 
-    /* ── BLINKING CURSOR ── */
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0; }
+    /* Accessibility: reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      body::before { display: none; }
     }
 
-    .cursor {
-      display: inline-block;
-      width: 0.7em;
-      height: 1em;
-      background: var(--cyan);
-      vertical-align: text-bottom;
-      animation: blink 1.2s step-end infinite;
-      box-shadow: 0 0 8px var(--cyan);
+    /* Focus styles for keyboard nav */
+    :focus-visible {
+      outline: 2px solid var(--cyan);
+      outline-offset: 2px;
     }
+    .card:focus-visible {
+      border-color: rgba(77,255,210,0.7);
+      box-shadow: 0 0 20px rgba(77,255,210,0.12), 0 8px 24px rgba(0,0,0,0.5);
+    }
+
+    /* Touch target minimums */
+    .radio-switch { min-width: 44px; min-height: 44px; }
+    .msg-item .mi-dismiss { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+
+    /* Section divider color overrides */
+    .admin-divider::before,.admin-divider::after{background:linear-gradient(90deg,transparent,rgba(224,64,251,0.4),transparent)!important;}
+    .kv-divider::before,.kv-divider::after{background:linear-gradient(90deg,transparent,rgba(57,217,138,0.4),transparent)!important;}
+    .fun-divider::before,.fun-divider::after{background:linear-gradient(90deg,transparent,rgba(245,200,66,0.4),transparent)!important;}
   </style>
 </head>
 <body>
   <div class="wrapper">
 
-    <!-- HEADER -->
     <header>
-      <a class="public-link" href="https://quickcat.club" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="drop">
-        public site &rarr;
-      </a>
+      <a class="public-link" href="https://quickcat.club" target="_blank" rel="noopener">quickcat.club &rarr;</a>
       <h1>pibulus deck<span class="cursor"></span></h1>
       <p class="subtitle">~(=^..^) command &amp; control</p>
-      <p class="header-meta">raspberry pi 5 &nbsp;/&nbsp; lan access &nbsp;/&nbsp; v6.5</p>
     </header>
 
+    <!-- LIVE DASHBOARD -->
+    <div class="dashboard" id="dashboard">
+      <div class="stat">
+        <div class="stat-value" id="d-temp">--</div>
+        <div class="stat-label">TEMP</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="d-ram">--</div>
+        <div class="stat-label">RAM</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="d-disk">--</div>
+        <div class="stat-label">DISK</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="d-up">--</div>
+        <div class="stat-label">UPTIME</div>
+      </div>
 
-    <!-- ── MEDIA ── -->
-    <div class="section-divider">
-      <span class="section-label">[ MEDIA // THE ROOMS ]</span>
     </div>
 
-    <div class="grid">
-      <a class="card" href="http://pibulus.local:8096" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click">
-        <span class="card-emoji">📺</span>
-        <span class="card-label">WATCH</span>
-        <span class="card-name">Jellyfin</span>
-      </a>
-      <a class="card" href="http://pibulus.local:4533" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click">
-        <span class="card-emoji">🎵</span>
-        <span class="card-label">LISTEN</span>
-        <span class="card-name">Navidrome</span>
-      </a>
-      <a class="card" href="http://pibulus.local:5000" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click">
-        <span class="card-emoji">📖</span>
-        <span class="card-label">READ</span>
-        <span class="card-name">Kavita</span>
-      </a>
-      <a class="card" href="https://kpab.fm" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click">
-        <span class="card-emoji">📡</span>
-        <span class="card-label">RADIO</span>
-        <span class="card-name">KPAB.FM</span>
-      </a>
+    <!-- ADMIN -->
+    <div class="section-divider admin-divider">
+      <span class="section-label" style="color:var(--magenta);text-shadow:0 0 8px rgba(224,64,251,0.5);">[ ADMIN ]</span>
     </div>
 
 
-    <!-- ── PERSONAL ── -->
-    <div class="section-divider">
-      <span class="section-label">[ PERSONAL ]</span>
-    </div>
-
-    <div class="grid">
-      <a class="card" href="http://pibulus.local:2283" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click">
-        <span class="card-emoji">📷</span>
-        <span class="card-label">PHOTOS</span>
-        <span class="card-name">Immich</span>
+    <div class="grid grid-3">
+      <a class="card admin" href="http://pibulus.local:8500/admin" target="_blank" rel="noopener">
+        <span class="card-emoji">&#127897;</span>
+        <span class="card-label">RADIO MGR</span>
+        <span class="card-desc">AzuraCast admin</span>
       </a>
-      <a class="card" href="http://pibulus.local:5230" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click">
-        <span class="card-emoji">📝</span>
-        <span class="card-label">NOTES</span>
-        <span class="card-name">Memos</span>
+      <a class="card admin" href="http://pibulus.local:5030" target="_blank" rel="noopener">
+        <span class="card-emoji">&#127926;</span>
+        <span class="card-label">SOULSEEK</span>
+        <span class="card-desc">P2P downloads</span>
       </a>
-      <a class="card" href="http://pibulus.local:8080" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click">
-        <span class="card-emoji">📁</span>
-        <span class="card-label">FILES</span>
-        <span class="card-name">Filebrowser</span>
-      </a>
-    </div>
-
-
-    <!-- ── ADMIN ── -->
-    <div class="section-divider">
-      <span class="section-label">[ ADMIN ]</span>
-    </div>
-
-    <div class="grid">
-      <a class="card admin" href="http://pibulus.local:8500" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="pluck">
-        <span class="card-emoji">🎙️</span>
-        <span class="card-label">RADIO ADMIN</span>
-        <span class="card-name">AzuraCast</span>
-      </a>
-      <a class="card admin" href="http://pibulus.local:5055" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="pluck">
-        <span class="card-emoji">🎬</span>
-        <span class="card-label">REQUESTS</span>
-        <span class="card-name">Overseerr</span>
-      </a>
-      <a class="card admin" href="http://pibulus.local:3001" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="pluck">
-        <span class="card-emoji">🐙</span>
-        <span class="card-label">GIT</span>
-        <span class="card-name">Gitea</span>
-      </a>
-      <a class="card admin" href="http://pibulus.local:8081" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="pluck">
-        <span class="card-emoji">🏠</span>
-        <span class="card-label">DASHBOARD</span>
-        <span class="card-name">Homepage</span>
-      </a>
-      <a class="card admin" href="http://pibulus.local:7682" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="glitch">
-        <span class="card-emoji">💻</span>
+      <a class="card admin" href="/ttyd/" target="_blank" rel="noopener">
+        <span class="card-emoji">&#128187;</span>
         <span class="card-label">TERMINAL</span>
-        <span class="card-name">Web Terminal</span>
+        <span class="card-desc">web shell</span>
       </a>
+      <a class="card admin" href="/drop/">
+        <span class="card-emoji">&#x1F4E6;</span>
+        <span class="card-label">DROP ZONE</span>
+        <span class="card-desc">file uploads</span>
+      </a>
+      <a class="card admin" href="http://pibulus.local/go/" target="_blank" rel="noopener">
+        <span class="card-emoji">&#x1F517;</span>
+        <span class="card-label">SHORTENER</span>
+        <span class="card-desc">go.quickcat.club</span>
+      </a>
+      <a class="card admin" href="http://pibulus.local/memos/" target="_blank" rel="noopener">
+        <span class="card-emoji">&#x1F4DD;</span>
+        <span class="card-label">MEMOS</span>
+        <span class="card-desc">microblog</span>
+      </a>
+      <a class="card admin" href="/status.json" target="_blank" rel="noopener">
+        <span class="card-emoji">&#x1F4CA;</span>
+        <span class="card-label">RAW DATA</span>
+        <span class="card-desc">status API</span>
+      </a>
+      <a class="card admin" href="https://github.com/pibulus/pibulus-os" target="_blank" rel="noopener">
+        <span class="card-emoji">&#x1F4BB;</span>
+        <span class="card-label">GITHUB</span>
+        <span class="card-desc">source code</span>
+      </a>
+<a class="card admin" href="/deck/help.html">        <span class="card-emoji">📖</span>        <span class="card-label">HELP / CHEATS</span>        <span class="card-desc">Emergency Navigator</span>      </a>
     </div>
 
-
-    <!-- ── KNOWLEDGE VAULT ── -->
+        <!-- MEDIA -->
     <div class="section-divider">
-      <span class="section-label">[ KNOWLEDGE VAULT ]</span>
+      <span class="section-label">[ MEDIA ]</span>
     </div>
 
-    <div class="grid">
-      <a class="card" href="http://pibulus.local:8080/files/Soulseek/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click">
-        <span class="card-emoji">🎼</span>
-        <span class="card-label">SOULSEEK FILES</span>
-        <span class="card-name">Filebrowser &rarr; Soulseek/</span>
+    <div class="grid grid-3">
+      <a class="card" href="http://pibulus.local:8096" target="_blank" rel="noopener">
+        <span class="card-emoji">&#9654;</span>
+        <span class="card-label">WATCH</span>
+        <span class="card-desc">movies &amp; shows</span>
       </a>
-      <a class="card" href="http://pibulus.local:8080/files/Palestine/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click">
-        <span class="card-emoji">🇵🇸</span>
-        <span class="card-label">PALESTINE ARCHIVE</span>
-        <span class="card-name">Filebrowser &rarr; Palestine/</span>
+      <a class="card" href="http://pibulus.local:4533" target="_blank" rel="noopener">
+        <span class="card-emoji">&#9835;</span>
+        <span class="card-label">LISTEN</span>
+        <span class="card-desc">hi-fi music</span>
+      </a>
+      <a class="card" href="https://kpab.fm" target="_blank" rel="noopener">
+        <span class="card-emoji">&#128225;</span>
+        <span class="card-label">RADIO</span>
+        <span class="card-desc">public radio</span>
       </a>
     </div>
 
-
-    <!-- ── FUN ── -->
-    <div class="section-divider">
-      <span class="section-label">[ FUN ]</span>
+    <div class="grid grid-3" style="margin-top: 1rem;">
+      <a class="card" href="http://pibulus.local:8083" target="_blank" rel="noopener">
+        <span class="card-emoji">&#128214;</span>
+        <span class="card-label">READ</span>
+        <span class="card-desc">book library</span>
+      </a>
+      <a class="card" href="http://pibulus.local:5000" target="_blank" rel="noopener">
+        <span class="card-emoji">&#128165;</span>
+        <span class="card-label">COMICS</span>
+        <span class="card-desc">graphic novels</span>
+      </a>
+      <a class="card" href="http://pibulus.local:2283" target="_blank" rel="noopener">
+        <span class="card-emoji">&#128247;</span>
+        <span class="card-label">PHOTOS</span>
+        <span class="card-desc">photo vault</span>
+      </a>
     </div>
 
-    <div class="grid">
-      <a class="card fun" href="/arcade/" target="_self" data-sound-hover="hover" data-sound-click="bong">
-        <span class="card-emoji">🕹️</span>
+    <!-- KNOWLEDGE VAULT -->
+    <div class="section-divider kv-divider">
+      <span class="section-label" style="color:var(--green);text-shadow:0 0 8px rgba(57,217,138,0.5);">[ KNOWLEDGE VAULT ]</span>
+    </div>
+
+
+    <div class="grid grid-3">
+      <a class="card solidarity" href="/palestine/">
+        <span class="card-emoji">&#127477;&#127480;</span>
+        <span class="card-label">PALESTINE</span>
+        <span class="card-desc">films, books &amp; docs</span>
+      </a>
+      <a class="card solidarity" href="http://pibulus.local:8084" target="_blank" rel="noopener">
+        <span class="card-emoji">&#x1F4DA;</span>
+        <span class="card-label">WIKIPEDIA</span>
+        <span class="card-desc">offline encyclopedia</span>
+      </a>
+      <a class="card solidarity" href="http://pibulus.local:8091" target="_blank" rel="noopener">
+        <span class="card-emoji">&#128193;</span>
+        <span class="card-label">THE VAULT</span>
+        <span class="card-desc">file browser</span>
+      </a>
+    </div>
+
+    <!-- FUN -->
+    <div class="section-divider fun-divider">
+      <span class="section-label" style="color:var(--yellow);text-shadow:0 0 8px rgba(245,200,66,0.5);">[ FUN ]</span>
+    </div>
+
+
+    <div class="grid grid-3">
+      <a class="card fun" href="/arcade/">
+        <span class="card-emoji">&#127918;</span>
         <span class="card-label">ARCADE</span>
-        <span class="card-name">/arcade/</span>
+        <span class="card-desc">mega drive &amp; playstation</span>
+      </a>
+      <a class="card fun" href="/fiction/">
+        <span class="card-emoji">&#128377;</span>
+        <span class="card-label">FICTION</span>
+        <span class="card-desc">text adventures</span>
+      </a>
+      <a class="card fun" href="http://pibulus.local/roms/" target="_blank" rel="noopener">
+        <span class="card-emoji">&#128190;</span>
+        <span class="card-label">ROM VAULT</span>
+        <span class="card-desc">browse &amp; download ROMs</span>
+      </a>
+      <a class="card danger" href="/conspiracy/">
+        <span class="card-emoji">&#128302;</span>
+        <span class="card-label">FORBIDDEN</span>
+        <span class="card-desc">occult &amp; esoterica</span>
+      </a>
+      <a class="card fun" href="http://pibulus.local:9000" target="_blank" rel="noopener">
+        <span class="card-emoji">&#128172;</span>
+        <span class="card-label">IRC</span>
+        <span class="card-desc">chat rooms</span>
+      </a>
+      <a class="card fun" href="/wall/">
+        <span class="card-emoji">&#x1F3A8;</span>
+        <span class="card-label">THE WALL</span>
+        <span class="card-desc">pixel graffiti</span>
       </a>
     </div>
 
-    <!-- GAME OF THE WEEK -->
-    <div style="margin-top: 1rem;">
-      <a class="gotw-card" href="http://pibulus.local:8086" target="_blank" rel="noopener" data-sound-hover="glass" data-sound-click="confirm">
-        <span class="gotw-badge">// GAME OF THE WEEK //</span>
-        <span class="gotw-title">Normy's Beach Babe-O-Rama</span>
-        <span class="gotw-desc">pibulus.local:8086 &nbsp;&rarr;&nbsp; press start to play</span>
-      </a>
+    <!-- MESSAGE INBOX (read-only viewer) -->
+    <div class="msg-drop">
+      <button class="msg-toggle" id="msgToggle" onclick="toggleMsg()" aria-expanded="false" aria-controls="msgBody">
+        <span class="arrow">&#9654;</span>
+        <span>INBOX</span>
+        <span class="msg-badge" id="msgBadge" style="display:none">0</span>
+      </button>
+      <div class="msg-body" id="msgBody">
+        <div class="msg-list" id="msgList"></div>
+        <div class="msg-status" id="msgStatus" style="text-align:center;padding:8px 0;"></div>
+      </div>
     </div>
 
-
-    <!-- FOOTER -->
     <footer>
-      <p class="footer-text">
-        <span>PIBULUS DECK</span>
-        &nbsp;&mdash;&nbsp;
-        PI 5 CYBERDECK v6.5
-        &nbsp;&mdash;&nbsp;
-        <span>LAN ONLY</span>
-      </p>
-      <p class="footer-text" style="margin-top: 0.4rem; font-size: 0.8rem;">
-        ~(=^..^) pibulus.local // private access
+      <p class="footer-text"><span>PIBULUS DECK</span> v7 &mdash; raspberry pi 5 &mdash; <span id="f-containers">--</span> containers</p>
+      <p class="footer-text" style="margin-top: 0.3rem; font-size: 0.8rem;">
+        ~(=^..^) <a href="https://github.com/pibulus/pibulus-os">pibulus-os</a> // last ping <span id="f-ts">--:--</span>
       </p>
     </footer>
 
   </div>
 
-  <!-- UI Sounds — Kenney CC0 -->
-  <script src="ui-sounds.js"></script>
-  <script>UISounds.init({ basePath: 'sounds/' });</script>
+  <script>
+    // Live dashboard — polls status.json every 30s
+    function loadStatus() {
+      fetch('/status.json', { cache: 'no-cache' })
+        .then(r => r.ok ? r.json() : null)
+        .then(d => {
+          if (!d) return;
+
+          // Temp
+          var tempEl = document.getElementById('d-temp');
+          var t = parseFloat(d.temp);
+          tempEl.textContent = t.toFixed(0) + '\u00B0C';
+          tempEl.className = 'stat-value' + (t >= 70 ? ' crit' : t >= 60 ? ' warn' : '');
+
+          // RAM
+          var ramEl = document.getElementById('d-ram');
+          ramEl.textContent = d.ram_pct + '%';
+          ramEl.className = 'stat-value' + (d.ram_pct >= 90 ? ' crit' : d.ram_pct >= 75 ? ' warn' : '');
+
+          // Disk
+          var diskEl = document.getElementById('d-disk');
+          diskEl.textContent = d.disk_used;
+          diskEl.className = 'stat-value' + (d.disk_pct >= 85 ? ' crit' : d.disk_pct >= 75 ? ' warn' : '');
+
+          // Uptime
+          document.getElementById('d-up').textContent = d.uptime;
+
+          // Now playing
+
+          // Footer
+          document.getElementById('f-containers').textContent = d.containers;
+          document.getElementById('f-ts').textContent = d.ts;
+        })
+        .catch(() => {});
+    }
+
+    loadStatus();
+    setInterval(loadStatus, 30000);
+
+
+    // === FLOATING RADIO ===
+    var stations = [
+      { name: 'KPAB.FM', url: 'https://kpab.fm/listen/kpab.fm/radio.mp3' },
+      { name: 'GROOVE SALAD', url: 'https://ice4.somafm.com/groovesalad-256-mp3' }
+    ];
+    var currentStation = 0;
+    var isPlaying = false;
+    var radioAudio = document.getElementById('radioAudio');
+    var radioBtn = document.getElementById('radioBtn');
+    var radioLabel = document.getElementById('radioLabel');
+
+    function toggleRadio() {
+      if (isPlaying) {
+        radioAudio.pause();
+        radioAudio.src = '';
+        isPlaying = false;
+        radioBtn.classList.remove('playing');
+        radioLabel.textContent = stations[currentStation].name;
+      } else {
+        radioAudio.src = stations[currentStation].url;
+        radioAudio.play().catch(function(){});
+        isPlaying = true;
+        radioBtn.classList.add('playing');
+        radioLabel.textContent = '\u25A0 ' + stations[currentStation].name;
+      }
+    }
+
+    function skipSong() {
+      var skipBtn = document.querySelector('.radio-switch[title="skip current song"]');
+      if (skipBtn) skipBtn.textContent = '...';
+      var baseUrl = (location.hostname === 'pibulus.local') ? '' : 'https://radio.quickcat.club';
+      fetch(baseUrl + "/api/station/1/backend/skip", { method: "POST" })
+        .then(function(r) {
+          if (skipBtn) skipBtn.textContent = r.ok ? '\u2713' : '\u2717';
+          if (r.ok) setTimeout(function() { loadStatus(); if (skipBtn) skipBtn.innerHTML = '&#x21C4;'; }, 2000);
+          else setTimeout(function() { if (skipBtn) skipBtn.innerHTML = '&#x21C4;'; }, 2000);
+        })
+        .catch(function() {
+          if (skipBtn) { skipBtn.textContent = '\u2717'; setTimeout(function() { skipBtn.innerHTML = '&#x21C4;'; }, 2000); }
+        });
+    }
+
+    function switchStation() {
+      currentStation = (currentStation + 1) % stations.length;
+      radioLabel.textContent = stations[currentStation].name;
+      if (isPlaying) {
+        radioAudio.src = stations[currentStation].url;
+        radioAudio.play().catch(function(){});
+        radioLabel.textContent = '\u25A0 ' + stations[currentStation].name;
+      }
+    }
+
+    // === MESSAGE INBOX (read-only) ===
+    var msgToggle = document.getElementById('msgToggle');
+    var msgBody = document.getElementById('msgBody');
+
+    function toggleMsg() {
+      var isOpen = msgToggle.classList.toggle('open');
+      msgBody.classList.toggle('open');
+      msgToggle.setAttribute('aria-expanded', isOpen);
+      if (isOpen) loadMessages();
+    }
+
+    function loadMessages() {
+      fetch('/msg/inbox', { cache: 'no-cache' })
+        .then(function(r) { return r.ok ? r.json() : []; })
+        .then(function(msgs) {
+          var list = document.getElementById('msgList');
+          var badge = document.getElementById('msgBadge');
+          var unread = msgs.filter(function(m) { return !m.read; }).length;
+
+          if (unread > 0) {
+            badge.style.display = '';
+            badge.textContent = unread;
+          } else {
+            badge.style.display = 'none';
+          }
+
+          list.innerHTML = '';
+          msgs.slice(0, 30).forEach(function(m) {
+            var d = new Date(m.ts * 1000);
+            var timeStr = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+            var div = document.createElement('div');
+            div.className = 'msg-item' + (m.read ? '' : ' unread');
+
+            var nameSpan = document.createElement('span');
+            nameSpan.className = 'mi-name';
+            nameSpan.textContent = m.name;
+
+            var textSpan = document.createElement('span');
+            textSpan.className = 'mi-text';
+            textSpan.textContent = m.msg;
+
+            var timeSpan = document.createElement('span');
+            timeSpan.className = 'mi-time';
+            timeSpan.textContent = timeStr;
+
+            var dismissBtn = document.createElement('button');
+            dismissBtn.className = 'mi-dismiss';
+            dismissBtn.title = 'mark read';
+            dismissBtn.textContent = '\u2713';
+            dismissBtn.addEventListener('click', function() { dismissMsg(m.id, dismissBtn); });
+
+            div.appendChild(nameSpan);
+            div.appendChild(textSpan);
+            div.appendChild(timeSpan);
+            div.appendChild(dismissBtn);
+            list.appendChild(div);
+          });
+        })
+        .catch(function() {});
+    }
+
+    function dismissMsg(id, btn) {
+      fetch('/msg/dismiss', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: id })
+      }).then(function() {
+        btn.closest('.msg-item').classList.remove('unread');
+        btn.textContent = '\u2714';
+        var badge = document.getElementById('msgBadge');
+        var n = parseInt(badge.textContent) - 1;
+        if (n <= 0) badge.style.display = 'none';
+        else badge.textContent = n;
+      });
+    }
+
+    // Check unread count on load
+    fetch('/msg/count', { cache: 'no-cache' })
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(d) {
+        if (d && d.unread > 0) {
+          document.getElementById('msgBadge').style.display = '';
+          document.getElementById('msgBadge').textContent = d.unread;
+        }
+      })
+      .catch(function() {});
+
+    // Rewrite pibulus.local links for remote access
+    (function() {
+      if (location.hostname === 'pibulus.local') return;
+
+      var portMap = {
+        '8096': 'https://watch.quickcat.club',
+        '4533': 'https://music.quickcat.club',
+        '8083': 'https://read.quickcat.club',
+        '5000': 'https://comics.quickcat.club',
+        '8500': 'https://radio.quickcat.club',
+        '8091': 'https://vault.quickcat.club'
+      };
+
+      var pathMap = {
+        '/go/': 'https://go.quickcat.club',
+        '/memos/': 'https://memo.quickcat.club'
+      };
+
+      document.querySelectorAll('a[href*="pibulus.local"]').forEach(function(a) {
+        // Match links with port
+        var m = a.href.match(/pibulus\.local:(\d+)(\/.*)?$/);
+        if (m) {
+          var port = m[1], path = m[2] || '';
+          if (portMap[port]) {
+            a.href = portMap[port] + path;
+          } else {
+            markLanOnly(a);
+          }
+          return;
+        }
+        // Match portless links by path
+        var pm = a.href.match(/pibulus\.local(\/[^\s]*)?$/);
+        if (pm) {
+          var p = pm[1] || '/';
+          if (pathMap[p]) {
+            a.href = pathMap[p];
+          } else {
+            markLanOnly(a);
+          }
+        }
+      });
+
+      function markLanOnly(a) {
+        var desc = a.querySelector('.card-desc');
+        if (desc) desc.textContent += ' (LAN)';
+        a.removeAttribute('href');
+        a.setAttribute('tabindex', '-1');
+        a.setAttribute('aria-disabled', 'true');
+        a.style.opacity = '0.35';
+        a.style.cursor = 'not-allowed';
+        a.title = 'LAN access only \u2014 connect to pibulus.local';
+      }
+    })();
+  </script>
+
+    <!-- FLOATING RADIO WIDGET -->
+    <div class="radio-float">
+      <button class="radio-btn" id="radioBtn" onclick="toggleRadio()">
+        <span class="r-icon">&#128225;</span>
+        <span id="radioLabel">KPAB.FM</span>
+      </button>
+      <button class="radio-switch" onclick="switchStation()" title="switch station">⏭</button><button class="radio-switch" onclick="skipSong()" title="skip current song">&#x21C4;</button>
+    </div>
+    <audio id="radioAudio" preload="none"></audio>
 </body>
 </html>
