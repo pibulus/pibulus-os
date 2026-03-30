@@ -9,19 +9,20 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #050505;
-      --cyan: #00ffea;
-      --magenta: #ff00ff;
-      --yellow: #ffd700;
-      --green: #55cc55;
-      --red: #ff4444;
+      --bg: #0D0F14;
+      --cyan: #4DFFD2;
+      --magenta: #E040FB;
+      --yellow: #F5C842;
+      --green: #39d98a;
+      --red: #ff4455;
       --orange: #ff9900;
-      --text: #e0e0e0;
-      --dim: #888;
-      --dim-soft: #777;
-      --card-bg: rgba(0, 0, 0, 0.6);
-      --card-border: rgba(0, 255, 234, 0.3);
-      --card-hover-bg: rgba(0, 255, 234, 0.05);
+      --amber: #F5A623;
+      --text: #C8D8E8;
+      --dim: #7A9AB8;
+      --dim-soft: #5A7A98;
+      --card-bg: rgba(22, 25, 34, 0.85);
+      --card-border: rgba(77, 255, 210, 0.18);
+      --card-hover-bg: rgba(77, 255, 210, 0.06);
     }
 
     html { scrollbar-color: var(--cyan) var(--bg); scrollbar-width: thin; }
@@ -47,8 +48,8 @@
       content: '';
       position: fixed; inset: 0;
       background-image:
-        linear-gradient(rgba(0,255,234,0.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,255,234,0.025) 1px, transparent 1px);
+        linear-gradient(rgba(77,255,210,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(77,255,210,0.025) 1px, transparent 1px);
       background-size: 40px 40px;
       pointer-events: none; z-index: 0;
     }
@@ -69,20 +70,40 @@
     }
     .public-link:hover { color: var(--magenta); border-color: var(--magenta); }
 
+    /* ─── NEON GLITCH (chromatic aberration) ─── */
+    @keyframes titleGlitch {
+      0%, 89%, 91%, 93%, 95%, 100% {
+        text-shadow: 0 0 10px var(--cyan), 0 0 30px rgba(77,255,210,0.4), 0 0 60px rgba(77,255,210,0.1);
+        transform: translate(0); filter: none;
+      }
+      90% { text-shadow: -2px 0 var(--magenta), 2px 0 var(--cyan), 0 0 20px var(--cyan); transform: translate(-2px, 1px); filter: hue-rotate(10deg); }
+      92% { text-shadow: 2px 0 var(--magenta), -1px 0 var(--cyan), 0 0 30px rgba(224,64,251,0.3); transform: translate(1px, -1px); filter: hue-rotate(-10deg); }
+      94% { text-shadow: -1px 0 var(--magenta), 1px 0 var(--cyan), 0 0 40px var(--cyan); transform: translate(2px, 0); }
+    }
+    @keyframes subtitleFlicker {
+      0%, 92%, 96%, 100% { opacity: 0.75; }
+      93% { opacity: 0.4; }
+      94% { opacity: 0.75; }
+      95% { opacity: 0.3; }
+    }
     h1 {
       font-size: clamp(2.5rem, 9vw, 4.5rem);
       line-height: 1;
       color: var(--cyan);
-      text-shadow: 0 0 10px var(--cyan), 0 0 30px rgba(0,255,234,0.4), 0 0 60px rgba(0,255,234,0.15);
+      text-shadow: 0 0 10px var(--cyan), 0 0 30px rgba(77,255,210,0.4), 0 0 60px rgba(77,255,210,0.1);
       letter-spacing: 4px;
       margin-bottom: 0.3rem;
+      animation: titleGlitch 6s ease-in-out infinite;
+      position: relative;
     }
 
     .subtitle {
       font-size: clamp(1rem, 3vw, 1.3rem);
       color: var(--magenta);
-      text-shadow: 0 0 8px rgba(255,0,255,0.5);
+      opacity: 0.75;
+      text-shadow: 0 0 8px rgba(224,64,251,0.4);
       letter-spacing: 2px;
+      animation: subtitleFlicker 4s ease-in-out infinite;
     }
 
     @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
@@ -100,8 +121,8 @@
       gap: 0.75rem;
       margin: 1.5rem 0;
       padding: 1rem;
-      background: rgba(0,0,0,0.5);
-      border: 1px solid rgba(0,255,234,0.15);
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
       border-radius: 2px;
     }
 
@@ -117,10 +138,10 @@
       font-size: 1.8rem;
       color: var(--cyan);
       line-height: 1;
-      text-shadow: 0 0 6px rgba(0,255,234,0.4);
+      text-shadow: 0 0 6px rgba(77,255,210,0.4);
     }
     .stat-value.warn { color: var(--orange); text-shadow: 0 0 6px rgba(255,153,0,0.4); }
-    .stat-value.crit { color: var(--red); text-shadow: 0 0 6px rgba(255,68,68,0.4); }
+    .stat-value.crit { color: var(--red); text-shadow: 0 0 6px rgba(255,68,85,0.4); }
     .stat-label {
       font-size: 0.85rem;
       color: var(--dim);
@@ -132,7 +153,7 @@
       grid-column: 1 / -1;
       text-align: center;
       padding: 0.5rem;
-      border-top: 1px solid rgba(0,255,234,0.1);
+      border-top: 1px solid rgba(77,255,210,0.1);
       margin-top: 0.25rem;
     }
     .np-label { color: var(--dim); font-size: 0.8rem; letter-spacing: 2px; }
@@ -144,11 +165,11 @@
     .section-divider { display: flex; align-items: center; gap: 0.75rem; margin: 2.5rem 0 1.25rem; }
     .section-divider::before, .section-divider::after {
       content: ''; flex: 1; height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(0,255,234,0.4), transparent);
+      background: linear-gradient(90deg, transparent, rgba(77,255,210,0.4), transparent);
     }
     .section-label {
-      font-size: 1.1rem; color: var(--cyan); letter-spacing: 4px;
-      white-space: nowrap; text-shadow: 0 0 8px rgba(0,255,234,0.5);
+      font-size: 1.1rem; color: var(--cyan); letter-spacing: 0.2em;
+      white-space: nowrap; text-shadow: 0 0 8px rgba(77,255,210,0.5);
     }
 
     /* GRID */
@@ -169,26 +190,22 @@
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: 2px;
-      padding: 1.5rem 1rem;
+      padding: 1.75rem 1.25rem;
       text-decoration: none;
       color: var(--text);
-      transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      transition:
+        transform 0.45s linear(0,0.009,0.035,0.076,0.128,0.189,0.255,0.323,0.39,0.454,0.514,0.569,0.619,0.663,0.7,0.731,0.757,0.778,0.795,0.808,0.818,0.825,0.83,0.833,0.835,0.836,0.836,0.835,0.833,0.831,1),
+        border-color 0.2s ease,
+        box-shadow 0.25s ease,
+        background 0.25s ease;
       position: relative; overflow: hidden;
       text-align: center;
     }
-
-    .card::before {
-      content: '';
-      position: absolute; top: 0; left: -100%; width: 60%; height: 1px;
-      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-      transition: left 0.4s ease;
-    }
-    .card:hover::before { left: 140%; }
     .card:hover {
-      transform: translateY(-4px);
-      background: var(--card-hover-bg);
-      border-color: rgba(0,255,234,0.7);
-      box-shadow: 0 0 20px rgba(0,255,234,0.12), 0 8px 24px rgba(0,0,0,0.5);
+      transform: translateY(-6px) scale(1.03);
+      border-color: rgba(77,255,210,0.7);
+      box-shadow: 0 4px 20px rgba(77,255,210,0.18), 0 0 40px rgba(77,255,210,0.08);
+      background: rgba(30, 34, 48, 0.95);
     }
 
     .card-emoji { font-size: 1.8rem; display: block; margin-bottom: 0.35rem; line-height: 1; }
@@ -196,22 +213,22 @@
     .card-desc { font-size: 1rem; color: var(--dim); letter-spacing: 1px; }
 
     /* card colours */
-    .card.admin .card-label { color: var(--magenta); text-shadow: 0 0 6px rgba(255,0,255,0.4); }
-    .card.admin:hover { border-color: rgba(255,0,255,0.7); box-shadow: 0 0 20px rgba(255,0,255,0.12), 0 8px 24px rgba(0,0,0,0.5); }
-    .card.admin::before { background: linear-gradient(90deg, transparent, var(--magenta), transparent); }
+    .card.admin .card-label { color: var(--magenta); text-shadow: 0 0 6px rgba(224,64,251,0.4); }
+    .card.admin:hover { border-color: rgba(224,64,251,0.6); box-shadow: 0 4px 20px rgba(224,64,251,0.15), 0 0 40px rgba(224,64,251,0.06); }
 
-    .card.fun .card-label { color: var(--yellow); text-shadow: 0 0 6px rgba(255,215,0,0.4); }
-    .card.fun:hover { border-color: rgba(255,215,0,0.7); box-shadow: 0 0 20px rgba(255,215,0,0.1), 0 8px 24px rgba(0,0,0,0.5); }
-    .card.fun::before { background: linear-gradient(90deg, transparent, var(--yellow), transparent); }
+    .card.fun .card-label { color: var(--yellow); text-shadow: 0 0 6px rgba(245,200,66,0.4); }
+    .card.fun:hover { border-color: rgba(245,200,66,0.6); box-shadow: 0 4px 20px rgba(245,200,66,0.15), 0 0 40px rgba(245,200,66,0.06); }
 
-    .card.solidarity .card-label { color: var(--green); text-shadow: 0 0 6px rgba(85,204,85,0.4); }
-    .card.solidarity:hover { border-color: rgba(85,204,85,0.7); box-shadow: 0 0 20px rgba(85,204,85,0.12), 0 8px 24px rgba(0,0,0,0.5); }
-    .card.solidarity::before { background: linear-gradient(90deg, transparent, var(--green), transparent); }
+    .card.solidarity .card-label { color: var(--green); text-shadow: 0 0 6px rgba(57,217,138,0.4); }
+    .card.solidarity:hover { border-color: rgba(57,217,138,0.6); box-shadow: 0 4px 20px rgba(57,217,138,0.15), 0 0 40px rgba(57,217,138,0.06); }
+
+    .card.danger .card-label { color: var(--red); text-shadow: 0 0 6px rgba(255,68,85,0.4); }
+    .card.danger:hover { border-color: rgba(255,68,85,0.6); box-shadow: 0 4px 20px rgba(255,68,85,0.15), 0 0 40px rgba(255,68,85,0.06); }
 
     /* FOOTER */
-    footer { text-align: center; margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid rgba(0,255,234,0.15); }
+    footer { text-align: center; margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid rgba(77,255,210,0.15); }
     .footer-text { color: var(--dim-soft); font-size: 0.9rem; letter-spacing: 3px; }
-    .footer-text a { color: var(--dim-soft); text-decoration: none; border-bottom: 1px solid rgba(0,255,234,0.2); }
+    .footer-text a { color: var(--dim-soft); text-decoration: none; border-bottom: 1px solid rgba(77,255,210,0.2); }
     .footer-text a:hover { color: var(--cyan); }
     .footer-text span { color: var(--cyan); }
 
@@ -238,7 +255,7 @@
     }
     .radio-btn {
       background: rgba(0,0,0,0.85);
-      border: 2px solid rgba(0,255,234,0.4);
+      border: 2px solid rgba(77,255,210,0.4);
       color: var(--cyan);
       font-family: 'VT323', monospace;
       font-size: 1rem;
@@ -252,17 +269,17 @@
     }
     .radio-btn:hover {
       border-color: var(--cyan);
-      box-shadow: 0 0 15px rgba(0,255,234,0.2);
+      box-shadow: 0 0 15px rgba(77,255,210,0.2);
     }
     .radio-btn.playing {
       border-color: var(--magenta);
       color: var(--magenta);
-      box-shadow: 0 0 15px rgba(255,0,255,0.2);
+      box-shadow: 0 0 15px rgba(224,64,251,0.2);
     }
     .radio-btn .r-icon { margin-right: 6px; }
     .radio-switch {
       background: rgba(0,0,0,0.85);
-      border: 2px solid rgba(0,255,234,0.4);
+      border: 2px solid rgba(77,255,210,0.4);
       border-left: none;
       color: var(--dim);
       font-family: 'VT323', monospace;
@@ -279,7 +296,7 @@
     .msg-drop {
       margin-top: 2rem;
       background: rgba(0,0,0,0.5);
-      border: 1px solid rgba(0,255,234,0.15);
+      border: 1px solid rgba(77,255,210,0.15);
       border-radius: 2px;
       overflow: hidden;
     }
@@ -299,7 +316,7 @@
       gap: 8px;
       transition: background 0.15s;
     }
-    .msg-toggle:hover { background: rgba(0,255,234,0.03); }
+    .msg-toggle:hover { background: rgba(77,255,210,0.03); }
     .msg-toggle .arrow { transition: transform 0.2s; }
     .msg-toggle.open .arrow { transform: rotate(90deg); }
     .msg-badge {
@@ -321,7 +338,7 @@
     .msg-input-row input, .msg-input-row textarea {
       flex: 1;
       background: rgba(0,0,0,0.6);
-      border: 1px solid rgba(0,255,234,0.2);
+      border: 1px solid rgba(77,255,210,0.2);
       color: var(--text);
       font-family: 'VT323', monospace;
       font-size: 1rem;
@@ -336,7 +353,7 @@
       min-height: 60px;
     }
     .msg-send {
-      background: rgba(0,255,234,0.1);
+      background: rgba(77,255,210,0.1);
       border: 1px solid var(--cyan);
       color: var(--cyan);
       font-family: 'VT323', monospace;
@@ -346,7 +363,7 @@
       letter-spacing: 2px;
       transition: all 0.15s;
     }
-    .msg-send:hover { background: rgba(0,255,234,0.2); }
+    .msg-send:hover { background: rgba(77,255,210,0.2); }
     .msg-status {
       font-size: 0.9rem;
       color: var(--dim);
@@ -368,7 +385,7 @@
       gap: 8px;
       padding: 8px 10px;
       background: rgba(0,0,0,0.3);
-      border-left: 2px solid rgba(0,255,234,0.2);
+      border-left: 2px solid rgba(77,255,210,0.2);
       font-size: 0.95rem;
     }
     .msg-item.unread { border-left-color: var(--magenta); }
@@ -399,8 +416,8 @@
       outline-offset: 2px;
     }
     .card:focus-visible {
-      border-color: rgba(0,255,234,0.7);
-      box-shadow: 0 0 20px rgba(0,255,234,0.12), 0 8px 24px rgba(0,0,0,0.5);
+      border-color: rgba(77,255,210,0.7);
+      box-shadow: 0 0 20px rgba(77,255,210,0.12), 0 8px 24px rgba(0,0,0,0.5);
     }
 
     /* Touch target minimums */
@@ -408,9 +425,9 @@
     .msg-item .mi-dismiss { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
 
     /* Section divider color overrides */
-    .admin-divider::before,.admin-divider::after{background:linear-gradient(90deg,transparent,rgba(255,0,255,0.4),transparent)!important;}
-    .kv-divider::before,.kv-divider::after{background:linear-gradient(90deg,transparent,rgba(85,204,85,0.4),transparent)!important;}
-    .fun-divider::before,.fun-divider::after{background:linear-gradient(90deg,transparent,rgba(255,215,0,0.4),transparent)!important;}
+    .admin-divider::before,.admin-divider::after{background:linear-gradient(90deg,transparent,rgba(224,64,251,0.4),transparent)!important;}
+    .kv-divider::before,.kv-divider::after{background:linear-gradient(90deg,transparent,rgba(57,217,138,0.4),transparent)!important;}
+    .fun-divider::before,.fun-divider::after{background:linear-gradient(90deg,transparent,rgba(245,200,66,0.4),transparent)!important;}
   </style>
 </head>
 <body>
@@ -445,7 +462,7 @@
 
     <!-- ADMIN -->
     <div class="section-divider admin-divider">
-      <span class="section-label" style="color:var(--magenta);text-shadow:0 0 8px rgba(255,0,255,0.5);">[ ADMIN ]</span>
+      <span class="section-label" style="color:var(--magenta);text-shadow:0 0 8px rgba(224,64,251,0.5);">[ ADMIN ]</span>
     </div>
 
 
@@ -536,7 +553,7 @@
 
     <!-- KNOWLEDGE VAULT -->
     <div class="section-divider kv-divider">
-      <span class="section-label" style="color:var(--green);text-shadow:0 0 8px rgba(85,204,85,0.5);">[ KNOWLEDGE VAULT ]</span>
+      <span class="section-label" style="color:var(--green);text-shadow:0 0 8px rgba(57,217,138,0.5);">[ KNOWLEDGE VAULT ]</span>
     </div>
 
 
@@ -560,7 +577,7 @@
 
     <!-- FUN -->
     <div class="section-divider fun-divider">
-      <span class="section-label" style="color:var(--yellow);text-shadow:0 0 8px rgba(255,255,0,0.5);">[ FUN ]</span>
+      <span class="section-label" style="color:var(--yellow);text-shadow:0 0 8px rgba(245,200,66,0.5);">[ FUN ]</span>
     </div>
 
 
@@ -580,7 +597,7 @@
         <span class="card-label">ROM VAULT</span>
         <span class="card-desc">browse &amp; download ROMs</span>
       </a>
-      <a class="card fun" href="/conspiracy/">
+      <a class="card danger" href="/conspiracy/">
         <span class="card-emoji">&#128302;</span>
         <span class="card-label">FORBIDDEN</span>
         <span class="card-desc">occult &amp; esoterica</span>
