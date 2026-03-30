@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PICO-8 Player</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #000; overflow: hidden; }
+        #canvas {
+            display: block;
+            image-rendering: optimizeSpeed;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: pixelated;
+            -ms-interpolation-mode: nearest-neighbor;
+        }
+        #loading {
+            position: fixed; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-family: monospace; color: #ffe066; font-size: 16px;
+            background: #000; z-index: 10;
+        }
+        #loading.hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div id="loading">loading cart...</div>
+    <canvas id="canvas" width="128" height="128"></canvas>
+
+    <script src="pako.min.js"></script>
+    <script src="UPNG.js"></script>
+
+    <script>
+        // Size the canvas to fill the viewport, maintaining square aspect ratio
+        function sizeCanvas() {
+            var c = document.getElementById('canvas');
+            var s = Math.min(window.innerWidth, window.innerHeight);
+            c.style.width = s + 'px';
+            c.style.height = s + 'px';
+            c.style.position = 'absolute';
+            c.style.left = ((window.innerWidth - s) / 2) + 'px';
+            c.style.top = ((window.innerHeight - s) / 2) + 'px';
+        }
+        sizeCanvas();
+        window.addEventListener('resize', sizeCanvas);
+
+        var Module = {
+            canvas: (function() { return document.getElementById('canvas'); })(),
+            preRun: [],
+            postRun: [],
+            print: (function() { return function(text) { console.log(text); }; })(),
+            printErr: function(text) { console.error(text); },
+            totalDependencies: 0,
+            monitorRunDependencies: function(left) {
+                this.totalDependencies = Math.max(this.totalDependencies, left);
+            }
+        };
+
+        document.addEventListener('touchstart', function(e) { e.preventDefault(); }, { passive: false });
+        document.addEventListener('touchmove', function(e) { e.preventDefault(); }, { passive: false });
+    </script>
+    <script>
+        var _cartname = [];
+        var _cdpos = 0;
+        var iii = 0;
+        var ciii = 0;
+        var _cartdat = [];
+
+        (function() {
+            var params = new URLSearchParams(window.location.search);
+            var cartUrl = params.get('cart');
+            if (!cartUrl || !cartUrl.startsWith('/pico/carts/')) {
+                document.getElementById('loading').textContent = 'invalid cart path';
+                return;
+            }
+
+            fetch(cartUrl)
+                .then(function(r) { return r.arrayBuffer(); })
+                .then(function(buffer) {
+                    var img = UPNG.decode(buffer);
+                    var rgba = new Uint8Array(UPNG.toRGBA8(img)[0]);
+
+                    var totalPixels = img.width * img.height;
+                    var cartSize = Math.min(32768, totalPixels);
+                    _cartdat = new Array(cartSize);
+
+                    for (var i = 0; i < cartSize; i++) {
+                        var pi = i * 4;
+                        var r = rgba[pi], g = rgba[pi+1], b = rgba[pi+2], a = rgba[pi+3];
+                        _cartdat[i] = (b & 3) | ((g & 3) << 2) | ((r & 3) << 4) | ((a & 3) << 6);
+                    }
+
+                    var parts = cartUrl.split('/');
+                    var name = decodeURIComponent(parts[parts.length - 1]);
+                    name = name.replace('.p8.png', '.p8');
+                    _cartname = [name];
+                    _cdpos = 0;
+
+                    document.getElementById('loading').classList.add('hidden');
+
+                    var script = document.createElement('script');
+                    script.src = 'pico8-runtime.js';
+                    script.async = true;
+                    document.body.appendChild(script);
+                })
+                .catch(function(e) {
+                    console.error('Cart load error:', e);
+                    document.getElementById('loading').textContent = 'failed to load cart';
+                });
+        })();
+    </script>
+</body>
+</html>

@@ -130,6 +130,7 @@ while true; do
     '🏴‍☠️ Pirate Grab (Media)' \
     '📂 Passport Navigator (Files)' \
     '🚀 Deploy App' \
+    '🌐 Activate Domain' \
     '🧹 Flush RAM' \
     '🧠 Scavenger (AI Search)' \
     '🐉 Red Dragon BBS' \
@@ -146,7 +147,8 @@ while true; do
     '🐱 Quick Cat Club (Identity)') club_menu ;;
     '🏴‍☠️ Pirate Grab (Media)') manage_pirate_grab ;;
     '📂 Passport Navigator (Files)') nnn /media/pibulus/passport ;;
-    '🚀 Deploy App') ~/pibulus-os/scripts/deploy.sh ;;
+    '🚀 Deploy App' \
+    '🌐 Activate Domain') ~/pibulus-os/scripts/deploy.sh ;;
     '🧹 Flush RAM') ~/pibulus-os/scripts/flush_ram.sh; gum input --placeholder 'RAM Purged. Enter...' >/dev/null ;;
     '🧠 Scavenger (AI Search)') source ~/pibulus-os/modules/scavenger_module.sh; manage_scavenger ;;
     '🐉 Red Dragon BBS') telnet darkrealms.ca ;;
