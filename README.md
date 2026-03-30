@@ -1,17 +1,17 @@
 ```
 
-  ██████╗ ██╗██████╗ ██╗   ██╗██╗     ██╗   ██╗███████╗     ██████╗ ███████╗
-  ██╔══██╗██║██╔══██╗██║   ██║██║     ██║   ██║██╔════╝    ██╔═══██╗██╔════╝
-  ██████╔╝██║██████╔╝██║   ██║██║     ██║   ██║███████╗    ██║   ██║███████╗
-  ██╔═══╝ ██║██╔══██╗██║   ██║██║     ██║   ██║╚════██║    ██║   ██║╚════██║
-  ██║     ██║██████╔╝╚██████╔╝███████╗╚██████╔╝███████║    ╚██████╔╝███████║
-  ╚═╝     ╚═╝╚═════╝  ╚═════╝ ╚══════╝ ╚═════╝ ╚══════╝     ╚═════╝ ╚══════╝
+  ██████╗ ██╗   ██╗██╗ ██████╗██╗  ██╗ ██████╗ █████╗ ████████╗     ██████╗ ███████╗
+ ██╔═══██╗██║   ██║██║██╔════╝██║ ██╔╝██╔════╝██╔══██╗╚══██╔══╝    ██╔═══██╗██╔════╝
+ ██║   ██║██║   ██║██║██║     █████╔╝ ██║     ███████║   ██║       ██║   ██║███████╗
+ ██║▄▄ ██║██║   ██║██║██║     ██╔═██╗ ██║     ██╔══██║   ██║       ██║   ██║╚════██║
+ ╚██████╔╝╚██████╔╝██║╚██████╗██║  ██╗╚██████╗██║  ██║   ██║       ╚██████╔╝███████║
+  ╚══▀▀═╝  ╚═════╝ ╚═╝ ╚═════╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝   ╚═╝        ╚═════╝ ╚══════╝
 
     q u i c k   c a t ' s   t h e   b e s t .   k i c k   o u t   t h e   r e s t .
 
   ──────────────────────────────────────────────────────────────────────────
   ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-  ██  A PERSONAL INTERNET ON A RASPBERRY PI 5  ██  MELBOURNE, AUSTRALIA  ██
+  ██  A SOVEREIGN INTERNET ON A RASPBERRY PI 5  ██  MELBOURNE, AUSTRALIA ██
   ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
   ──────────────────────────────────────────────────────────────────────────
 ```
@@ -23,7 +23,9 @@ running 11 Docker containers, 13 domains, 39 scripts, and a 24/7 pirate
 radio station. No cloud. No tracking. No subscriptions. No permission.
 
 It replaces Netflix, Spotify, Kindle, and a dozen other subscriptions
-with a computer that costs less than a month of streaming services.
+with a single computer that costs less than one month of the services
+it replaces. Every dollar or minute taken away from platforms that
+exploit people is worth it.
 
 ```
   ┌─────────────────────────────────────────────────────────────────┐
@@ -42,9 +44,8 @@ with a computer that costs less than a month of streaming services.
   ║                                                                   ║
   ║   ██ MEDIA VAULT ██████████████████████████████████████████████   ║
   ║                                                                   ║
+  ║   13,989 .... music tracks                                        ║
   ║   10,345 .... books (epub/pdf/mobi)                               ║
-  ║    4,359 .... music tracks (flac/mp3)                             ║
-  ║    9,630 .... soulseek downloads                                  ║
   ║    2,192 .... comics & graphic novels                             ║
   ║      205 .... movies                                              ║
   ║      224 .... tv shows                                            ║
@@ -68,10 +69,11 @@ with a computer that costs less than a month of streaming services.
   ║       11 .... docker containers                                   ║
   ║       13 .... tunneled domains                                    ║
   ║       39 .... shell & python scripts                              ║
-  ║       20 .... hand-coded HTML pages                               ║
+  ║       20 .... HTML pages                                          ║
   ║      642 .... lines of nginx config                               ║
   ║      175 .... git commits                                         ║
   ║        0 .... dollars/month in hosting fees                       ║
+  ║        0 .... dependencies on big tech                            ║
   ║                                                                   ║
   ╚═══════════════════════════════════════════════════════════════════╝
 ```
@@ -105,7 +107,7 @@ with a computer that costs less than a month of streaming services.
   │  comics.quickcat.club ...... 2,192 comics (Kavita)           │
   └──────────────────────────────────────────────────────────────┘
   ┌──────────────────────────────────────────────────────────────┐
-  │  ADMIN -- Pablo only                                         │
+  │  ADMIN -- owner only                                         │
   ├──────────────────────────────────────────────────────────────┤
   │  deck.quickcat.club ........ cyberdeck command & control     │
   │  radio-admin ............... AzuraCast broadcast mgr         │
@@ -118,42 +120,45 @@ with a computer that costs less than a month of streaming services.
 
 ## THE CUSTOM BUILDS
 
-Everything below was hand-coded. No frameworks. No npm install.
-VT323 monospace font, CSS animations, vanilla JS. That's it.
+No frameworks. No npm install. VT323 monospace, CSS animations, vanilla JS.
+Every page loads in under a second on a Pi because there is nothing to load.
 
 ```
   ┌─ KPAB.FM ──────────────────────────────────────────────────────┐
-  │  Pirate radio station. 24/7 auto-DJ. Song requests.            │
-  │  Heart voting system. Live shoutbox. Now-playing API.          │
-  │  10,000+ track library. No ads. No algorithm. Just music.      │
+  │  Pirate radio station. 24/7 auto-DJ with taste but no format.  │
+  │  Song requests. Heart voting. Live shoutbox. Now-playing API.  │
+  │  13,989 tracks. No ads. No algorithm. No Spotify. Just music.  │
   └────────────────────────────────────────────────────────────────┘
   ┌─ THE DECK ─────────────────────────────────────────────────────┐
-  │  Cyberdeck control panel. Live stats: temp, RAM, disk,         │
-  │  uptime, active users, now playing. Floating radio widget.     │
-  │  Message inbox. One-click access to every service.             │
+  │  Cyberdeck control panel with live telemetry: CPU temp, RAM,   │
+  │  disk, uptime, active users, now playing. Floating radio       │
+  │  widget with station switching. Message inbox. One-click       │
+  │  access to every service. It looks like a movie prop and       │
+  │  every number on it is real.                                   │
   └────────────────────────────────────────────────────────────────┘
   ┌─ QUICKCAT.CLUB ────────────────────────────────────────────────┐
-  │  Animated portal with neon glitch title, card hover sounds,    │
-  │  intersection observer entrance animations, theme toggle,      │
-  │  transmission wall, and a cursor that glitches when you        │
-  │  hover it. Scanline drift. Grid overlay. The whole aesthetic.  │
+  │  Neon glitch title with chromatic aberration. Card hover       │
+  │  sounds. Intersection observer entrance animations. Scanline   │
+  │  drift. Grid overlay. Theme toggle via cursor block. The       │
+  │  whole aesthetic, running on a machine with less RAM than       │
+  │  most browser tabs.                                            │
   └────────────────────────────────────────────────────────────────┘
   ┌─ TRANSMISSION WALL ────────────────────────────────────────────┐
   │  Anonymous shoutbox. Leave a signal. No accounts. No history.  │
   │  Messages appear in real time across quickcat.club & kpab.fm.  │
   └────────────────────────────────────────────────────────────────┘
   ┌─ THE WALL ─────────────────────────────────────────────────────┐
-  │  Pixel graffiti canvas. Click to paint. Shared across all      │
-  │  visitors. Persistent state. Digital bathroom stall energy.    │
+  │  Pixel graffiti canvas. Click to paint. Shared state across    │
+  │  all visitors. Persistent. Digital bathroom stall energy.      │
   └────────────────────────────────────────────────────────────────┘
   ┌─ DROP ZONE ────────────────────────────────────────────────────┐
   │  Drag and drop file uploads. Friends contribute music, books,  │
-  │  comics, ROMs directly to the collection. 500MB limit.         │
+  │  comics, ROMs directly to the collection. Community-fed.       │
   └────────────────────────────────────────────────────────────────┘
   ┌─ RETRO ARCADE ─────────────────────────────────────────────────┐
   │  Browser-based emulation. Mega Drive, SNES, N64, Game Boy,     │
   │  GBA, NES, TG-16. SharedArrayBuffer threading. PICO-8 carts.  │
-  │  Interactive fiction engine. Play in the browser. No install.   │
+  │  Interactive fiction engine. Zero install. Play now.            │
   └────────────────────────────────────────────────────────────────┘
 ```
 
@@ -164,16 +169,18 @@ VT323 monospace font, CSS animations, vanilla JS. That's it.
 ```
   ╔═══════════════════════════════════════════════════════════════════╗
   ║                                                                   ║
-  ║   CLOUDFLARE TUNNEL .... Pi's real IP invisible to the internet   ║
+  ║   CLOUDFLARE TUNNEL .... real IP invisible to the internet       ║
   ║   RATE LIMITING ........ 1 req/sec on all server blocks          ║
   ║   BOT BLOCKING ......... 25+ scanner user-agents auto-blocked    ║
-  ║   HONEYPOT TARPIT ...... probe paths return 410 + snarky msg     ║
+  ║   HONEYPOT TARPIT ...... probe paths return 410 + attitude       ║
   ║   SECURITY HEADERS ..... nosniff, frame deny, referrer, perms    ║
   ║   BASIC AUTH ........... deck protected, htpasswd hashed         ║
   ║   ROBOTS.TXT ........... politely telling crawlers to leave      ║
   ║   SECURITY.TXT ......... "there is no bug bounty. go away."     ║
   ║   SERVER TOKENS OFF .... nginx version hidden                    ║
   ║   UPLOAD LIMITS ........ 1KB on write endpoints                  ║
+  ║   NO ANALYTICS ......... zero cookies, zero tracking pixels      ║
+  ║   NO USER DATA ......... we don't know who you are. good.       ║
   ║                                                                   ║
   ║   bots that probe .env or wp-admin get this:                     ║
   ║                                                                   ║
@@ -252,12 +259,37 @@ VT323 monospace font, CSS animations, vanilla JS. That's it.
 
 ---
 
+## SOVEREIGNTY
+
+This is a fully sovereign stack. No cloud provider has a kill switch.
+No corporation can raise prices, change terms, or shut it down.
+
+- **The hard drive** is the collection. Pick it up. Walk away. It's yours.
+- **The Pi** is the infrastructure. $80. Replaceable in an afternoon.
+- **The repo** is the blueprint. `git clone` and you're back online.
+- **The tunnel** is the only external dependency, and it's swappable.
+
+Everything that matters is physical, local, and owned. The entire server
+can be rebuilt from a fresh Pi, this repo, and the hard drive. That's it.
+No API keys required. No vendor lock-in. No "we're sunsetting this feature."
+
+If Cloudflare disappears tomorrow, swap in a different tunnel or just
+use it on LAN. If the Pi dies, buy another one. If the SD card corrupts,
+flash a new one and run the deploy script. The collection survives
+because it lives on a drive you can hold in your hand.
+
+**This is what digital sovereignty actually looks like.** Not a manifesto.
+Not a tweet. A working server under a desk proving the point every second
+it stays online.
+
+---
+
 ## QUICK START
 
 ```bash
 # clone it
-git clone https://github.com/pibulus/pibulus-os.git
-cd pibulus-os
+git clone https://github.com/pibulus/quickcat-os.git
+cd quickcat-os
 
 # plug in your hard drive, mount it at /media/pibulus/passport
 
@@ -280,7 +312,7 @@ systemctl enable --now cloudflared
 ## THE REPO
 
 ```
-  pibulus-os/
+  quickcat-os/
   ├── config/
   │   ├── nginx/hardening.conf ........ 642 lines of routing & security
   │   ├── stacks/pirate.yml ........... main docker compose
@@ -296,7 +328,7 @@ systemctl enable --now cloudflared
   │   ├── kpab_hearts.py .............. heart voting system
   │   ├── msgdrop.py .................. message inbox
   │   └── ... 30 more
-  ├── www/html/ ....................... 20 hand-coded pages
+  ├── www/html/ ....................... 20 HTML pages
   │   ├── index.html .................. quickcat.club portal
   │   ├── deck/index.html ............. cyberdeck control panel
   │   ├── kpab/index.html ............. pirate radio frontend
@@ -329,12 +361,23 @@ systemctl enable --now cloudflared
   │   The radio plays what you choose.                             │
   │   The books are yours to keep.                                 │
   │                                                                │
+  │   Spotify's algorithms are a con. Radio compartmentalises      │
+  │   people into taste categories. Every dollar or minute taken   │
+  │   away from platforms that exploit musicians is worth it.      │
+  │   We're bigger than genre. It's time to build our own          │
+  │   platforms and think local digitally.                         │
+  │                                                                │
   │   No scale. No subscriptions. No data harvesting.              │
   │   "Can't scale" IS the feature.                                │
   │                                                                │
   │   4GB of RAM means every container earns its place.            │
   │   A single hard drive means the collection is curated.         │
   │   Limitations force taste.                                     │
+  │                                                                │
+  │   The server doesn't know who you are. It doesn't want to.    │
+  │   There's no analytics, no cookies, no tracking pixels,        │
+  │   no third-party scripts. The constraint isn't a compromise.   │
+  │   It's the whole point.                                        │
   │                                                                │
   │   Build yours. A Pi, a drive, and a weekend.                   │
   │                                                                │
@@ -346,10 +389,11 @@ systemctl enable --now cloudflared
 ```
   ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-                    BUILT BY PABLO  //  MELBOURNE  //  2026
-                          ~(=^..^) QUICK CAT CLUB
+                         MELBOURNE  //  2026
+                    ~(=^..^) QUICK CAT CLUB
 
-              175 commits  //  0 dependencies on big tech  //  $0/month
+        175 commits  //  0 dependencies on big tech  //  $0/month
+             4GB of RAM  //  5.5TB of everything good
 
   ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
@@ -365,13 +409,14 @@ systemctl enable --now cloudflared
   RESPECT: Raspberry Pi Foundation // Docker // Cloudflare // Deno
   RESPECT: AzuraCast // Jellyfin // Navidrome // Kavita // Calibre
   RESPECT: the entire FOSS ecosystem that makes this possible
+  RESPECT: Claude Code for being the best late-night co-pilot
 
   ANTI-RESPECT: surveillance capitalism, algorithmic feeds, subscription
   fatigue, planned obsolescence, and the five websites full of screenshots
   of the other four.
 
-  this NFO was written by a human and an AI at 11pm on a Monday night
-  in Melbourne while pirate radio played in the background.
+  this readme was written at 11pm on a Monday night in Melbourne
+  while pirate radio played in the background.
 
   if you made it this far, you're one of us.
 
