@@ -253,18 +253,18 @@
 
     <div class="section-divider"><span class="section-label">[ EXPLORE ]</span></div>
     <div class="grid grid-3">
-      <a class="card fun" href="/arcade/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="bong"><span class="card-emoji">🎮</span><span class="card-label">Arcade</span><span class="card-desc">retro roms</span></a>
-      <a class="card fun" href="/pico/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="bong"><span class="card-emoji">🕹️</span><span class="card-label">PICO-8</span><span class="card-desc">3000+ carts</span></a>
-      <a class="card fun" href="/fiction/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="pluck"><span class="card-emoji">📖</span><span class="card-label">Fiction</span><span class="card-desc">text adventures</span></a>
+      <a class="card fun" href="/arcade/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click"><span class="card-emoji">🎮</span><span class="card-label">Arcade</span><span class="card-desc">retro roms</span></a>
+      <a class="card fun" href="/pico/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click"><span class="card-emoji">🕹️</span><span class="card-label">PICO-8</span><span class="card-desc">3000+ carts</span></a>
+      <a class="card fun" href="/fiction/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click"><span class="card-emoji">📖</span><span class="card-label">Fiction</span><span class="card-desc">text adventures</span></a>
     </div>
     <div class="grid grid-3" style="margin-top: 1.1rem;">
-      <a class="card fun" href="/terminal/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="glitch"><span class="card-emoji">📟</span><span class="card-label">The Deck</span><span class="card-desc">BBS & MUD</span></a>
-      <a class="card fun" href="/drop/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="drop"><span class="card-emoji">📥</span><span class="card-label">Contribute</span><span class="card-desc">dead centre</span></a>
-      <a class="card fun" href="/wall/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="pluck"><span class="card-emoji">🎨</span><span class="card-label">The Wall</span><span class="card-desc">graffiti</span></a>
+      <a class="card fun" href="/terminal/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click"><span class="card-emoji">📟</span><span class="card-label">The Deck</span><span class="card-desc">BBS & MUD</span></a>
+      <a class="card fun" href="/drop/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click"><span class="card-emoji">📥</span><span class="card-label">Contribute</span><span class="card-desc">dead centre</span></a>
+      <a class="card fun" href="/wall/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click"><span class="card-emoji">🎨</span><span class="card-label">The Wall</span><span class="card-desc">graffiti</span></a>
     </div>
     <div class="grid grid-2" style="margin-top: 1.1rem;">
-      <a class="card solidarity" href="/palestine/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="glass"><span class="card-emoji">🇵🇸</span><span class="card-label">Palestine</span><span class="card-desc">resources</span></a>
-      <a class="card danger" href="/conspiracy/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="error"><span class="card-emoji">👁</span><span class="card-label">Forbidden</span><span class="card-desc">occult files</span></a>
+      <a class="card solidarity" href="/palestine/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click"><span class="card-emoji">🇵🇸</span><span class="card-label">Palestine</span><span class="card-desc">resources</span></a>
+      <a class="card danger" href="/conspiracy/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click"><span class="card-emoji">👁</span><span class="card-label">Forbidden</span><span class="card-desc">occult files</span></a>
     </div>
 
     <div class="section-divider"><span class="section-label">[ FAQ ]</span></div>
@@ -291,7 +291,7 @@
         <input type="text" id="msgName" placeholder="HANDLE" maxlength="32" aria-label="Your name">
         <textarea id="msgText" placeholder="leave a signal on the wall..." maxlength="280" rows="2" aria-label="Message"></textarea>
       </div>
-      <button type="button" class="msg-send" id="msgSend" data-sound-click="drop">TRANSMIT</button>
+      <button type="button" class="msg-send" id="msgSend">TRANSMIT</button>
       <span class="msg-status" id="msgStatus"></span>
     </div>
 
@@ -408,23 +408,6 @@
 
   <!-- UI Sounds — Kenney CC0 -->
   <script src="/ui-sounds.js"></script>
-  <script>
-    UISounds.init({ basePath: '/sounds/' });
-
-    // Cursor theme-toggle gets a glitch sound
-    document.querySelector('.cursor').addEventListener('click', function () { UISounds.play('glitch'); });
-
-    // FAQ accordion toggles
-    document.querySelectorAll('.faq details').forEach(function (el) {
-      var wasOpen = false;
-      el.addEventListener('toggle', function () {
-        UISounds.play(el.open ? 'open' : 'close');
-      });
-    });
-
-    // Input focus sounds
-    document.getElementById('msgName').addEventListener('focus', function () { UISounds.play('tick'); });
-    document.getElementById('msgText').addEventListener('focus', function () { UISounds.play('tick'); });
-  </script>
+  <script>UISounds.init({ basePath: "/sounds/" });</script>
 </body>
 </html>
