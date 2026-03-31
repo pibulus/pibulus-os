@@ -36,7 +36,10 @@ ingress:
 
 
   - hostname: tv.quickcat.club
-    service: http://localhost:8100
+    service: http://localhost:80
   - hostname: vault.quickcat.club
     service: http://localhost:8091
+
+  - hostname: games.quickcat.club
+    service: http://localhost:8095
   - service: http_status:404

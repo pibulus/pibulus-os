@@ -28,5 +28,9 @@ echo "Hearts (8092) PID: $!"
 /usr/local/bin/ttyd -p 7683 -t fontSize=16 -t fontFamily=monospace   -t 'theme={"background":"#050505","foreground":"#e0e0e0","cursor":"#ff00ff"}'   --max-clients 5 $SCRIPTS/public-deck.sh &
 echo "Public Deck (7683) PID: $!"
 
+# Admin shell (plain bash, auth required)
+/usr/local/bin/ttyd --writable -b /shell/ -p 7684 -c pibulus:meringue -t fontSize=16 -t fontFamily=monospace -t 'theme={"background":"#0D0F14","foreground":"#C8D8E8","cursor":"#E040FB"}' /bin/bash -l &
+echo "Admin Shell (7684) PID: $!"
+
 echo "[$(date)] All microservices started"
 wait

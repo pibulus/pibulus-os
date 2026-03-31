@@ -84,7 +84,7 @@
       94% { opacity: 0.75; }
       95% { opacity: 0.3; }
     }
-    h1 { font-size: clamp(3rem, 11vw, 5.5rem); line-height: 1; color: var(--cyan); text-shadow: 0 0 10px var(--cyan), 0 0 30px rgba(77,255,210,0.4), 0 0 60px rgba(77,255,210,0.1); letter-spacing: 4px; margin-bottom: 0.5rem; animation: titleGlitch 6s ease-in-out infinite; position: relative; }
+    h1 { font-size: clamp(2.2rem, 11vw, 5.5rem); line-height: 1; color: var(--cyan); text-shadow: 0 0 10px var(--cyan), 0 0 30px rgba(77,255,210,0.4), 0 0 60px rgba(77,255,210,0.1); letter-spacing: 4px; margin-bottom: 0.5rem; animation: titleGlitch 6s ease-in-out infinite; position: relative; white-space: nowrap; }
 
     .subtitle { font-size: clamp(1.1rem, 3.5vw, 1.5rem); color: var(--magenta); opacity: 0.75; text-shadow: 0 0 8px rgba(224,64,251,0.4); letter-spacing: 2px; animation: subtitleFlicker 4s ease-in-out infinite; }
     @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
@@ -96,7 +96,7 @@
       80% { transform: translate(2px, 0) scaleY(0.9); background: var(--cyan); }
       100% { transform: translate(0) scaleY(1); }
     }
-    .cursor { display: inline-block; width: 0.65em; height: 0.95em; background: var(--cyan); vertical-align: text-bottom; animation: blink 1.2s step-end infinite; cursor: pointer; transition: box-shadow 0.2s; }
+    .cursor { display: inline-block; width: 0.35em; height: 0.85em; background: var(--cyan); vertical-align: text-bottom; animation: blink 1.2s step-end infinite; cursor: pointer; transition: box-shadow 0.2s; }
     .cursor:hover { animation: cursorGlitch 0.4s steps(1) infinite; box-shadow: 0 0 12px var(--magenta), 0 0 24px var(--cyan); }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
     .alive-bar { text-align: center; padding: 0.6rem 1rem; margin: 0.5rem 0 0; font-size: 0.95rem; color: var(--dim); letter-spacing: 1px; min-height: 1.5em; }
@@ -253,7 +253,7 @@
 
     <div class="section-divider"><span class="section-label">[ EXPLORE ]</span></div>
     <div class="grid grid-3">
-      <a class="card fun" href="/arcade/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click"><span class="card-emoji">🎮</span><span class="card-label">Arcade</span><span class="card-desc">retro roms</span></a>
+      <a class="card fun" href="https://games.quickcat.club" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click"><span class="card-emoji">🎮</span><span class="card-label">Games</span><span class="card-desc">rom library</span></a>
       <a class="card fun" href="/pico/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click"><span class="card-emoji">🕹️</span><span class="card-label">PICO-8</span><span class="card-desc">3000+ carts</span></a>
       <a class="card fun" href="/fiction/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click"><span class="card-emoji">📖</span><span class="card-label">Fiction</span><span class="card-desc">text adventures</span></a>
     </div>
@@ -408,6 +408,6 @@
 
   <!-- UI Sounds — Kenney CC0 -->
   <script src="/ui-sounds.js"></script>
-  <script>UISounds.init({ basePath: "/sounds/" });</script>
+  <script>UISounds.init();</script>
 </body>
 </html>
