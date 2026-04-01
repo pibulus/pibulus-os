@@ -1,0 +1,10 @@
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: same-origin
+
+
+/_app/immutable/*
+  cache-control: public
+  cache-control: immutable
+  cache-control: max-age=31536000

@@ -65,6 +65,15 @@
     .surprise-btn:hover { background:var(--magenta); color:#000; box-shadow:0 0 16px rgba(255,0,255,0.3); }
 
     .filters { display:flex; gap:6px; margin-top:10px; flex-wrap:wrap; }
+    .filters-toggle { display:none; background:var(--card-bg); border:1px solid var(--card-border); border-radius:4px; padding:3px 10px; color:var(--dim); font-family:'VT323',monospace; font-size:0.95rem; cursor:pointer; transition:all 0.2s; width:100%; text-align:left; }
+    .filters-toggle:hover { color:var(--text); border-color:var(--text); }
+    .filters-toggle .arrow { display:inline-block; transition:transform 0.2s; margin-right:6px; }
+    .filters-toggle.open .arrow { transform:rotate(90deg); }
+    @media (max-width:600px) {
+      .filters-toggle { display:block; }
+      .filters { max-height:0; overflow:hidden; transition:max-height 0.3s ease; }
+      .filters.open { max-height:500px; }
+    }
     .filter-btn {
       background:var(--card-bg); border:1px solid var(--card-border); border-radius:4px;
       padding:3px 10px; color:var(--dim); font-family:'VT323',monospace; font-size:0.95rem;
@@ -206,6 +215,7 @@
       </div>
       <button class="surprise-btn" id="surprise" title="Play a random cart">surprise me</button>
     </div>
+    <button class="filters-toggle" id="filters-toggle"><span class="arrow">▶</span> genres</button>
     <div class="filters" id="filters"></div>
   </div>
 
@@ -289,6 +299,15 @@ function buildFilters() {
     activeFilter = btn.dataset.genre;
     el.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
+    // Update toggle label on mobile
+    var toggle = document.getElementById('filters-toggle');
+    var arrow = toggle.querySelector('.arrow');
+    toggle.innerHTML = '';
+    var arrowSpan = document.createElement('span');
+    arrowSpan.className = 'arrow';
+    arrowSpan.textContent = toggle.classList.contains('open') ? '▼' : '▶';
+    toggle.appendChild(arrowSpan);
+    toggle.appendChild(document.createTextNode(' genres' + (activeFilter !== 'all' ? ' : ' + activeFilter : '')));
     displayCount = BATCH_SIZE;
     renderedCount = 0;
     renderGames();
@@ -468,6 +487,13 @@ document.addEventListener('keydown', function(e) {
     if (e.key === '[' || (e.key === 'ArrowLeft' && e.shiftKey)) { navigateCart(-1); return; }
     if (e.key === ']' || (e.key === 'ArrowRight' && e.shiftKey)) { navigateCart(1); return; }
   }
+});
+
+// Filters toggle (mobile)
+document.getElementById('filters-toggle').addEventListener('click', function() {
+  this.classList.toggle('open');
+  document.getElementById('filters').classList.toggle('open');
+  this.querySelector('.arrow').textContent = this.classList.contains('open') ? '▼' : '▶';
 });
 
 // Search with debounce

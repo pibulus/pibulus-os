@@ -1,48 +1,111 @@
 /**
- * UI Sounds — Minimal hover/click feedback
- * CC0 sounds from Kenney.nl
+ * UI Sounds — Web Audio synthesis, no samples needed
+ * Soft tactile feedback with micro-variation each play
  */
 ;(function () {
   "use strict";
 
-  var SOUNDS = {
-    hover: { file: "select_003.mp3", vol: 0.06 },
-    click: { file: "click_003.mp3",  vol: 0.12 }
-  };
-
-  var basePath = "/sounds/";
+  var ctx = null;
   var enabled = true;
-  var cache = {};
   var lastPlay = {};
 
-  function play(key) {
-    if (!enabled || !SOUNDS[key]) return;
-    var now = Date.now();
-    if (now - (lastPlay[key] || 0) < 80) return;
-    lastPlay[key] = now;
-    if (!cache[key]) {
-      cache[key] = new Audio(basePath + SOUNDS[key].file);
-      cache[key].preload = "auto";
+  function getCtx() {
+    if (!ctx) {
+      try { ctx = new (window.AudioContext || window.webkitAudioContext)(); }
+      catch (e) { return null; }
     }
-    var a = cache[key];
-    a.volume = SOUNDS[key].vol;
-    a.currentTime = 0;
-    a.play().catch(function () {});
+    if (ctx.state === "suspended") ctx.resume();
+    return ctx;
   }
 
-  function init(opts) {
-    if (opts && opts.basePath) basePath = opts.basePath;
+  function hover() {
+    if (!enabled) return;
+    var now = Date.now();
+    if (now - (lastPlay.hover || 0) < 80) return;
+    lastPlay.hover = now;
+
+    var c = getCtx();
+    if (!c) return;
+    var t = c.currentTime;
+
+    // Slight random pitch each time — organic feel
+    var freq = 310 + (Math.random() - 0.5) * 40; // 290–330 Hz
+
+    var osc = c.createOscillator();
+    var gain = c.createGain();
+    var filter = c.createBiquadFilter();
+
+    osc.type = "sine";
+    osc.frequency.value = freq;
+    // Tiny detune drift for analog warmth
+    osc.detune.value = (Math.random() - 0.5) * 6;
+
+    filter.type = "lowpass";
+    filter.frequency.value = 700;
+    filter.Q.value = 0.5;
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(c.destination);
+
+    // Ultra-short envelope — soft thup
+    gain.gain.setValueAtTime(0, t);
+    gain.gain.linearRampToValueAtTime(0.06, t + 0.008);
+    gain.gain.linearRampToValueAtTime(0, t + 0.07);
+
+    osc.start(t);
+    osc.stop(t + 0.08);
+  }
+
+  function click() {
+    if (!enabled) return;
+    var now = Date.now();
+    if (now - (lastPlay.click || 0) < 80) return;
+    lastPlay.click = now;
+
+    var c = getCtx();
+    if (!c) return;
+    var t = c.currentTime;
+
+    var freq = 360 + (Math.random() - 0.5) * 30;
+
+    var osc = c.createOscillator();
+    var gain = c.createGain();
+    var filter = c.createBiquadFilter();
+
+    osc.type = "sine";
+    osc.frequency.value = freq;
+    osc.detune.value = (Math.random() - 0.5) * 6;
+
+    filter.type = "lowpass";
+    filter.frequency.value = 900;
+    filter.Q.value = 0.4;
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(c.destination);
+
+    // Slightly brighter/punchier for clicks
+    gain.gain.setValueAtTime(0, t);
+    gain.gain.linearRampToValueAtTime(0.10, t + 0.005);
+    gain.gain.linearRampToValueAtTime(0, t + 0.06);
+
+    osc.start(t);
+    osc.stop(t + 0.07);
+  }
+
+  function init() {
     document.querySelectorAll("[data-sound-hover]").forEach(function (el) {
-      el.addEventListener("mouseenter", function () { play("hover"); });
+      el.addEventListener("mouseenter", hover);
     });
     document.querySelectorAll("[data-sound-click]").forEach(function (el) {
-      el.addEventListener("click", function () { play("click"); });
+      el.addEventListener("click", click);
     });
   }
 
   window.UISounds = {
     init: init,
-    play: play,
+    play: function (key) { if (key === "hover") hover(); else if (key === "click") click(); },
     toggle: function (on) { enabled = on !== undefined ? !!on : !enabled; return enabled; }
   };
 })();

@@ -59,3 +59,14 @@ for label, path in dbs.items():
         conn.commit(); conn.close()
         print(f'✅ {label}: {user} added.')
     except Exception as e: print(f'❌ {label}: {e}')
+
+# RomM (API-based, not SQLite)
+try:
+    import urllib.request
+    auth_str = base64.b64encode(b'pibulus:meringue').decode()
+    romm_headers = {'Authorization': f'Basic {auth_str}', 'Content-Type': 'application/json'}
+    payload = json.dumps({'username': user, 'password': pw, 'email': email, 'role': 'viewer'}).encode()
+    req = urllib.request.Request('http://localhost:8095/api/users', headers=romm_headers, method='POST', data=payload)
+    urllib.request.urlopen(req)
+    print(f'✅ RM: {user} added.')
+except Exception as e: print(f'❌ RM: {e}')

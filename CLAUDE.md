@@ -102,6 +102,10 @@ Owner: Pablo (pibulus). Philosophy: anti-scale, anti-subscription, "can't scale 
 - nginx rate limiting: server-level limit_req hits static assets too. Use separate zones.
 - Navidrome groups by albumartist tag, not folder structure — missing tags = split albums
 - Docker bind mount with `:ro` on parent dir breaks overlay sub-mounts
+- Tunarr transcodeConfigId MUST be a real UUID from transcode_config table (not empty or "default")
+- Tunarr default transcode config UUID: 21236273-80ec-44de-9905-ce2d044aa559
+- Tunarr libraries default to enabled:false — must PUT to enable before scanning
+- Tunarr channel creation via API needs ALL fields (no defaults)
 - Filebrowser: DB file must be `touch`ed before Docker mount or Docker creates a directory
 - Cloudflare DNS (not Porkbun) is authoritative for quickcat.club — Zone ID: b7fce43937c8160a9639c9d452bf5120
 

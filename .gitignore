@@ -34,3 +34,15 @@ data/
 # Nginx passwords
 config/nginx/.htpasswd
 config/nginx/.htpasswd_terminal
+
+# Home directory dotfiles that landed in www/html
+www/html/.*
+www/html/art-fetch.log
+www/html/deploy.sh
+www/html/fetch-covers*.py
+www/html/fix-*.py
+www/html/navidrome-*.py
+www/html/sync_accounts*.py
+www/html/kpab_downloader.py
+www/html/pibulus-os
+www/html/azuracast

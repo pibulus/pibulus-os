@@ -1,0 +1,52 @@
+{
+	"name": "TalkType",
+	"short_name": "TalkType",
+	"description": "100% Private. Instant Start. You click the ghost, we do the most.",
+	"start_url": "/?source=pwa",
+	"display": "standalone",
+	"background_color": "#FFF6E6",
+	"theme_color": "#FFF6E6",
+	"orientation": "portrait-primary",
+	"categories": ["utilities", "productivity"],
+	"icons": [
+		{
+			"src": "/appicon/web/icon-192.png",
+			"sizes": "192x192",
+			"type": "image/png",
+			"purpose": "any"
+		},
+		{
+			"src": "/appicon/web/icon-512.png",
+			"sizes": "512x512",
+			"type": "image/png",
+			"purpose": "any"
+		},
+		{
+			"src": "/appicon/web/icon-192-maskable.png",
+			"sizes": "192x192",
+			"type": "image/png",
+			"purpose": "maskable"
+		},
+		{
+			"src": "/appicon/web/icon-512-maskable.png",
+			"sizes": "512x512",
+			"type": "image/png",
+			"purpose": "maskable"
+		}
+	],
+	"shortcuts": [
+		{
+			"name": "Start Recording",
+			"short_name": "Record",
+			"description": "Start a new voice recording",
+			"url": "/?action=record",
+			"icons": [{ "src": "/appicon/web/icon-192.png", "sizes": "192x192" }]
+		}
+	],
+	"related_applications": [],
+	"prefer_related_applications": false,
+	"scope": "/",
+	"launch_handler": {
+		"client_mode": ["navigate-existing", "auto"]
+	}
+}

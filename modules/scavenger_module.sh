@@ -5,7 +5,7 @@
 # Tools: slskd (Soulseek), yt-dlp, aria2, ia (Internet Archive)
 # Brain: Claude Code headless (haiku) for tool selection + query crafting
 
-SCAVENGER_BUDGET="0.10"
+SCAVENGER_BUDGET="0.20"
 SLSKD_URL="http://localhost:5030"
 SLSKD_USER="slskd"
 SLSKD_PASS="slskd"
