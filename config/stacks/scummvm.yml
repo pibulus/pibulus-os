@@ -1,0 +1,14 @@
+name: scummvm
+
+services:
+  scummvm:
+    container_name: scummvm
+    image: scummvm-web:latest
+    volumes:
+      - /home/pibulus/.config/scummvm:/config
+      - /media/pibulus/MEMBOT/Roms/ScummVM:/games:ro
+    ports:
+      - "3001:6080"
+    environment:
+      - VNC_RESOLUTION=1024x768
+    restart: unless-stopped
