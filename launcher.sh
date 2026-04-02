@@ -128,14 +128,138 @@ except Exception as exc:
 
 listeners = data.get("listeners", {})
 now_playing = data.get("now_playing", {}).get("song", {})
+now_playing_block = data.get("now_playing", {})
 playing_next = data.get("playing_next", {}).get("song", {})
+station = data.get("station", {})
+mounts = station.get("mounts", [])
 
 print("Now playing:")
 print(f"  {now_playing.get('artist', 'Unknown')} — {now_playing.get('title', 'Unknown')}")
+print(f"  {now_playing_block.get('elapsed', 0)}s elapsed / {now_playing_block.get('remaining', 0)}s remaining")
 print("Next up:")
 print(f"  {playing_next.get('artist', 'Unknown')} — {playing_next.get('title', 'Unknown')}")
 print("Listeners:")
 print(f"  {listeners.get('current', 0)} live / {listeners.get('unique', 0)} unique")
+if mounts:
+    mount = mounts[0]
+    mount_listeners = mount.get("listeners", {})
+    print("Mount:")
+    print(f"  {mount.get('name', mount.get('path', 'Unknown'))}")
+    print(f"  {mount_listeners.get('current', 0)} current / {mount_listeners.get('unique', 0)} unique")
+print("Player:")
+print(f"  {station.get('public_player_url', 'Unknown')}")
+print("Stream:")
+print(f"  {station.get('listen_url', 'Unknown')}")
+PY
+}
+
+show_recent_tracks() {
+  python3 - <<'PY'
+import json, urllib.request
+
+try:
+    data = json.load(urllib.request.urlopen("http://localhost:8500/api/nowplaying/kpab.fm", timeout=3))
+except Exception as exc:
+    print(f"Could not reach AzuraCast API: {exc}")
+    raise SystemExit(0)
+
+history = data.get("song_history", [])
+if not history:
+    print("No recent track history.")
+    raise SystemExit(0)
+
+print("Recently played:")
+for idx, item in enumerate(history[:8], start=1):
+    song = item.get("song", {})
+    duration = int(item.get("duration") or 0)
+    mins, secs = divmod(duration, 60)
+    print(f"  {idx}. {song.get('artist', 'Unknown')} — {song.get('title', 'Unknown')} [{mins}:{secs:02d}]")
+PY
+}
+
+show_recent_listeners() {
+  python3 - <<'PY'
+import os
+import re
+from collections import Counter
+from datetime import datetime
+from pathlib import Path
+
+listener_db = Path("/tmp/kpab_recent_listeners.tsv")
+if not listener_db.exists():
+    print("No recent listener snapshot available.")
+    raise SystemExit(0)
+
+rows = []
+for line in listener_db.read_text().splitlines():
+    parts = line.split("\t")
+    if len(parts) != 3:
+        continue
+    ip, ua, ts = parts
+    device = "Unknown"
+    if "iPhone" in ua or "iOS" in ua:
+        device = "iPhone"
+    elif "Macintosh" in ua or "Mac OS X" in ua:
+        device = "Mac"
+    elif "Android" in ua:
+        device = "Android"
+    browser = "Unknown"
+    if "CriOS" in ua or "Chrome/" in ua:
+        browser = "Chrome"
+    elif "Safari/" in ua:
+        browser = "Safari"
+    elif "Firefox/" in ua:
+        browser = "Firefox"
+    rows.append((ip, browser, device, ts))
+
+if not rows:
+    print("No recent listener rows.")
+    raise SystemExit(0)
+
+counts = Counter(ip for ip, *_ in rows)
+print("Recent listener rows:")
+for ip, browser, device, ts in rows[:8]:
+    stamp = ts.replace("T", " ") if "T" in ts else ts
+    extra = f"{counts[ip]} recent rows" if counts[ip] > 1 else "1 recent row"
+    print(f"  {ip:<15} {browser:<7} {device:<8} {stamp}  ({extra})")
+PY
+}
+
+refresh_recent_listeners_cache() {
+  python3 - <<'PY'
+import subprocess
+import textwrap
+from pathlib import Path
+
+script = textwrap.dedent('''
+docker exec -i azuracast sh <<'INNER'
+cat >/tmp/kpab_listener_sample.php <<'PHP'
+<?php
+$dsn = sprintf('mysql:host=%s;port=%s;dbname=%s;charset=utf8mb4', '127.0.0.1', getenv('MYSQL_PORT'), getenv('MYSQL_DATABASE'));
+$pdo = new PDO($dsn, getenv('MYSQL_USER'), getenv('MYSQL_PASSWORD'));
+$sql = "SELECT listener_ip, listener_user_agent, timestamp_start FROM listener ORDER BY id DESC LIMIT 8";
+foreach ($pdo->query($sql) as $row) {
+    echo implode("\\t", [
+        $row['listener_ip'],
+        preg_replace('/\\s+/', ' ', (string)$row['listener_user_agent']),
+        $row['timestamp_start']
+    ]), PHP_EOL;
+}
+PHP
+php /tmp/kpab_listener_sample.php
+INNER
+''').strip()
+
+result = subprocess.run(["bash", "-lc", script], capture_output=True, text=True)
+output = result.stdout.strip()
+if not output:
+    print("Could not fetch recent listener rows.")
+    if result.stderr.strip():
+        print(result.stderr.strip())
+    raise SystemExit(0)
+
+Path("/tmp/kpab_recent_listeners.tsv").write_text(output + "\n")
+print("Listener snapshot refreshed.")
 PY
 }
 
@@ -265,10 +389,17 @@ radio_menu() {
   while true; do
     render_hud
     local action
-    action=$(tactile_choose '📻 Show Radio Snapshot' '🪪 Show My Public IP' '🛰️ Show Radio Service Status' '🌐 Show Public Links' 'Back')
+    action=$(tactile_choose '📻 Show Radio Snapshot' '📜 Show Recent Tracks' '👂 Show Recent Listener Rows' '🪪 Show My Public IP' '🛰️ Show Radio Service Status' '🌐 Show Public Links' 'Back')
     case "$action" in
       '📻 Show Radio Snapshot')
         show_radio_snapshot
+        pause_screen ;;
+      '📜 Show Recent Tracks')
+        show_recent_tracks
+        pause_screen ;;
+      '👂 Show Recent Listener Rows')
+        refresh_recent_listeners_cache
+        show_recent_listeners
         pause_screen ;;
       '🪪 Show My Public IP')
         show_public_ip
