@@ -36,8 +36,10 @@ NP_LISTENERS_TOTAL=$(echo "$NP_JSON" | python3 -c "import sys,json; print(json.l
 # Load average
 LOAD=$(uptime | awk -F'load average:' '{print $2}' | awk -F',' '{print $1}' | tr -d ' ')
 
-# Connected users — unique real IPs from nginx logs in last 10 minutes
-# X-Forwarded-For is the last quoted field in combined+proxy log format
+# Connected web visitors — unique IPs seen by web_host in the last 10 minutes.
+# This is intentionally narrower than "everyone using the Pi" because services
+# that bypass nginx (radio, Kavita, Jellyfin, etc.) will not appear here.
+# X-Forwarded-For is the last quoted field in the combined+proxy log format.
 USERS_ONLINE=$(docker logs web_host --since 10m 2>/dev/null | \
   grep -oP '"\d+\.\d+\.\d+\.\d+"$' | tr -d '"' | \
   grep -v '^-$' | sort -u | wc -l | tr -d ' ')
