@@ -139,6 +139,22 @@ print(f"  {listeners.get('current', 0)} live / {listeners.get('unique', 0)} uniq
 PY
 }
 
+show_public_ip() {
+  local public_ip local_ips
+  public_ip="$(curl -fsS https://1.1.1.1/cdn-cgi/trace 2>/dev/null | awk -F= '/^ip=/{print $2}')"
+  local_ips="$(hostname -I 2>/dev/null | xargs)"
+
+  echo "This box on the internet:"
+  echo "  ${public_ip:-Could not detect public IP}"
+  echo
+  echo "Local network addresses:"
+  echo "  ${local_ips:-Could not detect LAN IPs}"
+  echo
+  echo "Tip:"
+  echo "  Start the stream, then match this public IP + your device/browser"
+  echo "  against the newest listener row in AzuraCast."
+}
+
 media_finder_menu() {
   local query
   query=$(gum input --placeholder "Find local media (e.g. valis philip k dick)")
@@ -249,10 +265,13 @@ radio_menu() {
   while true; do
     render_hud
     local action
-    action=$(tactile_choose '📻 Show Radio Snapshot' '🛰️ Show Radio Service Status' '🌐 Show Public Links' 'Back')
+    action=$(tactile_choose '📻 Show Radio Snapshot' '🪪 Show My Public IP' '🛰️ Show Radio Service Status' '🌐 Show Public Links' 'Back')
     case "$action" in
       '📻 Show Radio Snapshot')
         show_radio_snapshot
+        pause_screen ;;
+      '🪪 Show My Public IP')
+        show_public_ip
         pause_screen ;;
       '🛰️ Show Radio Service Status')
         radio_status
