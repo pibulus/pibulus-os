@@ -9,7 +9,7 @@ manage_radio() {
 
         # Show live status
         local az_status=$(get_status azuracast)
-        echo -e "  Station: $az_status KPAB.fm  |  Stream: https://radio.quickcat.club"
+        echo -e "  Station: $az_status KPAB.fm  |  Stream: https://kpab.fm/radio.mp3"
         echo ""
 
         local action=$(tactile_choose \
