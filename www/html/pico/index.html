@@ -266,7 +266,7 @@ function esc(s) {
 
 async function init() {
   try {
-    const r = await fetch('/pico/games.json');
+    const r = await fetch('/pico/games.json?v=10d2924');
     games = await r.json();
   } catch(e) { games = []; }
   document.getElementById('count').textContent = games.length.toLocaleString() + ' curated carts';
@@ -392,7 +392,7 @@ function openPlayer(globalIndex) {
   document.getElementById('modal-download').href = cartUrl;
 
   // allow="gamepad" lets the iframe access Bluetooth/USB controllers
-  player.innerHTML = '<iframe id="game-iframe" src="/pico/player.html?cart=' + encodeURIComponent(cartUrl) + '" allow="autoplay; gamepad; fullscreen"></iframe>';
+  player.innerHTML = '<iframe id="game-iframe" src="/pico/player.html?v=10d2924&cart=' + encodeURIComponent(cartUrl) + '" allow="autoplay; gamepad; fullscreen"></iframe>';
   // Auto-focus iframe for keyboard input
   var iframe = document.getElementById("game-iframe");
   iframe.addEventListener("load", function() { iframe.focus(); });
