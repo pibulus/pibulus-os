@@ -8,10 +8,10 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg: #050505;
-      --magenta: #ff00ff;
-      --cyan: #00ffea;
-      --text: #e0e0e0;
+      --bg: #0D0F14;
+      --magenta: #E040FB;
+      --cyan: #4DFFD2;
+      --text: #C8D8E8;
     }
     body {
       background: var(--bg);
@@ -20,55 +20,54 @@
       overflow: hidden; height: 100vh;
       display: flex; flex-direction: column;
     }
-    
-    .crt-overlay {
-      position: fixed; inset: 0; pointer-events: none; z-index: 1000;
-      background: repeating-linear-gradient(0deg, rgba(255,0,255,0.03), rgba(255,0,255,0.03) 2px, transparent 2px, transparent 4px);
-      background-size: 100% 4px;
-      animation: flicker 0.1s infinite;
-    }
-    @keyframes flicker {
-      0% { opacity: 0.9; } 50% { opacity: 1; } 100% { opacity: 0.95; }
-    }
-    
+
     .header {
-      padding: 0.8rem 1.5rem; border-bottom: 2px solid var(--magenta);
+      padding: 0.6rem 1.5rem; border-bottom: 2px solid var(--magenta);
       display: flex; justify-content: space-between; align-items: center;
-      background: rgba(255,0,255,0.05);
-      z-index: 1001;
+      background: rgba(224,64,251,0.05);
+      z-index: 3; flex-shrink: 0;
     }
     .header h1 { color: var(--magenta); font-size: 1.5rem; letter-spacing: 4px; text-shadow: 0 0 10px var(--magenta); }
     .header a { color: var(--cyan); text-decoration: none; font-size: 1rem; border: 1px solid var(--cyan); padding: 2px 8px; transition: all 0.2s; }
     .header a:hover { background: var(--cyan); color: #000; box-shadow: 0 0 10px var(--cyan); }
-    
-    #terminal-container { flex: 1; position: relative; background: #000; }
+
+    #terminal-container { flex: 1; position: relative; }
     iframe {
       width: 100%; height: 100%; border: none;
-      filter: brightness(1.1) contrast(1.1);
-    }
-    
-    .interference {
-      position: absolute; inset: 0;
-      background: url('https://media.giphy.com/media/oEI9uWU0WMrM4/giphy.gif');
-      opacity: 0.02; pointer-events: none;
+      display: block;
     }
   </style>
 </head>
 <body>
-  <div class="crt-overlay"></div>
   <div class="header">
     <a href="/">&larr; BACK</a>
     <h1>THE CYBERDECK</h1>
-    <span style="color: var(--cyan)">v4.2</span>
+    <span style="color: var(--cyan)">v5.0</span>
   </div>
   <div id="terminal-container">
-    <div class="interference"></div>
-    <!-- Pointing at the ttyd instance -->
-    <iframe src="http://pibulus.local:7683" id="terminal"></iframe>
+    <iframe src="/deck/" id="terminal" allow="clipboard-read; clipboard-write"></iframe>
   </div>
   <script>
-    // Keep focus in terminal
-    window.onclick = () => { document.getElementById('terminal').focus(); };
+    // Focus the iframe immediately and on any click outside it
+    const term = document.getElementById('terminal');
+    term.addEventListener('load', () => {
+      term.focus();
+      // Also try to focus the terminal element inside ttyd
+      try { term.contentWindow.focus(); } catch(e) {}
+    });
+    document.addEventListener('click', (e) => {
+      if (e.target.tagName !== 'A') {
+        term.focus();
+        try { term.contentWindow.focus(); } catch(e) {}
+      }
+    });
+    // Focus on any keypress that isn't going to the iframe
+    document.addEventListener('keydown', (e) => {
+      if (document.activeElement !== term) {
+        term.focus();
+        try { term.contentWindow.focus(); } catch(e) {}
+      }
+    });
   </script>
 </body>
 </html>

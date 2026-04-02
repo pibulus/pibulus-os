@@ -57,10 +57,10 @@
     .breadcrumbs a { color: var(--green); text-decoration: none; cursor: pointer; }
     .breadcrumbs a:hover { text-decoration: underline; }
     .breadcrumbs .sep { color: var(--dim-soft); margin: 0 2px; }
-    
+
     /* MODAL */
     .modal-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(8px);
+      position: fixed; inset: 0; background: rgba(0,0,0,0.92); backdrop-filter: blur(8px);
       z-index: 1000; display: none; align-items: center; justify-content: center;
       opacity: 0; transition: opacity 0.2s;
     }
@@ -73,7 +73,7 @@
     }
     .modal-title { font-size: 1.5rem; color: var(--green); margin-bottom: 1rem; }
     .modal-text { color: var(--text); margin-bottom: 2rem; line-height: 1.5; }
-    .modal-actions { display: flex; gap: 1rem; justify-content: center; }
+    .modal-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
     .btn {
       background: transparent; border: 1px solid var(--dim); color: var(--dim);
       padding: 0.5rem 1.5rem; cursor: pointer; font-family: inherit; font-size: 1rem;
@@ -83,20 +83,27 @@
     .btn-primary { border-color: var(--green); color: var(--green); }
     .btn-primary:hover { background: var(--green); color: #000; }
     .close-preview {
-      position: absolute; top: 1rem; right: 1rem;
+      position: absolute; top: 1rem; right: 1.5rem;
       color: #fff; font-size: 2.5rem; cursor: pointer; z-index: 1001;
-      text-shadow: 0 0 10px #000;
+      text-shadow: 0 0 10px #000; line-height: 1;
     }
-    #preview-content { width: 95vw; height: 90vh; display: flex; justify-content: center; align-items: center; position: relative; }
-    #preview-content iframe, #preview-content img, #preview-content video { 
-      max-width: 100%; max-height: 100%; border: 1px solid var(--border); background: #000; 
-      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    .close-preview:hover { color: var(--green); }
+    #preview-content {
+      width: 95vw; height: 90vh;
+      display: flex; justify-content: center; align-items: center;
+      position: relative; flex-direction: column;
     }
-    
-    .video-overlay {
-      position: absolute; inset: 0; pointer-events: none;
-      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.15) 2px, rgba(0,0,0,0.15) 4px);
-      z-index: 5;
+    #preview-content iframe { width: 95vw; height: 88vh; border: none; background: #111; }
+    #preview-content video { max-width: 95vw; max-height: 88vh; background: #000; }
+    #preview-content audio { width: 80vw; max-width: 500px; }
+    #preview-content img { max-width: 95vw; max-height: 88vh; object-fit: contain; }
+    .preview-title {
+      color: var(--green); font-size: 1.1rem; margin-bottom: 0.75rem;
+      text-align: center; letter-spacing: 1px; max-width: 90vw;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .preview-actions {
+      margin-top: 1rem; display: flex; gap: 1rem; justify-content: center;
     }
 
     .section-divider { display: flex; align-items: center; gap: 0.75rem; margin: 2.5rem 0 1rem; }
@@ -121,36 +128,46 @@
     .file-item:hover {
       border-left-color: var(--green);
       background: rgba(85,204,85,0.04);
+      transform: translateX(4px);
+    }
+    .file-item.is-folder {
+      border-left-color: var(--green-dim);
+    }
+    .file-item.is-folder:hover {
+      border-left-color: var(--green);
+      background: rgba(85,204,85,0.08);
     }
     .file-icon { font-size: 1.5rem; flex-shrink: 0; width: 2rem; text-align: center; }
     .file-info { flex: 1; min-width: 0; }
-    .file-name {
-      font-size: 1.15rem;
-      line-height: 1.3;
-    }
-    .file-year { color: var(--green); }
+    .file-name { font-size: 1.15rem; line-height: 1.3; }
     .file-meta { font-size: 0.85rem; color: var(--dim); }
+    .file-type-tag {
+      display: inline-block; font-size: 0.7rem; color: var(--green);
+      border: 1px solid var(--green-dim); padding: 1px 6px;
+      letter-spacing: 1px; margin-left: 6px; vertical-align: middle;
+    }
     .file-action {
       font-size: 0.85rem; color: var(--green); letter-spacing: 2px;
-      flex-shrink: 0; opacity: 0;
-      transition: opacity 0.15s;
+      flex-shrink: 0; opacity: 0; transition: opacity 0.15s;
     }
     .file-item:hover .file-action { opacity: 1; }
     .loading { text-align: center; color: var(--dim); padding: 2rem 0; }
+    .empty-section { text-align: center; color: var(--dim-soft); padding: 1rem 0; font-style: italic; }
     footer { text-align: center; margin-top: 3rem; padding-top: 1rem; border-top: 1px solid rgba(85,204,85,0.1); }
     .footer-text { color: var(--dim-soft); font-size: 0.9rem; letter-spacing: 2px; }
     #root-view, #browse-view { display: none; }
     @media (max-width: 560px) {
       .file-name { font-size: 1rem; }
       .file-action { opacity: 1; }
+      .file-type-tag { display: none; }
     }
   </style>
 </head>
 <body>
   <div class="modal-overlay" id="confirm-modal">
     <div class="modal-card">
-      <h3 class="modal-title">Download File?</h3>
-      <p class="modal-text" id="confirm-text">Are you sure?</p>
+      <h3 class="modal-title">Download File</h3>
+      <p class="modal-text" id="confirm-text"></p>
       <div class="modal-actions">
         <button class="btn" onclick="closeModal('confirm-modal')">Cancel</button>
         <button class="btn btn-primary" id="confirm-btn">Download</button>
@@ -168,7 +185,7 @@
     <header>
       <h1>Palestine</h1>
       <p class="subtitle">films, books &amp; documents</p>
-      <p class="intro">a curated collection of documentaries, cinema, and essential reading. download, watch, share freely.</p>
+      <p class="intro">a curated collection of documentaries, cinema, and essential reading. watch inline, download, share freely.</p>
     </header>
 
     <div class="breadcrumbs" id="breadcrumbs"></div>
@@ -181,11 +198,22 @@
       <div class="section-divider"><span class="section-label">[ BOOKS &amp; DOCUMENTS ]</span></div>
       <div class="count" id="book-count"></div>
       <div class="file-list" id="books"><div class="loading">scanning library...</div></div>
+
+      <div class="section-divider"><span class="section-label">[ RECIPES &amp; OTHER ]</span></div>
+      <div class="count" id="other-count"></div>
+      <div class="file-list" id="others"><div class="loading">scanning library...</div></div>
     </div>
 
     <div id="browse-view">
-      <div class="count" id="browse-count"></div>
-      <div class="file-list" id="browse-items"></div>
+      <div id="browse-folders-section" style="display:none">
+        <div class="section-divider"><span class="section-label">[ FOLDERS ]</span></div>
+        <div class="file-list" id="browse-folders"></div>
+      </div>
+      <div id="browse-files-section" style="display:none">
+        <div class="section-divider"><span class="section-label">[ FILES ]</span></div>
+        <div class="count" id="browse-count"></div>
+        <div class="file-list" id="browse-files"></div>
+      </div>
     </div>
 
     <footer>
@@ -194,16 +222,41 @@
   </div>
   <script>
     var VIDEO_EXT = ['.mp4','.mkv','.avi','.webm'];
+    var AUDIO_EXT = ['.mp3','.flac','.ogg','.m4a','.wav','.opus'];
     var DOC_EXT = ['.pdf','.epub','.mobi','.djvu','.txt'];
-    var PREVIEW_EXT = ['.pdf', '.jpg', '.png', '.jpeg', '.mp4', '.webm', '.mkv'];
+    var IMG_EXT = ['.jpg','.jpeg','.png','.gif','.webp'];
+    var INLINE_VIDEO = ['.mp4','.webm']; // browsers can play these natively
     var currentPath = '';
 
-    function iconFor(name) {
-      var n = name.toLowerCase();
-      if (VIDEO_EXT.some(function(e) { return n.endsWith(e); })) return '\u{1F3AC}';
-      if (n.endsWith('.pdf')) return '\u{1F4C4}';
-      if (n.endsWith('.epub') || n.endsWith('.mobi')) return '\u{1F4D6}';
-      return '\u{1F4C1}';
+    function ext(name) {
+      var m = name.toLowerCase().match(/\.[a-z0-9]+$/);
+      return m ? m[0] : '';
+    }
+
+    function isVideo(n) { return VIDEO_EXT.some(function(e) { return n.toLowerCase().endsWith(e); }); }
+    function isAudio(n) { return AUDIO_EXT.some(function(e) { return n.toLowerCase().endsWith(e); }); }
+    function isDoc(n) { return DOC_EXT.some(function(e) { return n.toLowerCase().endsWith(e); }); }
+    function isImage(n) { return IMG_EXT.some(function(e) { return n.toLowerCase().endsWith(e); }); }
+
+    function canInlinePlay(n) {
+      var e = ext(n);
+      return INLINE_VIDEO.includes(e) || e === '.pdf' || AUDIO_EXT.some(function(x){return e===x;}) || IMG_EXT.some(function(x){return e===x;});
+    }
+
+    function iconFor(name, isDir) {
+      if (isDir) return '\u{1F4C1}';
+      if (isVideo(name)) return '\u{1F3AC}';
+      if (isAudio(name)) return '\u{1F3B5}';
+      if (name.toLowerCase().endsWith('.pdf')) return '\u{1F4C4}';
+      if (name.toLowerCase().endsWith('.epub') || name.toLowerCase().endsWith('.mobi')) return '\u{1F4D6}';
+      if (isImage(name)) return '\u{1F5BC}';
+      return '\u{1F4CE}';
+    }
+
+    function typeTag(name) {
+      var e = ext(name).replace('.','').toUpperCase();
+      if (!e) return '';
+      return '<span class="file-type-tag">' + e + '</span>';
     }
 
     function sizeStr(bytes) {
@@ -215,12 +268,18 @@
 
     function cleanDisplayName(name) {
       return name
-        .replace(/\.(mp4|mkv|avi|webm|pdf|epub|mobi|djvu|txt|srt|nfo|jpg|png)$/i, '')
+        .replace(/\.(mp4|mkv|avi|webm|pdf|epub|mobi|djvu|txt|srt|nfo|jpg|png|gif|mp3|flac|ogg|m4a|cbr|cbz)$/i, '')
         .replace(/www\.\w+\.\w+\s*-?\s*/g, '')
         .replace(/\[.*?\]/g, '')
         .replace(/\{.*?\}/g, '')
-        .replace(/\d{3,4}p\b.*$/i, '')
-        .replace(/\s*--\s*.*/g, '')
+        .replace(/\d{3,4}p\b\s*(HDTV|WEB[-.]?DL|WEBRip|BluRay|BRRip|DVDRip|DvDrip|AMZN|HC)?\b.*$/i, '')
+        .replace(/\bx26[45]\b.*$/i, '')
+        .replace(/\bAAC\b.*$/i, '')
+        .replace(/\bHEVC\b.*$/i, '')
+        .replace(/\bDDP?\d.*$/i, '')
+        .replace(/-[A-Z][A-Za-z0-9]+(\[TGx\])?$/, '')
+        .replace(/\s*--\s*.*--.*/g, '')  // strip author metadata chains
+        .replace(/\s*_\s*/g, ' ')
         .replace(/\s{2,}/g, ' ')
         .trim();
     }
@@ -231,12 +290,15 @@
       return base + subpath.split('/').map(encodeURIComponent).join('/') + '/';
     }
 
+    function fileUrl(name) {
+      var base = '/palestine/files/';
+      var path = currentPath ? currentPath + '/' + name : name;
+      return base + path.split('/').map(encodeURIComponent).join('/');
+    }
+
     function renderBreadcrumbs() {
       var bc = document.getElementById('breadcrumbs');
-      if (!currentPath) {
-        bc.innerHTML = '';
-        return;
-      }
+      if (!currentPath) { bc.innerHTML = ''; return; }
       var parts = currentPath.split('/').filter(Boolean);
       var html = '<a onclick="navigate(\'\')">Library</a>';
       var accumulated = '';
@@ -254,71 +316,107 @@
 
     function closeModal(id) {
       document.getElementById(id).classList.remove('active');
-      if (id === 'preview-modal') document.getElementById('preview-content').innerHTML = '';
+      if (id === 'preview-modal') {
+        var c = document.getElementById('preview-content');
+        // Stop any playing media
+        var v = c.querySelector('video'); if (v) v.pause();
+        var a = c.querySelector('audio'); if (a) a.pause();
+        c.innerHTML = '';
+      }
     }
 
-    function askDownload(url, name, size) {
-      var niceSize = sizeStr(size);
-      document.getElementById('confirm-text').innerHTML = 'Download <b>' + name + '</b>?<br><br>Size: ' + niceSize;
-      var btn = document.getElementById('confirm-btn');
-      btn.onclick = function() {
-        window.location.href = url;
+    // Close preview on Escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeModal('preview-modal');
         closeModal('confirm-modal');
-      };
-      document.getElementById('confirm-modal').classList.add('active');
+      }
+    });
+
+    function openPreview(url, name) {
+      var e = ext(name);
+      var content = document.getElementById('preview-content');
+      var displayName = cleanDisplayName(name);
+      var html = '<div class="preview-title">' + displayName + '</div>';
+
+      if (e === '.pdf') {
+        html += '<iframe src="' + url + '#toolbar=1" title="' + displayName + '"></iframe>';
+      } else if (INLINE_VIDEO.includes(e)) {
+        html += '<video src="' + url + '" controls autoplay></video>';
+      } else if (AUDIO_EXT.some(function(x){return e===x;})) {
+        html += '<div style="text-align:center;padding:2rem;">' +
+          '<div style="font-size:4rem;margin-bottom:1rem;">\u{1F3B5}</div>' +
+          '<audio src="' + url + '" controls autoplay style="width:100%;max-width:500px;"></audio>' +
+          '</div>';
+      } else if (IMG_EXT.some(function(x){return e===x;})) {
+        html += '<img src="' + url + '" alt="' + displayName + '">';
+      }
+
+      html += '<div class="preview-actions">' +
+        '<a class="btn btn-primary" href="' + url + '" download style="text-decoration:none;">Download</a>' +
+        '<button class="btn" onclick="closeModal(\'preview-modal\')">Close</button>' +
+        '</div>';
+
+      content.innerHTML = html;
+      document.getElementById('preview-modal').classList.add('active');
     }
 
-    function tryPreview(url, name) {
-      var ext = name.toLowerCase().match(/\.[a-z]+$/);
-      if (ext && PREVIEW_EXT.includes(ext[0])) {
-        var content = document.getElementById('preview-content');
-        if (ext[0] === '.pdf') {
-          content.innerHTML = '<iframe src="' + url + '" width="100%" height="100%"></iframe>';
-        } else if (['.mp4', '.webm', '.mkv'].includes(ext[0])) {
-          content.innerHTML = '<div class="video-overlay"></div><video src="' + url + '" controls autoplay style="width:100%; height:100%;"></video>';
-        } else {
-          content.innerHTML = '<img src="' + url + '" class="preview-img">';
-        }
-        document.getElementById('preview-modal').classList.add('active');
+    function handleClick(entry, isDir) {
+      if (isDir) {
+        var newPath = currentPath ? currentPath + '/' + entry.name : entry.name;
+        navigate(newPath);
+        return;
+      }
+      var url = fileUrl(entry.name);
+      if (canInlinePlay(entry.name)) {
+        openPreview(url, entry.name);
+      } else if (ext(entry.name) === '.mkv') {
+        // MKV can't play inline in most browsers — offer download with note
+        document.getElementById('confirm-text').innerHTML =
+          '<b>' + cleanDisplayName(entry.name) + '</b><br><br>' +
+          sizeStr(entry.size) + '<br><br>' +
+          '<span style="color:var(--dim);font-size:0.85em;">MKV files need a local player (VLC). For inline playback, use MP4/WebM files.</span>';
+        var btn = document.getElementById('confirm-btn');
+        btn.onclick = function() { window.location.href = url; closeModal('confirm-modal'); };
+        document.getElementById('confirm-modal').classList.add('active');
       } else {
-        askDownload(url, name, 0);
+        document.getElementById('confirm-text').innerHTML =
+          'Download <b>' + cleanDisplayName(entry.name) + '</b>?<br><br>' + sizeStr(entry.size);
+        var btn = document.getElementById('confirm-btn');
+        btn.onclick = function() { window.location.href = url; closeModal('confirm-modal'); };
+        document.getElementById('confirm-modal').classList.add('active');
       }
     }
 
-    function handleFileClick(entry) {
-      var url = buildPath(currentPath) + encodeURIComponent(entry.name);
-      var n = entry.name.toLowerCase();
-      if (PREVIEW_EXT.some(function(ext) { return n.endsWith(ext); })) {
-        tryPreview(url, entry.name);
-      } else {
-        askDownload(url, entry.name, entry.size);
+    function actionLabel(entry, isDir) {
+      if (isDir) return 'BROWSE';
+      if (canInlinePlay(entry.name)) {
+        var e = ext(entry.name);
+        if (INLINE_VIDEO.includes(e)) return 'WATCH';
+        if (e === '.pdf') return 'READ';
+        if (AUDIO_EXT.some(function(x){return e===x;})) return 'LISTEN';
+        if (IMG_EXT.some(function(x){return e===x;})) return 'VIEW';
       }
+      if (isVideo(entry.name)) return 'DOWNLOAD';
+      if (isDoc(entry.name)) return 'DOWNLOAD';
+      return 'GET';
     }
 
     function makeItem(entry, isDir) {
       var displayName = cleanDisplayName(entry.name);
-      var meta = isDir ? 'folder' : sizeStr(entry.size || 0);
+      var meta = isDir ? 'folder' : (sizeStr(entry.size || 0) + typeTag(entry.name));
 
       var a = document.createElement('a');
-      a.className = 'file-item';
-      if (isDir) {
-        var newPath = currentPath ? currentPath + '/' + entry.name : entry.name;
-        a.onclick = function() { navigate(newPath); };
-      } else {
-        a.onclick = function() { handleFileClick(entry); };
-      }
-      
-      var actionText = isDir ? 'BROWSE' : 'DOWNLOAD';
-      if (!isDir && VIDEO_EXT.some(ext => entry.name.toLowerCase().endsWith(ext))) actionText = 'WATCH';
-      if (!isDir && entry.name.toLowerCase().endsWith('.pdf')) actionText = 'READ';
+      a.className = 'file-item' + (isDir ? ' is-folder' : '');
+      a.onclick = function() { handleClick(entry, isDir); };
 
       a.innerHTML =
-        '<span class="file-icon">' + (isDir ? '\u{1F4C1}' : iconFor(entry.name)) + '</span>' +
+        '<span class="file-icon">' + iconFor(entry.name, isDir) + '</span>' +
         '<span class="file-info">' +
           '<span class="file-name">' + displayName + '</span>' +
           '<span class="file-meta">' + meta + '</span>' +
         '</span>' +
-        '<span class="file-action">' + actionText + '</span>';
+        '<span class="file-action">' + actionLabel(entry, isDir) + '</span>';
       return a;
     }
 
@@ -326,6 +424,8 @@
       currentPath = path;
       renderBreadcrumbs();
       load();
+      // Scroll to top on navigation
+      window.scrollTo(0, 0);
     }
 
     function load() {
@@ -338,8 +438,7 @@
       if (isRoot) {
         document.getElementById('films').innerHTML = '<div class="loading">scanning library...</div>';
         document.getElementById('books').innerHTML = '<div class="loading">scanning library...</div>';
-      } else {
-        document.getElementById('browse-items').innerHTML = '<div class="loading">scanning...</div>';
+        document.getElementById('others').innerHTML = '';
       }
 
       fetch(url, { cache: 'no-cache' })
@@ -371,56 +470,107 @@
           if (isRoot) {
             document.getElementById('films').innerHTML = '<div class="loading">could not load library</div>';
             document.getElementById('books').innerHTML = '';
+            document.getElementById('others').innerHTML = '';
           } else {
-            document.getElementById('browse-items').innerHTML = '<div class="loading">could not load folder</div>';
+            document.getElementById('browse-files').innerHTML = '<div class="loading">could not load folder</div>';
           }
         });
     }
 
     function renderRoot(entries) {
-      var films = [];
+      var filmFolders = [];  // folders containing films
+      var filmFiles = [];    // standalone video files
       var books = [];
+      var others = [];
 
       entries.forEach(function(e) {
         var n = e.name.toLowerCase();
         if (e.type === 'directory') {
-          films.push(e);
-        } else if (VIDEO_EXT.some(function(ext) { return n.endsWith(ext); })) {
-          films.push(e);
-        } else if (DOC_EXT.some(function(ext) { return n.endsWith(ext); })) {
+          // Folders go to films section (they contain video content)
+          filmFolders.push(e);
+        } else if (isVideo(e.name)) {
+          filmFiles.push(e);
+        } else if (isDoc(e.name)) {
           books.push(e);
+        } else if (isImage(e.name) || isAudio(e.name)) {
+          others.push(e);
+        } else {
+          others.push(e);
         }
       });
 
-      films.sort(function(a,b) { return a.name.localeCompare(b.name); });
-      books.sort(function(a,b) { return a.name.localeCompare(b.name); });
+      filmFolders.sort(function(a,b) { return cleanDisplayName(a.name).localeCompare(cleanDisplayName(b.name)); });
+      filmFiles.sort(function(a,b) { return cleanDisplayName(a.name).localeCompare(cleanDisplayName(b.name)); });
+      books.sort(function(a,b) { return cleanDisplayName(a.name).localeCompare(cleanDisplayName(b.name)); });
+      others.sort(function(a,b) { return cleanDisplayName(a.name).localeCompare(cleanDisplayName(b.name)); });
+
+      var allFilms = filmFolders.concat(filmFiles);
 
       var filmsList = document.getElementById('films');
       var booksList = document.getElementById('books');
+      var othersList = document.getElementById('others');
       filmsList.innerHTML = '';
       booksList.innerHTML = '';
+      othersList.innerHTML = '';
 
-      document.getElementById('film-count').textContent = films.length + ' items';
-      document.getElementById('book-count').textContent = books.length + ' items';
+      document.getElementById('film-count').textContent = allFilms.length + ' titles';
+      document.getElementById('book-count').textContent = books.length + ' titles';
+      document.getElementById('other-count').textContent = others.length + ' items';
 
-      films.forEach(function(e) { filmsList.appendChild(makeItem(e, e.type === 'directory')); });
+      // Hide empty sections
+      document.getElementById('other-count').parentElement.querySelector('.section-divider') ||
+      (others.length === 0 && (document.getElementById('others').closest ?
+        document.getElementById('others').previousElementSibling.previousElementSibling.style.display = 'none' : null));
+
+      allFilms.forEach(function(e) { filmsList.appendChild(makeItem(e, e.type === 'directory')); });
       books.forEach(function(e) { booksList.appendChild(makeItem(e, false)); });
+      if (others.length > 0) {
+        others.forEach(function(e) { othersList.appendChild(makeItem(e, false)); });
+      } else {
+        othersList.innerHTML = '';
+        // hide the section
+        othersList.previousElementSibling.style.display = 'none';
+        othersList.previousElementSibling.previousElementSibling.style.display = 'none';
+      }
     }
 
     function renderBrowse(entries) {
-      entries.sort(function(a,b) {
-        if (a.type === 'directory' && b.type !== 'directory') return -1;
-        if (a.type !== 'directory' && b.type === 'directory') return 1;
-        return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
-      });
-
-      var list = document.getElementById('browse-items');
-      list.innerHTML = '';
-      document.getElementById('browse-count').textContent = entries.length + ' items';
+      var folders = [];
+      var files = [];
 
       entries.forEach(function(e) {
-        list.appendChild(makeItem(e, e.type === 'directory'));
+        if (e.type === 'directory') {
+          folders.push(e);
+        } else {
+          files.push(e);
+        }
       });
+
+      folders.sort(function(a,b) { return a.name.toLowerCase().localeCompare(b.name.toLowerCase()); });
+      files.sort(function(a,b) { return a.name.toLowerCase().localeCompare(b.name.toLowerCase()); });
+
+      var foldersEl = document.getElementById('browse-folders');
+      var filesEl = document.getElementById('browse-files');
+      var foldersSection = document.getElementById('browse-folders-section');
+      var filesSection = document.getElementById('browse-files-section');
+
+      foldersEl.innerHTML = '';
+      filesEl.innerHTML = '';
+
+      if (folders.length > 0) {
+        foldersSection.style.display = 'block';
+        folders.forEach(function(e) { foldersEl.appendChild(makeItem(e, true)); });
+      } else {
+        foldersSection.style.display = 'none';
+      }
+
+      if (files.length > 0) {
+        filesSection.style.display = 'block';
+        document.getElementById('browse-count').textContent = files.length + ' files';
+        files.forEach(function(e) { filesEl.appendChild(makeItem(e, false)); });
+      } else {
+        filesSection.style.display = 'none';
+      }
     }
 
     navigate('');
