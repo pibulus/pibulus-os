@@ -20,6 +20,10 @@ get_status() {
   fi
 }
 
+pause_screen() {
+  gum input --placeholder 'Press Enter to continue...' >/dev/null
+}
+
 get_storage_bar() {
   local usage=$(df -h /media/pibulus/passport 2>/dev/null | awk 'NR==2 {print $5}' | sed 's/%//')
   usage="${usage:-0}"
@@ -65,20 +69,66 @@ tactile_choose() {
 }
 
 radio_status() {
+  echo "KPAB public:"
+  echo "  site   -> https://kpab.fm"
+  echo "  stream -> https://kpab.fm/radio.mp3"
+  echo "  admin  -> https://radio-admin.quickcat.club"
+  echo
+  echo "Live stack:"
   docker ps --filter 'name=azuracast' --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
   echo
+  echo "Recent AzuraCast log tail:"
   docker logs --tail 20 azuracast 2>/dev/null || true
+}
+
+show_public_links() {
+  cat <<'EOF'
+Public front doors
+  quickcat.club             main portal
+  kpab.fm                   radio site + stream
+  deck.quickcat.club        admin deck
+  watch.quickcat.club       Jellyfin
+  music.quickcat.club       Navidrome
+  read.quickcat.club        Calibre-Web
+  comics.quickcat.club      Kavita
+  photos.quickcat.club      Immich
+  games.quickcat.club       ROMM
+  scummvm.quickcat.club     browser ScummVM
+EOF
+}
+
+show_radio_snapshot() {
+  python3 - <<'PY'
+import json, urllib.request
+
+try:
+    data = json.load(urllib.request.urlopen("http://localhost:8500/api/nowplaying/kpab.fm", timeout=3))
+except Exception as exc:
+    print(f"Could not reach AzuraCast API: {exc}")
+    raise SystemExit(0)
+
+listeners = data.get("listeners", {})
+now_playing = data.get("now_playing", {}).get("song", {})
+playing_next = data.get("playing_next", {}).get("song", {})
+
+print("Now playing:")
+print(f"  {now_playing.get('artist', 'Unknown')} — {now_playing.get('title', 'Unknown')}")
+print("Next up:")
+print(f"  {playing_next.get('artist', 'Unknown')} — {playing_next.get('title', 'Unknown')}")
+print("Listeners:")
+print(f"  {listeners.get('current', 0)} live / {listeners.get('unique', 0)} unique")
+PY
 }
 
 network_menu() {
   while true; do
     render_hud
     local action
-    action=$(tactile_choose '📡 Status' '🏠 Home Mode' '🧳 Away Mode' 'Back')
+    action=$(tactile_choose '📡 Show Network Status' '🏠 Home Wi-Fi Mode' '🧳 Hotspot / Away Mode' 'Back')
     case "$action" in
-      '📡 Status') ~/pibulus-os/scripts/network_mode.sh status; gum input --placeholder 'Enter...' >/dev/null ;;
-      '🏠 Home Mode') ~/pibulus-os/scripts/network_mode.sh home; gum input --placeholder 'Enter...' >/dev/null ;;
-      '🧳 Away Mode') ~/pibulus-os/scripts/network_mode.sh away; gum input --placeholder 'Enter...' >/dev/null ;;
+      '📡 Show Network Status') ~/pibulus-os/scripts/network_mode.sh status; pause_screen ;;
+      '🏠 Home Wi-Fi Mode') ~/pibulus-os/scripts/network_mode.sh home; pause_screen ;;
+      '🧳 Hotspot / Away Mode') ~/pibulus-os/scripts/network_mode.sh away; pause_screen ;;
       'Back'|'') return ;;
     esac
   done
@@ -88,11 +138,11 @@ slskd_menu() {
   while true; do
     render_hud
     local action
-    action=$(tactile_choose '🎵 Start slskd' '😴 Stop slskd' '🔎 Status' 'Back')
+    action=$(tactile_choose '🎵 Wake Soulseek' '😴 Sleep Soulseek' '🔎 Show Soulseek Status' 'Back')
     case "$action" in
-      '🎵 Start slskd') docker start slskd; gum input --placeholder 'Enter...' >/dev/null ;;
-      '😴 Stop slskd') docker stop slskd; gum input --placeholder 'Enter...' >/dev/null ;;
-      '🔎 Status') docker ps --filter 'name=slskd' --format 'table {{.Names}}\t{{.Status}}'; gum input --placeholder 'Enter...' >/dev/null ;;
+      '🎵 Wake Soulseek') docker start slskd; pause_screen ;;
+      '😴 Sleep Soulseek') docker stop slskd; pause_screen ;;
+      '🔎 Show Soulseek Status') docker ps --filter 'name=slskd' --format 'table {{.Names}}\t{{.Status}}'; pause_screen ;;
       'Back'|'') return ;;
     esac
   done
@@ -102,18 +152,34 @@ club_menu() {
   while true; do
     render_hud
     local action
-    action=$(tactile_choose '➕ Add Club Member' '🔎 Check Counts' 'Back')
+    action=$(tactile_choose '➕ Add Club Member' '🔎 Audit Account Parity' 'Back')
     case "$action" in
       '➕ Add Club Member')
         local name=$(gum input --placeholder 'Username...')
-        [ -n "$name" ] && sudo python3 ~/pibulus-os/scripts/add_club_member.py "$name" && gum input --placeholder 'Enter...' >/dev/null ;;
-      '🔎 Check Counts')
-        echo 'Account Parity:'
-        echo '  Jellyfin:    ' $(sudo sqlite3 /home/pibulus/.config/jellyfin/data/jellyfin.db 'SELECT COUNT(*) FROM Users')
-        echo '  Calibre-web: ' $(sudo sqlite3 /home/pibulus/.config/calibre-web/app.db 'SELECT COUNT(*) FROM user')
-        echo '  Kavita:      ' $(sudo sqlite3 /home/pibulus/.config/kavita/kavita.db 'SELECT COUNT(*) FROM AspNetUsers')
-        echo '  Navidrome:   ' $(sudo sqlite3 /home/pibulus/.config/navidrome/navidrome.db 'SELECT COUNT(*) FROM user')
-        gum input --placeholder 'Enter...' >/dev/null ;;
+        [ -n "$name" ] && sudo python3 ~/pibulus-os/scripts/add_club_member.py "$name" && pause_screen ;;
+      '🔎 Audit Account Parity')
+        python3 ~/pibulus-os/scripts/account_parity_audit.py
+        pause_screen ;;
+      'Back'|'') return ;;
+    esac
+  done
+}
+
+radio_menu() {
+  while true; do
+    render_hud
+    local action
+    action=$(tactile_choose '📻 Show Radio Snapshot' '🛰️ Show Radio Service Status' '🌐 Show Public Links' 'Back')
+    case "$action" in
+      '📻 Show Radio Snapshot')
+        show_radio_snapshot
+        pause_screen ;;
+      '🛰️ Show Radio Service Status')
+        radio_status
+        pause_screen ;;
+      '🌐 Show Public Links')
+        show_public_links
+        pause_screen ;;
       'Back'|'') return ;;
     esac
   done
@@ -127,37 +193,39 @@ sleep 1.5
 while true; do
   render_hud
   choice=$(tactile_choose --height 20 \
-    '📻 Radio Status' \
-    '📡 Network Mode' \
-    '🎵 Soulseek Wake/Sleep' \
-    '🐱 Quick Cat Club (Identity)' \
-    '🏴‍☠️ Pirate Grab (Media)' \
-    '📂 Passport Navigator (Files)' \
-    '🚀 Deploy App' \
+    '📻 KPAB Radio' \
+    '🌐 Public Links' \
+    '📡 Network Modes' \
+    '🎵 Soulseek' \
+    '🐱 Club Accounts' \
+    '🏴‍☠️ Media Grab' \
+    '📂 Browse Passport Drive' \
+    '🚀 Deploy Something New' \
     '🧹 Flush RAM' \
-    '🧠 Scavenger (AI Search)' \
+    '🧠 Scavenger Search' \
     '🐉 Red Dragon BBS' \
-    '📟 BBS: Fozz (Retro)' \
-    '🎲 Roguelike (NetHack)' \
-    '💬 Chat (IRC)' \
-    '📖 Cheat Sheet' \
+    '📟 Fozz BBS' \
+    '🎲 NetHack' \
+    '💬 IRC Chat' \
+    '📖 Field Manual' \
     '🚪 Exit')
 
   case "$choice" in
-    '📻 Radio Status') radio_status; gum input --placeholder 'Enter...' >/dev/null ;;
-    '📡 Network Mode') network_menu ;;
-    '🎵 Soulseek Wake/Sleep') slskd_menu ;;
-    '🐱 Quick Cat Club (Identity)') club_menu ;;
-    '🏴‍☠️ Pirate Grab (Media)') manage_pirate_grab ;;
-    '📂 Passport Navigator (Files)') nnn /media/pibulus/passport ;;
-    '🚀 Deploy App') ~/pibulus-os/scripts/deploy.sh ;;
-    '🧹 Flush RAM') ~/pibulus-os/scripts/flush_ram.sh; gum input --placeholder 'RAM Purged. Enter...' >/dev/null ;;
-    '🧠 Scavenger (AI Search)') manage_scavenger ;;
+    '📻 KPAB Radio') radio_menu ;;
+    '🌐 Public Links') show_public_links; pause_screen ;;
+    '📡 Network Modes') network_menu ;;
+    '🎵 Soulseek') slskd_menu ;;
+    '🐱 Club Accounts') club_menu ;;
+    '🏴‍☠️ Media Grab') manage_pirate_grab ;;
+    '📂 Browse Passport Drive') nnn /media/pibulus/passport ;;
+    '🚀 Deploy Something New') ~/pibulus-os/scripts/deploy.sh ;;
+    '🧹 Flush RAM') ~/pibulus-os/scripts/flush_ram.sh; pause_screen ;;
+    '🧠 Scavenger Search') manage_scavenger ;;
     '🐉 Red Dragon BBS') TERM=ansi telnet darkrealms.ca ;;
-    '📟 BBS: Fozz (Retro)') TERM=ansi telnet bbs.fozztexx.com ;;
-    '🎲 Roguelike (NetHack)') nethack || { echo 'NetHack not installed.'; gum input --placeholder 'Enter...' >/dev/null; } ;;
-    '💬 Chat (IRC)') irssi ;;
-    '📖 Cheat Sheet') gum pager < ~/pibulus-os/FIELD_MANUAL.md ;;
+    '📟 Fozz BBS') TERM=ansi telnet bbs.fozztexx.com ;;
+    '🎲 NetHack') nethack || { echo 'NetHack not installed.'; pause_screen; } ;;
+    '💬 IRC Chat') irssi ;;
+    '📖 Field Manual') gum pager < ~/pibulus-os/FIELD_MANUAL.md ;;
     '🚪 Exit'|'') clear; echo 'Neural link severed.'; exit 0 ;;
   esac
 done
