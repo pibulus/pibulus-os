@@ -395,11 +395,17 @@
     // ─── NOW PLAYING via AzuraCast API ───
     const aliveEl = document.getElementById('alive');
     function updateNP() {
-      fetch('https://kpab.fm/api/nowplaying')
-        .then(r => r.json())
+      fetch('https://kpab.fm/api/nowplaying/kpab.fm', { headers: { 'Accept': 'application/json' } })
+        .then(r => { if (!r.ok) throw new Error('nowplaying failed'); return r.json(); })
         .then(data => {
-          const np = data[0] && data[0].now_playing;
-          if (np && np.song) aliveEl.innerHTML = 'now playing on <span>KPAB.FM</span>: ' + esc(np.song.artist) + ' &mdash; ' + esc(np.song.title);
+          const np = data && data.now_playing;
+          if (np && np.song && (np.song.artist || np.song.title)) {
+            const artist = esc(np.song.artist || 'Unknown artist');
+            const title = esc(np.song.title || 'Unknown track');
+            aliveEl.innerHTML = 'now playing on <span>KPAB.FM</span>: ' + artist + ' &mdash; ' + title;
+          } else {
+            aliveEl.innerHTML = 'live on <span>KPAB.FM</span>';
+          }
         })
         .catch(() => { aliveEl.innerHTML = 'live on <span>KPAB.FM</span>'; });
     }
