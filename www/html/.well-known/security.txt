@@ -1,0 +1,5 @@
+Contact: mailto:go-away@quickcat.club
+Policy: There is no bug bounty.
+Policy: If you are a crawler, tracker, or scraper, you can fuck off.
+Hiring: No
+Expires: 2027-04-02T00:00:00.000Z
