@@ -139,6 +139,53 @@ print(f"  {listeners.get('current', 0)} live / {listeners.get('unique', 0)} uniq
 PY
 }
 
+media_finder_menu() {
+  local query
+  query=$(gum input --placeholder "Find local media (e.g. valis philip k dick)")
+  [ -z "$query" ] && return
+
+  local finder="$HOME/pibulus-os/scripts/find_media.py"
+  if [ ! -f "$finder" ]; then
+    echo "Media finder not installed."
+    pause_screen
+    return
+  fi
+
+  local json
+  json=$(python3 "$finder" --json --limit 20 -- "$query" 2>/dev/null)
+  if [ -z "$json" ]; then
+    echo "No local matches."
+    pause_screen
+    return
+  fi
+
+  local count
+  count=$(printf '%s' "$json" | python3 -c 'import sys,json; print(len(json.load(sys.stdin).get("results", [])))')
+  if [ "$count" -eq 0 ]; then
+    echo "No local matches."
+    pause_screen
+    return
+  fi
+
+  local options
+  options=$(printf '%s' "$json" | python3 -c '
+import sys, json
+data = json.load(sys.stdin)
+for item in data.get("results", []):
+    print(f"[{item['label']}] {item['name']} :: {item['parent']}")
+')
+
+  local pick
+  pick=$(printf '%s\n' "$options" | gum choose --height 18)
+  [ -z "$pick" ] && return
+
+  local target_dir
+  target_dir=$(printf '%s\n' "$pick" | awk -F" :: " '{print $2}')
+  [ -z "$target_dir" ] && return
+
+  nnn "$target_dir"
+}
+
 connect_text_world() {
   local label="$1"
   local host="$2"
@@ -231,6 +278,7 @@ while true; do
     '📡 Network Modes' \
     '🎵 Soulseek' \
     '🐱 Club Accounts' \
+    '🔎 Find My Media' \
     '🏴‍☠️ Media Grab' \
     '📂 Browse Passport Drive' \
     '🚀 Deploy Something New' \
@@ -249,6 +297,7 @@ while true; do
     '📡 Network Modes') network_menu ;;
     '🎵 Soulseek') slskd_menu ;;
     '🐱 Club Accounts') club_menu ;;
+    '🔎 Find My Media') media_finder_menu ;;
     '🏴‍☠️ Media Grab') manage_pirate_grab ;;
     '📂 Browse Passport Drive') nnn /media/pibulus/passport ;;
     '🚀 Deploy Something New') ~/pibulus-os/scripts/deploy.sh ;;
