@@ -4,8 +4,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>PICO-8 Carts — quickcat.club</title>
-  <meta name="description" content="Browse 3,000+ curated PICO-8 cartridges. PICOwesome collection organized by genre.">
+  <meta name="description" content="Browse and play 3,000+ curated PICO-8 cartridges. PICOwesome collection organized by genre.">
   <meta name="theme-color" content="#050505">
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="PICO-8 Carts — quickcat.club">
+  <meta property="og:description" content="Browse and play 3,000+ curated PICO-8 cartridges in your browser. Keyboard and gamepad supported.">
+  <meta property="og:image" content="https://quickcat.club/pico/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:url" content="https://quickcat.club/pico/">
+  <meta property="og:site_name" content="QuickCat Club">
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="PICO-8 Carts — quickcat.club">
+  <meta name="twitter:description" content="Browse and play 3,000+ curated PICO-8 cartridges in your browser.">
+  <meta name="twitter:image" content="https://quickcat.club/pico/og-image.png">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🕹️</text></svg>">
   <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
@@ -31,6 +46,8 @@
     .header .sub { color:var(--dim); margin-top:8px; font-size:1.1rem; }
 
     .controls { position:sticky; top:0; z-index:50; padding:12px 0; background:rgba(5,5,5,0.92); backdrop-filter:blur(8px); }
+    .search-row { display:flex; gap:8px; }
+    .search-bar { flex:1; }
     .search-bar input {
       width:100%; background:var(--card-bg); border:1px solid var(--card-border);
       border-radius:6px; padding:12px 16px; color:var(--text);
@@ -39,7 +56,24 @@
     .search-bar input::placeholder { color:var(--dim); }
     .search-bar input:focus { border-color:var(--yellow); box-shadow:0 0 12px rgba(255,224,102,0.15); }
 
+    .surprise-btn {
+      background:var(--card-bg); border:1px solid var(--magenta);
+      border-radius:6px; padding:8px 16px; color:var(--magenta);
+      font-family:'VT323',monospace; font-size:1.1rem; cursor:pointer;
+      transition:all 0.2s; white-space:nowrap;
+    }
+    .surprise-btn:hover { background:var(--magenta); color:#000; box-shadow:0 0 16px rgba(255,0,255,0.3); }
+
     .filters { display:flex; gap:6px; margin-top:10px; flex-wrap:wrap; }
+    .filters-toggle { display:none; background:var(--card-bg); border:1px solid var(--card-border); border-radius:4px; padding:3px 10px; color:var(--dim); font-family:'VT323',monospace; font-size:0.95rem; cursor:pointer; transition:all 0.2s; width:100%; text-align:left; }
+    .filters-toggle:hover { color:var(--text); border-color:var(--text); }
+    .filters-toggle .arrow { display:inline-block; transition:transform 0.2s; margin-right:6px; }
+    .filters-toggle.open .arrow { transform:rotate(90deg); }
+    @media (max-width:600px) {
+      .filters-toggle { display:block; }
+      .filters { max-height:0; overflow:hidden; transition:max-height 0.3s ease; }
+      .filters.open { max-height:500px; }
+    }
     .filter-btn {
       background:var(--card-bg); border:1px solid var(--card-border); border-radius:4px;
       padding:3px 10px; color:var(--dim); font-family:'VT323',monospace; font-size:0.95rem;
@@ -58,9 +92,10 @@
       transition:transform 0.2s,border-color 0.2s,box-shadow 0.2s;
     }
     .card:hover { transform:translateY(-3px); border-color:var(--yellow); box-shadow:0 4px 20px rgba(255,224,102,0.1); }
+    .card:focus-visible { outline:2px solid var(--cyan); outline-offset:2px; }
     .card img {
-      width:100%; aspect-ratio:1; object-fit:cover; display:block;
-      image-rendering:pixelated; background:#111;
+      width:100%; aspect-ratio:1; object-fit:cover; object-position:top;
+      display:block; image-rendering:pixelated; background:#111;
     }
     .card .info { padding:6px 8px; }
     .card .title {
@@ -68,6 +103,27 @@
       overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
     }
     .card .genre { font-size:0.7rem; color:var(--dim); margin-top:2px; }
+    .card .play-badge {
+      position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+      width:40px; height:40px; background:rgba(255,224,102,0.85);
+      border-radius:50%; display:none; align-items:center; justify-content:center;
+    }
+    .card .img-wrap { position:relative; }
+    .card:hover .play-badge { display:flex; }
+    .card .play-badge::after {
+      content:''; width:0; height:0;
+      border-left:14px solid #050505; border-top:9px solid transparent; border-bottom:9px solid transparent;
+      margin-left:3px;
+    }
+
+    .load-more { grid-column: 1 / -1; text-align:center; padding:16px; }
+    .load-more button {
+      background:var(--card-bg); border:1px solid var(--card-border);
+      border-radius:6px; padding:10px 32px; color:var(--yellow);
+      font-family:'VT323',monospace; font-size:1.1rem; cursor:pointer;
+      transition:all 0.2s;
+    }
+    .load-more button:hover { border-color:var(--yellow); box-shadow:0 0 12px rgba(255,224,102,0.15); }
 
     .no-results { text-align:center; padding:48px 0; color:var(--dim); font-size:1.2rem; display:none; }
     .footer { text-align:center; padding:24px 0 48px; color:var(--dim); font-size:0.9rem; }
@@ -75,13 +131,61 @@
 
     .note {
       text-align:center; padding:12px; margin:0 auto 16px;
-      max-width:600px; color:var(--dim); font-size:0.9rem;
+      max-width:700px; color:var(--dim); font-size:0.9rem;
       border:1px solid var(--card-border); border-radius:6px; background:var(--card-bg);
     }
     .note a { color:var(--yellow); text-decoration:none; }
 
+    /* Player modal — BIGGER */
+    .modal-overlay {
+      display:none; position:fixed; inset:0; z-index:10000;
+      background:rgba(0,0,0,0.95); backdrop-filter:blur(6px);
+      align-items:center; justify-content:center; flex-direction:column;
+    }
+    .modal-overlay.active { display:flex; }
+    .modal-header {
+      display:flex; align-items:center; gap:16px;
+      margin-bottom:8px; width:100%; max-width:min(768px, 95vw); padding:0 10px;
+    }
+    .modal-title { color:var(--yellow); font-size:1.5rem; flex:1; text-shadow:0 0 10px rgba(255,224,102,0.3); }
+    .modal-genre { color:var(--dim); font-size:0.9rem; }
+    .modal-close, .modal-fullscreen {
+      background:none; border:1px solid var(--card-border); border-radius:4px;
+      color:var(--text); font-family:'VT323',monospace; font-size:1rem;
+      padding:4px 12px; cursor:pointer; transition:all 0.2s;
+    }
+    .modal-close:hover, .modal-fullscreen:hover { border-color:var(--yellow); color:var(--yellow); }
+    .modal-player {
+      width:min(768px, 95vw); height:min(768px, 95vw);
+      border:2px solid var(--card-border); border-radius:4px;
+      background:#000; position:relative;
+    }
+    .modal-player iframe { width:100%; height:100%; border:none; display:block; }
+    .modal-controls {
+      display:flex; gap:12px; margin-top:10px; color:var(--dim); font-size:0.85rem;
+      align-items:center; flex-wrap:wrap; justify-content:center;
+    }
+    .modal-controls kbd {
+      background:var(--card-bg); border:1px solid var(--card-border);
+      border-radius:3px; padding:1px 6px; font-family:'VT323',monospace;
+    }
+    .modal-download, .modal-prev, .modal-next, .modal-random {
+      background:none; border:1px solid var(--card-border); border-radius:4px;
+      color:var(--cyan); font-family:'VT323',monospace; font-size:0.85rem;
+      padding:3px 10px; cursor:pointer; text-decoration:none; transition:all 0.2s;
+    }
+    .modal-download:hover, .modal-prev:hover, .modal-next:hover, .modal-random:hover {
+      border-color:var(--cyan); box-shadow:0 0 8px rgba(0,255,234,0.2);
+    }
+    .modal-nav { display:flex; gap:6px; align-items:center; }
+
     @media (max-width:480px) {
       .games { grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:8px; }
+      .modal-controls { font-size:0.75rem; }
+      .search-row { flex-direction:column; }
+    }
+    @media (min-width:1200px) {
+      .games { grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); }
     }
   </style>
 </head>
@@ -94,18 +198,24 @@
     <p class="sub" id="count"></p>
   </div>
 
+    <div class="nav-links" style="display:flex;justify-content:center;gap:16px;margin-bottom:24px;">
+    <a href="/arcade/" style="color:#666;text-decoration:none;font-size:1rem;border:1px solid rgba(0,255,234,0.2);border-radius:4px;padding:4px 14px;transition:all 0.2s;">consoles</a>
+    <a href="/pico/" style="color:#ff00ff;text-decoration:none;font-size:1rem;border:1px solid #ff00ff;border-radius:4px;padding:4px 14px;">pico-8 carts</a>
+  </div>
+
   <div class="note">
-    Cart images are screenshots from the games. PICO-8 requires the
-    <a href="https://www.lexaloffle.com/pico-8.php" target="_blank" rel="noopener">official runtime</a>
-    ($15) or the free
-    <a href="https://www.lexaloffle.com/bbs/?tid=47278" target="_blank" rel="noopener">Education Edition</a>
-    to play. Download carts and load them locally.
+    Click any cart to play in-browser. Works with <kbd>keyboard</kbd> and <kbd>Bluetooth gamepads</kbd>.
+    <br><kbd>Arrows</kbd> move, <kbd>Z</kbd>/<kbd>X</kbd> buttons, <kbd>Enter</kbd> pause, <kbd>F</kbd> fullscreen.
   </div>
 
   <div class="controls">
-    <div class="search-bar">
-      <input type="text" id="search" placeholder="search 3,000+ carts..." autocomplete="off" spellcheck="false">
+    <div class="search-row">
+      <div class="search-bar">
+        <input type="text" id="search" placeholder="search carts..." autocomplete="off" spellcheck="false">
+      </div>
+      <button class="surprise-btn" id="surprise" title="Play a random cart">surprise me</button>
     </div>
+    <button class="filters-toggle" id="filters-toggle"><span class="arrow">▶</span> genres</button>
     <div class="filters" id="filters"></div>
   </div>
 
@@ -115,14 +225,44 @@
 
 <div class="container">
   <div class="footer">
-    <p>Collection: <a href="https://github.com/" target="_blank" rel="noopener">PICOwesome v1.5</a> &middot; 3,000+ curated carts</p>
-    <p style="margin-top:6px">Cart images are valid .p8.png files &mdash; right-click to save &amp; load in PICO-8</p>
+    <p>PICOwesome v1.5 &middot; <span id="total-count">3,000+</span> curated carts</p>
+    <p style="margin-top:6px">Personal PICO-8 library &mdash; <a href="https://www.lexaloffle.com/pico-8.php" target="_blank" rel="noopener">lexaloffle.com</a></p>
+  </div>
+</div>
+
+<!-- Player Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal-header">
+    <span class="modal-title" id="modal-title">Game Title</span>
+    <span class="modal-genre" id="modal-genre">Genre</span>
+    <button class="modal-fullscreen" id="modal-fullscreen" title="Fullscreen (F)">fullscreen</button>
+    <button class="modal-close" id="modal-close" title="Close (Esc)">close</button>
+  </div>
+  <div class="modal-player" id="modal-player"></div>
+  <div class="modal-controls">
+    <div class="modal-nav">
+      <button class="modal-prev" id="modal-prev" title="Previous cart">&larr; prev</button>
+      <button class="modal-random" id="modal-random" title="Random cart">random</button>
+      <button class="modal-next" id="modal-next" title="Next cart">next &rarr;</button>
+    </div>
+    <span><kbd>Arrows</kbd> move</span>
+    <span><kbd>Z</kbd>/<kbd>X</kbd> buttons</span>
+    <span><kbd>Enter</kbd> pause</span>
+    <span>Gamepad supported</span>
+    <a class="modal-download" id="modal-download" download>download .p8.png</a>
   </div>
 </div>
 
 <script>
 let games = [];
 let activeFilter = 'all';
+let displayCount = 60;
+const BATCH_SIZE = 60;
+let currentCartIndex = -1;
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
 async function init() {
   try {
@@ -130,8 +270,17 @@ async function init() {
     games = await r.json();
   } catch(e) { games = []; }
   document.getElementById('count').textContent = games.length.toLocaleString() + ' curated carts';
+  document.getElementById('total-count').textContent = games.length.toLocaleString();
   buildFilters();
-  renderGames(games);
+  renderGames();
+
+  // Check for ?play= param (direct link to a cart)
+  const params = new URLSearchParams(window.location.search);
+  const playFile = params.get('play');
+  if (playFile) {
+    const idx = games.findIndex(g => g.file === playFile);
+    if (idx >= 0) openPlayer(idx);
+  }
 }
 
 function buildFilters() {
@@ -139,18 +288,30 @@ function buildFilters() {
   games.forEach(g => { genres[g.genre] = (genres[g.genre]||0) + 1; });
   const sorted = Object.entries(genres).sort((a,b) => b[1] - a[1]);
   const el = document.getElementById('filters');
-  let html = '<button class="filter-btn active" onclick="setFilter(\'all\',this)">all (' + games.length + ')</button>';
+  let html = '<button class="filter-btn active" data-genre="all">all (' + games.length + ')</button>';
   sorted.forEach(([g, n]) => {
-    html += '<button class="filter-btn" onclick="setFilter(\'' + g.replace(/'/g,"\\'") + '\',this)">' + g + ' (' + n + ')</button>';
+    html += '<button class="filter-btn" data-genre="' + esc(g) + '">' + esc(g) + ' (' + n + ')</button>';
   });
   el.innerHTML = html;
-}
-
-function setFilter(genre, btn) {
-  activeFilter = genre;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  filterGames();
+  el.addEventListener('click', function(e) {
+    const btn = e.target.closest('.filter-btn');
+    if (!btn) return;
+    activeFilter = btn.dataset.genre;
+    el.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    // Update toggle label on mobile
+    var toggle = document.getElementById('filters-toggle');
+    var arrow = toggle.querySelector('.arrow');
+    toggle.innerHTML = '';
+    var arrowSpan = document.createElement('span');
+    arrowSpan.className = 'arrow';
+    arrowSpan.textContent = toggle.classList.contains('open') ? '▼' : '▶';
+    toggle.appendChild(arrowSpan);
+    toggle.appendChild(document.createTextNode(' genres' + (activeFilter !== 'all' ? ' : ' + activeFilter : '')));
+    displayCount = BATCH_SIZE;
+    renderedCount = 0;
+    renderGames();
+  });
 }
 
 function getFiltered() {
@@ -161,30 +322,214 @@ function getFiltered() {
   return list;
 }
 
-function renderGames(list) {
+let renderedCount = 0;
+
+function cardHTML(g, globalIdx) {
+  const imgUrl = '/pico/carts/' + encodeURI(g.file);
+  const title = esc(g.title);
+  const genre = esc(g.genre);
+  return '<div class="card" tabindex="0" role="button" data-idx="' + globalIdx + '" data-file="' + esc(g.file) + '" data-title="' + title + '" data-genre="' + genre + '">' +
+    '<div class="img-wrap">' +
+    '<img src="' + imgUrl + '" alt="' + title + '" loading="lazy" decoding="async">' +
+    '<div class="play-badge"></div>' +
+    '</div>' +
+    '<div class="info"><div class="title">' + title + '</div>' +
+    '<div class="genre">' + genre + '</div></div></div>';
+}
+
+function renderGames(append) {
   const container = document.getElementById('games');
   const nr = document.getElementById('no-results');
-  if (!list.length) { container.innerHTML = ''; nr.style.display = 'block'; return; }
+  const filtered = getFiltered();
+
+  if (!filtered.length) {
+    container.innerHTML = '';
+    nr.style.display = 'block';
+    renderedCount = 0;
+    return;
+  }
   nr.style.display = 'none';
-  // Render in batches for performance (3000+ items)
-  const max = 200;
-  const show = list.slice(0, max);
-  container.innerHTML = show.map(g => {
-    const imgUrl = '/pico/carts/' + encodeURI(g.file);
-    const safe = g.title.replace(/&/g,'&amp;').replace(/</g,'&lt;');
-    return '<div class="card" title="' + safe + '">' +
-      '<img src="' + imgUrl + '" alt="' + safe + '" loading="lazy" decoding="async">' +
-      '<div class="info"><div class="title">' + safe + '</div>' +
-      '<div class="genre">' + g.genre + (g.source === 'itch' ? ' (itch)' : '') + '</div></div></div>';
-  }).join('');
-  if (list.length > max) {
+
+  if (append && renderedCount > 0) {
+    const oldBtn = container.querySelector('.load-more');
+    if (oldBtn) oldBtn.remove();
+    const newCards = filtered.slice(renderedCount, displayCount);
+    if (newCards.length) {
+      container.insertAdjacentHTML('beforeend', newCards.map(function(g) {
+        return cardHTML(g, games.indexOf(g));
+      }).join(''));
+    }
+  } else {
+    const show = filtered.slice(0, displayCount);
+    container.innerHTML = show.map(function(g) {
+      return cardHTML(g, games.indexOf(g));
+    }).join('');
+  }
+  renderedCount = Math.min(displayCount, filtered.length);
+
+  if (filtered.length > displayCount) {
     container.insertAdjacentHTML('beforeend',
-      '<div style="grid-column:1/-1;text-align:center;color:var(--dim);padding:16px">Showing ' + max + ' of ' + list.length + ' — refine your search</div>');
+      '<div class="load-more"><button id="load-more-btn">show more (' + (filtered.length - displayCount) + ' remaining)</button></div>');
+    document.getElementById('load-more-btn').addEventListener('click', function() {
+      displayCount += BATCH_SIZE;
+      renderGames(true);
+    });
   }
 }
 
-function filterGames() { renderGames(getFiltered()); }
-document.getElementById('search').addEventListener('input', filterGames);
+// Player modal
+function openPlayer(globalIndex) {
+  const g = games[globalIndex];
+  if (!g) return;
+  currentCartIndex = globalIndex;
+
+  const modal = document.getElementById('modal');
+  const player = document.getElementById('modal-player');
+  const cartUrl = '/pico/carts/' + encodeURI(g.file);
+
+  document.getElementById('modal-title').textContent = g.title;
+  document.getElementById('modal-genre').textContent = g.genre;
+  document.getElementById('modal-download').href = cartUrl;
+
+  // allow="gamepad" lets the iframe access Bluetooth/USB controllers
+  player.innerHTML = '<iframe id="game-iframe" src="/pico/player.html?cart=' + encodeURIComponent(cartUrl) + '" allow="autoplay; gamepad; fullscreen"></iframe>';
+  // Auto-focus iframe for keyboard input
+  var iframe = document.getElementById("game-iframe");
+  iframe.addEventListener("load", function() { iframe.focus(); });
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+
+  // Update URL without reload for shareability
+  history.replaceState(null, '', '/pico/?play=' + encodeURIComponent(g.file));
+}
+
+let lastFocusedCard = null;
+
+function closePlayer() {
+  const modal = document.getElementById('modal');
+  const player = document.getElementById('modal-player');
+  modal.classList.remove('active');
+  player.innerHTML = '';
+  document.body.style.overflow = '';
+  currentCartIndex = -1;
+  history.replaceState(null, '', '/pico/');
+  if (lastFocusedCard) { lastFocusedCard.focus(); lastFocusedCard = null; }
+}
+
+function goFullscreen() {
+  var iframe = document.getElementById('game-iframe');
+  if (!iframe) return;
+  var p = null;
+  if (iframe.requestFullscreen) p = iframe.requestFullscreen();
+  else if (iframe.webkitRequestFullscreen) p = iframe.webkitRequestFullscreen();
+  if (p && p.then) p.then(function() { iframe.focus(); });
+  else setTimeout(function() { iframe.focus(); }, 100);
+}
+
+function navigateCart(direction) {
+  if (currentCartIndex < 0) return;
+  const filtered = getFiltered();
+  // Find current cart's position in filtered list
+  const currentGame = games[currentCartIndex];
+  const filteredIdx = filtered.indexOf(currentGame);
+  let newFilteredIdx;
+  if (filteredIdx < 0) {
+    newFilteredIdx = 0;
+  } else {
+    newFilteredIdx = (filteredIdx + direction + filtered.length) % filtered.length;
+  }
+  const newGame = filtered[newFilteredIdx];
+  const newGlobalIdx = games.indexOf(newGame);
+  openPlayer(newGlobalIdx);
+}
+
+function playRandom() {
+  const filtered = getFiltered();
+  if (!filtered.length) return;
+  const pick = filtered[Math.floor(Math.random() * filtered.length)];
+  openPlayer(games.indexOf(pick));
+}
+
+// Event delegation for card clicks + keyboard
+document.getElementById('games').addEventListener('click', function(e) {
+  const card = e.target.closest('.card');
+  if (!card) return;
+  lastFocusedCard = card;
+  openPlayer(parseInt(card.dataset.idx));
+});
+
+document.getElementById('games').addEventListener('keydown', function(e) {
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  const card = e.target.closest('.card');
+  if (!card) return;
+  e.preventDefault();
+  lastFocusedCard = card;
+  openPlayer(parseInt(card.dataset.idx));
+});
+
+document.getElementById('modal-close').addEventListener('click', closePlayer);
+document.getElementById('modal-fullscreen').addEventListener('click', goFullscreen);
+document.getElementById('modal-prev').addEventListener('click', function() { navigateCart(-1); });
+document.getElementById('modal-next').addEventListener('click', function() { navigateCart(1); });
+document.getElementById('modal-random').addEventListener('click', playRandom);
+document.getElementById('surprise').addEventListener('click', playRandom);
+
+document.getElementById('modal').addEventListener('click', function(e) {
+  if (e.target === this) closePlayer();
+});
+
+document.addEventListener('keydown', function(e) {
+  const modalActive = document.getElementById('modal').classList.contains('active');
+  if (e.key === 'Escape' && modalActive) { closePlayer(); return; }
+  if (e.key === 'f' && modalActive && e.target.tagName !== 'INPUT') { goFullscreen(); return; }
+  // Left/right arrows for prev/next only when not focused on search
+  if (modalActive && e.target.tagName !== 'INPUT') {
+    if (e.key === '[' || (e.key === 'ArrowLeft' && e.shiftKey)) { navigateCart(-1); return; }
+    if (e.key === ']' || (e.key === 'ArrowRight' && e.shiftKey)) { navigateCart(1); return; }
+  }
+});
+
+// Filters toggle (mobile)
+document.getElementById('filters-toggle').addEventListener('click', function() {
+  this.classList.toggle('open');
+  document.getElementById('filters').classList.toggle('open');
+  this.querySelector('.arrow').textContent = this.classList.contains('open') ? '▼' : '▶';
+});
+
+// Search with debounce
+let searchTimeout;
+document.getElementById('search').addEventListener('input', function() {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(function() {
+    displayCount = BATCH_SIZE;
+    renderedCount = 0;
+    renderGames();
+  }, 150);
+});
+
+// Focus search on /
+document.addEventListener('keydown', function(e) {
+  if (e.key === '/' && e.target.tagName !== 'INPUT' && !document.getElementById('modal').classList.contains('active')) {
+    e.preventDefault();
+    document.getElementById('search').focus();
+  }
+});
+
+// Infinite scroll
+let scrollTimeout;
+window.addEventListener('scroll', function() {
+  if (scrollTimeout) return;
+  scrollTimeout = setTimeout(function() {
+    scrollTimeout = null;
+    const filtered = getFiltered();
+    if (displayCount >= filtered.length) return;
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 800) {
+      displayCount += BATCH_SIZE;
+      renderGames(true);
+    }
+  }, 100);
+});
+
 init();
 </script>
 </body>
