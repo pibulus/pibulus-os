@@ -1,26 +1,27 @@
-# Secrets & credentials
-.env
-config/stacks/.env
-*.credentials
-.credentials/
-config/user-accounts.txt
-
-# iCloud sync config (contains auth tokens)
-config/stacks/icloudpd_config/
-
-# OS & editor
 .DS_Store
-*.swp
-*.swo
-*~
-.vscode/
+.cloudflared/
 
-# Docker runtime
-docker-compose.override.yml
+# Secrets / local auth
+cloudflared-config.yml
+config/cloudflared/
+config/nginx/.htpasswd
+config/nginx/.htpasswd_terminal
+config/systemd/ttyd-terminal.service
+azuracast/.env
+azuracast/azuracast.env
+pibulus-os.env
+config/stacks/.env
+config/user-accounts.txt
+config/stacks/icloudpd_config/
+config/stacks/icloudpd_config/*.session
+config/stacks/icloudpd_config/*.json
 
-# Backups (too large for git)
-*.tar.gz
-.env
-www/html/wall/state.json
-www/html/msg/*.json
+# Runtime / generated state
+www/html/status.json
 data/
+*.log
+
+# Local backups / junk
+*.bak
+*.backup
+*.sqlite

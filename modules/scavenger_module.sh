@@ -1,14 +1,17 @@
 #!/bin/bash
-# 📥 SCAVENGER BOT v1.0 — AI-Powered Media Acquisition
+# 📥 SCAVENGER BOT v1.1 — AI-Powered Media Acquisition
 # "Tell me what you want. I'll figure out where to get it."
 #
 # Tools: slskd (Soulseek), yt-dlp, aria2, ia (Internet Archive)
 # Brain: Claude Code headless (haiku) for tool selection + query crafting
 
-SCAVENGER_BUDGET="0.03"
+SCAVENGER_BUDGET="0.20"
 SLSKD_URL="http://localhost:5030"
 SLSKD_USER="slskd"
 SLSKD_PASS="slskd"
+
+# Source API keys (not auto-loaded in non-interactive SSH)
+[ -f ~/.config/api_keys ] && source ~/.config/api_keys
 
 # --- SOULSEEK HELPERS ---
 slskd_auth() {
@@ -68,40 +71,53 @@ slskd_download() {
 ai_decide_tool() {
     local request="$1"
 
-    if ! command -v claude &>/dev/null; then
-        # No claude — use keyword heuristics
-        case "$request" in
-            *youtube*|*youtu.be*|*soundcloud*|*bandcamp*|*http*) echo "yt-dlp" ;;
-            *archive.org*|*"internet archive"*) echo "ia" ;;
-            *book*|*pdf*|*epub*|*ebook*) echo "ia" ;;
-            *) echo "soulseek" ;;
+    # Try claude first if available and authed
+    if command -v claude &>/dev/null && [ -n "$ANTHROPIC_API_KEY" ]; then
+        local result
+        result=$(claude --bare -p \
+            --model haiku \
+            --max-budget-usd "$SCAVENGER_BUDGET" \
+            "You are a tool selector. Given a media request, respond with ONLY one word: soulseek, ytdlp, ia, or aria2. Rules: Music/albums/songs/artists = soulseek. YouTube/video URLs = ytdlp. Books/ebooks/academic papers = ia. Direct download URLs = aria2. Audio from YouTube/SoundCloud/Bandcamp = ytdlp. Request: $request" 2>/dev/null | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')
+
+        # Validate we got a real tool name back (not error text)
+        case "$result" in
+            soulseek|ytdlp|ia|aria2) echo "$result"; return ;;
         esac
-        return
     fi
 
-    claude -p \
-        --model haiku \
-        --no-session-persistence \
-        --max-budget-usd "$SCAVENGER_BUDGET" \
-        --append-system-prompt "You are a tool selector. Given a media request, respond with ONLY one word: soulseek, ytdlp, ia, or aria2. Rules: Music/albums/songs = soulseek. YouTube/video URLs = ytdlp. Books/ebooks/academic = ia. Direct download URLs = aria2. Audio from YouTube/SoundCloud/Bandcamp = ytdlp." \
-        "$request" 2>/dev/null | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]'
+    # Fallback: keyword heuristics (always works, no API needed)
+    local lower=$(echo "$request" | tr '[:upper:]' '[:lower:]')
+    case "$lower" in
+        *youtube*|*youtu.be*|*soundcloud*|*bandcamp*|*vimeo*|*http*://*) echo "ytdlp" ;;
+        *archive.org*|*"internet archive"*) echo "ia" ;;
+        *book*|*pdf*|*epub*|*ebook*|*paper*|*textbook*|*manual*) echo "ia" ;;
+        *album*|*song*|*music*|*artist*|*band*|*flac*|*mp3*|*vinyl*|*discography*) echo "soulseek" ;;
+        *) echo "soulseek" ;;
+    esac
 }
 
 ai_craft_query() {
     local request="$1"
     local tool="$2"
 
-    if ! command -v claude &>/dev/null; then
-        echo "$request"
-        return
+    # Try claude first if available and authed
+    if command -v claude &>/dev/null && [ -n "$ANTHROPIC_API_KEY" ]; then
+        local result
+        result=$(claude --bare -p \
+            --model haiku \
+            --max-budget-usd "$SCAVENGER_BUDGET" \
+            "Output ONLY the search query — no explanation, no quotes, no preamble, nothing else. For soulseek: artist album or song name. For ia: search terms. For ytdlp: the URL or search terms. Tool: $tool. Request: $request" 2>/dev/null)
+
+        # Validate: if result is short enough to be a query (not a paragraph), use it
+        local word_count=$(echo "$result" | wc -w)
+        if [ "$word_count" -gt 0 ] && [ "$word_count" -le 12 ]; then
+            echo "$result"
+            return
+        fi
     fi
 
-    claude -p \
-        --model haiku \
-        --no-session-persistence \
-        --max-budget-usd "$SCAVENGER_BUDGET" \
-        --append-system-prompt "You craft search queries. Given a user request and target tool, output ONLY the optimal search query string — no explanation, no quotes, just the query. For soulseek: artist + album or song name. For ia (Internet Archive): collection or item identifier. For ytdlp: the URL or search terms." \
-        "Request: $request | Tool: $tool" 2>/dev/null
+    # Fallback: just use the request as-is (it's usually fine)
+    echo "$request"
 }
 
 # --- SCAVENGER FLOWS ---
@@ -112,13 +128,13 @@ scavenge_soulseek() {
     local token=$(slskd_auth)
     if [ -z "$token" ]; then
         gum style --foreground 196 "Failed to auth with slskd. Is it running?"
+        gum style --foreground 245 "Try: docker start slskd"
         sleep 2
         return
     fi
 
-    gum spin --spinner moon --title "Searching the network (takes ~12s)..." -- sleep 1 &
+    gum spin --spinner moon --title "Searching the network (takes ~12s)..." -- sleep 12
     local results=$(slskd_search "$token" "$query")
-    wait
 
     if [ -z "$results" ]; then
         gum style --foreground 226 "No results. Try different terms."
@@ -137,19 +153,17 @@ scavenge_soulseek() {
     [ -z "$pick" ] && return
 
     # Find the matching result line
-    local idx=0
     while IFS='|' read -r user name size filepath; do
         local check="$name ($size) from $user"
         if [ "$check" = "$pick" ]; then
             if gum confirm "Download from $user?"; then
                 slskd_download "$token" "$user" "$filepath"
-                play_tone "confirm"
+                play_tone "confirm" 2>/dev/null
                 gum style --foreground 46 "✅ Download queued! Check slskd UI for progress."
                 gum style --foreground 245 "Will land in: /media/pibulus/passport/Soulseek/"
             fi
             break
         fi
-        idx=$((idx + 1))
     done <<< "$results"
 
     sleep 2
@@ -184,10 +198,10 @@ scavenge_ytdlp() {
     esac
 
     if [ $? -eq 0 ]; then
-        play_tone "confirm"
+        play_tone "confirm" 2>/dev/null
         gum style --foreground 46 "✅ Captured to $dest_type"
     else
-        play_tone "error"
+        play_tone "error" 2>/dev/null
         gum style --foreground 196 "❌ Download failed"
     fi
     sleep 2
@@ -239,10 +253,10 @@ print(f'Desc: {desc}')
         gum spin --spinner moon --title "Downloading from Internet Archive..." -- \
             ia download "$pick" --destdir="$DEST" --no-directories 2>/dev/null
         if [ $? -eq 0 ]; then
-            play_tone "confirm"
+            play_tone "confirm" 2>/dev/null
             gum style --foreground 46 "✅ Downloaded to $DEST"
         else
-            play_tone "error"
+            play_tone "error" 2>/dev/null
             gum style --foreground 196 "❌ Download failed (may need: ia configure)"
         fi
     fi
@@ -267,10 +281,10 @@ scavenge_aria2() {
         aria2c -x 16 -s 16 -d "$DEST" "$url" 2>/dev/null
 
     if [ $? -eq 0 ]; then
-        play_tone "confirm"
+        play_tone "confirm" 2>/dev/null
         gum style --foreground 46 "✅ Downloaded to $DEST"
     else
-        play_tone "error"
+        play_tone "error" 2>/dev/null
         gum style --foreground 196 "❌ Download failed"
     fi
     sleep 2
@@ -332,4 +346,20 @@ manage_scavenger() {
             "Back") return ;;
         esac
     done
+}
+
+scavenge_oneshot() {
+    local request="$*"
+    [ -z "$request" ] && return 1
+
+    local tool=$(ai_decide_tool "$request")
+    local query=$(ai_craft_query "$request" "$tool")
+
+    case "$tool" in
+        soulseek) scavenge_soulseek "$query" ;;
+        ytdlp)    scavenge_ytdlp "$query" ;;
+        ia)       scavenge_ia "$query" ;;
+        aria2)    scavenge_aria2 "$query" ;;
+        *)        echo "Couldn't decide tool for: $request" ;;
+    esac
 }

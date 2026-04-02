@@ -4,13 +4,14 @@ Solo listener = instant skip. Multiple = majority vote in 30s window.
 Cooldown: 1 skip per 10 min per listener fingerprint.
 """
 
-import json, time, hashlib, threading
+import json, os, time, hashlib, threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
+from pathlib import Path
 from urllib.request import Request, urlopen
 from urllib.parse import urlparse
 
 AZURACAST_URL = "http://localhost:8500"
-API_KEY = "1af1d3bd54d6fcdd:4f2de147dd2362b844267fc12561998c"
+API_KEY_FILE = Path(os.environ.get("AZURACAST_API_KEY_FILE", "/home/pibulus/.config/azuracast-api-key"))
 STATION_ID = 1
 VOTE_WINDOW = 30        # seconds to collect votes
 COOLDOWN = 300           # 10 min cooldown per voter
@@ -22,16 +23,25 @@ cooldowns = {}            # fingerprint -> last skip timestamp
 lock = threading.Lock()
 
 
+def get_api_key():
+    env_key = os.environ.get("AZURACAST_API_KEY")
+    if env_key:
+        return env_key.strip()
+    if API_KEY_FILE.exists():
+        return API_KEY_FILE.read_text().strip()
+    raise RuntimeError(f"Missing AzuraCast API key. Set AZURACAST_API_KEY or create {API_KEY_FILE}")
+
+
 def api_get(path):
     req = Request(f"{AZURACAST_URL}{path}")
-    req.add_header("X-API-Key", API_KEY)
+    req.add_header("X-API-Key", get_api_key())
     with urlopen(req, timeout=5) as r:
         return json.loads(r.read())
 
 
 def api_post(path):
     req = Request(f"{AZURACAST_URL}{path}", data=b"", method="POST")
-    req.add_header("X-API-Key", API_KEY)
+    req.add_header("X-API-Key", get_api_key())
     with urlopen(req, timeout=5) as r:
         return json.loads(r.read())
 

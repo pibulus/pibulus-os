@@ -35,12 +35,94 @@
       'atari2600': 'stella2014',
     };
 
+    // Mega Drive / Genesis 6-button virtual gamepad layout
+    const megadrivePad = [
+      { type: "zone", location: "left", left: "50%", top: "50%", joystickInput: false, inputValues: [4, 5, 6, 7] },
+      { type: "button", text: "A", id: "a", location: "right", left: 0, top: 80, bold: true, input_value: 8 },
+      { type: "button", text: "B", id: "b", location: "right", left: 45, top: 45, bold: true, input_value: 0 },
+      { type: "button", text: "C", id: "c", location: "right", left: 90, top: 10, bold: true, input_value: 9 },
+      { type: "button", text: "X", id: "x", location: "right", left: 0, top: 30, bold: true, input_value: 10 },
+      { type: "button", text: "Y", id: "y", location: "right", left: 45, top: 0, bold: true, input_value: 1 },
+      { type: "button", text: "Z", id: "z", location: "right", left: 90, top: -30, bold: true, input_value: 11 },
+      { type: "button", text: "Start", id: "start", location: "center", left: 30, fontSize: 15, input_value: 3 },
+      { type: "button", text: "Mode", id: "select", location: "center", left: -30, fontSize: 15, input_value: 2 }
+    ];
+
+    // SNES 6-button layout (standard diamond + L/R shoulders)
+    const snesPad = [
+      { type: "zone", location: "left", left: "50%", top: "50%", joystickInput: false, inputValues: [4, 5, 6, 7] },
+      { type: "button", text: "B", id: "b", location: "right", left: 40, top: 80, bold: true, input_value: 0 },
+      { type: "button", text: "A", id: "a", location: "right", left: 80, top: 40, bold: true, input_value: 8 },
+      { type: "button", text: "Y", id: "y", location: "right", left: 0, top: 40, bold: true, input_value: 1 },
+      { type: "button", text: "X", id: "x", location: "right", left: 40, top: 0, bold: true, input_value: 9 },
+      { type: "button", text: "L", id: "l", location: "left", left: 0, top: -40, bold: true, input_value: 10 },
+      { type: "button", text: "R", id: "r", location: "right", left: 120, top: 0, bold: true, input_value: 11 },
+      { type: "button", text: "Start", id: "start", location: "center", left: 30, fontSize: 15, input_value: 3 },
+      { type: "button", text: "Select", id: "select", location: "center", left: -30, fontSize: 15, input_value: 2 }
+    ];
+
+    // N64 layout (A, B, Z-trigger, L, R, C-buttons, Start)
+    const n64Pad = [
+      { type: "zone", location: "left", left: "50%", top: "50%", joystickInput: true, inputValues: [4, 5, 6, 7] },
+      { type: "button", text: "A", id: "a", location: "right", left: 40, top: 80, bold: true, input_value: 8 },
+      { type: "button", text: "B", id: "b", location: "right", left: 0, top: 40, bold: true, input_value: 0 },
+      { type: "button", text: "Z", id: "z", location: "left", left: 0, top: -40, bold: true, input_value: 10 },
+      { type: "button", text: "L", id: "l", location: "left", left: -50, top: -40, bold: true, input_value: 12 },
+      { type: "button", text: "R", id: "r", location: "right", left: 120, top: 0, bold: true, input_value: 11 },
+      { type: "button", text: "C\u2191", id: "cu", location: "right", left: 80, top: 0, bold: false, input_value: 1 },
+      { type: "button", text: "C\u2193", id: "cd", location: "right", left: 80, top: 80, bold: false, input_value: 14 },
+      { type: "button", text: "C\u2190", id: "cl", location: "right", left: 40, top: 40, bold: false, input_value: 13 },
+      { type: "button", text: "C\u2192", id: "cr", location: "right", left: 120, top: 40, bold: false, input_value: 9 },
+      { type: "button", text: "Start", id: "start", location: "center", left: 0, fontSize: 15, input_value: 3 }
+    ];
+
+    // PSX layout (full DualShock: cross, circle, square, triangle, L1/R1, L2/R2)
+    const psxPad = [
+      { type: "zone", location: "left", left: "50%", top: "50%", joystickInput: false, inputValues: [4, 5, 6, 7] },
+      { type: "button", text: "\u00d7", id: "cross", location: "right", left: 40, top: 80, bold: true, input_value: 0 },
+      { type: "button", text: "\u25cb", id: "circle", location: "right", left: 80, top: 40, bold: true, input_value: 8 },
+      { type: "button", text: "\u25a1", id: "square", location: "right", left: 0, top: 40, bold: true, input_value: 1 },
+      { type: "button", text: "\u25b3", id: "triangle", location: "right", left: 40, top: 0, bold: true, input_value: 9 },
+      { type: "button", text: "L1", id: "l1", location: "left", left: 0, top: -40, bold: true, input_value: 10 },
+      { type: "button", text: "R1", id: "r1", location: "right", left: 120, top: 0, bold: true, input_value: 11 },
+      { type: "button", text: "L2", id: "l2", location: "left", left: -50, top: -40, bold: true, input_value: 12 },
+      { type: "button", text: "R2", id: "r2", location: "right", left: 120, top: -40, bold: true, input_value: 13 },
+      { type: "button", text: "Start", id: "start", location: "center", left: 30, fontSize: 15, input_value: 3 },
+      { type: "button", text: "Select", id: "select", location: "center", left: -30, fontSize: 15, input_value: 2 }
+    ];
+
+    // GBA layout (A, B, L, R, Start, Select)
+    const gbaPad = [
+      { type: "zone", location: "left", left: "50%", top: "50%", joystickInput: false, inputValues: [4, 5, 6, 7] },
+      { type: "button", text: "A", id: "a", location: "right", left: 60, top: 40, bold: true, input_value: 8 },
+      { type: "button", text: "B", id: "b", location: "right", left: 20, top: 70, bold: true, input_value: 0 },
+      { type: "button", text: "L", id: "l", location: "left", left: 0, top: -40, bold: true, input_value: 10 },
+      { type: "button", text: "R", id: "r", location: "right", left: 100, top: 0, bold: true, input_value: 11 },
+      { type: "button", text: "Start", id: "start", location: "center", left: 30, fontSize: 15, input_value: 3 },
+      { type: "button", text: "Select", id: "select", location: "center", left: -30, fontSize: 15, input_value: 2 }
+    ];
+
+    // Per-system virtual gamepad overrides
+    const padMap = {
+      'megadrive': megadrivePad,
+      'genesis': megadrivePad,
+      'snes': snesPad,
+      'n64': n64Pad,
+      'psx': psxPad,
+      'gba': gbaPad,
+    };
+
     EJS_player = '#game';
     EJS_core = coreMap[system] || 'genesis_plus_gx';
-    EJS_gameUrl = '/arcade/retro/roms/' + rom;
+    EJS_gameUrl = '/arcade/roms/' + rom;
     EJS_gameName = name;
     EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
     EJS_color = '#00ffea';
+
+    // Apply system-specific virtual gamepad if available
+    if (padMap[system]) {
+      EJS_VirtualGamepadSettings = padMap[system];
+    }
   </script>
   <script src="https://cdn.emulatorjs.org/stable/data/loader.js"></script>
 </body>

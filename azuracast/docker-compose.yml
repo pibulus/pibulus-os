@@ -1,0 +1,60 @@
+name: azuracast
+services:
+    web:
+        container_name: azuracast
+        image: 'ghcr.io/azuracast/azuracast@sha256:9229dc53e6a1c56f01d53caba4433aff35d7171dbd8f8c5c0a75759120d9e9b5'
+        labels:
+            - com.centurylinklabs.watchtower.scope=azuracast
+        ports:
+            - '${AZURACAST_HTTP_PORT:-80}:${AZURACAST_HTTP_PORT:-80}'
+            - '${AZURACAST_HTTPS_PORT:-443}:${AZURACAST_HTTPS_PORT:-443}'
+            - '${AZURACAST_SFTP_PORT:-2022}:${AZURACAST_SFTP_PORT:-2022}'
+            - '8000:8000'
+            - '8200:8200'
+            - '8205:8205'
+            - '8206:8206'
+            - '8210:8210'
+            - '8215:8215'
+            - '8216:8216'
+        env_file:
+            - azuracast.env
+            - .env
+        volumes:
+            - 'station_data:/var/azuracast/stations'
+            - 'backups:/var/azuracast/backups'
+            - 'db_data:/var/lib/mysql'
+            - 'www_uploads:/var/azuracast/storage/uploads'
+            - 'shoutcast2_install:/var/azuracast/storage/shoutcast2'
+            - 'stereo_tool_install:/var/azuracast/storage/stereo_tool'
+            - 'rsas_install:/var/azuracast/storage/rsas'
+            - 'geolite_install:/var/azuracast/storage/geoip'
+            - 'sftpgo_data:/var/azuracast/storage/sftpgo'
+            - 'acme:/var/azuracast/storage/acme'
+        restart: unless-stopped
+        logging:
+            options:
+                max-size: 1m
+                max-file: '5'
+    updater:
+        container_name: azuracast_updater
+        image: 'ghcr.io/azuracast/updater@sha256:91a7c9cb31bf34f9cf019a718d427df1c665f33595721bccafbe850e1ffedd05'
+        profiles:
+            - updates
+        restart: unless-stopped
+        volumes:
+            - '/var/run/docker.sock:/var/run/docker.sock'
+        logging:
+            options:
+                max-size: 1m
+                max-file: '5'
+volumes:
+    db_data: {  }
+    acme: {  }
+    shoutcast2_install: {  }
+    stereo_tool_install: {  }
+    rsas_install: {  }
+    geolite_install: {  }
+    sftpgo_data: {  }
+    station_data: {  }
+    www_uploads: {  }
+    backups: {  }

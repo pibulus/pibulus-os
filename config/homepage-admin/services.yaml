@@ -25,7 +25,7 @@
 
     - AzuraCast:
         icon: azuracast.png
-        href: http://pibulus.local:8500
+        href: https://radio-admin.quickcat.club
         description: Pirate radio station
         server: my-docker
         container: azuracast

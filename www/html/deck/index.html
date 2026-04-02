@@ -9,19 +9,20 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #050505;
-      --cyan: #00ffea;
-      --magenta: #ff00ff;
-      --yellow: #ffff00;
-      --green: #55cc55;
-      --red: #ff4444;
+      --bg: #0D0F14;
+      --cyan: #4DFFD2;
+      --magenta: #E040FB;
+      --yellow: #F5C842;
+      --green: #39d98a;
+      --red: #ff4455;
       --orange: #ff9900;
-      --text: #e0e0e0;
-      --dim: #888;
-      --dim-soft: #555;
-      --card-bg: rgba(0, 0, 0, 0.6);
-      --card-border: rgba(0, 255, 234, 0.3);
-      --card-hover-bg: rgba(0, 255, 234, 0.05);
+      --amber: #F5A623;
+      --text: #C8D8E8;
+      --dim: #7A9AB8;
+      --dim-soft: #5A7A98;
+      --card-bg: rgba(22, 25, 34, 0.85);
+      --card-border: rgba(77, 255, 210, 0.18);
+      --card-hover-bg: rgba(77, 255, 210, 0.06);
     }
 
     html { scrollbar-color: var(--cyan) var(--bg); scrollbar-width: thin; }
@@ -40,15 +41,15 @@
       content: '';
       position: fixed; inset: 0;
       background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.12) 2px, rgba(0,0,0,0.12) 4px);
-      pointer-events: none; z-index: 999;
+      pointer-events: none; z-index: 10;
     }
 
     body::after {
       content: '';
       position: fixed; inset: 0;
       background-image:
-        linear-gradient(rgba(0,255,234,0.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,255,234,0.025) 1px, transparent 1px);
+        linear-gradient(rgba(77,255,210,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(77,255,210,0.025) 1px, transparent 1px);
       background-size: 40px 40px;
       pointer-events: none; z-index: 0;
     }
@@ -69,20 +70,40 @@
     }
     .public-link:hover { color: var(--magenta); border-color: var(--magenta); }
 
+    /* ─── NEON GLITCH (chromatic aberration) ─── */
+    @keyframes titleGlitch {
+      0%, 89%, 91%, 93%, 95%, 100% {
+        text-shadow: 0 0 10px var(--cyan), 0 0 30px rgba(77,255,210,0.4), 0 0 60px rgba(77,255,210,0.1);
+        transform: translate(0); filter: none;
+      }
+      90% { text-shadow: -2px 0 var(--magenta), 2px 0 var(--cyan), 0 0 20px var(--cyan); transform: translate(-2px, 1px); filter: hue-rotate(10deg); }
+      92% { text-shadow: 2px 0 var(--magenta), -1px 0 var(--cyan), 0 0 30px rgba(224,64,251,0.3); transform: translate(1px, -1px); filter: hue-rotate(-10deg); }
+      94% { text-shadow: -1px 0 var(--magenta), 1px 0 var(--cyan), 0 0 40px var(--cyan); transform: translate(2px, 0); }
+    }
+    @keyframes subtitleFlicker {
+      0%, 92%, 96%, 100% { opacity: 0.75; }
+      93% { opacity: 0.4; }
+      94% { opacity: 0.75; }
+      95% { opacity: 0.3; }
+    }
     h1 {
       font-size: clamp(2.5rem, 9vw, 4.5rem);
       line-height: 1;
       color: var(--cyan);
-      text-shadow: 0 0 10px var(--cyan), 0 0 30px rgba(0,255,234,0.4), 0 0 60px rgba(0,255,234,0.15);
+      text-shadow: 0 0 10px var(--cyan), 0 0 30px rgba(77,255,210,0.4), 0 0 60px rgba(77,255,210,0.1);
       letter-spacing: 4px;
       margin-bottom: 0.3rem;
+      animation: titleGlitch 6s ease-in-out infinite;
+      position: relative;
     }
 
     .subtitle {
       font-size: clamp(1rem, 3vw, 1.3rem);
       color: var(--magenta);
-      text-shadow: 0 0 8px rgba(255,0,255,0.5);
+      opacity: 0.75;
+      text-shadow: 0 0 8px rgba(224,64,251,0.4);
       letter-spacing: 2px;
+      animation: subtitleFlicker 4s ease-in-out infinite;
     }
 
     @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
@@ -93,20 +114,74 @@
       box-shadow: 0 0 8px var(--cyan);
     }
 
+
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+    .alive-bar {
+      text-align: center; padding: 0.6rem 1rem; margin: 0.3rem 0 0;
+      font-size: 0.95rem; color: var(--dim); letter-spacing: 1px; min-height: 1.5em;
+    }
+    .alive-bar::before {
+      content: ''; display: inline-block; width: 0.5em; height: 0.5em;
+      background: var(--amber); border-radius: 50%; margin-right: 0.5em;
+      vertical-align: middle; animation: pulse 2s ease-in-out infinite;
+    }
+    .alive-bar:empty::before { display: none; }
+    .alive-bar span { color: var(--amber); }
+    .alive-meta {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem 0.9rem;
+      margin-top: 0.35rem;
+      font-size: 0.9rem;
+      color: var(--dim-soft);
+      letter-spacing: 1px;
+    }
+    .alive-chip {
+      border: 1px solid rgba(77,255,210,0.18);
+      background: rgba(77,255,210,0.05);
+      padding: 0.15rem 0.45rem;
+      border-radius: 2px;
+      white-space: nowrap;
+    }
+    .alive-chip strong { color: var(--cyan); font-weight: normal; }
+    .alive-actions {
+      display: inline-flex;
+      gap: 0.45rem;
+      align-items: center;
+    }
+    .alive-btn {
+      appearance: none;
+      border: 1px solid rgba(224,64,251,0.35);
+      background: rgba(224,64,251,0.08);
+      color: var(--magenta);
+      font-family: 'VT323', monospace;
+      font-size: 0.95rem;
+      letter-spacing: 1px;
+      padding: 0.15rem 0.55rem;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+    }
+    .alive-btn:hover { background: rgba(224,64,251,0.16); border-color: rgba(224,64,251,0.6); }
+    .alive-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .alive-status { color: var(--magenta); }
+
     /* LIVE DASHBOARD */
     .dashboard {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(5, 1fr);
       gap: 0.75rem;
       margin: 1.5rem 0;
       padding: 1rem;
-      background: rgba(0,0,0,0.5);
-      border: 1px solid rgba(0,255,234,0.15);
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
       border-radius: 2px;
     }
 
     @media (max-width: 560px) {
-      .dashboard { grid-template-columns: repeat(2, 1fr); }
+      .dashboard { grid-template-columns: repeat(3, 1fr); }
     }
 
     .stat {
@@ -117,10 +192,10 @@
       font-size: 1.8rem;
       color: var(--cyan);
       line-height: 1;
-      text-shadow: 0 0 6px rgba(0,255,234,0.4);
+      text-shadow: 0 0 6px rgba(77,255,210,0.4);
     }
     .stat-value.warn { color: var(--orange); text-shadow: 0 0 6px rgba(255,153,0,0.4); }
-    .stat-value.crit { color: var(--red); text-shadow: 0 0 6px rgba(255,68,68,0.4); }
+    .stat-value.crit { color: var(--red); text-shadow: 0 0 6px rgba(255,68,85,0.4); }
     .stat-label {
       font-size: 0.85rem;
       color: var(--dim);
@@ -132,7 +207,7 @@
       grid-column: 1 / -1;
       text-align: center;
       padding: 0.5rem;
-      border-top: 1px solid rgba(0,255,234,0.1);
+      border-top: 1px solid rgba(77,255,210,0.1);
       margin-top: 0.25rem;
     }
     .np-label { color: var(--dim); font-size: 0.8rem; letter-spacing: 2px; }
@@ -144,11 +219,11 @@
     .section-divider { display: flex; align-items: center; gap: 0.75rem; margin: 2.5rem 0 1.25rem; }
     .section-divider::before, .section-divider::after {
       content: ''; flex: 1; height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(0,255,234,0.4), transparent);
+      background: linear-gradient(90deg, transparent, rgba(77,255,210,0.4), transparent);
     }
     .section-label {
-      font-size: 1.1rem; color: var(--cyan); letter-spacing: 4px;
-      white-space: nowrap; text-shadow: 0 0 8px rgba(0,255,234,0.5);
+      font-size: 1.1rem; color: var(--cyan); letter-spacing: 0.2em;
+      white-space: nowrap; text-shadow: 0 0 8px rgba(77,255,210,0.5);
     }
 
     /* GRID */
@@ -169,28 +244,22 @@
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: 2px;
-      padding: 1.4rem 1rem;
+      padding: 1.75rem 1.25rem;
       text-decoration: none;
       color: var(--text);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      transition:
+        transform 0.45s linear(0,0.009,0.035,0.076,0.128,0.189,0.255,0.323,0.39,0.454,0.514,0.569,0.619,0.663,0.7,0.731,0.757,0.778,0.795,0.808,0.818,0.825,0.83,0.833,0.835,0.836,0.836,0.835,0.833,0.831,1),
+        border-color 0.2s ease,
+        box-shadow 0.25s ease,
+        background 0.25s ease;
       position: relative; overflow: hidden;
       text-align: center;
     }
-
-    .card::before {
-      content: '';
-      position: absolute; top: 0; left: -100%; width: 60%; height: 1px;
-      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-      transition: left 0.4s ease;
-    }
-    .card:hover::before { left: 140%; }
     .card:hover {
-      transform: translateY(-4px);
-      background: var(--card-hover-bg);
-      border-color: rgba(0,255,234,0.7);
-      box-shadow: 0 0 20px rgba(0,255,234,0.12), 0 8px 24px rgba(0,0,0,0.5);
+      transform: translateY(-6px) scale(1.03);
+      border-color: rgba(77,255,210,0.7);
+      box-shadow: 0 4px 20px rgba(77,255,210,0.18), 0 0 40px rgba(77,255,210,0.08);
+      background: rgba(30, 34, 48, 0.95);
     }
 
     .card-emoji { font-size: 1.8rem; display: block; margin-bottom: 0.35rem; line-height: 1; }
@@ -198,22 +267,22 @@
     .card-desc { font-size: 1rem; color: var(--dim); letter-spacing: 1px; }
 
     /* card colours */
-    .card.admin .card-label { color: var(--magenta); text-shadow: 0 0 6px rgba(255,0,255,0.4); }
-    .card.admin:hover { border-color: rgba(255,0,255,0.7); box-shadow: 0 0 20px rgba(255,0,255,0.12), 0 8px 24px rgba(0,0,0,0.5); }
-    .card.admin::before { background: linear-gradient(90deg, transparent, var(--magenta), transparent); }
+    .card.admin .card-label { color: var(--magenta); text-shadow: 0 0 6px rgba(224,64,251,0.4); }
+    .card.admin:hover { border-color: rgba(224,64,251,0.6); box-shadow: 0 4px 20px rgba(224,64,251,0.15), 0 0 40px rgba(224,64,251,0.06); }
 
-    .card.fun .card-label { color: var(--yellow); text-shadow: 0 0 6px rgba(255,255,0,0.4); }
-    .card.fun:hover { border-color: rgba(255,255,0,0.7); box-shadow: 0 0 20px rgba(255,255,0,0.1), 0 8px 24px rgba(0,0,0,0.5); }
-    .card.fun::before { background: linear-gradient(90deg, transparent, var(--yellow), transparent); }
+    .card.fun .card-label { color: var(--yellow); text-shadow: 0 0 6px rgba(245,200,66,0.4); }
+    .card.fun:hover { border-color: rgba(245,200,66,0.6); box-shadow: 0 4px 20px rgba(245,200,66,0.15), 0 0 40px rgba(245,200,66,0.06); }
 
-    .card.solidarity .card-label { color: var(--green); text-shadow: 0 0 6px rgba(85,204,85,0.4); }
-    .card.solidarity:hover { border-color: rgba(85,204,85,0.7); box-shadow: 0 0 20px rgba(85,204,85,0.12), 0 8px 24px rgba(0,0,0,0.5); }
-    .card.solidarity::before { background: linear-gradient(90deg, transparent, var(--green), transparent); }
+    .card.solidarity .card-label { color: var(--green); text-shadow: 0 0 6px rgba(57,217,138,0.4); }
+    .card.solidarity:hover { border-color: rgba(57,217,138,0.6); box-shadow: 0 4px 20px rgba(57,217,138,0.15), 0 0 40px rgba(57,217,138,0.06); }
+
+    .card.danger .card-label { color: var(--red); text-shadow: 0 0 6px rgba(255,68,85,0.4); }
+    .card.danger:hover { border-color: rgba(255,68,85,0.6); box-shadow: 0 4px 20px rgba(255,68,85,0.15), 0 0 40px rgba(255,68,85,0.06); }
 
     /* FOOTER */
-    footer { text-align: center; margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid rgba(0,255,234,0.15); }
+    footer { text-align: center; margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid rgba(77,255,210,0.15); }
     .footer-text { color: var(--dim-soft); font-size: 0.9rem; letter-spacing: 3px; }
-    .footer-text a { color: var(--dim-soft); text-decoration: none; border-bottom: 1px solid rgba(0,255,234,0.2); }
+    .footer-text a { color: var(--dim-soft); text-decoration: none; border-bottom: 1px solid rgba(77,255,210,0.2); }
     .footer-text a:hover { color: var(--cyan); }
     .footer-text span { color: var(--cyan); }
 
@@ -228,60 +297,11 @@
     .live-dot.warn { background: var(--orange); }
     .live-dot.off { background: var(--red); animation: none; }
 
-    /* FLOATING RADIO */
-    .radio-float {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      z-index: 900;
-      display: flex;
-      align-items: center;
-      gap: 0;
-    }
-    .radio-btn {
-      background: rgba(0,0,0,0.85);
-      border: 2px solid rgba(0,255,234,0.4);
-      color: var(--cyan);
-      font-family: 'VT323', monospace;
-      font-size: 1rem;
-      padding: 10px 16px;
-      cursor: pointer;
-      letter-spacing: 2px;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      transition: all 0.2s;
-      white-space: nowrap;
-    }
-    .radio-btn:hover {
-      border-color: var(--cyan);
-      box-shadow: 0 0 15px rgba(0,255,234,0.2);
-    }
-    .radio-btn.playing {
-      border-color: var(--magenta);
-      color: var(--magenta);
-      box-shadow: 0 0 15px rgba(255,0,255,0.2);
-    }
-    .radio-btn .r-icon { margin-right: 6px; }
-    .radio-switch {
-      background: rgba(0,0,0,0.85);
-      border: 2px solid rgba(0,255,234,0.4);
-      border-left: none;
-      color: var(--dim);
-      font-family: 'VT323', monospace;
-      font-size: 0.85rem;
-      padding: 10px 12px;
-      cursor: pointer;
-      letter-spacing: 1px;
-      backdrop-filter: blur(12px);
-      transition: all 0.2s;
-    }
-    .radio-switch:hover { color: var(--cyan); border-color: var(--cyan); }
-
     /* MESSAGE DROP */
     .msg-drop {
       margin-top: 2rem;
       background: rgba(0,0,0,0.5);
-      border: 1px solid rgba(0,255,234,0.15);
+      border: 1px solid rgba(77,255,210,0.15);
       border-radius: 2px;
       overflow: hidden;
     }
@@ -301,7 +321,7 @@
       gap: 8px;
       transition: background 0.15s;
     }
-    .msg-toggle:hover { background: rgba(0,255,234,0.03); }
+    .msg-toggle:hover { background: rgba(77,255,210,0.03); }
     .msg-toggle .arrow { transition: transform 0.2s; }
     .msg-toggle.open .arrow { transform: rotate(90deg); }
     .msg-badge {
@@ -323,7 +343,7 @@
     .msg-input-row input, .msg-input-row textarea {
       flex: 1;
       background: rgba(0,0,0,0.6);
-      border: 1px solid rgba(0,255,234,0.2);
+      border: 1px solid rgba(77,255,210,0.2);
       color: var(--text);
       font-family: 'VT323', monospace;
       font-size: 1rem;
@@ -338,7 +358,7 @@
       min-height: 60px;
     }
     .msg-send {
-      background: rgba(0,255,234,0.1);
+      background: rgba(77,255,210,0.1);
       border: 1px solid var(--cyan);
       color: var(--cyan);
       font-family: 'VT323', monospace;
@@ -348,7 +368,7 @@
       letter-spacing: 2px;
       transition: all 0.15s;
     }
-    .msg-send:hover { background: rgba(0,255,234,0.2); }
+    .msg-send:hover { background: rgba(77,255,210,0.2); }
     .msg-status {
       font-size: 0.9rem;
       color: var(--dim);
@@ -370,7 +390,7 @@
       gap: 8px;
       padding: 8px 10px;
       background: rgba(0,0,0,0.3);
-      border-left: 2px solid rgba(0,255,234,0.2);
+      border-left: 2px solid rgba(77,255,210,0.2);
       font-size: 0.95rem;
     }
     .msg-item.unread { border-left-color: var(--magenta); }
@@ -388,6 +408,31 @@
       .radio-float { bottom: 16px; right: 16px; }
       .radio-btn { font-size: 0.9rem; padding: 8px 12px; }
     }
+
+    /* Accessibility: reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      body::before { display: none; }
+    }
+
+    /* Focus styles for keyboard nav */
+    :focus-visible {
+      outline: 2px solid var(--cyan);
+      outline-offset: 2px;
+    }
+    .card:focus-visible {
+      border-color: rgba(77,255,210,0.7);
+      box-shadow: 0 0 20px rgba(77,255,210,0.12), 0 8px 24px rgba(0,0,0,0.5);
+    }
+
+    /* Touch target minimums */
+    .radio-switch { min-width: 44px; min-height: 44px; }
+    .msg-item .mi-dismiss { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+
+    /* Section divider color overrides */
+    .admin-divider::before,.admin-divider::after{background:linear-gradient(90deg,transparent,rgba(224,64,251,0.4),transparent)!important;}
+    .kv-divider::before,.kv-divider::after{background:linear-gradient(90deg,transparent,rgba(57,217,138,0.4),transparent)!important;}
+    .fun-divider::before,.fun-divider::after{background:linear-gradient(90deg,transparent,rgba(245,200,66,0.4),transparent)!important;}
   </style>
 </head>
 <body>
@@ -397,6 +442,15 @@
       <a class="public-link" href="https://quickcat.club" target="_blank" rel="noopener">quickcat.club &rarr;</a>
       <h1>pibulus deck<span class="cursor"></span></h1>
       <p class="subtitle">~(=^..^) command &amp; control</p>
+      <div class="alive-bar" id="alive">live on <span>KPAB.FM</span></div>
+      <div class="alive-meta">
+        <span class="alive-chip" id="aliveNext">next up: <strong>loading...</strong></span>
+        <span class="alive-chip" id="aliveListeners">listeners: <strong>--</strong></span>
+        <span class="alive-actions">
+          <button class="alive-btn" id="skipBtn" type="button">SKIP</button>
+          <span class="alive-status" id="skipStatus"></span>
+        </span>
+      </div>
     </header>
 
     <!-- LIVE DASHBOARD -->
@@ -417,65 +471,62 @@
         <div class="stat-value" id="d-up">--</div>
         <div class="stat-label">UPTIME</div>
       </div>
-      <div class="now-playing">
-        <span class="np-label"><span class="live-dot" id="np-dot"></span>KPAB admin</span>
-        <div class="np-song" id="np-song">loading...</div>
+      <div class="stat">
+        <div class="stat-value" id="d-users">--</div>
+        <div class="stat-label">USERS</div>
       </div>
+
     </div>
 
     <!-- ADMIN -->
     <div class="section-divider admin-divider">
-      <span class="section-label" style="color:var(--magenta);text-shadow:0 0 8px rgba(255,0,255,0.5);">[ ADMIN ]</span>
+      <span class="section-label" style="color:var(--magenta);text-shadow:0 0 8px rgba(224,64,251,0.5);">[ ADMIN ]</span>
     </div>
-    <style>.admin-divider::before,.admin-divider::after{background:linear-gradient(90deg,transparent,rgba(255,0,255,0.4),transparent)!important;}</style>
+
 
     <div class="grid grid-3">
-      <a class="card admin" href="http://pibulus.local:8500/admin" target="_blank" rel="noopener">
+      <a class="card admin" href="http://pibulus.local:8500/admin" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click">
         <span class="card-emoji">&#127897;</span>
         <span class="card-label">RADIO MGR</span>
         <span class="card-desc">AzuraCast admin</span>
       </a>
-      <a class="card admin" href="http://pibulus.local:5030" target="_blank" rel="noopener">
+      <a class="card admin" href="http://pibulus.local:5030" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click">
         <span class="card-emoji">&#127926;</span>
         <span class="card-label">SOULSEEK</span>
         <span class="card-desc">P2P downloads</span>
       </a>
-      <a class="card admin" href="http://pibulus.local:7682" target="_blank" rel="noopener">
+      <a class="card admin" href="/ttyd/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click">
         <span class="card-emoji">&#128187;</span>
         <span class="card-label">TERMINAL</span>
         <span class="card-desc">web shell</span>
       </a>
-    </div>
-
-    <div class="grid grid-3" style="margin-top: 1rem;">
-      <a class="card admin" href="/drop/">
+      <a class="card admin" href="/drop/" data-sound-hover="hover" data-sound-click="click">
         <span class="card-emoji">&#x1F4E6;</span>
         <span class="card-label">DROP ZONE</span>
         <span class="card-desc">file uploads</span>
       </a>
-      <a class="card admin" href="http://pibulus.local/memos/" target="_blank" rel="noopener">
-        <span class="card-emoji">&#x1F4DD;</span>
-        <span class="card-label">MEMOS</span>
-        <span class="card-desc">microblog</span>
-      </a>
-      <a class="card admin" href="http://pibulus.local/go/" target="_blank" rel="noopener">
+      <a class="card admin" href="http://pibulus.local/go/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click">
         <span class="card-emoji">&#x1F517;</span>
         <span class="card-label">SHORTENER</span>
         <span class="card-desc">go.quickcat.club</span>
       </a>
-    </div>
+      <a class="card admin" href="http://pibulus.local/memos/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click">
+        <span class="card-emoji">&#x1F4DD;</span>
+        <span class="card-label">MEMOS</span>
+        <span class="card-desc">microblog</span>
+      </a>
+      <a class="card admin" href="https://stream.quickcat.club/web" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click">
+        <span class="card-emoji">📺</span>
+        <span class="card-label">TUNARR</span>
+        <span class="card-desc">TV channels</span>
+      </a>
+      <a class="card admin" href="https://games.quickcat.club" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click">
+        <span class="card-emoji">&#x1F3AE;</span>
+        <span class="card-label">ROMM</span>
+        <span class="card-desc">rom manager</span>
+      </a>
 
-    <div class="grid grid-3" style="margin-top: 1rem;">
-      <a class="card admin" href="/status.json" target="_blank" rel="noopener">
-        <span class="card-emoji">&#x1F4CA;</span>
-        <span class="card-label">RAW DATA</span>
-        <span class="card-desc">status API</span>
-      </a>
-      <a class="card admin" href="https://github.com/pibulus/pibulus-os" target="_blank" rel="noopener">
-        <span class="card-emoji">&#x1F4BB;</span>
-        <span class="card-label">GITHUB</span>
-        <span class="card-desc">source code</span>
-      </a>
+<a class="card admin" href="/deck/help.html" data-sound-hover="hover" data-sound-click="click">        <span class="card-emoji">📖</span>        <span class="card-label">HELP / CHEATS</span>        <span class="card-desc">Emergency Navigator</span>      </a>
     </div>
 
         <!-- MEDIA -->
@@ -484,17 +535,17 @@
     </div>
 
     <div class="grid grid-3">
-      <a class="card" href="http://pibulus.local:8096" target="_blank" rel="noopener">
+      <a class="card" href="http://pibulus.local:8096" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click">
         <span class="card-emoji">&#9654;</span>
         <span class="card-label">WATCH</span>
         <span class="card-desc">movies &amp; shows</span>
       </a>
-      <a class="card" href="http://pibulus.local:4533" target="_blank" rel="noopener">
+      <a class="card" href="http://pibulus.local:4533" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click">
         <span class="card-emoji">&#9835;</span>
         <span class="card-label">LISTEN</span>
         <span class="card-desc">hi-fi music</span>
       </a>
-      <a class="card" href="https://kpab.fm" target="_blank" rel="noopener">
+      <a class="card" href="https://kpab.fm" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click">
         <span class="card-emoji">&#128225;</span>
         <span class="card-label">RADIO</span>
         <span class="card-desc">public radio</span>
@@ -502,17 +553,17 @@
     </div>
 
     <div class="grid grid-3" style="margin-top: 1rem;">
-      <a class="card" href="http://pibulus.local:8083" target="_blank" rel="noopener">
+      <a class="card" href="http://pibulus.local:8083" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click">
         <span class="card-emoji">&#128214;</span>
         <span class="card-label">READ</span>
         <span class="card-desc">book library</span>
       </a>
-      <a class="card" href="http://pibulus.local:5000" target="_blank" rel="noopener">
+      <a class="card" href="http://pibulus.local:5000" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click">
         <span class="card-emoji">&#128165;</span>
         <span class="card-label">COMICS</span>
         <span class="card-desc">graphic novels</span>
       </a>
-      <a class="card" href="http://pibulus.local:2283" target="_blank" rel="noopener">
+      <a class="card" href="http://pibulus.local:2283" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click">
         <span class="card-emoji">&#128247;</span>
         <span class="card-label">PHOTOS</span>
         <span class="card-desc">photo vault</span>
@@ -521,61 +572,61 @@
 
     <!-- KNOWLEDGE VAULT -->
     <div class="section-divider kv-divider">
-      <span class="section-label" style="color:var(--green);text-shadow:0 0 8px rgba(85,204,85,0.5);">[ KNOWLEDGE VAULT ]</span>
+      <span class="section-label" style="color:var(--green);text-shadow:0 0 8px rgba(57,217,138,0.5);">[ KNOWLEDGE VAULT ]</span>
     </div>
-    <style>.kv-divider::before,.kv-divider::after{background:linear-gradient(90deg,transparent,rgba(85,204,85,0.4),transparent)!important;}</style>
+
 
     <div class="grid grid-3">
-      <a class="card solidarity" href="/palestine/">
+      <a class="card solidarity" href="/palestine/" data-sound-hover="hover" data-sound-click="click">
         <span class="card-emoji">&#127477;&#127480;</span>
         <span class="card-label">PALESTINE</span>
         <span class="card-desc">films, books &amp; docs</span>
       </a>
-      <a class="card solidarity" href="http://pibulus.local:8084" target="_blank" rel="noopener">
+      <a class="card solidarity" href="http://pibulus.local:8084" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click">
         <span class="card-emoji">&#x1F4DA;</span>
         <span class="card-label">WIKIPEDIA</span>
         <span class="card-desc">offline encyclopedia</span>
       </a>
-      <a class="card solidarity" href="http://pibulus.local:8080" target="_blank" rel="noopener">
+      <a class="card solidarity" href="http://pibulus.local:8091" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click">
         <span class="card-emoji">&#128193;</span>
-        <span class="card-label">FILES</span>
-        <span class="card-desc">passport drive</span>
+        <span class="card-label">THE VAULT</span>
+        <span class="card-desc">file browser</span>
       </a>
     </div>
 
     <!-- FUN -->
     <div class="section-divider fun-divider">
-      <span class="section-label" style="color:var(--yellow);text-shadow:0 0 8px rgba(255,255,0,0.5);">[ FUN ]</span>
+      <span class="section-label" style="color:var(--yellow);text-shadow:0 0 8px rgba(245,200,66,0.5);">[ FUN ]</span>
     </div>
-    <style>.fun-divider::before,.fun-divider::after{background:linear-gradient(90deg,transparent,rgba(255,255,0,0.4),transparent)!important;}</style>
+
 
     <div class="grid grid-3">
-      <a class="card fun" href="/arcade/">
+      <a class="card fun" href="/arcade/" data-sound-hover="hover" data-sound-click="click">
         <span class="card-emoji">&#127918;</span>
         <span class="card-label">ARCADE</span>
         <span class="card-desc">mega drive &amp; playstation</span>
       </a>
-      <a class="card fun" href="/fiction/">
+      <a class="card fun" href="/fiction/" data-sound-hover="hover" data-sound-click="click">
         <span class="card-emoji">&#128377;</span>
         <span class="card-label">FICTION</span>
         <span class="card-desc">text adventures</span>
       </a>
-      <a class="card fun" href="http://pibulus.local/roms/" target="_blank" rel="noopener">
+      <a class="card fun" href="http://pibulus.local/roms/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click">
         <span class="card-emoji">&#128190;</span>
         <span class="card-label">ROM VAULT</span>
         <span class="card-desc">browse &amp; download ROMs</span>
       </a>
-      <a class="card fun" href="/conspiracy/">
+      <a class="card danger" href="/conspiracy/" data-sound-hover="hover" data-sound-click="click">
         <span class="card-emoji">&#128302;</span>
         <span class="card-label">FORBIDDEN</span>
         <span class="card-desc">occult &amp; esoterica</span>
       </a>
-      <a class="card fun" href="http://pibulus.local:9000" target="_blank" rel="noopener">
+      <a class="card fun" href="http://pibulus.local:9000" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click">
         <span class="card-emoji">&#128172;</span>
         <span class="card-label">IRC</span>
         <span class="card-desc">chat rooms</span>
       </a>
-      <a class="card fun" href="/wall/">
+      <a class="card fun" href="/wall/" data-sound-hover="hover" data-sound-click="click">
         <span class="card-emoji">&#x1F3A8;</span>
         <span class="card-label">THE WALL</span>
         <span class="card-desc">pixel graffiti</span>
@@ -584,7 +635,7 @@
 
     <!-- MESSAGE INBOX (read-only viewer) -->
     <div class="msg-drop">
-      <button class="msg-toggle" id="msgToggle" onclick="toggleMsg()">
+      <button class="msg-toggle" id="msgToggle" onclick="toggleMsg()" aria-expanded="false" aria-controls="msgBody">
         <span class="arrow">&#9654;</span>
         <span>INBOX</span>
         <span class="msg-badge" id="msgBadge" style="display:none">0</span>
@@ -605,6 +656,9 @@
   </div>
 
   <script>
+    function esc(str) { var d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
+    var skipBusy = false;
+
     // Live dashboard — polls status.json every 30s
     function loadStatus() {
       fetch('/status.json', { cache: 'no-cache' })
@@ -631,18 +685,28 @@
           // Uptime
           document.getElementById('d-up').textContent = d.uptime;
 
-          // Now playing
-          var npDot = document.getElementById('np-dot');
-          var npSong = document.getElementById('np-song');
-          if (d.np_artist && d.np_title) {
-            npSong.innerHTML = '<a href="https://kpab.fm" target="_blank">' +
-              d.np_artist + ' &mdash; ' + d.np_title + '</a>' +
-              (d.np_listeners > 0 ? ' <span style="color:var(--dim);font-size:0.85rem;">(' + d.np_listeners + ' listening)</span>' : '');
-            npDot.className = 'live-dot';
-          } else {
-            npSong.textContent = 'offline';
-            npDot.className = 'live-dot off';
+          // Users online
+          var usersEl = document.getElementById('d-users');
+          if (d.users_online !== undefined) {
+            usersEl.textContent = d.users_online;
+            usersEl.className = 'stat-value' + (d.users_online > 0 ? '' : '');
           }
+
+          // Now playing
+          var aliveEl = document.getElementById('alive');
+          var aliveNextEl = document.getElementById('aliveNext');
+          var aliveListenersEl = document.getElementById('aliveListeners');
+          if (d.np_artist && d.np_title) {
+            aliveEl.innerHTML = 'now playing on <span>KPAB.FM</span>: ' + esc(d.np_artist) + ' \u2014 ' + esc(d.np_title);
+          } else {
+            aliveEl.innerHTML = 'live on <span>KPAB.FM</span>';
+          }
+          if (d.np_next_artist && d.np_next_title) {
+            aliveNextEl.innerHTML = 'next up: <strong>' + esc(d.np_next_artist) + ' \u2014 ' + esc(d.np_next_title) + '</strong>';
+          } else {
+            aliveNextEl.innerHTML = 'next up: <strong>unknown</strong>';
+          }
+          aliveListenersEl.innerHTML = 'listeners: <strong>' + (d.np_listeners || 0) + ' live / ' + (d.np_listeners_unique || 0) + ' unique</strong>';
 
           // Footer
           document.getElementById('f-containers').textContent = d.containers;
@@ -651,55 +715,54 @@
         .catch(() => {});
     }
 
+    function fireDeckSkip() {
+      if (skipBusy) return;
+      var btn = document.getElementById('skipBtn');
+      var status = document.getElementById('skipStatus');
+      skipBusy = true;
+      btn.disabled = true;
+      btn.textContent = '...';
+      status.textContent = '';
+
+      fetch('https://kpab.fm/mutiny/mutiny', { method: 'POST', cache: 'no-store' })
+        .then(function(r) {
+          return r.json().catch(function() { return {}; }).then(function(data) {
+            return { ok: r.ok, status: r.status, data: data };
+          });
+        })
+        .then(function(res) {
+          if (res.ok && res.data && res.data.action === 'skipped') {
+            status.textContent = 'track skipped';
+            setTimeout(loadStatus, 1200);
+          } else if (res.status === 429) {
+            status.textContent = res.data && res.data.remaining ? ('cooldown ' + res.data.remaining + 's') : 'cooldown';
+          } else {
+            status.textContent = (res.data && res.data.message) ? res.data.message.toLowerCase() : 'skip failed';
+          }
+        })
+        .catch(function() {
+          status.textContent = 'skip failed';
+        })
+        .finally(function() {
+          skipBusy = false;
+          btn.disabled = false;
+          btn.textContent = 'SKIP';
+        });
+    }
+
     loadStatus();
     setInterval(loadStatus, 30000);
-
-
-    // === FLOATING RADIO ===
-    var stations = [
-      { name: 'KPAB.FM', url: 'https://kpab.fm/listen/kpab.fm/radio.mp3' },
-      { name: 'GROOVE SALAD', url: 'https://ice4.somafm.com/groovesalad-256-mp3' }
-    ];
-    var currentStation = 0;
-    var isPlaying = false;
-    var radioAudio = document.getElementById('radioAudio');
-    var radioBtn = document.getElementById('radioBtn');
-    var radioLabel = document.getElementById('radioLabel');
-
-    function toggleRadio() {
-      if (isPlaying) {
-        radioAudio.pause();
-        radioAudio.src = '';
-        isPlaying = false;
-        radioBtn.classList.remove('playing');
-        radioLabel.textContent = stations[currentStation].name;
-      } else {
-        radioAudio.src = stations[currentStation].url;
-        radioAudio.play().catch(function(){});
-        isPlaying = true;
-        radioBtn.classList.add('playing');
-        radioLabel.textContent = '\u25A0 ' + stations[currentStation].name;
-      }
-    }
-
-    function switchStation() {
-      currentStation = (currentStation + 1) % stations.length;
-      radioLabel.textContent = stations[currentStation].name;
-      if (isPlaying) {
-        radioAudio.src = stations[currentStation].url;
-        radioAudio.play().catch(function(){});
-        radioLabel.textContent = '\u25A0 ' + stations[currentStation].name;
-      }
-    }
+    document.getElementById('skipBtn').addEventListener('click', fireDeckSkip);
 
     // === MESSAGE INBOX (read-only) ===
     var msgToggle = document.getElementById('msgToggle');
     var msgBody = document.getElementById('msgBody');
 
     function toggleMsg() {
-      msgToggle.classList.toggle('open');
+      var isOpen = msgToggle.classList.toggle('open');
       msgBody.classList.toggle('open');
-      if (msgBody.classList.contains('open')) loadMessages();
+      msgToggle.setAttribute('aria-expanded', isOpen);
+      if (isOpen) loadMessages();
     }
 
     function loadMessages() {
@@ -723,11 +786,29 @@
             var timeStr = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
             var div = document.createElement('div');
             div.className = 'msg-item' + (m.read ? '' : ' unread');
-            div.innerHTML =
-              '<span class="mi-name">' + m.name + '</span>' +
-              '<span class="mi-text">' + m.msg.replace(/</g,'&lt;') + '</span>' +
-              '<span class="mi-time">' + timeStr + '</span>' +
-              '<button class="mi-dismiss" onclick="dismissMsg(\'' + m.id + '\',this)" title="mark read">\u2713</button>';
+
+            var nameSpan = document.createElement('span');
+            nameSpan.className = 'mi-name';
+            nameSpan.textContent = m.name;
+
+            var textSpan = document.createElement('span');
+            textSpan.className = 'mi-text';
+            textSpan.textContent = m.msg;
+
+            var timeSpan = document.createElement('span');
+            timeSpan.className = 'mi-time';
+            timeSpan.textContent = timeStr;
+
+            var dismissBtn = document.createElement('button');
+            dismissBtn.className = 'mi-dismiss';
+            dismissBtn.title = 'mark read';
+            dismissBtn.textContent = '\u2713';
+            dismissBtn.addEventListener('click', function() { dismissMsg(m.id, dismissBtn); });
+
+            div.appendChild(nameSpan);
+            div.appendChild(textSpan);
+            div.appendChild(timeSpan);
+            div.appendChild(dismissBtn);
             list.appendChild(div);
           });
         })
@@ -769,35 +850,58 @@
         '4533': 'https://music.quickcat.club',
         '8083': 'https://read.quickcat.club',
         '5000': 'https://comics.quickcat.club',
-        '8500': 'https://kpab.fm'
+        '8500': 'https://radio-admin.quickcat.club',
+        '8091': 'https://vault.quickcat.club',
+        '5030': 'https://slskd.quickcat.club',
+        '8100': 'https://tv.quickcat.club',
+        '3099': 'https://retro.quickcat.club',
+        '2283': 'https://photos.quickcat.club'
       };
 
-      document.querySelectorAll('a[href*="pibulus.local:"]').forEach(function(a) {
+      var pathMap = {
+        '/go/': 'https://go.quickcat.club',
+        '/memos/': 'https://memo.quickcat.club'
+      };
+
+      document.querySelectorAll('a[href*="pibulus.local"]').forEach(function(a) {
+        // Match links with port
         var m = a.href.match(/pibulus\.local:(\d+)(\/.*)?$/);
-        if (!m) return;
-        var port = m[1], path = m[2] || '';
-        if (portMap[port]) {
-          a.href = portMap[port] + path;
-        } else {
-          var desc = a.querySelector('.card-desc');
-          if (desc) desc.textContent += ' (LAN)';
-          a.removeAttribute('href');
-          a.style.opacity = '0.35';
-          a.style.cursor = 'not-allowed';
-          a.title = 'LAN access only — connect to pibulus.local';
+        if (m) {
+          var port = m[1], path = m[2] || '';
+          if (portMap[port]) {
+            a.href = portMap[port] + path;
+          } else {
+            markLanOnly(a);
+          }
+          return;
+        }
+        // Match portless links by path
+        var pm = a.href.match(/pibulus\.local(\/[^\s]*)?$/);
+        if (pm) {
+          var p = pm[1] || '/';
+          if (pathMap[p]) {
+            a.href = pathMap[p];
+          } else {
+            markLanOnly(a);
+          }
         }
       });
+
+      function markLanOnly(a) {
+        var desc = a.querySelector('.card-desc');
+        if (desc) desc.textContent += ' (LAN)';
+        a.removeAttribute('href');
+        a.setAttribute('tabindex', '-1');
+        a.setAttribute('aria-disabled', 'true');
+        a.style.opacity = '0.35';
+        a.style.cursor = 'not-allowed';
+        a.title = 'LAN access only \u2014 connect to pibulus.local';
+      }
     })();
   </script>
 
-    <!-- FLOATING RADIO WIDGET -->
-    <div class="radio-float">
-      <button class="radio-btn" id="radioBtn" onclick="toggleRadio()">
-        <span class="r-icon">&#128225;</span>
-        <span id="radioLabel">KPAB.FM</span>
-      </button>
-      <button class="radio-switch" onclick="switchStation()" title="switch station">&#x21C4;</button>
-    </div>
-    <audio id="radioAudio" preload="none"></audio>
+  <!-- UI Sounds — Kenney CC0 -->
+  <script src="ui-sounds.js"></script>
+  <script>UISounds.init();</script>
 </body>
 </html>

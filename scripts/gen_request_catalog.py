@@ -3,7 +3,7 @@
 import json, urllib.request, time, sys, os
 
 API = "http://localhost:8500/api/station/1/requests"
-OUTFILE = "/media/pibulus/passport/www/html/kpab/catalog.json"
+OUTFILE = "/home/pibulus/pibulus-os/www/html/kpab/catalog.json"
 TEMP_FILE = OUTFILE + ".tmp"
 
 catalog = []

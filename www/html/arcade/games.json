@@ -1,5 +1,11 @@
 [
   {
+    "file": "scummvm/samnmax/samnmax.000",
+    "title": "Sam and Max Hit the Road",
+    "system": "scummvm",
+    "region": "USA"
+  },
+  {
     "file": "gb/Addams Family, The - Pugsley's Scavenger Hunt (USA, Europe).zip",
     "title": "Addams Family, The - Pugsley's Scavenger Hunt",
     "system": "gb",

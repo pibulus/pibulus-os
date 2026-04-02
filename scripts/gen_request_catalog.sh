@@ -2,7 +2,7 @@
 # Generate KPAB.FM request catalog as static JSON
 # Run periodically via cron to keep fresh
 
-OUTFILE="/media/pibulus/passport/www/html/kpab/catalog.json"
+OUTFILE="/home/pibulus/pibulus-os/www/html/kpab/catalog.json"
 API="http://localhost:8500/api/station/1/requests"
 TMPFILE="/tmp/kpab_catalog_build.json"
 

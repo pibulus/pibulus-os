@@ -1,305 +1,104 @@
-# PIBULUS OS - Ship Log
-> Append-only diary of sessions, changes, and decisions.
-> Each entry is a snapshot. Read top-to-bottom for full history.
 
 ---
 
-## 2026-02-21 | Session: The Great Wiring
+## 2026-02-28 Session: KPAB.FM Player + System Cleanup
 
-### What happened
-- Continued from 64GB SD card swap + 2.2TB content load onto passport drive
-- Upgraded Node.js to v22.22.0 (needed for OpenClaw)
-- Installed OpenClaw v2026.2.17 (running as openclaw-gateway, ~420MB RAM)
-- Wired up all media services to their actual content directories
-- Fixed 5 broken deck launcher scripts (menu syntax errors)
-- Fixed romm env var rename (ROMM_AUTH_SECRET → ROMM_AUTH_SECRET_KEY)
-- Fixed gluetun region (Australia → Victoria)
-- Set up Cloudflare Tunnel subdomains for all media services
-- Added 5 CNAME records via Cloudflare API
-- Stored Cloudflare API token + static IP in ~/.config/api_keys on Mac
-- Removed hexbloop.app from tunnel config
-- Fixed emulatorjs port conflict (3000 → 3002, was clashing with gitea)
-- Fixed gluetun/emulatorjs restart policies to "no" (prevent crash-loops)
-- Added Soulseek download path to Navidrome (was missing new downloads)
-- Removed ghost lowercase folders from passport (music/, roms/, media/)
-- Removed stale Jellyfin /media mount
-- Rebuilt Homepage admin dashboard (was missing most services)
-- Fixed tv.quickcat.club port (8000 → 8001 for ErsatzTV)
+### Disk Cleanup (89% → 84%, freed ~3GB)
+- Removed unused mariadb:latest image (492MB)
+- Removed immich_machine_learning container + image (1.79GB)
+- Removed immich_model-cache volume (823MB)
+- Cleaned apt cache (132MB)
 
-### Live subdomains
-| URL | Service | Status |
-|-----|---------|--------|
-| quickcat.club | nginx landing page | LIVE |
-| watch.quickcat.club | Jellyfin | LIVE (needs setup wizard) |
-| music.quickcat.club | Navidrome | LIVE (needs account setup) |
-| read.quickcat.club | Kavita | LIVE |
-| radio.quickcat.club | AzuraCast | LIVE (needs setup wizard) |
-| tv.quickcat.club | ErsatzTV | NOT RUNNING |
+### KPAB.FM Landing Page Overhaul
+- **Before:** Broken static page with default HTML5 audio element, no metadata, broken Drop a Track link, didn't fill viewport
+- **After:** Full cyberpunk radio player with:
+  - Live now-playing via AzuraCast API (artist, title, album, genre, album art)
+  - Custom styled play/pause with CSS visualizer bars
+  - Song history (last 5 tracks with thumbnails)
+  - Listener count
+  - Request a Song → AzuraCast public page
+  - CRT scanlines + vignette, VT323 font, full viewport
+  - Auto-polls every 10s, graceful SIGNAL LOST on API failure
 
-### Still needs work
-- [ ] **Jellyfin**: Complete setup wizard at watch.quickcat.club (create admin, add libraries)
-- [ ] **AzuraCast**: Complete setup wizard at radio.quickcat.club (create admin, add station)
-- [ ] **Navidrome**: May need account creation + library scan trigger
-- [ ] **Immich ML**: Run face detection pass then stop ML container to free ~2GB RAM
-- [ ] **Gluetun/Soulseek**: Add PureVPN credentials to .env file, then start gluetun
-- [ ] **EmulatorJS**: Not created yet. Run  when ready
-- [ ] **ErsatzTV**: Was crash-looping (.NET error). Needs investigation before starting
-- [ ] **icloudpd**: Needs Apple ID configuration (run init script)
-- [ ] **OpenClaw onboard**: Run  to connect messaging + API key
-- [ ] **Security**: Consider basic auth on public subdomains, review exposed ports
-- [ ] **Tailscale**: Works for Jellyfin (host network) but Docker bridge services may need firewall rules
+### Cloudflared Tunnel Fix
+- kpab.fm + www.kpab.fm routed from port 8500 → port 80 (nginx)
+- Nginx now proxies /api/, /public/, /radio.mp3, /listen/ to AzuraCast/Icecast
+- All player URLs are same-domain relative (no CORS issues)
 
-### Port map (complete, no conflicts)
-| Port | Service | Public? |
-|------|---------|---------|
-| 22 | SSH | no |
-| 2022 | AzuraCast SFTP | no |
-| 2222 | Gitea SSH | no |
-| 2283 | Immich | no |
-| 3001 | Gitea web | no |
-| 3002 | EmulatorJS mgmt | no |
-| 4533 | Navidrome | music.quickcat.club |
-| 5000 | Kavita | read.quickcat.club |
-| 5030 | Soulseek web (via gluetun) | no |
-| 5031 | Soulseek P2P (via gluetun) | no |
-| 5055 | Overseerr | no |
-| 5230 | Memos | no |
-| 7681 | Cyber Arcade | no |
-| 7682 | Web Terminal | no |
-| 8001 | ErsatzTV | tv.quickcat.club |
-| 8080 | File Browser | no |
-| 8081 | Homepage Admin | no |
-| 8085 | EmulatorJS games | no |
-| 8086 | RomM | no |
-| 8090 | Nginx (quickcat.club) | quickcat.club |
-| 8096 | Jellyfin | watch.quickcat.club |
-| 8500 | AzuraCast | radio.quickcat.club |
-| 8443 | AzuraCast HTTPS | no |
-| 9000 | IRC (The Lounge) | no |
-| 18789 | OpenClaw gateway | localhost only |
+### Nginx Config Updated
+- Added reverse proxy blocks for kpab.fm: API (→8500), stream (→8000), art (→8500), public (→8500)
+- Docker gateway IP 172.23.0.1 used for proxy_pass
 
-### Architecture notes
-- Raspberry Pi 5, 4GB RAM, 64GB SD, Debian Trixie (arm64)
-- 5.5TB passport drive at /media/pibulus/passport (NTFS, case-insensitive)
-- Docker v29.2.0, 5 compose stacks: pirate, admin, social, immich, azuracast
-- Cloudflare Tunnel (c79eb8a2) via systemd service
-- Tailscale for private access (100.115.240.57)
-- Static IP: 144.6.84.23 (Aussie Broadband)
-- Domain: quickcat.club (Cloudflare DNS, Zone: b7fce439...)
-- OpenClaw gateway running as system process (~420MB RAM)
+### Comics Audit Complete (not yet applied)
+- Identified 10+ duplicate series, ~30 folders needing rename cleanup
+- Estimated ~8GB reclaimable from duplicate removal
+- Full plan documented for next session
 
-### Key files
-| File | What it does |
-|------|-------------|
-| ~/pibulus-os/config/stacks/pirate.yml | Main media/tools compose |
-| ~/pibulus-os/config/stacks/admin.yml | Homepage + web terminal |
-| ~/pibulus-os/config/stacks/social.yml | Gitea, Memos, IRC |
-| ~/pibulus-os/config/stacks/immich.yml | Photos + iCloud sync |
-| ~/azuracast/docker-compose.yml | Radio station (separate) |
-| /etc/cloudflared/config.yml | Tunnel ingress rules |
-| ~/pibulus-os/config/nginx/hardening.conf | Nginx config |
-| ~/pibulus-os/config/homepage-admin/ | Dashboard config |
-| ~/pibulus-os/launcher.sh | deck TUI main menu |
-| ~/pibulus-os/modules/*.sh | deck sub-menus |
-| ~/.config/api_keys (on Mac) | Cloudflare token, static IP |
+### Files Changed
+-  - kpab.fm routes to port 80
+-  - proxy blocks added
+-  - new player page
+-  - updated kpab.fm entry
 
-### RAM budget (4GB total)
-- System + kernel: ~800MB
-- OpenClaw gateway: ~420MB
-- Jellyfin: ~300-500MB
-- AzuraCast: ~300-400MB
-- Navidrome: ~100MB
-- Kavita: ~100MB
-- Everything else: ~200-400MB
-- Swap: 2GB (safety net)
-- DO NOT run immich_ml + all services simultaneously = OOM death spiral
-
-### If everything is broken and you have no AI
-1. Power cycle the Pi (pull USB-C, wait 5 sec, replug)
-2. SSH in: Linux pibulus 6.12.47+rpt-rpi-2712 #1 SMP PREEMPT Debian 1:6.12.47-1+rpt1 (2025-09-16) aarch64 (password: meringue)
-3. Check what's running: 
-4. Check RAM: 
-5. If swap is 2.0/2.0: stop heavy containers: 
-6. Restart specific services: 
-7. Restart AzuraCast: 
-8. Check subdomains: HTTP/2 302 
-date: Sat, 21 Feb 2026 07:19:14 GMT
-location: web/
-server: cloudflare
-cf-cache-status: DYNAMIC
-report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=zr1Lircg%2BV6Y2WyOJZIFKjWOOQICCD%2FVIxGTINtE5MY4wf4V1SkBWh5XD969usIfBISnvXEztn4k%2BFIsFugqgQGmIb3%2F4RSj0oAO%2BfMc7AoEdp1S%2FLBgf65pPTH4P7c%3D"}]}
-nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
-cf-ray: 9d14796dddf9e697-MEL
-alt-svc: h3=":443"; ma=86400
-
-9. Cloudflared config: 
-10. Restart tunnel: 
-
-
-## [2026-02-25] - THE GREAT INFRASTRUCTURE AUDIT
-
-### Network Architecture Overhaul
-- **Two-Door System:** Separated public (`quickcat.club`) from private (`pibulus.local`) access
-  - `pibulus.local` → PIBULUS DECK (admin dashboard, no auth, LAN only)
-  - `quickcat.club` → Clean public page (media links via tunnel subdomains)
-  - `deck.quickcat.club` → Admin deck remotely, basic auth protected (pibulus / Church0fTheSubgeniu5!)
-- **Port Fix:** web_host nginx moved from :8090 → :80 (pibulus.local works without port number now)
-- **Tunnel Rewrite:** All `*.quickcat.club` subdomains use proper tunnel routing, no more `quickcat.club:8096` style links
-
-### KPAB.FM Radio Fix
-- **Root Cause:** Stream URL had stale `/radio/8000/radio.mp3` path (old AzuraCast proxy format)
-- **Fix:** `kpab.fm` + `www.kpab.fm` now route to AzuraCast web UI (port 8500) for full public player
-- **CSS:** Uploaded cyberdeck CSS (`kpab-cyberdeck.css`) into AzuraCast station branding via API
-- **Stream:** `radio.quickcat.club` → Icecast on port 8000, mount at `/radio.mp3`
-
-### Jellyfin Reset & Library Cleanup
-- **Account:** Deleted "Newt" admin, made "pibulus" sole admin, password cleared for fresh setup
-- **Shows Library:** Reorganized 72 show folders - stripped torrent cruft from 37 names, merged 7 split-season shows (Rick and Morty 6→1, Mike Tyson Mysteries 3→1, The Boys 3→1, House of the Dragon 2→1, Noisey 2→1, PEN15 2→1, Infinity Train 2→1)
-- **Note:** `Metalocalypse_old` kept as safety net, delete after confirming main folder has everything
-
-### Navidrome Reset & Config
-- **Account Reset:** Cleared old user, fresh admin `pibulus`/`meringue` + guest `guest`/`quickcat`
-- **Config Deployed:** `~/.config/navidrome/navidrome.toml` with Dark theme, 80% volume, sharing enabled, 30-day sessions, full string search, welcome message
-- **725 albums, 9022 songs** across Library + Soulseek directories
-
-### Pages Deployed
-- `/media/pibulus/passport/www/html/index.html` - Public quickcat.club (clean, tunnel-subdomain links only)
-- `/media/pibulus/passport/www/html/deck/index.html` - PIBULUS DECK (full admin, all local service links)
-- `/media/pibulus/passport/www/html/kpab/index.html` - KPAB.FM static fallback (fixed stream URL)
-
-### Service Port Map (Current)
-```
-nginx (homepage/deck)  : 80     | web_host container
-navidrome              : 4533   | music.quickcat.club
-jellyfin               : 8096   | watch.quickcat.club (host network)
-kavita                 : 5000   | read.quickcat.club
-azuracast (web UI)     : 8500   | kpab.fm
-azuracast (icecast)    : 8000   | radio.quickcat.club
-filebrowser            : 8080   |
-homepage-admin         : 8081   |
-overseerr              : 5055   |
-gitea                  : 3001   |
-memos                  : 5230   |
-web_terminal           : 7682   |
-cyber_arcade           : 7681   |
-irc                    : 9000   |
-```
-
----
-## 2026-02-27 - Media Library Overhaul + kpab.fm Music Fills
-
-### Shipped
-- **Calibre-Web** added on port 8083 for proper book browsing (author pages, sane UX)
-- **Kavita** stripped to comics-only - no more series of 1 book weirdness
-- **Homepage** updated: Library split into Comics + Books with correct links
-- **kpab.fm downloader**:  - 10 genre batches, 139 albums queued via slskd API
-  - Batches: uk_bangers, uk_grime, aus, hiphop, garage, hardcore, shoegaze, electronic, cool_indie, krautrock
-  - ~26/35 first run FLAC, including: Fontaines x3, Idles x2, Bob Vylan, Shame x2, Tropical Fuck Storm x2, Drones x2, Sampa x2, Hiatus Kaiyote, Genesis Owusu, Civic, Cable Ties, The Chats...
-- **Kavita DB** configured: DarkPink theme default, dashboard = Newly Added + On Deck only, sidenav = Comics + All Series only
-- **Comics library** populated: ~25GB of graphic novels transferred from Mac (Locke & Key, Watchmen, Sandman, Preacher, Saga, From Hell, Maus, Berserk, Akira + dozens more)
-- **slskd API** pattern documented in TOOLS.md - search→/responses endpoint, queue as array not object
-
-### Key learnings
-- slskd queue endpoint needs array payload  not 
-- slskd search results at  not on main search object
-- Kavita DB at  (root owned, stop container before swap)
-- Swap hitting 1.8/2GB with full stack running - immich_ml must stay stopped
-
-### Still needs doing (from previous session)
-- [ ] Calibre-Web first-time setup: http://pibulus.local:8083 → library path = /books, admin/admin123
-- [ ] Kavita: Add Comics library in Admin → Libraries → /comics
-- [ ] Jellyfin: Complete setup wizard, add libraries
-- [ ] Gluetun/PureVPN: Add credentials to .env before starting
-- [ ] icloudpd: Needs Apple ID config (currently unhealthy)
-- [ ] ErsatzTV: Was crash-looping, needs investigation
-- [ ] Immich ML: Run face detection pass then stop to free RAM
-- [ ] kpab.fm: Run remaining batches (garage, hardcore, shoegaze, electronic, hiphop, krautrock)
-- [ ] Sleaford Mods + black midi: Not on Soulseek atm, retry later
+### System State at End
+- Load: ~5 (down from 44 at session start)
+- Disk: 84% (9.1GB free)
+- All 19 containers running, cloudflared active
+- Golden image created
 
 ---
 
-## 2026-02-28 — The Port Massacre Fix
+## 2026-02-28 Session 2 — Cleanup & Arcade
 
-**Problem:** Pi crashed after power cycle, most services down. Ports 'kept fucking out'. Root disk at 98%.
+### Completed
+- **OpenClaw killed**: Stopped + disabled openclaw-gateway service (~532MB freed)
+- **Launcher --help**: Added --help/-h/help flag handler + quick subcommands (radio, games, status, deploy)
+- **Fixed help alias**: help is a bash builtin — replaced alias with function override. halp/sos/wtf also work
+- **Panels folder extracted** (8GB): Alien 2021 series → new folder, unique AvP/Prometheus → existing folders, Blacksad/Walk Through Hell/Code Pru/Cover → top-level Comics. Dupe Omnibus deleted.
+- **Jerusalem epub** → moved to Books/Unsorted/ (was in Comics, it's a novel)
+- **Transmetropolitan (Complete)** dupe deleted (4.2GB, background rm)
+- **Games module upgraded**: Added Interactive Fiction submenu — reads games.json, plays via frotz (z-machine) or glulxe (Glulx) in terminal
+- **Arcade web verified**: CORS headers working, Parchment integration confirmed, 30 games playable
 
-**Root Cause Found:** AzuraCast's docker-compose.yml mapped ~100 Icecast relay ports (8000-8496) on the host. Only 1 station exists (kpab.fm). These ports were stealing 8080 (Filebrowser), 8083 (Calibre-Web), 8095, 8096 (Jellyfin) and more. Race condition on boot = random services fail.
+### Architecture Notes
+- frotz + glulxe both installed for terminal IF play
+- Filebrowser (port 8080) already serves as file upload/download — no Droopy needed
+- Kavita scan needs manual trigger (auth creds unknown from CLI)
+- Watchmen still incomplete (4/12) — keeping for now
+- Mean Machines gaming magazines still in Comics — Pablo's call
 
-**Fixes Applied:**
-- Rewrote AzuraCast docker-compose.yml: 100+ ports → 9 ports (8000 stream, 8200-8216 station, 8500 admin, 8443 HTTPS, 2022 SFTP)
-- Fixed filebrowser port mapping (was 8080:8080, container listens on 80, now 8080:80)
-- Docker disk cleanup: removed unused calibre:latest (4.7GB!), gluetun, dangling images. Root: 98% → 87%
-- Stopped Immich ML to save ~500MB RAM
-- Added /passport/Soulseek mount to AzuraCast override (now sees both download dirs)
-- Calibre library: bulk imported 430 books from Assorted (culled junk first). 964 books total.
-- Verified all 13 services responding OK
-- Golden image: qcc_golden_v2026-02-28_0744.tar.gz
+## 2026-02-28 Session 2b — Downloads & Retro Arcade
 
-**Status:** All services nominal. No port conflicts. Tunnel active.
+### Completed
+- **Droopy pip removed** (wrong package — text analysis, not file upload)
+- **Watchmen complete**: All 12 issues downloaded from IA (AlanMooreCollectionWatchmen), CBR/CBZ, 199MB
+- **Mega Drive No-Intro set downloading**: ~1.7GB, 164+ files so far via ia CLI. Includes Normy's Beach Babe-O-Rama!
+- **Retro arcade page**: Created /arcade/retro/ with EmulatorJS CDN integration — Mega Drive games playable in-browser with controller support, save states, fullscreen
+- **Games manifest**: Auto-generated from ROM filenames, curated to skip betas/protos/demos, 49 games (growing)
+- **Drop zone page**: Created /drop/ upload page (frontend only — backend upload handler still needed)
+- **Navigation**: Arcade pages cross-linked (text adventures ↔ retro arcade ↔ quickcat.club)
 
-### Quick wins
-- Pages v2: removed all service branding (Jellyfin/Navidrome/Kavita etc), replaced with descriptive text
-- Public page: added Palestine section (films, books, comics - green accent cards)
-- Font sizes bumped 18px→20px, --dim brightened #666→#888 for legibility
-- ErsatzTV confirmed broken on arm64 - removed image (saved 1.1GB)
-- Immich, Overseerr brought back online
+### Downloads Running (tmux 'downloads')
+1. **Mega Drive No-Intro** (1.7GB) — in progress, ia download
+2. **Tiny Best Set Go** (93GB total) — 3 zips queued after MD finishes
+3. **Myrient TeknoParrot** (29 curated picks) — in progress via wget
+   - Fan translations: Chrono Regalia English
+   - Shmups: Akai Katana, Caladrius, Cotton Rock'n'Roll, Rolling Gunner
+   - Fighters: Guilty Gear Strive, Tekken 7 FR R2, Tekken Tag 2, DOA6, Persona 4U
+   - Iconic: OutRun 2, HotD 4 + Scarlet Dawn, Castlevania, Contra Evolution
+   - Racing: Wangan Midnight MT6RR, Densha de Go!!
+   - Rhythm: Project DIVA, Groove Coaster 2
+   - Total: ~29 new games, Myrient shutting down March 31 2026
 
-### 2026-02-28 17:45 - MEDIA CONSOLIDATION & HYGIENE
-- **Shows Folder Cleanup:** Bulk renamed and consolidated over 100+ shows on the Passport drive.
-- **Root Cause Found:** Complex "scene" folder names and split season folders were confusing Jellyfin's scanner.
-- **Fixes Applied:**
-  - Consolidated `Mr Pickles`, `Red Dwarf`, `Better Call Saul`, `Smiling Friends`, `The Legend of Vox Machina`, and `The Wire` into clean multi-season structures.
-  - Simplified 50+ complex folder names (Garfield, Aeon Flux, ALF, Breaking Bad, etc.).
-  - Merged duplicate show folders (`NewsRadio`, `Over the Garden Wall`, `Deadwood`, `The Wire`).
-  - Deleted redundant `Metalocalypse_old` and other stale directories.
-- **Dashboard Audit:** Verified links and ports on `pibulus.deck` (local) and `quickcat.club` (public). All services (`Jellyfin`, `Navidrome`, `Kavita`, `Memos`, etc.) are correctly routed.
-- **Documentation:** Updated `AI_HANDBOOK.md` with media organization rules and clean structure guidelines.
-- **Status:** All services nominal. Jellyfin library significantly expanded.
+### Architecture Notes
+- EmulatorJS runs entirely client-side (CDN JS/WASM) — no ARM64 Docker needed
+- .7z ROMs work directly with EmulatorJS — no extraction needed
+- Post-download script /tmp/generate_retro_manifest.sh regenerates games.json
+- Filebrowser (port 8080) exists for LAN file management but creds unknown
+- Drop zone upload needs backend service (future session)
 
-**Commit:** Show consolidation, dashboard audit, and AI handbook update.
+---
 
-
-## ARCHIVED LEDGER (HISTORICAL)
-# 📜 THE CYBERDECK LEDGER
-### A chronological record of modifications and deployments.
-
-## [2026-02-18] - THE REBRAND & HARDENING SESSION
-- **Identity:** Rebranded from 'Pibulus' to 'Quick Cat Club'.
-- **Security:** Enabled MAC randomization, Quad9 Private DNS, and Fail2Ban.
-- **Remote:** Enabled 'Stealth Mode' (password toggle) and Web-Terminal (Port 7682).
-- **Social:** Deployed Gitea (Port 3001) and Memos (Port 5230).
-- **Broadcast:** Integrated 80s Ads into ErsatzTV and mapped Music/Radio to AzuraCast.
-- **AI:** Installed Claude Code and prepped Node v22 for OpenClaw.
-- **Redundancy:** Created 'Golden Image' backup system.
-
-## [2026-02-19] - MISSION CONTROL & AI UPGRADE SESSION
-- **AI Upgrades:** Installed Homebrew, GCC, GH CLI, and UV.
-- **OpenClaw:** Integrated ♊️ gemini, 🐙 github, 🧾 summarize, 🍌 nano-banana, and 🌊 songsee.
-- **Mission Control:** Deployed 'Mission Control' UI (Web + Terminal) for task tracking.
-- **Identity:** Rebranded login experience to 'PIBULUS' with 'BISHOP' operative.
-- **UX:** Streamlined welcome dashboard with horizontal layout and live port map.
-- **Stability:** Stopped RAM-heavy containers (Immich ML, etc.) to rescue Swap memory.
-
-## [2026-02-22] - RADIO STATION INTEGRATION
-- **Domain:** Configured Nginx to serve 'kpab.fm' alongside 'quickcat.club'.
-- **Content:** Created dedicated Lush landing page for KPAB.fm with live audio player.
-- **Redundancy:** Synchronized new configs with Passport drive.
-
-## [2026-02-22] - THE BROADCAST ERA BEGINS
-- **Domain Acquisition:** Purchased 'kpab.fm' - the permanent home for Brunswick Pirate Radio.
-- **Nginx Multi-Site:** Configured the deck to host two separate worlds: 'quickcat.club' (Guest Home) and 'kpab.fm' (Radio Landing Page).
-- **Lush Web UI:** Deployed a dedicated radio player page for KPAB.fm with live stream integration.
-- **Radio Lab Expansion:** Created 'antenna_calc.sh' to prepare for physical FM transmission using the TR508 hardware.
-- **Identity Lock:** Updated BISHOP welcome dashboard to proudly display the new broadcast identity.
-- **Hardware Strategy:** Finalized specs for the 0.5W FM transmitter and Nooelec SDR integration.
-
-## [2026-02-25] - SOULSEEK RESURRECTION & DOCS OVERHAUL
-- **slskd:** Rebuilt standalone (removed VPN dependency). Updated to v0.24.4.
-- **slskd API:** Confirmed full REST API access - search, download, transfer management all working via CLI.
-- **AzuraCast Fix:** Recovered from SSL lockout (base_url was set to https, always_use_ssl=true). Reset via CLI.
-- **Welcome Script:** v4.2 - added port override map (azuracast=8500, jellyfin=8096), hides noise containers.
-- **PureVPN:** Credentials configured in .env but Gluetun TLS failing (stale server list). slskd runs direct for now.
-- **AI Handbook:** Complete rewrite with full API docs, port map, path reference, and operational notes.
-- **Music Downloads:** Queued first batch - King Gizzard, Butthole Surfers, Slayer, Cake (7 FLAC albums).
 ## Session 3 — 2026-02-28 (Late Night)
 
 ### KPAB.FM Song Request System — SHIPPED
@@ -380,95 +179,83 @@ irc                    : 9000   |
 - Root disk at 86% — monitor this
 - Kiwix image only 88MB, great citizen
 
----
+## 2026-03-01 23:30 — KPAB.FM v2 Radio Player
+- Fixed catalog: 4,332 → 10,594 tracks (rewrote bash→Python generator)
+- Added progress bar (elapsed/duration from API + client-side 1s tick)
+- History track actions: YouTube + Wikipedia search on hover/tap
+- PWA: manifest, service worker, apple-touch-icon, Media Session API
+- Mobile polish: safe-area-insets, 100dvh, iOS zoom prevention
+- Removed Club Home button
+- Commit: 8a1a2fe
 
-## Session 2026-03-01 — Cyberdeck v7.1: The Big Audit + AI Upgrade
+## 2026-03-01 00:50 — KPAB.FM Identity Layer
+- Tagline: 'Pretty good most of the time. Sometimes great.'
+- About/FAQ section with pirate radio philosophy
+- Message drop integration for listener messages
+- Request button moved above recently played
+- History blink fixed (only re-renders on change)
+- Offline page with auto-retry for Pi downtime
+- Nginx: /msg/drop proxy for kpab.fm
+- Commit: d897783
 
-### Summary
-Full audit and rebuild of launcher.sh and all 16 modules. Added AI-powered features.
+## 2026-03-02 00:45 — KPAB.FM FAQ Soul + ROM Download
+- FAQ rewrite: anti-Spotify politics, no shuffle language, "my house"
+- Added "WHY DOES THIS EXIST" + "WHATS COMING" sections
+- Wizard of Oz principle: never reveal the shuffle
+- Tiny Best Set Go ROM download restarted in tmux (nice/ionice, ~46GB)
+- Pi power cycled after OOM from previous ia download attempt
+- All 4 KPAB commits pushed to GitHub
+- Commit: 24d9af9
 
-### P0 Bugs Fixed
-- backup_module.sh: Broken line continuations + wrong AzuraCast path (~/azuracast not ~/.config/azuracast)
-- mission_control_module.sh: JSON corruption via raw append (now uses proper python json.load/dump)
-- games_module.sh: Shell injection via game titles in inline Python (now uses sys.argv)
+## 2026-03-02 01:30 — KPAB.FM Design Polish
+- Unified player chassis (now-playing + progress + controls as one panel)
+- Container tightened 820→680px, breathing glow when playing
+- 12 rotating cyan taglines, random on load (SubGenius energy)
+- Copy polish: Mesa Cosa/Bone Soup links, pro wrestling bio
+- History hover nudge, progress bar thicker, button hierarchy
+- Stacey UX review implemented
+- Commits: ff62540 → b0d9ff6
 
-### P1 Fixes
-- Wikipedia port 8083→8084 (was pointing to Calibre-Web instead of Kiwix)
-- Stealth toggle now actually checks state and toggles (was hardcoded to "public")
-- Deduplicated "Vault Navigator"/"Knowledge Vault" menu entries
-- Wired orphaned modules: Mission Control, Security Audit, Bishop Librarian
-- nmap -sP→-sn (deprecated flag)
-- command -v guards for pyradio, gemini, and other missing tools
+## 2026-03-03 - Golden Image Session
 
-### P2 Polish
-- Fixed escaped shebangs (#\! → #!/bin/bash) in 3 modules
-- Audio device guard — silently skips tones when no HDMI audio
-- Reorganized 18-item flat menu into 4 categories (Media, Knowledge, Security, System)
-- Improved HUD: memory usage + container count
-- Cleaned up dead code (terminal_travels play_games, inline manage_community)
+### What shipped:
+- KPAB.FM JS crash fix (unescaped apostrophe)
+- Deck dashboard status.json fix (nginx alias)
+- Deck message drop → inbox viewer (read-only)
+- Palestine + Conspiracy file browsers: in-page folder navigation with breadcrumbs
+- Mary Poppins file renaming agent deployed
+- Deck Knowledge Vault cards → green (solidarity)
+- KPAB about/FAQ button styling, tagline rotation disabled, FAQ cleaned
+- KPAB PWA manifest + service worker
+- Music downloads: soundtracks (30), tony_hawk (5), electronic_deep (24) batches queued
+- Catalog regenerated: 11,801 requestable tracks
+- Alan Moore collection moved Shows → Comics
 
-### New Features
-- 🧠 Bishop AI Librarian: headless claude -p with manifest search (deck search)
-- 🤖 Scavenger Bot: AI-powered tool selector — slskd + yt-dlp + ia + aria2 (deck scavenge)
-- 🔗 URL Shortener: Python micro-app on port 8088, systemd service, pastel-punk UI
-- 📝 memo.quickcat.club: Memos exposed via Cloudflare tunnel
-- 🔗 go.quickcat.club: URL shortener exposed via Cloudflare tunnel
-- 🚀 Deploy Wizard v6.0: local folder deploy, blank site creator, proper cloudflare injection
+### Commit: 84a5897
+### State: GOLDEN - all services running, Pi stable at 56C, 2.5GB/4GB RAM
 
-### DNS Action Needed
-quickcat.club needs API access enabled in Porkbun dashboard, then:
-- CNAME: memo → c79eb8a2-...cfargotunnel.com
-- CNAME: go → c79eb8a2-...cfargotunnel.com
+## 2026-03-03 - Session 2: Polish + Tools + Downloads
 
-### Files Changed
-18 files, 1473 insertions, 332 deletions. Commit: 6b91ad1
+### What shipped:
+- kpab-grab: one-shot album downloader ("kpab-grab Artist Album")
+- KPAB buttons: subtle gray default, cyan/magenta glow on hover
+- KPAB FAQ: merged best-of, drop zone link, 10k blurb removed
+- Deck: Admin moved to top, section headers colored (magenta/green/yellow)
+- Deck: Forbidden Library + ROM Vault added to Fun section
+- Pirate electronic batch: 46 albums (jungle/breaks/techno/dub/garage/acid)
+- João Selva: Passarinho + Onda queued
+- Comics cleaned via Mary Poppins, Alan Moore re-prefixed
 
-### Backup
-v6.7 originals at ~/pibulus-os/modules/.backup-v6.7/
+### Commits: 84a5897 through d68e12e (8 commits)
+### State: GOLDEN - all services up, downloads running in tmux
 
-## 2026-03-03 - Retro Arcade Fix + Enhance + Wikipedia Fix
-- **Retro Arcade**: Fixed garbled audio/no video — iframe-based EmulatorJS player (player.html)
-- **Curated catalog**: 634 → 251 Mega Drive games + 41 PSX games = 292 total
-- **Save states**: EJS_gameName per game, IndexedDB persistence works
-- **PSX added**: Symlinked /Roms/psx into roms dir, 41 titles (Alundra to Vib-Ribbon)
-- **Links**: RETRO card on quickcat.club, deck, arcade hub banner
-- **Wikipedia fix**: Kiwix --urlRootLocation /wiki + nginx proxy_pass trailing slash removed
-- **Files**: retro/index.html, retro/player.html, retro/games.json, arcade/index.html, main index.html, deck index.html, hardening.conf
-- **Note**: Sonic 1/2/3 + Streets of Rage missing from nointro ROM set
-
-## 2026-03-05 - The Sovereign Sanctuary Polish
-- **Radio (KPAB.FM)**: Fixed broken request system. Re-indexed all 13,771 tracks. Hardened `gen_request_catalog.py` with atomic write safety.
-- **Frontend Refactor**: Standardized all radio buttons. Cleaned up FAQ.
-- **Graffiti Wall**: Overhaul to 128x128 resolution + VHS palette.
-- **PWA + SEO**: Added manifest, service worker, and metadata to quickcat.club.
-- **Media Cleanup**: Consolidated The Simpsons, Succession, and Cosmos.
-- **App Hygiene**: Calibre-Web password policy disabled. Kavita root-file errors fixed.
-- **Scripts Audit**: Fixed port extraction bug in `welcome.sh`.
-
-
-## 2026-03-05 — SESSION: THE NEURAL LINK UPGRADE
-- **The Wall Refactored**: Optimized 128x128 grid with debounced disk saves & batching. Smooth drawing enabled.
-- **Cyberdeck Portal**: Launched `/terminal/` with CRT scanlines, flicker, and a rainbow TUI launcher.
-- **Tiered Access**: Created restricted `deck` user for public SSH (`ssh deck@quickcat.club`).
-- **Live Shoutbox**: Added real-time anonymous chat with "Mighty Duck" name generator.
-- **The Deploy Deck**: Added one-click Git-to-Cloudflare deployment button on Admin Dashboard.
-- **Library Upgrades**: Added video preview with CRT overlays and download confirmation modals.
-
----
-## 2026-03-12 - Cyberdeck v0.9.2 - RECOVERY & ACCELERATION
-
-### Shipped
-- **Jellyfin HW Acceleration**: Mapped `/dev/dri` and `/dev/video19` (Pi 5 HEVC decoder) into `pirate.yml`. Added video/render groups (44/992).
-- **Calibre-Web Fix**: Repaired `app.db` by surgically re-inserting missing Guest user (ID 2) with ROLE_ANONYMOUS (32) to resolve Internal Server Error.
-- **Terminal Proxy**: Restored `/terminal/` in `hardening.conf` pointing to ttyd on port 7682 with proper WebSocket upgrade headers.
-- **Interactive Fiction**: Mounted `/fiction/games/` from Passport drive into `web_host` container. Zork and 29 other games now playable via iplayif.com.
-- **Nginx Hygiene**: Removed duplicate Cache-Control headers and escaped shell variables in `hardening.conf`.
-
-### Status
-- **Stack**: All 13 services in `pirate.yml` healthy and responding.
-- **Media**: Jellyfin library accessible with hardware-assisted decoding.
-- **Books**: Calibre-Web live at read.quickcat.club.
-- **Arcade**: Fiction library reachable at quickcat.club/fiction.
-- **Shell**: Web terminal live at quickcat.club/terminal.
-
-**Checkpoint**: v0.9.2 STABLE
+## 2026-03-04 — Nginx Simplification + Quick Wins
+- Unified all 3 nginx server blocks to use same root (/usr/share/nginx/html)
+- deck.quickcat.club and pibulus.local now rewrite / to /deck/index.html instead of using a different root
+- Deleted ~36 lines of duplicated alias blocks (arcade, fiction, status.json)
+- Fixed deck auth password (Church0fTheSubgeniu5!)
+- Resurrected memos container (port 5230) in social.yml
+- Added /memos/ and /go/ proxy routes to pibulus.local
+- Added MEMOS and SHORTENER cards to deck admin section
+- Fixed html volume mount — was :ro which broke overlay mounts, caused stale file cache
+- All 12 endpoints verified 200

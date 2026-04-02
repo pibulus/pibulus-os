@@ -1,0 +1,14 @@
+[Unit]
+Description=KPAB Mutiny Skip Vote Service
+After=network.target docker.service
+
+[Service]
+Type=simple
+User=pibulus
+WorkingDirectory=/home/pibulus/pibulus-os/scripts
+ExecStart=/usr/bin/python3 /home/pibulus/pibulus-os/scripts/mutiny.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

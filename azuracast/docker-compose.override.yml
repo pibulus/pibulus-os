@@ -1,0 +1,10 @@
+services:
+  web:
+    cpu_shares: 2048
+    mem_reservation: 512m
+    volumes:
+      - /media/pibulus/passport/Music:/var/azuracast/stations/kpab.fm/media/My_Library:ro
+      - /media/pibulus/passport/Soulseek:/var/azuracast/stations/kpab.fm/media/Soulseek_New:ro
+      - ./fix-gosu.sh:/fix-gosu.sh:ro
+    entrypoint: ['tini', '--', '/fix-gosu.sh']
+    command: []
