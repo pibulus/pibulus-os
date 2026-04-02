@@ -8,6 +8,8 @@ esac
 
 command -v gum >/dev/null 2>&1 || { echo "gum not found. Install: https://github.com/charmbracelet/gum"; exit 1; }
 
+SERVICE_REGISTRY="${SERVICE_REGISTRY:-$HOME/pibulus-os/config/service-registry.json}"
+
 # Source modules for availability
 [ -f ~/pibulus-os/modules/pirate_grab_module.sh ] && source ~/pibulus-os/modules/pirate_grab_module.sh
 [ -f ~/pibulus-os/modules/scavenger_module.sh ] && source ~/pibulus-os/modules/scavenger_module.sh
@@ -70,9 +72,9 @@ tactile_choose() {
 
 radio_status() {
   echo "KPAB public:"
-  echo "  site   -> https://kpab.fm"
-  echo "  stream -> https://kpab.fm/radio.mp3"
-  echo "  admin  -> https://radio-admin.quickcat.club"
+  service_line radio_site
+  service_line radio_stream
+  service_line radio_admin
   echo
   echo "Live stack:"
   docker ps --filter 'name=azuracast' --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
@@ -81,20 +83,35 @@ radio_status() {
   docker logs --tail 20 azuracast 2>/dev/null || true
 }
 
+service_line() {
+  local key="$1"
+  python3 - "$SERVICE_REGISTRY" "$key" <<'PY'
+import json, sys
+
+path, key = sys.argv[1], sys.argv[2]
+data = json.load(open(path))
+for service in data.get("services", []):
+    if service.get("key") == key:
+        print(f"  {service['name']:<14} -> {service['url']}")
+        raise SystemExit(0)
+print(f"  {key:<14} -> missing from registry")
+PY
+}
+
 show_public_links() {
-  cat <<'EOF'
-Public front doors
-  quickcat.club             main portal
-  kpab.fm                   radio site + stream
-  deck.quickcat.club        admin deck
-  watch.quickcat.club       Jellyfin
-  music.quickcat.club       Navidrome
-  read.quickcat.club        Calibre-Web
-  comics.quickcat.club      Kavita
-  photos.quickcat.club      Immich
-  games.quickcat.club       ROMM
-  scummvm.quickcat.club     browser ScummVM
-EOF
+  python3 - "$SERVICE_REGISTRY" <<'PY'
+import json, sys
+
+data = json.load(open(sys.argv[1]))
+print("Public front doors")
+for service in data.get("services", []):
+    if service.get("category") not in {"public", "admin", "private"}:
+        continue
+    name = service.get("name", "unknown")
+    url = service.get("url", "")
+    desc = service.get("description", "")
+    print(f"  {name:<14} {url:<32} {desc}")
+PY
 }
 
 show_radio_snapshot() {

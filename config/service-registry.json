@@ -1,0 +1,129 @@
+{
+  "services": [
+    {
+      "key": "front_door",
+      "name": "Quick Cat Club",
+      "url": "https://quickcat.club",
+      "category": "public",
+      "description": "main portal",
+      "canonical": true
+    },
+    {
+      "key": "radio_site",
+      "name": "KPAB.FM",
+      "url": "https://kpab.fm",
+      "category": "public",
+      "description": "radio site + stream",
+      "canonical": true
+    },
+    {
+      "key": "radio_stream",
+      "name": "KPAB Stream",
+      "url": "https://kpab.fm/radio.mp3",
+      "category": "public",
+      "description": "direct stream",
+      "canonical": true
+    },
+    {
+      "key": "radio_admin",
+      "name": "AzuraCast Admin",
+      "url": "https://radio-admin.quickcat.club",
+      "category": "admin",
+      "description": "station control"
+    },
+    {
+      "key": "deck",
+      "name": "Deck",
+      "url": "https://deck.quickcat.club",
+      "category": "admin",
+      "description": "admin deck",
+      "canonical": true
+    },
+    {
+      "key": "watch",
+      "name": "Jellyfin",
+      "url": "https://watch.quickcat.club",
+      "category": "public",
+      "description": "movies & shows",
+      "container": "jellyfin"
+    },
+    {
+      "key": "music",
+      "name": "Navidrome",
+      "url": "https://music.quickcat.club",
+      "category": "public",
+      "description": "music streaming",
+      "container": "navidrome"
+    },
+    {
+      "key": "read",
+      "name": "Calibre-Web",
+      "url": "https://read.quickcat.club",
+      "category": "public",
+      "description": "books",
+      "container": "calibre-web"
+    },
+    {
+      "key": "comics",
+      "name": "Kavita",
+      "url": "https://comics.quickcat.club",
+      "category": "public",
+      "description": "comics & graphic novels",
+      "container": "kavita"
+    },
+    {
+      "key": "photos",
+      "name": "Immich",
+      "url": "https://photos.quickcat.club",
+      "category": "private",
+      "description": "photo vault",
+      "container": "immich_server"
+    },
+    {
+      "key": "games",
+      "name": "ROMM",
+      "url": "https://games.quickcat.club",
+      "category": "public",
+      "description": "ROM manager",
+      "container": "romm"
+    },
+    {
+      "key": "scummvm",
+      "name": "ScummVM",
+      "url": "https://scummvm.quickcat.club",
+      "category": "public",
+      "description": "browser ScummVM"
+    },
+    {
+      "key": "memo",
+      "name": "Memos",
+      "url": "https://memo.quickcat.club",
+      "category": "private",
+      "description": "microblog",
+      "container": "memos"
+    },
+    {
+      "key": "go",
+      "name": "Shortener",
+      "url": "https://go.quickcat.club",
+      "category": "public",
+      "description": "short links",
+      "container": "shortener"
+    },
+    {
+      "key": "soulseek",
+      "name": "slskd",
+      "url": "https://slskd.quickcat.club",
+      "category": "private",
+      "description": "p2p music",
+      "container": "slskd"
+    },
+    {
+      "key": "vault",
+      "name": "Vault",
+      "url": "https://vault.quickcat.club",
+      "category": "private",
+      "description": "knowledge vault"
+    }
+  ]
+}
