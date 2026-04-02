@@ -27,6 +27,9 @@ with a single computer that costs less than one month of the services
 it replaces. Every dollar or minute taken away from platforms that
 exploit people is worth it.
 
+If you want the practical map instead of the manifesto, start at
+[DOCS_INDEX.md](./DOCS_INDEX.md).
+
 ```
   ┌─────────────────────────────────────────────────────────────────┐
   │                                                                 │

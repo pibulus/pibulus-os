@@ -17,7 +17,7 @@
 
 ---
 
-## 📦 Docker Services (8 running)
+## 📦 Docker Services
 
 | Service | Container | Port | Stack |
 |---------|-----------|------|-------|
@@ -49,7 +49,7 @@
 | `/palestine/` | Palestine page | Static content |
 | `/drop/` | Drop Zone upload page | File upload via :8085 |
 | `/deck/` | Cyberdeck (read-only) | Proxy to :7683 |
-| `/ttyd/` | Admin web terminal | Proxy to :7682, auth required |
+| `/terminal/` | Admin web terminal | Proxy to :7682, auth required |
 | `/memos/` | Personal notes (Memos) | Proxy to :5230 |
 | `/go/` | URL shortener | Proxy to :8088 |
 | `/mission-control/` | System dashboard | Static + status.json |
@@ -153,7 +153,6 @@ pibulus-os/
 │   ├── pirate_grab.py       # Media acquisition
 │   ├── selfcare.sh          # System maintenance
 │   ├── shortener.py         # URL shortener backend
-│   ├── start-kpab-services.sh  # Start radio services
 │   ├── status.sh            # Health → status.json
 │   ├── sync_arcade_roms.py  # ROM sync
 │   ├── wall_server.py       # Pixel wall backend
@@ -161,6 +160,7 @@ pibulus-os/
 │
 ├── www/html/                # Web pages (see URLs above)
 │
+├── DOCS_INDEX.md            # Where to start reading
 ├── GLOSSARY.md              # This file
 ├── ELI.md                   # ELI12/27/42 explanations
 ├── FIELD_MANUAL.md          # Access tiers, ports, emergencies
@@ -210,7 +210,7 @@ pibulus-os/
 ## 🏗️ Architecture
 
 - **OS**: Raspberry Pi OS Lite (Trixie/Bookworm arm64)
-- **RAM**: 4GB + 2GB zram swap (no SD card swap)
+- **RAM**: 4GB + active swap/zram pressure
 - **HDD**: `/media/pibulus/passport` (5.5TB NTFS, UUID=E8BC1973BC193D8E)
 - **USB**: `/media/pibulus/MEMBOT` (1TB FAT32, UUID=649A-D7FA)
 - **Tunnel**: Cloudflare (c79eb8a2-9791-4ece-8b54-bc9d0e6d01cd)

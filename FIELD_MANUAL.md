@@ -47,6 +47,6 @@
 - **High temp**: Check fan, `vcgencmd measure_temp`
 - **Drive disconnect**: Check USB-C power to Passport
 - **Nginx down**: `docker restart web_host`
-- **All services down**: `~/pibulus-os/scripts/start-kpab-services.sh`
+- **All services down**: `sudo systemctl restart kpab-services`
 - **SD card corruption**: Reflash from golden image at `/media/pibulus/passport/Backups/Golden_Images/`, restore configs from git repo
 - **Tunnel down**: `sudo systemctl restart cloudflared`
