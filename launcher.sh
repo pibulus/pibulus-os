@@ -500,6 +500,23 @@ safe_unmount_membot() {
   fi
 }
 
+safe_mount_membot() {
+  local target="/media/pibulus/MEMBOT"
+  if findmnt -rn -T "$target" >/dev/null 2>&1; then
+    echo "MEMBOT is already mounted."
+    findmnt -rn -T "$target"
+    return
+  fi
+
+  mkdir -p "$target"
+  if sudo mount "$target"; then
+    echo "MEMBOT mounted cleanly."
+    findmnt -rn -T "$target"
+  else
+    echo "Mount failed. Check that the MEMBOT stick is plugged in."
+  fi
+}
+
 write_field_note() {
   local note
   note=$(gum write --placeholder 'Field note, idea, bug, weird discovery...')
@@ -926,11 +943,13 @@ drives_menu() {
     local action
     action=$(tactile_choose \
       '💾 Drive Status' \
+      '🔼 Mount MEMBOT' \
       '🔌 USB / Kernel Noise' \
       '⏏️ Unmount MEMBOT' \
       'Back')
     case "$action" in
       '💾 Drive Status') show_drive_status; pause_screen ;;
+      '🔼 Mount MEMBOT') safe_mount_membot; pause_screen ;;
       '🔌 USB / Kernel Noise') show_usb_kernel_noise; pause_screen ;;
       '⏏️ Unmount MEMBOT') safe_unmount_membot; pause_screen ;;
       'Back'|'') return ;;
