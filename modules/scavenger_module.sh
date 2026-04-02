@@ -1,14 +1,14 @@
 #!/bin/bash
-# 📥 SCAVENGER BOT v1.1 — AI-Powered Media Acquisition
-# "Tell me what you want. I'll figure out where to get it."
-#
+# 📥 SCAVENGER v1.2 — media grab helper
 # Tools: slskd (Soulseek), yt-dlp, aria2, ia (Internet Archive)
-# Brain: Claude Code headless (haiku) for tool selection + query crafting
+# Optional assist: Claude can help choose a tool or tighten a query, but the
+# workflow should still make sense without it.
 
 SCAVENGER_BUDGET="0.20"
 SLSKD_URL="http://localhost:5030"
 SLSKD_USER="slskd"
 SLSKD_PASS="slskd"
+PASSPORT_ROOT="${PASSPORT_ROOT:-/media/pibulus/passport}"
 
 # Source API keys (not auto-loaded in non-interactive SSH)
 [ -f ~/.config/api_keys ] && source ~/.config/api_keys
@@ -294,29 +294,29 @@ scavenge_aria2() {
 manage_scavenger() {
     while true; do
         render_hud
-        echo -e "$(gum style --foreground 51 '━━━ 🤖 SCAVENGER BOT ━━━')"
-        echo -e "$(gum style --foreground 245 'Tell me what you want. I will find it.')"
+        echo -e "$(gum style --foreground 51 '━━━ 📥 SCAVENGER ━━━')"
+        echo -e "$(gum style --foreground 245 'Grab music, video, books, or direct downloads.')"
         echo ""
 
         local action=$(tactile_choose \
-            "🧠 Smart Search (AI picks the tool)" \
-            "🎵 Soulseek Direct" \
-            "📹 yt-dlp Direct" \
-            "📚 Internet Archive Direct" \
-            "⬇️  Direct URL (aria2)" \
+            "🧭 Help Me Choose" \
+            "🎵 Search Soulseek" \
+            "📹 Use yt-dlp" \
+            "📚 Search Internet Archive" \
+            "⬇️  Direct Download URL" \
             "Back")
 
         case $action in
-            "🧠 Smart Search"*)
+            "🧭 Help Me Choose"*)
                 local request=$(gum input --placeholder "What do you want? (e.g., 'that new MF DOOM bootleg')")
                 [ -z "$request" ] && continue
 
-                gum style --foreground 245 "Thinking about the best approach..."
+                gum style --foreground 245 "Picking the best lane..."
                 local tool=$(ai_decide_tool "$request")
                 local query=$(ai_craft_query "$request" "$tool")
 
-                gum style --foreground 212 "Strategy: using $tool"
-                gum style --foreground 245 "Query: $query"
+                gum style --foreground 212 "Best lane: $tool"
+                gum style --foreground 245 "Search: $query"
                 echo ""
 
                 case "$tool" in
@@ -327,19 +327,19 @@ manage_scavenger() {
                     *)        gum style --foreground 226 "Couldn't decide tool. Try manual search."; sleep 2 ;;
                 esac
                 ;;
-            "🎵 Soulseek Direct")
+            "🎵 Search Soulseek")
                 local q=$(gum input --placeholder "Search Soulseek (e.g., 'Eddy Current Suppression Ring')")
                 [ -n "$q" ] && scavenge_soulseek "$q"
                 ;;
-            "📹 yt-dlp Direct")
+            "📹 Use yt-dlp")
                 local q=$(gum input --placeholder "URL or search (e.g., 'https://youtube.com/...')")
                 [ -n "$q" ] && scavenge_ytdlp "$q"
                 ;;
-            "📚 Internet Archive Direct")
+            "📚 Search Internet Archive")
                 local q=$(gum input --placeholder "Search IA (e.g., 'anarchist cookbook')")
                 [ -n "$q" ] && scavenge_ia "$q"
                 ;;
-            "⬇️  Direct URL"*)
+            "⬇️  Direct Download URL"*)
                 local q=$(gum input --placeholder "Paste direct download URL...")
                 [ -n "$q" ] && scavenge_aria2 "$q"
                 ;;

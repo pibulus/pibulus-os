@@ -9,10 +9,12 @@ esac
 command -v gum >/dev/null 2>&1 || { echo "gum not found. Install: https://github.com/charmbracelet/gum"; exit 1; }
 
 SERVICE_REGISTRY="${SERVICE_REGISTRY:-$HOME/pibulus-os/config/service-registry.json}"
+PASSPORT_ROOT="${PASSPORT_ROOT:-/media/pibulus/passport}"
 
 # Source modules for availability
 [ -f ~/pibulus-os/modules/pirate_grab_module.sh ] && source ~/pibulus-os/modules/pirate_grab_module.sh
 [ -f ~/pibulus-os/modules/scavenger_module.sh ] && source ~/pibulus-os/modules/scavenger_module.sh
+[ -f ~/pibulus-os/modules/audio_feedback.sh ] && source ~/pibulus-os/modules/audio_feedback.sh
 
 get_status() {
   if docker ps --format '{{.Names}}' | grep -qx "$1"; then
@@ -137,6 +139,20 @@ print(f"  {listeners.get('current', 0)} live / {listeners.get('unique', 0)} uniq
 PY
 }
 
+connect_text_world() {
+  local label="$1"
+  local host="$2"
+  local port="${3:-23}"
+
+  clear
+  echo "Connecting to $label..."
+  echo "Host: $host:$port"
+  echo "Terminal mode: vt100"
+  echo "Exit telnet with Ctrl + ]"
+  echo
+  TERM=vt100 telnet "$host" "$port"
+}
+
 network_menu() {
   while true; do
     render_hud
@@ -220,7 +236,7 @@ while true; do
     '🚀 Deploy Something New' \
     '🧹 Flush RAM' \
     '🧠 Scavenger Search' \
-    '🐉 Red Dragon BBS' \
+    '🐉 Dark Realms MUD' \
     '📟 Fozz BBS' \
     '🎲 NetHack' \
     '💬 IRC Chat' \
@@ -238,8 +254,8 @@ while true; do
     '🚀 Deploy Something New') ~/pibulus-os/scripts/deploy.sh ;;
     '🧹 Flush RAM') ~/pibulus-os/scripts/flush_ram.sh; pause_screen ;;
     '🧠 Scavenger Search') manage_scavenger ;;
-    '🐉 Red Dragon BBS') TERM=ansi telnet darkrealms.ca ;;
-    '📟 Fozz BBS') TERM=ansi telnet bbs.fozztexx.com ;;
+    '🐉 Dark Realms MUD') connect_text_world 'Dark Realms' 'darkrealms.ca' '23' ;;
+    '📟 Fozz BBS') connect_text_world 'Fozz BBS' 'bbs.fozztexx.com' '23' ;;
     '🎲 NetHack') nethack || { echo 'NetHack not installed.'; pause_screen; } ;;
     '💬 IRC Chat') irssi ;;
     '📖 Field Manual') gum pager < ~/pibulus-os/FIELD_MANUAL.md ;;
