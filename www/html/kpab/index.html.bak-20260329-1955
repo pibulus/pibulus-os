@@ -1098,12 +1098,11 @@
     .faq-item {
       margin-bottom: 16px;
       padding: 8px 0;
-      padding-left: 6px;
-      border-left: 1px solid transparent;
       transition: all 0.3s ease;
     }
     .faq-item:hover {
-      border-left-color: rgba(0,255,234,0.15);
+      padding-left: 6px;
+      border-left: 1px solid rgba(0,255,234,0.15);
     }
 
     .faq-q {
@@ -1429,8 +1428,8 @@
     /* LOVE BUTTON — animated heart v3 */
     .love-btn {
       position: absolute;
-      top: 18px;
-      right: 16px;
+      top: 6px;
+      right: 8px;
       background: none;
       border: none;
       cursor: pointer;
@@ -1442,7 +1441,6 @@
       -webkit-tap-highlight-color: transparent;
       width: 32px;
       height: 32px;
-      opacity: 0.9;
     }
     .love-heart-wrap {
       position: relative;
@@ -1454,39 +1452,8 @@
       filter: drop-shadow(0 0 0px rgba(220,60,180,0));
       transition: filter 0.3s ease;
     }
-    .love-btn {
-      transition: transform 0.2s ease, opacity 0.2s ease;
-    }
-    .love-btn:hover {
-      opacity: 1;
-      transform: scale(1.15);
-    }
     .love-btn:hover .love-heart-wrap svg {
-      filter: drop-shadow(0 0 6px rgba(220,60,180,0.45));
-    }
-    .love-btn:active {
-      transform: scale(0.9);
-    }
-    @keyframes loveGlitch {
-      0%, 89%, 91%, 93%, 95%, 100% {
-        transform: translate(0);
-        filter: drop-shadow(0 0 0 transparent) drop-shadow(0 0 0 transparent);
-      }
-      90% {
-        transform: translate(-1px, 1px);
-        filter: drop-shadow(-2px 0 0 rgba(0,255,234,0.6)) drop-shadow(2px 0 0 rgba(255,0,255,0.6));
-      }
-      92% {
-        transform: translate(1px, -1px);
-        filter: drop-shadow(2px 0 0 rgba(255,0,255,0.5)) drop-shadow(-1px 0 0 rgba(0,255,234,0.5));
-      }
-      94% {
-        transform: translate(0);
-        filter: drop-shadow(-1px 0 0 rgba(0,255,234,0.4)) drop-shadow(1px 0 0 rgba(255,0,255,0.4));
-      }
-    }
-    .love-heart-wrap {
-      animation: loveGlitch 8s ease-in-out infinite;
+      filter: drop-shadow(0 0 4px rgba(220,60,180,0.3));
     }
     .love-sparks {
       position: fixed;
@@ -1655,6 +1622,11 @@
       <button class="about-toggle" id="aboutToggle">&#x2139; About / FAQ</button>
       <div class="about-panel" id="aboutPanel">
         <div class="about-content">
+          <div class="about-blurb">
+            <!-- 10,000+ curated tracks. Every genre, every era, every mood. -->
+	    The algorithms are corrupted. Embrace uncertainty.
+          </div>
+
           <div class="faq-item">
             <div class="faq-q">WHAT IS THIS?</div>
             <div class="faq-a">A pirate radio station running on a Raspberry Pi 5 in a house in Brunswick, Melbourne. 24/7 music with a taste level but no format. No ads. No tracking. No subscriptions. Just a hard drive doing its best.</div>
@@ -1759,7 +1731,6 @@
 
     let isPlaying    = false;
     let lastSongId   = null;
-    let lastSongText = '';
     let pollTimer    = null;
     let trackElapsed = 0;
     let trackDuration = 0;
@@ -1861,7 +1832,6 @@
 
       if (songId !== lastSongId) {
         lastSongId = songId;
-        lastSongText = (song.artist || '') + ' - ' + (song.title || '');
 
         // CRT glitch on track change
         const chassis = document.getElementById('playerChassis');
@@ -2635,14 +2605,6 @@
 
     loveBtn.addEventListener('click', () => {
       localStorage.setItem('kpab-love', '1');
-      // Send heart to backend
-      if (lastSongId) {
-        fetch('/hearts/love', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ song_id: lastSongId, song_text: lastSongText })
-        }).catch(() => {});
-      }
       if (lovePopped) return;
       loveLevel++;
       if (loveLevel >= loveMax) {
