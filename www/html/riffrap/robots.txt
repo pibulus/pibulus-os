@@ -1,0 +1,7 @@
+# robots.txt for RiffRap
+# Allow all crawlers
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://riffrap.app/sitemap.xml
