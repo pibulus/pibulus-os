@@ -6,5 +6,6 @@ services:
       - /media/pibulus/passport/Music:/var/azuracast/stations/kpab.fm/media/My_Library:ro
       - /media/pibulus/passport/Soulseek:/var/azuracast/stations/kpab.fm/media/Soulseek_New:ro
       - ./fix-gosu.sh:/fix-gosu.sh:ro
+      - ./patches/backend/src/Radio/Frontend/Icecast.php:/var/azuracast/www/backend/src/Radio/Frontend/Icecast.php:ro
     entrypoint: ['tini', '--', '/fix-gosu.sh']
     command: []
