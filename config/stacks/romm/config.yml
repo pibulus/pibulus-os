@@ -1,0 +1,103 @@
+emulatorjs:
+  cache_limit: null
+  controls: {}
+  debug: false
+  disable_auto_unload: false
+  disable_batch_bootup: false
+  netplay:
+    enabled: false
+    ice_servers: []
+  settings:
+    default:
+      fps: show
+      shader: crt-easymode.glslp
+      vsync: disabled
+exclude:
+  platforms: &id001
+  - '@eaDir'
+  - __MACOSX
+  - $RECYCLE.BIN
+  - .Trash-*
+  - .stfolder
+  - .Spotlight-V100
+  - .fseventsd
+  - .DocumentRevisions-V100
+  - System Volume Information
+  - ._*
+  roms:
+    multi_file:
+      names: *id001
+      parts:
+        extensions:
+        - db
+        - ini
+        - tmp
+        - bak
+        - lock
+        - log
+        - cache
+        - crdownload
+        names: &id002
+        - .DS_Store
+        - .localized
+        - .Trashes
+        - .stfolder
+        - '@SynoResource'
+        - gamelist.xml
+        - ._*
+    single_file:
+      extensions:
+      - db
+      - ini
+      - tmp
+      - bak
+      - lock
+      - log
+      - cache
+      - crdownload
+      names: *id002
+filesystem:
+  firmware_folder: bios
+  roms_folder: roms
+scan:
+  export_gamelist: false
+  media:
+  - box2d
+  - screenshot
+  - manual
+  priority:
+    artwork:
+    - igdb
+    - moby
+    - ss
+    - ra
+    - launchbox
+    - gamelist
+    - hasheous
+    - tgdb
+    - flashpoint
+    - hltb
+    language:
+    - en
+    - fr
+    metadata:
+    - igdb
+    - moby
+    - ss
+    - ra
+    - launchbox
+    - gamelist
+    - hasheous
+    - tgdb
+    - flashpoint
+    - hltb
+    region:
+    - us
+    - wor
+    - ss
+    - eu
+    - jp
+system:
+  platforms:
+    megadrive: genesis
+  versions: {}

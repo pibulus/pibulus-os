@@ -1,0 +1,72 @@
+services:
+  romm:
+    image: rommapp/romm:latest
+    container_name: romm
+    restart: unless-stopped
+    environment:
+      - DB_HOST=romm-db
+      - DB_NAME=romm
+      - DB_USER=romm
+      - DB_PASSWD=rommpass2026
+      - ROMM_AUTH_SECRET_KEY=a7dc774797532563849b736110fb571c0fcb5ddbd913748172c8f0d270f7ad7f
+      - ROMM_AUTH_ENABLED=true
+      - ROMM_AUTH_USERNAME=pibulus
+      - ROMM_AUTH_PASSWORD=meringue
+      - ENABLE_SCHEDULED_RESCAN=true
+      - SCHEDULED_RESCAN_CRON=0 3 * * *
+      - ENABLE_SCHEDULED_UPDATE_MAME_XML=false
+      - HASHEOUS_API_ENABLED=true
+      - SCREENSCRAPER_API_ENABLED=true
+      - LAUNCHBOX_API_ENABLED=false
+      - IGDB_CLIENT_ID=az5iio95r5bs2muxpicmk7bxwicq39
+      - IGDB_CLIENT_SECRET=1bbbrm5zkhpoajeu6hns0xnbathccf
+    volumes:
+      - /media/pibulus/passport/app-data/romm/assets:/romm/assets
+      - /media/pibulus/passport/app-data/romm/config:/romm/config
+      - /media/pibulus/MEMBOT/Roms/Game Boy:/romm/library/roms/gb:ro
+      - /media/pibulus/MEMBOT/Roms/Game Boy Advance:/romm/library/roms/gba:ro
+      - /media/pibulus/MEMBOT/Roms/Nintendo (NES):/romm/library/roms/nes:ro
+      - /media/pibulus/MEMBOT/Roms/Nintendo 64:/romm/library/roms/n64:ro
+      - /media/pibulus/MEMBOT/Roms/Super Nintendo (SNES):/romm/library/roms/snes:ro
+      - /media/pibulus/MEMBOT/Roms/TurboGrafx-16:/romm/library/roms/tg16:ro
+      - /media/pibulus/passport/Roms/arcade_fbneo:/romm/library/roms/arcade:ro
+      - /media/pibulus/MEMBOT/Roms/ScummVM:/romm/library/roms/scummvm:ro
+      - /media/pibulus/MEMBOT/Roms/BIOS:/romm/library/bios:ro
+      - /media/pibulus/passport/Roms/psx:/romm/library/roms/psx:ro
+      - /media/pibulus/passport/Roms/megadrive/openemu:/romm/library/roms/megadrive:ro
+      - /media/pibulus/passport/app-data/romm/custom/theme.css:/romm/custom/theme.css:ro
+      - /media/pibulus/passport/app-data/romm/custom/default.conf.template:/etc/nginx/templates/default.conf.template:ro
+    ports:
+      - "8095:8080"
+    depends_on:
+      romm-db:
+        condition: service_healthy
+      romm-redis:
+        condition: service_healthy
+
+  romm-db:
+    image: mariadb:latest
+    container_name: romm-db
+    restart: unless-stopped
+    environment:
+      - MARIADB_ROOT_PASSWORD=rommroot2026
+      - MARIADB_DATABASE=romm
+      - MARIADB_USER=romm
+      - MARIADB_PASSWORD=rommpass2026
+    volumes:
+      - /home/pibulus/romm-db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  romm-redis:
+    image: redis:alpine
+    container_name: romm-redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
