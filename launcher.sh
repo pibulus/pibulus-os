@@ -16,7 +16,75 @@ PASSPORT_ROOT="${PASSPORT_ROOT:-/media/pibulus/passport}"
 [ -f ~/pibulus-os/modules/scavenger_module.sh ] && source ~/pibulus-os/modules/scavenger_module.sh
 [ -f ~/pibulus-os/modules/audio_feedback.sh ] && source ~/pibulus-os/modules/audio_feedback.sh
 
+rainbow() {
+  if command -v lolcat >/dev/null 2>&1; then
+    lolcat
+  else
+    cat
+  fi
+}
+
+print_logo() {
+  if command -v figlet >/dev/null 2>&1; then
+    figlet -f small "QUICKCAT CLUB" | rainbow
+    figlet -f small "DECK" | rainbow
+  else
+    printf 'QUICKCAT CLUB\nDECK\n' | rainbow
+  fi
+}
+
+print_statusline() {
+  local line1=':: admin node :: radio / media / club / deploy / textworlds ::'
+  local line2=':: launcher alias online :: pibulus local command deck ::'
+  printf '%s\n%s\n' "$line1" "$line2" | rainbow
+}
+
+print_header() {
+  local title="$1"
+  gum style --foreground 212 --bold "$title"
+  echo
+}
+
+show_tonight_ops() {
+  local picks=(
+    '📻 KPAB RADIO|snapshot, listener rows, and public links'
+    '🔎 FIND MY MEDIA|quick local search across the passport drive'
+    '📡 NETWORK MODES|home wifi versus hotspot-away mode'
+    '🐉 TEXTWORLD GATEWAY|live muds, bbs, and weird internet portals'
+    '🚀 DEPLOY SOMETHING NEW|the dangerous shiny button'
+    '📂 BROWSE PASSPORT DRIVE|direct file spelunking'
+  )
+  local total=${#picks[@]}
+  local day_index
+  day_index=$(date +%j 2>/dev/null || echo 1)
+  local pick1=${picks[$((day_index % total))]}
+  local pick2=${picks[$(((day_index + 2) % total))]}
+
+  gum style --border normal --border-foreground 240 --padding '0 1' --margin '0 0' \
+    "TONIGHT'S OPS" \
+    "${pick1%%|*} — ${pick1#*|}" \
+    "${pick2%%|*} — ${pick2#*|}"
+  echo
+}
+
+show_section_intro() {
+  local title="$1"
+  local body="$2"
+  gum style --border normal --border-foreground 240 --padding '0 1' --margin '0 0' \
+    "$title" \
+    "$body"
+  echo
+}
+
 get_status() {
+  if [ "$1" = "cloudflared" ]; then
+    if systemctl is-active --quiet cloudflared 2>/dev/null; then
+      echo "🟢"
+    else
+      echo "🔴"
+    fi
+    return
+  fi
   if docker ps --format '{{.Names}}' | grep -qx "$1"; then
     echo "🟢"
   else
@@ -64,12 +132,25 @@ render_hud() {
     temp="$(vcgencmd measure_temp | cut -d'=' -f2)"
   fi
 
+  print_logo
+  echo
+  print_statusline
+  echo
+  show_tonight_ops
   gum style --border rounded --border-foreground 212 --padding '0 2' --margin '1 0' \
     "🌡️ $temp  |  🧠 $mem  |  🧵 load $load  |  💾 $(get_storage_bar)  |  📻 $(get_status azuracast) azuracast"
 }
 
 tactile_choose() {
   gum choose "$@"
+}
+
+deck_note_file() {
+  echo "$HOME/pibulus-os/logs/field-notes.log"
+}
+
+tool_exists() {
+  command -v "$1" >/dev/null 2>&1
 }
 
 radio_status() {
@@ -114,6 +195,85 @@ for service in data.get("services", []):
     desc = service.get("description", "")
     print(f"  {name:<14} {url:<32} {desc}")
 PY
+}
+
+show_system_snapshot() {
+  echo "System snapshot"
+  echo "==============="
+  echo
+  uptime
+  echo
+  free -h
+  echo
+  df -h / /media/pibulus/passport 2>/dev/null
+  echo
+  docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
+}
+
+show_disk_overview() {
+  if tool_exists duf; then
+    duf
+  else
+    df -h
+  fi
+}
+
+show_json_services() {
+  if tool_exists jq; then
+    jq '.services[] | {name, category, url, description}' "$SERVICE_REGISTRY"
+  else
+    cat "$SERVICE_REGISTRY"
+  fi
+}
+
+show_tunnel_snapshot() {
+  echo "Tunnel + edge"
+  echo "============="
+  echo
+  systemctl --no-pager --full status cloudflared 2>/dev/null | sed -n '1,20p' || true
+  echo
+  echo "Recent cloudflared logs:"
+  journalctl -u cloudflared -n 20 --no-pager 2>/dev/null || true
+}
+
+show_critical_services() {
+  echo "Critical services"
+  echo "================="
+  for name in web_host azuracast slskd memos cloudflared; do
+    printf '%-14s %s\n' "$name" "$(get_status "$name")"
+  done
+  echo
+  docker ps --filter 'name=web_host|azuracast|slskd|memos' --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
+}
+
+show_recent_errors() {
+  echo "Recent service noise"
+  echo "===================="
+  echo
+  printf '\n--- %s ---\n' "cloudflared"
+  journalctl -u cloudflared -n 8 --no-pager 2>/dev/null || true
+  docker ps --format '{{.Names}}' | while read -r name; do
+    [ -z "$name" ] && continue
+    printf '\n--- %s ---\n' "$name"
+    docker logs --tail 5 "$name" 2>&1 | tail -5
+  done
+}
+
+open_log_navigator() {
+  if tool_exists lnav; then
+    lnav /var/log/syslog /var/log/auth.log 2>/dev/null || lnav 2>/dev/null
+  else
+    echo "lnav not installed."
+    pause_screen
+  fi
+}
+
+open_system_monitor() {
+  if tool_exists btop; then
+    btop
+  else
+    top
+  fi
 }
 
 show_radio_snapshot() {
@@ -279,6 +439,223 @@ show_public_ip() {
   echo "  against the newest listener row in AzuraCast."
 }
 
+show_top_media_dirs() {
+  echo "Top media directories"
+  echo "====================="
+  echo
+  du -xh --max-depth=2 /media/pibulus/passport 2>/dev/null | sort -hr | head -30
+}
+
+show_recent_media() {
+  echo "Recent file activity"
+  echo "===================="
+  echo
+  find /media/pibulus/passport -type f -mtime -7 2>/dev/null | tail -60
+}
+
+show_media_tree() {
+  if tool_exists tree; then
+    tree -L 2 /media/pibulus/passport 2>/dev/null | sed -n '1,220p'
+  else
+    find /media/pibulus/passport -maxdepth 2 -type d 2>/dev/null | sed -n '1,220p'
+  fi
+}
+
+preview_cover_art() {
+  if ! tool_exists chafa; then
+    echo "chafa not installed."
+    pause_screen
+    return
+  fi
+  local file
+  file=$(find /media/pibulus/passport -type f \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \) 2>/dev/null | head -200 | gum choose --height 20)
+  [ -z "$file" ] && return
+  chafa -f symbols -s 80x40 "$file"
+}
+
+show_drive_status() {
+  echo "Drive bay"
+  echo "========="
+  echo
+  lsblk -o NAME,MODEL,SIZE,FSTYPE,MOUNTPOINTS
+  echo
+  echo "/etc/fstab mounts:"
+  grep -v '^\s*#' /etc/fstab | sed '/^\s*$/d'
+}
+
+show_usb_kernel_noise() {
+  echo "Recent USB / disk noise"
+  echo "======================="
+  echo
+  journalctl -k -n 80 --no-pager 2>/dev/null | rg -i 'usb|sd[a-z]|fat-fs|ntfs|i/o error|disconnect|reset' || true
+}
+
+safe_unmount_membot() {
+  local target="/media/pibulus/MEMBOT"
+  if findmnt -rn -T "$target" >/dev/null 2>&1; then
+    sync
+    sudo umount "$target" && echo "MEMBOT unmounted cleanly." || echo "Unmount failed."
+  else
+    echo "MEMBOT is not currently mounted."
+  fi
+}
+
+write_field_note() {
+  local note
+  note=$(gum write --placeholder 'Field note, idea, bug, weird discovery...')
+  [ -z "$note" ] && return
+  mkdir -p "$(dirname "$(deck_note_file)")"
+  {
+    printf '\n[%s]\n' "$(date '+%Y-%m-%d %H:%M:%S')"
+    printf '%s\n' "$note"
+  } >> "$(deck_note_file)"
+  echo "Saved to $(deck_note_file)"
+}
+
+show_recent_notes() {
+  local file
+  file="$(deck_note_file)"
+  if [ ! -f "$file" ]; then
+    echo "No field notes yet."
+    return
+  fi
+  tail -n 80 "$file"
+}
+
+open_notes_in_glow() {
+  local file
+  file="$(deck_note_file)"
+  if [ ! -f "$file" ]; then
+    echo "No field notes yet."
+    pause_screen
+    return
+  fi
+  if tool_exists glow; then
+    glow -p "$file"
+  else
+    less "$file"
+  fi
+}
+
+open_field_manual_pretty() {
+  if tool_exists glow; then
+    glow -p ~/pibulus-os/FIELD_MANUAL.md
+  else
+    gum pager < ~/pibulus-os/FIELD_MANUAL.md
+  fi
+}
+
+newsboat_urls_file() {
+  echo "$HOME/.newsboat/urls"
+}
+
+build_newsboat_lane_file() {
+  local lane="$1"
+  local src
+  local tmp="/tmp/newsboat-lane-${USER}.urls"
+  src="$(newsboat_urls_file)"
+
+  case "$lane" in
+    ground)
+      awk '/^https?:/ && $0 ~ /(^| )ground( |$)/ { print }' "$src" > "$tmp"
+      ;;
+    hacker)
+      awk '/^https?:/ && $0 ~ /(^| )hacker( |$)/ { print }' "$src" > "$tmp"
+      ;;
+    art)
+      awk '/^https?:/ && $0 ~ /(^| )art( |$)/ { print }' "$src" > "$tmp"
+      ;;
+    all)
+      cp "$src" "$tmp"
+      ;;
+  esac
+
+  echo "$tmp"
+}
+
+show_feed_lane_guide() {
+  clear
+  print_header "SIGNAL LANES"
+  gum style --border rounded --border-foreground 212 --padding '0 2' --margin '1 0' \
+    "✊ GROUND SIGNAL\nAnti-empire politics, rights, Palestine, resistance reporting.\n\n⌨️ HACKER BRAIN\nUnderground hacker culture, DIY hardware, privacy, cheat-code energy.\n\n🎨 ART + WEIRD\nSubversive art, counterculture, weird internet texture."
+  pause_screen
+}
+
+run_newsboat_lane() {
+  local lane="$1"
+  local lane_file
+
+  if [ "$lane" = "all" ]; then
+    newsboat
+    return
+  fi
+
+  lane_file="$(build_newsboat_lane_file "$lane")"
+  newsboat -u "$lane_file"
+}
+
+open_feed_reader() {
+  if tool_exists newsboat; then
+    while true; do
+      clear
+      print_header "SIGNAL FEEDS"
+      gum style --border rounded --border-foreground 212 --padding '0 2' --margin '1 0' \
+        "Pick a lane instead of raw-dogging the whole internet.\n\nEnter=open  o=browser  r=reload  q=back out"
+
+      local pick
+      pick=$(printf '%s\n' \
+        '⚡ Full Signal Mix' \
+        '✊ Ground Signal' \
+        '⌨️ Hacker Brain' \
+        '🎨 Art + Weird' \
+        '🧭 Lane Guide' \
+        '← Back' | gum choose --height 12)
+
+      case "$pick" in
+        '⚡ Full Signal Mix') run_newsboat_lane all; break ;;
+        '✊ Ground Signal') run_newsboat_lane ground; break ;;
+        '⌨️ Hacker Brain') run_newsboat_lane hacker; break ;;
+        '🎨 Art + Weird') run_newsboat_lane art; break ;;
+        '🧭 Lane Guide') show_feed_lane_guide ;;
+        ''|'← Back') break ;;
+      esac
+    done
+  else
+    echo "newsboat not installed."
+    pause_screen
+  fi
+}
+
+open_chat_client() {
+  if tool_exists weechat; then
+    weechat
+  elif tool_exists irssi; then
+    irssi
+  else
+    echo "No chat client installed."
+    pause_screen
+  fi
+}
+
+open_local_browserish() {
+  local url="$1"
+  if tool_exists w3m; then
+    w3m "$url"
+  else
+    echo "$url"
+    pause_screen
+  fi
+}
+
+open_tmux_shell() {
+  if tool_exists tmux; then
+    tmux new-session -A -s deck
+  else
+    echo "tmux not installed."
+    pause_screen
+  fi
+}
+
 media_finder_menu() {
   local query
   query=$(gum input --placeholder "Find local media (e.g. valis philip k dick)")
@@ -330,19 +707,74 @@ connect_text_world() {
   local label="$1"
   local host="$2"
   local port="${3:-23}"
+  local note="${4:-Exit telnet with Ctrl + ]}"
+  local term_mode="${5:-vt100}"
 
   clear
-  echo "Connecting to $label..."
+  gum style --foreground 51 "=== $label ==="
   echo "Host: $host:$port"
-  echo "Terminal mode: vt100"
-  echo "Exit telnet with Ctrl + ]"
+  echo "Terminal mode: $term_mode"
+  echo "$note"
+  echo "If the world looks blank, tap Enter once."
   echo
-  TERM=vt100 telnet "$host" "$port"
+  TERM="$term_mode" telnet "$host" "$port"
+}
+
+textworld_menu() {
+  while true; do
+    render_hud
+    show_section_intro \
+      'TEXTWORLD GATEWAY' \
+      'Live portals from the admin deck: classics, good first stops, and a few weird old terminals.'
+    local action
+    action=$(tactile_choose \
+      '✨ New Here Picks' \
+      '🐉 Genesis MUD' \
+      '🌍 Discworld' \
+      '⚔️ Alter Aeon' \
+      '🌀 LambdaMOO' \
+      '📟 End Of The Line BBS' \
+      '🎲 NetHack' \
+      '⚗️ Weird Terminals' \
+      'Back')
+    case "$action" in
+      '✨ New Here Picks')
+        render_hud
+        gum style --border double --border-foreground 51 --padding '1 2' --margin '0 0' \
+          'NEW HERE PICKS' \
+          '' \
+          'Genesis — classic fantasy MUD' \
+          'Discworld — witty and welcoming' \
+          'Alter Aeon — polished onboarding' \
+          'LambdaMOO — social text weirdness' \
+          'End Of The Line BBS — clean ANSI board'
+        pause_screen ;;
+      '🐉 Genesis MUD') connect_text_world 'Genesis MUD' 'mud.genesismud.org' '3011' 'Classic fantasy MUD. Good first stop.' 'xterm-256color' ;;
+      '🌍 Discworld') connect_text_world 'Discworld' 'discworld.starturtle.net' '4242' 'Funny writing, great atmosphere, easy recommend.' 'xterm-256color' ;;
+      '⚔️ Alter Aeon') connect_text_world 'Alter Aeon' 'alteraeon.com' '3000' 'Polished fantasy world with smoother onboarding.' 'xterm-256color' ;;
+      '🌀 LambdaMOO') connect_text_world 'LambdaMOO' 'lambda.moo.mud.org' '8888' 'Social text world. Wander, read, talk.' 'xterm-256color' ;;
+      '📟 End Of The Line BBS') connect_text_world 'End Of The Line BBS' 'endofthelinebbs.com' '23' 'ANSI BBS with a cleaner browser-terminal fit.' 'ansi' ;;
+      '🎲 NetHack') nethack || { echo 'NetHack not installed.'; pause_screen; } ;;
+      '⚗️ Weird Terminals')
+        local weird
+        weird=$(tactile_choose '📟 Fozz BBS' '⭐ Star Wars ASCII' '🐉 Dark Realms MUD' 'Back')
+        case "$weird" in
+          '📟 Fozz BBS') connect_text_world 'Fozz BBS' 'bbs.fozztexx.com' '23' 'Minimal telnet greeting. Hit Enter if it feels blank.' 'ansi' ;;
+          '⭐ Star Wars ASCII') connect_text_world 'Star Wars ASCII' 'towel.blinkenlights.nl' '23' 'Ctrl + ] then quit to break out if needed.' 'vt100' ;;
+          '🐉 Dark Realms MUD') connect_text_world 'Dark Realms' 'darkrealms.ca' '23' 'Old-school MUD portal from the admin deck.' 'vt100' ;;
+          'Back'|'') ;;
+        esac ;;
+      'Back'|'') return ;;
+    esac
+  done
 }
 
 network_menu() {
   while true; do
     render_hud
+    show_section_intro \
+      'NETWORK' \
+      'Switch between home and away modes, or inspect the current networking state before blaming the tunnel.'
     local action
     action=$(tactile_choose '📡 Show Network Status' '🏠 Home Wi-Fi Mode' '🧳 Hotspot / Away Mode' 'Back')
     case "$action" in
@@ -354,15 +786,52 @@ network_menu() {
   done
 }
 
+sigint_menu() {
+  while true; do
+    render_hud
+    show_section_intro \
+      'SIGINT / SITUATION ROOM' \
+      'Fast state of the machine: health, tunnel, service status, public edge, and recent system noise.'
+    local action
+    action=$(tactile_choose \
+      '📊 System Snapshot' \
+      '📈 Live Monitor' \
+      '💽 Disk Overview' \
+      '🚨 Critical Services' \
+      '🌐 Tunnel + Edge' \
+      '🪪 Public IP' \
+      '🪵 Log Navigator' \
+      '🧾 Registry JSON' \
+      '🧯 Recent Service Noise' \
+      'Back')
+    case "$action" in
+      '📊 System Snapshot') show_system_snapshot; pause_screen ;;
+      '📈 Live Monitor') open_system_monitor ;;
+      '💽 Disk Overview') show_disk_overview; pause_screen ;;
+      '🚨 Critical Services') show_critical_services; pause_screen ;;
+      '🌐 Tunnel + Edge') show_tunnel_snapshot; pause_screen ;;
+      '🪪 Public IP') show_public_ip; pause_screen ;;
+      '🪵 Log Navigator') open_log_navigator ;;
+      '🧾 Registry JSON') show_json_services; pause_screen ;;
+      '🧯 Recent Service Noise') show_recent_errors; pause_screen ;;
+      'Back'|'') return ;;
+    esac
+  done
+}
+
 slskd_menu() {
   while true; do
     render_hud
+    show_section_intro \
+      'SOULSEEK' \
+      'Peer-to-peer intake control: wake it, inspect it, or jump into the local UI without leaving the deck.'
     local action
-    action=$(tactile_choose '🎵 Wake Soulseek' '😴 Sleep Soulseek' '🔎 Show Soulseek Status' 'Back')
+    action=$(tactile_choose '🎵 Wake Soulseek' '😴 Sleep Soulseek' '🔎 Show Soulseek Status' '🌐 Open Soulseek UI' 'Back')
     case "$action" in
       '🎵 Wake Soulseek') docker start slskd; pause_screen ;;
       '😴 Sleep Soulseek') docker stop slskd; pause_screen ;;
       '🔎 Show Soulseek Status') docker ps --filter 'name=slskd' --format 'table {{.Names}}\t{{.Status}}'; pause_screen ;;
+      '🌐 Open Soulseek UI') open_local_browserish 'http://localhost:5030' ;;
       'Back'|'') return ;;
     esac
   done
@@ -371,6 +840,9 @@ slskd_menu() {
 club_menu() {
   while true; do
     render_hud
+    show_section_intro \
+      'CLUB' \
+      'Account and membership utilities for the local node. Small admin tasks, quick and direct.'
     local action
     action=$(tactile_choose '➕ Add Club Member' '🔎 Audit Account Parity' 'Back')
     case "$action" in
@@ -388,6 +860,9 @@ club_menu() {
 radio_menu() {
   while true; do
     render_hud
+    show_section_intro \
+      'RADIO' \
+      'Check what KPAB is doing right now: current track, listeners, service health, and public-facing links.'
     local action
     action=$(tactile_choose '📻 Show Radio Snapshot' '📜 Show Recent Tracks' '👂 Show Recent Listener Rows' '🪪 Show My Public IP' '🛰️ Show Radio Service Status' '🌐 Show Public Links' 'Back')
     case "$action" in
@@ -415,6 +890,106 @@ radio_menu() {
   done
 }
 
+media_menu() {
+  while true; do
+    render_hud
+    show_section_intro \
+      'MEDIA' \
+      'Search, browse, and inspect the archive. Less clicking around, more seeing what is actually on disk.'
+    local action
+    action=$(tactile_choose \
+      '🔎 Find My Media' \
+      '📂 Browse Passport Drive' \
+      '📦 Biggest Media Dirs' \
+      '🌲 Media Tree' \
+      '🖼️ Cover Art Preview' \
+      '🕰️ Recent File Activity' \
+      'Back')
+    case "$action" in
+      '🔎 Find My Media') media_finder_menu ;;
+      '📂 Browse Passport Drive') nnn /media/pibulus/passport ;;
+      '📦 Biggest Media Dirs') show_top_media_dirs; pause_screen ;;
+      '🌲 Media Tree') show_media_tree; pause_screen ;;
+      '🖼️ Cover Art Preview') preview_cover_art; pause_screen ;;
+      '🕰️ Recent File Activity') show_recent_media; pause_screen ;;
+      'Back'|'') return ;;
+    esac
+  done
+}
+
+drives_menu() {
+  while true; do
+    render_hud
+    show_section_intro \
+      'DRIVES' \
+      'Mount status, USB weirdness, and safe actions for external media. The opposite of yanking cables blind.'
+    local action
+    action=$(tactile_choose \
+      '💾 Drive Status' \
+      '🔌 USB / Kernel Noise' \
+      '⏏️ Unmount MEMBOT' \
+      'Back')
+    case "$action" in
+      '💾 Drive Status') show_drive_status; pause_screen ;;
+      '🔌 USB / Kernel Noise') show_usb_kernel_noise; pause_screen ;;
+      '⏏️ Unmount MEMBOT') safe_unmount_membot; pause_screen ;;
+      'Back'|'') return ;;
+    esac
+  done
+}
+
+ops_menu() {
+  while true; do
+    render_hud
+    show_section_intro \
+      'OPS' \
+      'Sharp tools for changing the box. Not vibes. Real interventions.'
+    local action
+    action=$(tactile_choose \
+      '🚀 Deploy Something New' \
+      '🧹 Flush RAM' \
+      '🌐 Public Links' \
+      '🧠 Scavenger Search' \
+      '🏴‍☠️ Media Grab' \
+      'Back')
+    case "$action" in
+      '🚀 Deploy Something New') ~/pibulus-os/scripts/deploy.sh ;;
+      '🧹 Flush RAM') ~/pibulus-os/scripts/flush_ram.sh; pause_screen ;;
+      '🌐 Public Links') show_public_links; pause_screen ;;
+      '🧠 Scavenger Search') manage_scavenger ;;
+      '🏴‍☠️ Media Grab') manage_pirate_grab ;;
+      'Back'|'') return ;;
+    esac
+  done
+}
+
+notes_menu() {
+  while true; do
+    render_hud
+    show_section_intro \
+      'NOTES' \
+      'Quick capture for ideas, bugs, links, and 3am realizations before they evaporate.'
+    local action
+    action=$(tactile_choose \
+      '✍️ Write Field Note' \
+      '📜 Recent Field Notes' \
+      '✨ Pretty Notes Viewer' \
+      '📖 Field Manual' \
+      '📰 Feed Reader' \
+      '🧵 tmux Shell' \
+      'Back')
+    case "$action" in
+      '✍️ Write Field Note') write_field_note; pause_screen ;;
+      '📜 Recent Field Notes') show_recent_notes; pause_screen ;;
+      '✨ Pretty Notes Viewer') open_notes_in_glow ;;
+      '📖 Field Manual') open_field_manual_pretty ;;
+      '📰 Feed Reader') open_feed_reader ;;
+      '🧵 tmux Shell') open_tmux_shell ;;
+      'Back'|'') return ;;
+    esac
+  done
+}
+
 # STARTUP ROLL
 render_hud
 gum style --foreground 212 "$(roll_fascination)"
@@ -422,42 +997,32 @@ sleep 1.5
 
 while true; do
   render_hud
-  choice=$(tactile_choose --height 20 \
-    '📻 KPAB Radio' \
-    '🌐 Public Links' \
-    '📡 Network Modes' \
-    '🎵 Soulseek' \
-    '🐱 Club Accounts' \
-    '🔎 Find My Media' \
-    '🏴‍☠️ Media Grab' \
-    '📂 Browse Passport Drive' \
-    '🚀 Deploy Something New' \
-    '🧹 Flush RAM' \
-    '🧠 Scavenger Search' \
-    '🐉 Dark Realms MUD' \
-    '📟 Fozz BBS' \
-    '🎲 NetHack' \
-    '💬 IRC Chat' \
-    '📖 Field Manual' \
+choice=$(tactile_choose --height 20 \
+    '🚨 SIGINT' \
+    '📻 RADIO' \
+    '🎬 MEDIA' \
+    '🐉 TEXTWORLDS' \
+    '📡 NETWORK' \
+    '💾 DRIVES' \
+    '🛠️ OPS' \
+    '🎵 SOULSEEK' \
+    '🐱 CLUB' \
+    '📝 NOTES' \
+    '💬 CHAT' \
     '🚪 Exit')
 
   case "$choice" in
-    '📻 KPAB Radio') radio_menu ;;
-    '🌐 Public Links') show_public_links; pause_screen ;;
-    '📡 Network Modes') network_menu ;;
-    '🎵 Soulseek') slskd_menu ;;
-    '🐱 Club Accounts') club_menu ;;
-    '🔎 Find My Media') media_finder_menu ;;
-    '🏴‍☠️ Media Grab') manage_pirate_grab ;;
-    '📂 Browse Passport Drive') nnn /media/pibulus/passport ;;
-    '🚀 Deploy Something New') ~/pibulus-os/scripts/deploy.sh ;;
-    '🧹 Flush RAM') ~/pibulus-os/scripts/flush_ram.sh; pause_screen ;;
-    '🧠 Scavenger Search') manage_scavenger ;;
-    '🐉 Dark Realms MUD') connect_text_world 'Dark Realms' 'darkrealms.ca' '23' ;;
-    '📟 Fozz BBS') connect_text_world 'Fozz BBS' 'bbs.fozztexx.com' '23' ;;
-    '🎲 NetHack') nethack || { echo 'NetHack not installed.'; pause_screen; } ;;
-    '💬 IRC Chat') irssi ;;
-    '📖 Field Manual') gum pager < ~/pibulus-os/FIELD_MANUAL.md ;;
+    '🚨 SIGINT') sigint_menu ;;
+    '📻 RADIO') radio_menu ;;
+    '🎬 MEDIA') media_menu ;;
+    '🐉 TEXTWORLDS') textworld_menu ;;
+    '📡 NETWORK') network_menu ;;
+    '💾 DRIVES') drives_menu ;;
+    '🛠️ OPS') ops_menu ;;
+    '🎵 SOULSEEK') slskd_menu ;;
+    '🐱 CLUB') club_menu ;;
+    '📝 NOTES') notes_menu ;;
+    '💬 CHAT') open_chat_client ;;
     '🚪 Exit'|'') clear; echo 'Neural link severed.'; exit 0 ;;
   esac
 done
