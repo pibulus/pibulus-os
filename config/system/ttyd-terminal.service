@@ -1,0 +1,13 @@
+[Unit]
+Description=ttyd - Web Terminal (Cyberdeck)
+After=network.target docker.service
+
+[Service]
+Type=simple
+User=pibulus
+ExecStart=/usr/local/bin/ttyd --writable -b /terminal/ -p 7682 -t fontSize=16 -t fontFamily="monospace" -t theme={"background":"#0D0F14","foreground":"#C8D8E8"} /bin/bash -l -c "cd ~/pibulus-os && exec ~/pibulus-os/launcher.sh"
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
