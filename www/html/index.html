@@ -238,6 +238,11 @@
     :focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
     .card:focus-visible { border-color: rgba(77,255,210,0.7); }
 
+    /* ─── SIGNAL STRIP ─── */
+    .signal-strip { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 0.3rem 0.7rem; margin-top: 0.4rem; font-size: 0.85rem; color: var(--dim-soft); letter-spacing: 1px; }
+    .sig-sep { color: rgba(77,255,210,0.15); }
+    .signal-strip span:not(.sig-sep) { color: var(--dim); }
+
     /* ─── CLUB NOTICE ─── */
     #club-notice { position: relative; background: rgba(77,255,210,0.06); border: 1px solid rgba(77,255,210,0.25); border-radius: 2px; padding: 0.75rem 3rem 0.75rem 1.25rem; margin-bottom: 1.5rem; font-size: 1.1rem; color: var(--cyan); letter-spacing: 1px; animation: cardIn 0.4s ease-out forwards; }
     #club-notice::before { content: '📡'; margin-right: 0.5em; }
@@ -267,6 +272,15 @@
     <header>
       <h1>quick cat club<span class="cursor"></span></h1>
       <p class="subtitle">~(=^..^) a self-hosted sanctuary</p>
+      <div class="signal-strip">
+        <span id="sig-moon">🌙</span>
+        <span class="sig-sep">//</span>
+        <span id="sig-temp">--°</span>
+        <span class="sig-sep">//</span>
+        <span id="sig-radio">📡 --</span>
+        <span class="sig-sep">//</span>
+        <span id="sig-sigil">⊕</span>
+      </div>
       <div class="alive-bar" id="alive">live on <a class="alive-link" href="https://kpab.fm" target="_blank" rel="noopener"><span>KPAB.FM</span></a></div>
     </header>
 
@@ -434,6 +448,25 @@
       });
     }
 
+    // ─── SIGNAL STRIP ───
+    (function() {
+      // Moon phase (JS only, no API)
+      var phases = ['🌑','🌒','🌓','🌔','🌕','🌖','🌗','🌘'];
+      var epoch = new Date(2000, 0, 6);
+      var days = (Date.now() - epoch.getTime()) / 86400000;
+      document.getElementById('sig-moon').textContent = phases[Math.floor((days % 29.53059) / 29.53059 * 8)];
+
+      // Random sigil
+      var sigils = ['⊕','⊗','⊘','⊙','⊚','⊛','⊞','⊡','⌀','⌬','⍟','⎈','⏣','☽','☿','♄','♃','⟁','⌁','⍤'];
+      document.getElementById('sig-sigil').textContent = sigils[Math.floor(Math.random() * sigils.length)];
+
+      // Melbourne temp (OpenMeteo, no key)
+      fetch('https://api.open-meteo.com/v1/forecast?latitude=-37.8136&longitude=144.9631&current=temperature_2m', { cache: 'no-cache' })
+        .then(function(r) { return r.json(); })
+        .then(function(d) { document.getElementById('sig-temp').textContent = Math.round(d.current.temperature_2m) + '°'; })
+        .catch(function() {});
+    })();
+
     // ─── KPAB INLINE PLAYER ───
     const kpabAudio = document.getElementById('kpab-audio');
     const STREAM = '/radio/stream';
@@ -448,6 +481,12 @@
     }
     function renderNP(data) {
       window._lastNP = data;
+      // Update signal strip listener count
+      var sigRadio = document.getElementById('sig-radio');
+      if (sigRadio && data && data.listeners) {
+        var n = data.listeners.current || 0;
+        sigRadio.textContent = '📡 ' + n;
+      }
       const aliveEl = document.getElementById('alive');
       const playLabel = kpabPlaying ? '⏸' : '▶';
       const np = data && data.now_playing;

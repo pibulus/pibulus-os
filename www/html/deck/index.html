@@ -172,6 +172,7 @@
     .alive-btn:hover { background: rgba(224,64,251,0.16); border-color: rgba(224,64,251,0.6); }
     .alive-btn:disabled { opacity: 0.45; cursor: not-allowed; }
     .alive-status { color: var(--magenta); }
+    .alive-btn.playing { border-color: rgba(77,255,210,0.5); background: rgba(77,255,210,0.1); color: var(--cyan); }
 
     /* LIVE DASHBOARD */
     .dashboard {
@@ -441,6 +442,7 @@
   </style>
 </head>
 <body>
+  <audio id="kpab-audio" preload="none"></audio>
   <div class="wrapper">
 
     <header>
@@ -452,6 +454,7 @@
         <span class="alive-chip" id="aliveNext">next up: <strong>loading...</strong></span>
         <span class="alive-chip" id="aliveListeners">listeners: <strong>--</strong></span>
         <span class="alive-actions">
+          <button class="alive-btn" id="playBtn" type="button">▶ PLAY</button>
           <button class="alive-btn" id="skipBtn" type="button">SKIP</button>
           <span class="alive-status" id="skipStatus"></span>
         </span>
@@ -479,6 +482,14 @@
       <div class="stat">
         <div class="stat-value" id="d-users">--</div>
         <div class="stat-label">WEB 10M</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="d-watching">--</div>
+        <div class="stat-label">WATCHING</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="d-radio">--</div>
+        <div class="stat-label">ON AIR</div>
       </div>
 
     </div>
@@ -713,6 +724,10 @@
           }
           aliveListenersEl.innerHTML = 'listeners: <strong>' + (d.np_listeners || 0) + ' live / ' + (d.np_listeners_unique || 0) + ' unique</strong>';
 
+          // Watching / on air
+          if (d.watching !== undefined) document.getElementById('d-watching').textContent = d.watching;
+          document.getElementById('d-radio').textContent = (d.np_listeners || 0);
+
           // Footer
           document.getElementById('f-containers').textContent = d.containers;
           document.getElementById('f-ts').textContent = d.ts;
@@ -758,6 +773,22 @@
     loadStatus();
     setInterval(loadStatus, 30000);
     document.getElementById('skipBtn').addEventListener('click', fireDeckSkip);
+
+    // KPAB play/pause
+    var kpabAudio = document.getElementById('kpab-audio');
+    var kpabPlaying = false;
+    document.getElementById('playBtn').addEventListener('click', function() {
+      var btn = document.getElementById('playBtn');
+      if (kpabPlaying) {
+        kpabAudio.pause(); kpabAudio.src = ''; kpabPlaying = false;
+        btn.textContent = '▶ PLAY'; btn.classList.remove('playing');
+      } else {
+        kpabAudio.src = 'https://quickcat.club/radio/stream';
+        kpabAudio.play().catch(function(){});
+        kpabPlaying = true;
+        btn.textContent = '⏸ PAUSE'; btn.classList.add('playing');
+      }
+    });
 
     // === MESSAGE INBOX (read-only) ===
     var msgToggle = document.getElementById('msgToggle');

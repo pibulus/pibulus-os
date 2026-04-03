@@ -33,6 +33,10 @@ NP_LISTENERS_CURRENT=$(echo "$NP_JSON" | python3 -c "import sys,json; print(json
 NP_LISTENERS_UNIQUE=$(echo "$NP_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin).get('listeners',{}).get('unique',0))" 2>/dev/null || echo "0")
 NP_LISTENERS_TOTAL=$(echo "$NP_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin).get('listeners',{}).get('total',0))" 2>/dev/null || echo "0")
 
+# Active Jellyfin streams (watching now)
+WATCHING=$(curl -s --max-time 3 "http://localhost:8096/Sessions?api_key=1980cdafcfec43b58b04b89c4d1f5b99" 2>/dev/null | \
+  python3 -c "import sys,json; s=json.load(sys.stdin); print(len([x for x in s if x.get('NowPlayingItem')]))" 2>/dev/null || echo "0")
+
 # Load average
 LOAD=$(uptime | awk -F'load average:' '{print $2}' | awk -F',' '{print $1}' | tr -d ' ')
 
@@ -65,6 +69,7 @@ cat > /media/pibulus/passport/www/html/status.json <<JSON
   "np_listeners": ${NP_LISTENERS_CURRENT:-0},
   "np_listeners_unique": ${NP_LISTENERS_UNIQUE:-0},
   "np_listeners_total": ${NP_LISTENERS_TOTAL:-0},
+  "watching": ${WATCHING:-0},
   "users_online": ${USERS_ONLINE:-0},
   "ts": "$(date '+%H:%M:%S')",
   "date": "$(date '+%Y-%m-%d')"
