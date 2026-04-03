@@ -242,6 +242,7 @@
     .signal-strip { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 0.3rem 0.7rem; margin-top: 0.4rem; font-size: 0.85rem; color: var(--dim-soft); letter-spacing: 1px; }
     .sig-sep { color: rgba(77,255,210,0.15); }
     .signal-strip span:not(.sig-sep) { color: var(--dim); }
+    .lib-strip { display: flex; justify-content: center; flex-wrap: wrap; gap: 0.2rem 0.9rem; margin-top: 0.3rem; font-size: 0.82rem; color: var(--dim-soft); letter-spacing: 1px; }
 
     /* ─── CLUB NOTICE ─── */
     #club-notice { position: relative; background: rgba(77,255,210,0.06); border: 1px solid rgba(77,255,210,0.25); border-radius: 2px; padding: 0.75rem 3rem 0.75rem 1.25rem; margin-bottom: 1.5rem; font-size: 1.1rem; color: var(--cyan); letter-spacing: 1px; animation: cardIn 0.4s ease-out forwards; }
@@ -280,6 +281,13 @@
         <span id="sig-radio">📡 --</span>
         <span class="sig-sep">//</span>
         <span id="sig-sigil">⊕</span>
+      </div>
+      <div class="lib-strip" id="libStrip">
+        <span id="lib-movies">🎬 --</span>
+        <span id="lib-shows">📺 --</span>
+        <span id="lib-books">📖 --</span>
+        <span id="lib-comics">💥 --</span>
+        <span id="lib-roms">🎮 --</span>
       </div>
       <div class="alive-bar" id="alive">live on <a class="alive-link" href="https://kpab.fm" target="_blank" rel="noopener"><span>KPAB.FM</span></a></div>
     </header>
@@ -464,6 +472,18 @@
       fetch('https://api.open-meteo.com/v1/forecast?latitude=-37.8136&longitude=144.9631&current=temperature_2m', { cache: 'no-cache' })
         .then(function(r) { return r.json(); })
         .then(function(d) { document.getElementById('sig-temp').textContent = Math.round(d.current.temperature_2m) + '°'; })
+        .catch(function() {});
+
+      // Library counts from status.json
+      fetch('/status.json', { cache: 'no-cache' })
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          if (d.movies) document.getElementById('lib-movies').textContent = '🎬 ' + d.movies;
+          if (d.shows)  document.getElementById('lib-shows').textContent  = '📺 ' + d.shows;
+          if (d.books)  document.getElementById('lib-books').textContent  = '📖 ' + d.books;
+          if (d.comics) document.getElementById('lib-comics').textContent = '💥 ' + d.comics;
+          if (d.roms)   document.getElementById('lib-roms').textContent   = '🎮 ' + d.roms;
+        })
         .catch(function() {});
     })();
 
