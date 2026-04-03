@@ -3,7 +3,7 @@ emulatorjs:
   controls: {}
   debug: false
   disable_auto_unload: false
-  disable_batch_bootup: false
+  disable_batch_bootup: true   # load cores on demand, not all at startup
   netplay:
     enabled: false
     ice_servers: []
@@ -12,6 +12,15 @@ emulatorjs:
       fps: show
       shader: crt-easymode.glslp
       vsync: disabled
+      threads: enabled          # SharedArrayBuffer threading — COOP/COEP headers already set
+      virtual_gamepad: enabled  # show touch controls on mobile/tablet
+      autosave: enabled         # auto save state on exit, auto load on launch
+    n64:
+      threads: enabled
+      shader: none              # CRT shader tanks N64 framerate, disable it
+    psx:
+      threads: enabled
+      shader: none
 exclude:
   platforms: &id001
   - '@eaDir'

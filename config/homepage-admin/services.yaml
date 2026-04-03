@@ -69,8 +69,8 @@
 
     - Web Terminal:
         icon: mdi-console-#00ffea
-        href: http://pibulus.local:7682
-        description: Deck launcher in browser
+        href: https://deck.quickcat.club/terminal/
+        description: Admin deck launcher (web shell)
         server: my-docker
         container: web_terminal
 

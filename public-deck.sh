@@ -7,61 +7,77 @@ trap '' INT TSTP
 
 show_banner() {
   clear
-  gum style --border double --border-foreground 212 --padding '1 3' --margin '1 0' --align center     '📟 THE CYBERDECK'     ''     'BBS • MUDs • Roguelikes • Text Adventures'     'quickcat.club'
-  echo
+  figlet -f small "TEXTWORLDS" | lolcat
+  printf '  BBS  •  MUDs  •  Roguelikes  •  Text Adventures  \n' | lolcat
+  printf '             quickcat.club\n\n' | lolcat
 }
 
 while true; do
   show_banner
-  choice=$(gum choose --cursor.foreground 212 --selected.foreground 51     '🎲 NetHack — classic dungeon crawler'     '📖 Text Adventures — interactive fiction'     '🐉 Genesis MUD — multiplayer fantasy RPG'     '📟 Fozz BBS (Retro) — retro computing board'     '⭐ Star Wars — ASCII movie (telnet)'     '🚪 Disconnect')
+  choice=$(gum choose \
+    --cursor.foreground 212 \
+    --selected.foreground 51 \
+    '⚔️  NetHack — classic ASCII dungeon crawler' \
+    '📖  Text Adventures — interactive fiction' \
+    '🐉  Aardwolf MUD — one of the largest MUDs online' \
+    '⚔️  Realms of Despair — classic DIKU MUD (1994)' \
+    '📟  Fozz BBS — retro computing bulletin board' \
+    '⭐  Star Wars — ASCII movie via telnet' \
+    '🚪  Disconnect')
 
   case "$choice" in
     *'NetHack'*)
       clear
-      gum style --foreground 51 '=== NETHACK ==='
+      printf 'NETHACK\n' | figlet -f small | lolcat
       echo 'Arrow keys to move. ? for help. q to save+quit.'
       echo
       gum confirm 'Ready to enter the dungeon?' && nethack
       ;;
     *'Text Adventures'*)
       clear
-      GAMES_DIR=/usr/share/games/zcode
-      gum style --foreground 51 '=== TEXT ADVENTURES ==='
+      printf 'TEXT ADVENTURES\n' | figlet -f small | lolcat
       echo
-      GAME=$(ls $GAMES_DIR/*.z* 2>/dev/null | while read f; do
-        name=$(basename "$f" | sed 's/\.[^.]*$//')
-        echo "$name"
+      GAMES_DIR=/usr/share/games/zcode
+      GAME=$(ls "$GAMES_DIR"/*.z* 2>/dev/null | while read -r f; do
+        basename "$f" | sed 's/\.[^.]*$//'
       done | gum choose --cursor.foreground 212)
       if [ -n "$GAME" ]; then
-        FILE=$(ls $GAMES_DIR/$GAME.* 2>/dev/null | head -1)
-        if [ -n "$FILE" ]; then
-          frotz "$FILE"
-        fi
+        FILE=$(ls "$GAMES_DIR/$GAME".* 2>/dev/null | head -1)
+        [ -n "$FILE" ] && frotz "$FILE"
       fi
       ;;
-    *'Genesis MUD'*)
+    *'Aardwolf'*)
       clear
-      gum style --foreground 51 '=== GENESIS MUD ==='
-      echo 'Type "quit" to disconnect'
+      printf 'AARDWOLF MUD\n' | figlet -f small | lolcat
+      echo 'Type "quit" to disconnect. New players: type "new" at the prompt.'
       echo
-      telnet genesismud.org 3030
+      telnet aardmud.org 4000
+      ;;
+    *'Realms of Despair'*)
+      clear
+      printf 'REALMS OF DESPAIR\n' | figlet -f small | lolcat
+      echo 'Type "quit" to disconnect. Classic DIKU MUD since 1994.'
+      echo
+      telnet realmsofdespair.com 4000
       ;;
     *'Fozz'*)
       clear
-      gum style --foreground 51 '=== FOZZ BBS ==='
+      printf 'FOZZ BBS\n' | figlet -f small | lolcat
       echo
       TERM=ansi telnet bbs.fozztexx.com
       ;;
     *'Star Wars'*)
       clear
-      gum style --foreground 51 '=== STAR WARS — ASCII EDITION ==='
-      echo 'Ctrl+] then "quit" to disconnect'
+      printf 'STAR WARS\n' | figlet -f small | lolcat
+      echo 'Ctrl+] then type "quit" to disconnect.'
       echo
       telnet towel.blinkenlights.nl
       ;;
     *'Disconnect'*|'')
       clear
-      gum style --foreground 212 'Neural link severed. Come back anytime.'
+      printf 'NEURAL LINK SEVERED\n' | figlet -f small | lolcat
+      echo
+      gum style --foreground 212 --align center 'Come back anytime. =^..^='
       sleep 2
       exit 0
       ;;

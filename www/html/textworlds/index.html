@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>textworlds — quickcat.club</title>
+  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0c0a;
+      --green: #33ff33;
+      --green-dim: #1a8c1a;
+      --green-glow: rgba(51,255,51,0.15);
+      --amber: #ffb000;
+      --dim: #4a7a4a;
+      --text: #b8d8b8;
+    }
+    html, body { height: 100%; }
+    body {
+      background: var(--bg);
+      color: var(--green);
+      font-family: 'VT323', monospace;
+      font-size: 18px;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* scanlines */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.18) 2px, rgba(0,0,0,0.18) 4px);
+      pointer-events: none;
+      z-index: 10;
+    }
+    /* CRT vignette */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.7) 100%);
+      pointer-events: none;
+      z-index: 9;
+    }
+
+    .header {
+      padding: 0.4rem 1rem;
+      border-bottom: 1px solid var(--green-dim);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+      z-index: 11;
+    }
+    .header-title {
+      color: var(--green);
+      font-size: 1.2rem;
+      letter-spacing: 4px;
+      text-shadow: 0 0 8px var(--green);
+    }
+    .header a {
+      color: var(--dim);
+      text-decoration: none;
+      font-size: 1rem;
+      letter-spacing: 1px;
+      transition: color 0.2s;
+    }
+    .header a:hover { color: var(--green); }
+
+    /* Landing */
+    #landing {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 1.5rem 2rem;
+      z-index: 11;
+      max-width: 780px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    #boot-output {
+      line-height: 1.7;
+      min-height: 16rem;
+    }
+    #boot-output .line { display: block; }
+    #boot-output .dim  { color: var(--dim); }
+    #boot-output .hi   { color: var(--green); text-shadow: 0 0 6px var(--green); }
+    #boot-output .sep  { color: var(--green-dim); }
+    #boot-output .num  { color: var(--amber); }
+
+    #prompt-line {
+      margin-top: 1.2rem;
+      display: none;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    #prompt-line .prompt-text { color: var(--dim); }
+    #prompt-line .prompt-text span { color: var(--green); }
+
+    .connect-btn {
+      background: transparent;
+      border: none;
+      color: var(--green);
+      font-family: 'VT323', monospace;
+      font-size: 1.1rem;
+      letter-spacing: 2px;
+      cursor: pointer;
+      padding: 0;
+      text-shadow: 0 0 6px var(--green);
+    }
+    .connect-btn:hover { color: #fff; text-shadow: 0 0 12px var(--green); }
+
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+    .cursor { display: inline-block; animation: blink 1s step-end infinite; color: var(--green); }
+
+    .note {
+      margin-top: 0.6rem;
+      color: var(--dim);
+      font-size: 0.9rem;
+      display: none;
+    }
+
+    /* Terminal */
+    #terminal-container {
+      flex: 1;
+      display: none;
+      flex-direction: column;
+      z-index: 11;
+    }
+    #terminal-container.active { display: flex; }
+    iframe {
+      flex: 1;
+      width: 100%;
+      border: none;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <span class="header-title">TEXTWORLDS</span>
+    <a href="/">&larr; back</a>
+  </div>
+
+  <div id="landing">
+    <div id="boot-output"></div>
+    <div id="prompt-line">
+      <span class="prompt-text">guest@<span>quickcat</span>:~$&nbsp;</span>
+      <button class="connect-btn" onclick="connect()">dial_in</button><span class="cursor">▌</span>
+    </div>
+    <p class="note" id="note">sandboxed terminal &mdash; max 5 simultaneous connections</p>
+  </div>
+
+  <div id="terminal-container">
+    <iframe id="deck-frame" src="" allow="clipboard-read; clipboard-write"></iframe>
+  </div>
+
+  <script>
+    const lines = [
+      { text: 'TEXTWORLDS v1.0 // quickcat.club', cls: 'hi', delay: 0 },
+      { text: '─────────────────────────────────────────', cls: 'sep', delay: 80 },
+      { text: 'establishing uplink...            [ OK ]', cls: 'dim', delay: 200 },
+      { text: 'loading destination index...      [ OK ]', cls: 'dim', delay: 400 },
+      { text: '', cls: '', delay: 550 },
+      { text: '  available destinations:', cls: 'dim', delay: 650 },
+      { text: '', cls: '', delay: 700 },
+      { text: '  [1]  NETHACK             classic ASCII dungeon crawler', cls: 'line', delay: 780 },
+      { text: '  [2]  TEXT ADVENTURES     interactive fiction (5 titles)', cls: 'line', delay: 880 },
+      { text: '  [3]  AARDWOLF MUD        one of the largest MUDs online', cls: 'line', delay: 980 },
+      { text: '  [4]  REALMS OF DESPAIR   classic DIKU MUD — since 1994', cls: 'line', delay: 1080 },
+      { text: '  [5]  FOZZ BBS            retro computing bulletin board', cls: 'line', delay: 1180 },
+      { text: '  [6]  STAR WARS           the ASCII telnet movie', cls: 'line', delay: 1280 },
+      { text: '', cls: '', delay: 1380 },
+      { text: '  destination selected via interactive menu after connect.', cls: 'dim', delay: 1460 },
+      { text: '', cls: '', delay: 1560 },
+    ];
+
+    const out = document.getElementById('boot-output');
+    const promptLine = document.getElementById('prompt-line');
+    const note = document.getElementById('note');
+
+    lines.forEach(({ text, cls, delay }) => {
+      setTimeout(() => {
+        const s = document.createElement('span');
+        s.className = 'line' + (cls ? ' ' + cls : '');
+        s.textContent = text;
+        out.appendChild(s);
+      }, delay);
+    });
+
+    setTimeout(() => {
+      promptLine.style.display = 'flex';
+      note.style.display = 'block';
+    }, 1700);
+
+    function connect() {
+      const landing = document.getElementById('landing');
+      const container = document.getElementById('terminal-container');
+      const frame = document.getElementById('deck-frame');
+      landing.style.display = 'none';
+      container.classList.add('active');
+      frame.src = '/deck/';
+      frame.addEventListener('load', () => {
+        frame.focus();
+        try { frame.contentWindow.focus(); } catch(e) {}
+      });
+    }
+
+    document.addEventListener('keydown', (e) => {
+      const frame = document.getElementById('deck-frame');
+      if (frame.src && document.activeElement !== frame) {
+        frame.focus();
+        try { frame.contentWindow.focus(); } catch(e) {}
+      }
+    });
+  </script>
+
+</body>
+</html>

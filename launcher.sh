@@ -26,10 +26,9 @@ rainbow() {
 
 print_logo() {
   if command -v figlet >/dev/null 2>&1; then
-    figlet -f small "QUICKCAT CLUB" | rainbow
-    figlet -f small "DECK" | rainbow
+    figlet -f small "QUICK CAT DECK" | rainbow
   else
-    printf 'QUICKCAT CLUB\nDECK\n' | rainbow
+    printf 'QUICK CAT DECK\n' | rainbow
   fi
 }
 

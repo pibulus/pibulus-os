@@ -1,6 +1,6 @@
 services:
   romm:
-    image: rommapp/romm:latest
+    image: rommapp/romm:4.8.0
     container_name: romm
     restart: unless-stopped
     environment:
@@ -23,15 +23,15 @@ services:
     volumes:
       - /media/pibulus/passport/app-data/romm/assets:/romm/assets
       - /media/pibulus/passport/app-data/romm/config:/romm/config
-      - /media/pibulus/MEMBOT/Roms/Game Boy:/romm/library/roms/gb:ro
-      - /media/pibulus/MEMBOT/Roms/Game Boy Advance:/romm/library/roms/gba:ro
-      - /media/pibulus/MEMBOT/Roms/Nintendo (NES):/romm/library/roms/nes:ro
-      - /media/pibulus/MEMBOT/Roms/Nintendo 64:/romm/library/roms/n64:ro
-      - /media/pibulus/MEMBOT/Roms/Super Nintendo (SNES):/romm/library/roms/snes:ro
-      - /media/pibulus/MEMBOT/Roms/TurboGrafx-16:/romm/library/roms/tg16:ro
+      - /media/pibulus/passport/Roms/gb:/romm/library/roms/gb:ro
+      - /media/pibulus/passport/Roms/gba:/romm/library/roms/gba:ro
+      - /media/pibulus/passport/Roms/nes:/romm/library/roms/nes:ro
+      - /media/pibulus/passport/Roms/n64:/romm/library/roms/n64:ro
+      - /media/pibulus/passport/Roms/snes:/romm/library/roms/snes:ro
+      - /media/pibulus/passport/Roms/tg16:/romm/library/roms/tg16:ro
       - /media/pibulus/passport/Roms/arcade_fbneo:/romm/library/roms/arcade:ro
       - /media/pibulus/MEMBOT/Roms/ScummVM:/romm/library/roms/scummvm:ro
-      - /media/pibulus/MEMBOT/Roms/BIOS:/romm/library/bios:ro
+      - /media/pibulus/passport/Roms/bios:/romm/library/bios:ro
       - /media/pibulus/passport/Roms/psx:/romm/library/roms/psx:ro
       - /media/pibulus/passport/Roms/megadrive/openemu:/romm/library/roms/megadrive:ro
       - /media/pibulus/passport/app-data/romm/custom/theme.css:/romm/custom/theme.css:ro
