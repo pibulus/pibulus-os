@@ -39,7 +39,7 @@ def add_cw(conn, user, pw, email):
     salt = b'salt_' + os.urandom(8)
     hash_val = hashlib.scrypt(pw.encode(), salt=salt, n=32768, r=8, p=1, dklen=64, maxmem=256*1024*1024)
     cw_hash = f'scrypt:32768:8:1${salt.decode("latin1", "ignore")}${hash_val.hex()}'
-    conn.execute("INSERT INTO user (name, email, password, role) VALUES (?, ?, ?, 1)", (user, email, cw_hash))
+    conn.execute("INSERT INTO user (name, email, password, role, view_settings) VALUES (?, ?, ?, 1, '{}')", (user, email, cw_hash))
 
 def add_kv(conn, user, pw, email):
     salt = os.urandom(16)
