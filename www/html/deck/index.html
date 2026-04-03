@@ -491,6 +491,18 @@
         <div class="stat-value" id="d-radio">--</div>
         <div class="stat-label">ON AIR</div>
       </div>
+      <div class="stat">
+        <div class="stat-value" id="d-load">--</div>
+        <div class="stat-label">LOAD</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="d-root">--</div>
+        <div class="stat-label">SD CARD</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="d-ctrs">--</div>
+        <div class="stat-label">BOXES</div>
+      </div>
 
     </div>
 
@@ -727,6 +739,15 @@
           // Watching / on air
           if (d.watching !== undefined) document.getElementById('d-watching').textContent = d.watching;
           document.getElementById('d-radio').textContent = (d.np_listeners || 0);
+
+          // Load, SD card, containers
+          if (d.load) document.getElementById('d-load').textContent = d.load;
+          if (d.root_pct !== undefined) {
+            var rootEl = document.getElementById('d-root');
+            rootEl.textContent = d.root_pct + '%';
+            rootEl.className = 'stat-value' + (d.root_pct >= 90 ? ' crit' : d.root_pct >= 80 ? ' warn' : '');
+          }
+          if (d.containers !== undefined) document.getElementById('d-ctrs').textContent = d.containers;
 
           // Footer
           document.getElementById('f-containers').textContent = d.containers;
