@@ -237,10 +237,33 @@
 
     :focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
     .card:focus-visible { border-color: rgba(77,255,210,0.7); }
+
+    /* ─── CLUB NOTICE ─── */
+    #club-notice { position: relative; background: rgba(77,255,210,0.06); border: 1px solid rgba(77,255,210,0.25); border-radius: 2px; padding: 0.75rem 3rem 0.75rem 1.25rem; margin-bottom: 1.5rem; font-size: 1.1rem; color: var(--cyan); letter-spacing: 1px; animation: cardIn 0.4s ease-out forwards; }
+    #club-notice::before { content: '📡'; margin-right: 0.5em; }
+    #club-notice-close { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--dim); font-family: 'VT323', monospace; font-size: 1.8rem; line-height: 1; cursor: pointer; padding: 0 0.15rem; }
+    #club-notice-close:hover { color: var(--cyan); }
+
+    /* ─── DRAG-DROP CONTRIBUTE ─── */
+    .card.drag-over { border-color: var(--amber) !important; box-shadow: 0 0 24px rgba(245,166,35,0.35) !important; transform: translateY(-4px) scale(1.03) !important; }
+    .card.drop-ok .card-desc { color: var(--green); }
+    .card.drop-err .card-desc { color: var(--red); }
+
+    /* ─── KPAB INLINE PLAYER ─── */
+    .kpab-play { background: none; border: none; font-family: 'VT323', monospace; font-size: inherit; color: var(--amber); cursor: pointer; padding: 0 0.3em; letter-spacing: 1px; transition: color 0.15s; vertical-align: middle; }
+    .kpab-play:hover { color: var(--text); }
   </style>
 </head>
 <body>
+  <audio id="kpab-audio" preload="none"></audio>
+
   <div class="wrapper">
+    <!-- CLUB NOTICE — bump data-notice-id to re-show for everyone, edit the text below -->
+    <div id="club-notice" data-notice-id="qcc-v1" style="display:none">
+      fresh batch dropped: LOTR Extended, Terrifier 3, Beverly Hills Cop &amp; more &mdash; plus the BBS &amp; MUD terminal is live at <a href="/terminal/" style="color:inherit">/terminal/</a> &mdash; QCC &nbsp;=^..^=
+      <button id="club-notice-close" aria-label="Dismiss">×</button>
+    </div>
+
     <header>
       <h1>quick cat club<span class="cursor"></span></h1>
       <p class="subtitle">~(=^..^) a self-hosted sanctuary</p>
@@ -400,24 +423,89 @@
     msgSend.addEventListener('click', submitShout);
     msgText.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitShout(); } });
 
-    // ─── NOW PLAYING via AzuraCast API ───
-    const aliveEl = document.getElementById('alive');
+    // ─── CLUB NOTICE (show once per notice-id) ───
+    const noticeEl = document.getElementById('club-notice');
+    const noticeId = noticeEl && noticeEl.dataset.noticeId;
+    if (noticeEl && noticeId && !localStorage.getItem(noticeId)) {
+      noticeEl.style.display = '';
+      document.getElementById('club-notice-close').addEventListener('click', function() {
+        noticeEl.style.display = 'none';
+        localStorage.setItem(noticeId, '1');
+      });
+    }
+
+    // ─── KPAB INLINE PLAYER ───
+    const kpabAudio = document.getElementById('kpab-audio');
+    const STREAM = '/radio/stream';
+    var kpabPlaying = false;
+    function toggleKpab() {
+      if (kpabPlaying) {
+        kpabAudio.pause(); kpabAudio.src = ''; kpabPlaying = false;
+      } else {
+        kpabAudio.src = STREAM; kpabAudio.play().catch(function(){}); kpabPlaying = true;
+      }
+      renderNP(window._lastNP);
+    }
+    function renderNP(data) {
+      window._lastNP = data;
+      const aliveEl = document.getElementById('alive');
+      const playLabel = kpabPlaying ? '⏸' : '▶';
+      const np = data && data.now_playing;
+      if (np && np.song && (np.song.artist || np.song.title)) {
+        const artist = esc(np.song.artist || '');
+        const title = esc(np.song.title || '');
+        aliveEl.innerHTML = '<a class="alive-link" href="https://kpab.fm" target="_blank" rel="noopener"><span>KPAB.FM</span></a>'
+          + ' &mdash; ' + artist + ' &mdash; ' + title
+          + ' <button class="kpab-play" aria-label="toggle radio">' + playLabel + '</button>';
+      } else {
+        aliveEl.innerHTML = 'live on <a class="alive-link" href="https://kpab.fm" target="_blank" rel="noopener"><span>KPAB.FM</span></a>'
+          + ' <button class="kpab-play" aria-label="toggle radio">' + playLabel + '</button>';
+      }
+      aliveEl.querySelector('.kpab-play').addEventListener('click', toggleKpab);
+    }
     function updateNP() {
       fetch('https://kpab.fm/api/nowplaying/kpab.fm', { headers: { 'Accept': 'application/json' } })
-        .then(r => { if (!r.ok) throw new Error('nowplaying failed'); return r.json(); })
-        .then(data => {
-          const np = data && data.now_playing;
-          if (np && np.song && (np.song.artist || np.song.title)) {
-            const artist = esc(np.song.artist || 'Unknown artist');
-            const title = esc(np.song.title || 'Unknown track');
-            aliveEl.innerHTML = 'now playing on <a class="alive-link" href="https://kpab.fm" target="_blank" rel="noopener"><span>KPAB.FM</span>: ' + artist + ' &mdash; ' + title + '</a>';
-          } else {
-            aliveEl.innerHTML = 'live on <a class="alive-link" href="https://kpab.fm" target="_blank" rel="noopener"><span>KPAB.FM</span></a>';
-          }
-        })
-        .catch(() => { aliveEl.innerHTML = 'live on <a class="alive-link" href="https://kpab.fm" target="_blank" rel="noopener"><span>KPAB.FM</span></a>'; });
+        .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+        .then(renderNP)
+        .catch(function() { renderNP(null); });
     }
     updateNP(); setInterval(updateNP, 30000);
+
+    // ─── DRAG-DROP CONTRIBUTE ───
+    const contributeCard = document.querySelector('a[href="/drop/"]');
+    if (contributeCard) {
+      var origDesc = contributeCard.querySelector('.card-desc').textContent;
+      contributeCard.addEventListener('dragover', function(e) {
+        e.preventDefault(); contributeCard.classList.add('drag-over');
+        contributeCard.querySelector('.card-desc').textContent = 'drop to upload';
+      });
+      contributeCard.addEventListener('dragleave', function() {
+        contributeCard.classList.remove('drag-over');
+        contributeCard.querySelector('.card-desc').textContent = origDesc;
+      });
+      contributeCard.addEventListener('drop', function(e) {
+        e.preventDefault(); contributeCard.classList.remove('drag-over');
+        var file = e.dataTransfer.files[0];
+        if (!file) return;
+        contributeCard.querySelector('.card-desc').textContent = 'uploading...';
+        var fd = new FormData(); fd.append('file', file);
+        fetch('/drop/upload', { method: 'POST', body: fd })
+          .then(function(r) {
+            contributeCard.classList.add(r.ok ? 'drop-ok' : 'drop-err');
+            contributeCard.querySelector('.card-desc').textContent = r.ok ? 'received ✓' : 'upload failed';
+          })
+          .catch(function() {
+            contributeCard.classList.add('drop-err');
+            contributeCard.querySelector('.card-desc').textContent = 'upload failed';
+          })
+          .finally(function() {
+            setTimeout(function() {
+              contributeCard.classList.remove('drop-ok', 'drop-err');
+              contributeCard.querySelector('.card-desc').textContent = origDesc;
+            }, 3000);
+          });
+      });
+    }
   </script>
 
   <!-- UI Sounds — Kenney CC0 -->
