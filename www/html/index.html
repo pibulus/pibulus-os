@@ -103,6 +103,9 @@
     .alive-bar::before { content: ''; display: inline-block; width: 0.5em; height: 0.5em; background: var(--amber); border-radius: 50%; margin-right: 0.5em; vertical-align: middle; animation: pulse 2s ease-in-out infinite; }
     .alive-bar:empty::before { display: none; }
     .alive-bar span { color: var(--amber); }
+    .alive-link { color: inherit; text-decoration: none; border-bottom: 1px solid transparent; transition: color 0.2s ease, border-color 0.2s ease; }
+    .alive-link:hover { color: var(--text); border-color: rgba(245, 166, 35, 0.45); }
+    .alive-link:focus-visible { outline-offset: 4px; }
     .section-divider { display: flex; align-items: center; gap: 0.75rem; margin: 3rem 0 1.5rem; }
     .section-divider::before, .section-divider::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, rgba(77,255,210,0.4), transparent); }
     .section-label { font-size: 1.2rem; color: var(--cyan); letter-spacing: 0.2em; white-space: nowrap; text-shadow: 0 0 8px rgba(77,255,210,0.5); }
@@ -236,7 +239,7 @@
     <header>
       <h1>quick cat club<span class="cursor"></span></h1>
       <p class="subtitle">~(=^..^) a self-hosted sanctuary</p>
-      <div class="alive-bar" id="alive">live on <span>KPAB.FM</span></div>
+      <div class="alive-bar" id="alive">live on <a class="alive-link" href="https://kpab.fm" target="_blank" rel="noopener"><span>KPAB.FM</span></a></div>
     </header>
 
     <div class="section-divider"><span class="section-label">[ ROOMS ]</span></div>
@@ -402,12 +405,12 @@
           if (np && np.song && (np.song.artist || np.song.title)) {
             const artist = esc(np.song.artist || 'Unknown artist');
             const title = esc(np.song.title || 'Unknown track');
-            aliveEl.innerHTML = 'now playing on <span>KPAB.FM</span>: ' + artist + ' &mdash; ' + title;
+            aliveEl.innerHTML = 'now playing on <a class="alive-link" href="https://kpab.fm" target="_blank" rel="noopener"><span>KPAB.FM</span>: ' + artist + ' &mdash; ' + title + '</a>';
           } else {
-            aliveEl.innerHTML = 'live on <span>KPAB.FM</span>';
+            aliveEl.innerHTML = 'live on <a class="alive-link" href="https://kpab.fm" target="_blank" rel="noopener"><span>KPAB.FM</span></a>';
           }
         })
-        .catch(() => { aliveEl.innerHTML = 'live on <span>KPAB.FM</span>'; });
+        .catch(() => { aliveEl.innerHTML = 'live on <a class="alive-link" href="https://kpab.fm" target="_blank" rel="noopener"><span>KPAB.FM</span></a>'; });
     }
     updateNP(); setInterval(updateNP, 30000);
   </script>
