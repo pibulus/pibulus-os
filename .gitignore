@@ -18,6 +18,7 @@ config/stacks/icloudpd_config/*.json
 
 # Runtime / generated state
 www/html/status.json
+www/html/counts.json
 data/
 *.log
 
