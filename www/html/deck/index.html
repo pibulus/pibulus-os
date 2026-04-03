@@ -238,7 +238,15 @@
     .grid-3 { grid-template-columns: repeat(3, 1fr); }
 
     @media (max-width: 560px) {
-      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .grid-2, .grid-3 { grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
+      .card { padding: 1.1rem 0.7rem; }
+      .card-emoji { font-size: 1.5rem; }
+      .card-label { font-size: 1.2rem; }
+      .card-desc { font-size: 0.9rem; }
+      .section-divider { margin: 1.5rem 0 0.8rem; }
+      .wrapper { padding: 1.5rem 0.9rem 3rem; }
+      header { padding: 1.5rem 0 0.5rem; }
+      .alive-meta { font-size: 0.8rem; }
     }
     @media (min-width: 561px) and (max-width: 760px) {
       .grid-3 { grid-template-columns: repeat(2, 1fr); }
