@@ -132,6 +132,24 @@ services:
       - /home/pibulus/pibulus-os/config/nginx/.htpasswd:/etc/nginx/.htpasswd:ro
     restart: always
 
+  # --- THE TORRENT ENGINE ---
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Australia/Melbourne
+      - WEBUI_PORT=8888
+    ports:
+      - "8888:8888"
+      - "6881:6881"
+      - "6881:6881/udp"
+    volumes:
+      - /home/pibulus/.config/qbittorrent:/config
+      - /media/pibulus/passport/The_Bucket:/downloads
+    restart: unless-stopped
+
   # --- THE VPN SHIELD (PUREVPN) ---
   gluetun:
     image: qmcgaw/gluetun
