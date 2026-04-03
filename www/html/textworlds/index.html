@@ -215,7 +215,10 @@
 
     document.addEventListener('keydown', (e) => {
       const frame = document.getElementById('deck-frame');
-      if (frame.src && document.activeElement !== frame) {
+      const landing = document.getElementById('landing');
+      if (landing.style.display !== 'none' && (e.key === 'Enter' || e.key === ' ')) {
+        connect();
+      } else if (frame.src && document.activeElement !== frame) {
         frame.focus();
         try { frame.contentWindow.focus(); } catch(e) {}
       }
