@@ -57,6 +57,7 @@ show_tonight_ops() {
   local total=${#picks[@]}
   local day_index
   day_index=$(date +%j 2>/dev/null || echo 1)
+  day_index=$((10#$day_index))
   local pick1=${picks[$((day_index % total))]}
   local pick2=${picks[$(((day_index + 2) % total))]}
 
