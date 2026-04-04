@@ -33,9 +33,7 @@ print_logo() {
 }
 
 print_statusline() {
-  local line1=':: admin node :: radio / media / club / deploy / textworlds ::'
-  local line2=':: launcher alias online :: pibulus local command deck ::'
-  printf '%s\n%s\n' "$line1" "$line2" | rainbow
+  printf '%s\n' ':: quick cat club :: admin node ::' | rainbow
 }
 
 print_header() {
@@ -44,28 +42,6 @@ print_header() {
   echo
 }
 
-show_tonight_ops() {
-  local picks=(
-    '📻 KPAB RADIO|snapshot, listener rows, and public links'
-    '🔎 FIND MY MEDIA|quick local search across the passport drive'
-    '📡 NETWORK MODES|home wifi versus hotspot-away mode'
-    '🐉 TEXTWORLD GATEWAY|live muds, bbs, and weird internet portals'
-    '🚀 DEPLOY SOMETHING NEW|the dangerous shiny button'
-    '📂 BROWSE PASSPORT DRIVE|direct file spelunking'
-  )
-  local total=${#picks[@]}
-  local day_index
-  day_index=$(date +%j 2>/dev/null || echo 1)
-  day_index=$((10#$day_index))
-  local pick1=${picks[$((day_index % total))]}
-  local pick2=${picks[$(((day_index + 2) % total))]}
-
-  gum style --border normal --border-foreground 240 --padding '0 1' --margin '0 0' \
-    "TONIGHT'S OPS" \
-    "${pick1%%|*} — ${pick1#*|}" \
-    "${pick2%%|*} — ${pick2#*|}"
-  echo
-}
 
 show_section_intro() {
   local title="$1"
@@ -719,82 +695,16 @@ for item in data.get("results", []):
   nnn "$target_dir"
 }
 
-connect_text_world() {
-  local label="$1"
-  local host="$2"
-  local port="${3:-23}"
-  local note="${4:-Exit telnet with Ctrl + ]}"
-  local term_mode="${5:-vt100}"
-
-  clear
-  gum style --foreground 51 "=== $label ==="
-  echo "Host: $host:$port"
-  echo "Terminal mode: $term_mode"
-  echo "$note"
-  echo "If the world looks blank, tap Enter once."
-  echo
-  TERM="$term_mode" telnet "$host" "$port"
-}
-
-textworld_menu() {
-  while true; do
-    render_hud
-    show_section_intro \
-      'TEXTWORLD GATEWAY' \
-      'Live portals from the admin deck: classics, good first stops, and a few weird old terminals.'
-    local action
-    action=$(tactile_choose \
-      '✨ New Here Picks' \
-      '🐉 Genesis MUD' \
-      '🌍 Discworld' \
-      '⚔️ Alter Aeon' \
-      '🌀 LambdaMOO' \
-      '📟 End Of The Line BBS' \
-      '🎲 NetHack' \
-      '⚗️ Weird Terminals' \
-      'Back')
-    case "$action" in
-      '✨ New Here Picks')
-        render_hud
-        gum style --border double --border-foreground 51 --padding '1 2' --margin '0 0' \
-          'NEW HERE PICKS' \
-          '' \
-          'Genesis — classic fantasy MUD' \
-          'Discworld — witty and welcoming' \
-          'Alter Aeon — polished onboarding' \
-          'LambdaMOO — social text weirdness' \
-          'End Of The Line BBS — clean ANSI board'
-        pause_screen ;;
-      '🐉 Genesis MUD') connect_text_world 'Genesis MUD' 'mud.genesismud.org' '3011' 'Classic fantasy MUD. Good first stop.' 'xterm-256color' ;;
-      '🌍 Discworld') connect_text_world 'Discworld' 'discworld.starturtle.net' '4242' 'Funny writing, great atmosphere, easy recommend.' 'xterm-256color' ;;
-      '⚔️ Alter Aeon') connect_text_world 'Alter Aeon' 'alteraeon.com' '3000' 'Polished fantasy world with smoother onboarding.' 'xterm-256color' ;;
-      '🌀 LambdaMOO') connect_text_world 'LambdaMOO' 'lambda.moo.mud.org' '8888' 'Social text world. Wander, read, talk.' 'xterm-256color' ;;
-      '📟 End Of The Line BBS') connect_text_world 'End Of The Line BBS' 'endofthelinebbs.com' '23' 'ANSI BBS with a cleaner browser-terminal fit.' 'ansi' ;;
-      '🎲 NetHack') nethack || { echo 'NetHack not installed.'; pause_screen; } ;;
-      '⚗️ Weird Terminals')
-        local weird
-        weird=$(tactile_choose '📟 Fozz BBS' '⭐ Star Wars ASCII' '🐉 Dark Realms MUD' 'Back')
-        case "$weird" in
-          '📟 Fozz BBS') connect_text_world 'Fozz BBS' 'bbs.fozztexx.com' '23' 'Minimal telnet greeting. Hit Enter if it feels blank.' 'ansi' ;;
-          '⭐ Star Wars ASCII') connect_text_world 'Star Wars ASCII' 'towel.blinkenlights.nl' '23' 'Ctrl + ] then quit to break out if needed.' 'vt100' ;;
-          '🐉 Dark Realms MUD') connect_text_world 'Dark Realms' 'darkrealms.ca' '23' 'Old-school MUD portal from the admin deck.' 'vt100' ;;
-          'Back'|'') ;;
-        esac ;;
-      'Back'|'') return ;;
-    esac
-  done
-}
-
 network_menu() {
   while true; do
     render_hud
     show_section_intro \
-      'NETWORK' \
-      'Switch between home and away modes, or inspect the current networking state before blaming the tunnel.'
+      'network' \
+      'Switch between home and away modes, or inspect the current state before blaming the tunnel.'
     local action
-    action=$(tactile_choose '📡 Show Network Status' '🏠 Home Wi-Fi Mode' '🧳 Hotspot / Away Mode' 'Back')
+    action=$(tactile_choose '📡 Network Status' '🏠 Home Wi-Fi Mode' '🧳 Hotspot / Away Mode' 'Back')
     case "$action" in
-      '📡 Show Network Status') ~/pibulus-os/scripts/network_mode.sh status; pause_screen ;;
+      '📡 Network Status') ~/pibulus-os/scripts/network_mode.sh status; pause_screen ;;
       '🏠 Home Wi-Fi Mode') ~/pibulus-os/scripts/network_mode.sh home; pause_screen ;;
       '🧳 Hotspot / Away Mode') ~/pibulus-os/scripts/network_mode.sh away; pause_screen ;;
       'Back'|'') return ;;
@@ -806,8 +716,8 @@ sigint_menu() {
   while true; do
     render_hud
     show_section_intro \
-      'SIGINT / SITUATION ROOM' \
-      'Fast state of the machine: health, tunnel, service status, public edge, and recent system noise.'
+      'sigint' \
+      'Fast state of the machine: health, tunnel, service status, public edge, and recent noise.'
     local action
     action=$(tactile_choose \
       '📊 System Snapshot' \
@@ -839,15 +749,15 @@ slskd_menu() {
   while true; do
     render_hud
     show_section_intro \
-      'SOULSEEK' \
+      'soulseek' \
       'Peer-to-peer intake control: wake it, inspect it, or jump into the local UI without leaving the deck.'
     local action
-    action=$(tactile_choose '🎵 Wake Soulseek' '😴 Sleep Soulseek' '🔎 Show Soulseek Status' '🌐 Open Soulseek UI' 'Back')
+    action=$(tactile_choose '🎵 Wake' '😴 Sleep' '🔎 Status' '🌐 Open UI' 'Back')
     case "$action" in
-      '🎵 Wake Soulseek') docker start slskd; pause_screen ;;
-      '😴 Sleep Soulseek') docker stop slskd; pause_screen ;;
-      '🔎 Show Soulseek Status') docker ps --filter 'name=slskd' --format 'table {{.Names}}\t{{.Status}}'; pause_screen ;;
-      '🌐 Open Soulseek UI') open_local_browserish 'http://localhost:5030' ;;
+      '🎵 Wake') docker start slskd; pause_screen ;;
+      '😴 Sleep') docker stop slskd; pause_screen ;;
+      '🔎 Status') docker ps --filter 'name=slskd' --format 'table {{.Names}}\t{{.Status}}'; pause_screen ;;
+      '🌐 Open UI') open_local_browserish 'http://localhost:5030' ;;
       'Back'|'') return ;;
     esac
   done
@@ -857,10 +767,10 @@ club_menu() {
   while true; do
     render_hud
     show_section_intro \
-      'CLUB' \
-      'Account and membership utilities for the local node. Small admin tasks, quick and direct.'
+      'club' \
+      'Account and membership utilities for the local node.'
     local action
-    action=$(tactile_choose '➕ Add Club Member' '🔎 Audit Account Parity' 'Back')
+    action=$(tactile_choose '➕ Add Member' '🔎 Audit Account Parity' 'Back')
     case "$action" in
       '➕ Add Club Member')
         local name=$(gum input --placeholder 'Username...')
@@ -877,28 +787,25 @@ radio_menu() {
   while true; do
     render_hud
     show_section_intro \
-      'RADIO' \
-      'Check what KPAB is doing right now: current track, listeners, service health, and public-facing links.'
+      'radio' \
+      'Check what KPAB is doing right now: current track, listeners, service health, and public links.'
     local action
-    action=$(tactile_choose '📻 Show Radio Snapshot' '📜 Show Recent Tracks' '👂 Show Recent Listener Rows' '🪪 Show My Public IP' '🛰️ Show Radio Service Status' '🌐 Show Public Links' 'Back')
+    action=$(tactile_choose '📻 Now Playing' '📜 Recent Tracks' '👂 Recent Listeners' '🛰️ Service Status' '🌐 Public Links' 'Back')
     case "$action" in
-      '📻 Show Radio Snapshot')
+      '📻 Now Playing')
         show_radio_snapshot
         pause_screen ;;
-      '📜 Show Recent Tracks')
+      '📜 Recent Tracks')
         show_recent_tracks
         pause_screen ;;
-      '👂 Show Recent Listener Rows')
+      '👂 Recent Listeners')
         refresh_recent_listeners_cache
         show_recent_listeners
         pause_screen ;;
-      '🪪 Show My Public IP')
-        show_public_ip
-        pause_screen ;;
-      '🛰️ Show Radio Service Status')
+      '🛰️ Service Status')
         radio_status
         pause_screen ;;
-      '🌐 Show Public Links')
+      '🌐 Public Links')
         show_public_links
         pause_screen ;;
       'Back'|'') return ;;
@@ -910,7 +817,7 @@ media_menu() {
   while true; do
     render_hud
     show_section_intro \
-      'MEDIA' \
+      'media' \
       'Search, browse, and inspect the archive. Less clicking around, more seeing what is actually on disk.'
     local action
     action=$(tactile_choose \
@@ -937,7 +844,7 @@ drives_menu() {
   while true; do
     render_hud
     show_section_intro \
-      'DRIVES' \
+      'drives' \
       'Mount status, USB weirdness, and safe actions for external media. The opposite of yanking cables blind.'
     local action
     action=$(tactile_choose \
@@ -960,20 +867,18 @@ ops_menu() {
   while true; do
     render_hud
     show_section_intro \
-      'OPS' \
+      'ops' \
       'Sharp tools for changing the box. Not vibes. Real interventions.'
     local action
     action=$(tactile_choose \
       '🚀 Deploy Something New' \
       '🧹 Flush RAM' \
-      '🌐 Public Links' \
       '🧠 Scavenger Search' \
       '🏴‍☠️ Media Grab' \
       'Back')
     case "$action" in
       '🚀 Deploy Something New') ~/pibulus-os/scripts/deploy.sh ;;
       '🧹 Flush RAM') ~/pibulus-os/scripts/flush_ram.sh; pause_screen ;;
-      '🌐 Public Links') show_public_links; pause_screen ;;
       '🧠 Scavenger Search') manage_scavenger ;;
       '🏴‍☠️ Media Grab') manage_pirate_grab ;;
       'Back'|'') return ;;
@@ -981,28 +886,30 @@ ops_menu() {
   done
 }
 
-notes_menu() {
+desk_menu() {
   while true; do
     render_hud
     show_section_intro \
-      'NOTES' \
-      'Quick capture for ideas, bugs, links, and 3am realizations before they evaporate.'
+      'desk' \
+      'Capture, read, browse feeds, and get a shell. The quiet end of the deck.'
     local action
     action=$(tactile_choose \
       '✍️ Write Field Note' \
-      '📜 Recent Field Notes' \
-      '✨ Pretty Notes Viewer' \
+      '📜 Recent Notes' \
+      '✨ Pretty Viewer' \
       '📖 Field Manual' \
       '📰 Feed Reader' \
-      '🧵 tmux Shell' \
+      '🧵 tmux' \
+      '💬 Chat' \
       'Back')
     case "$action" in
       '✍️ Write Field Note') write_field_note; pause_screen ;;
-      '📜 Recent Field Notes') show_recent_notes; pause_screen ;;
-      '✨ Pretty Notes Viewer') open_notes_in_glow ;;
+      '📜 Recent Notes') show_recent_notes; pause_screen ;;
+      '✨ Pretty Viewer') open_notes_in_glow ;;
       '📖 Field Manual') open_field_manual_pretty ;;
       '📰 Feed Reader') open_feed_reader ;;
-      '🧵 tmux Shell') open_tmux_shell ;;
+      '🧵 tmux') open_tmux_shell ;;
+      '💬 Chat') open_chat_client ;;
       'Back'|'') return ;;
     esac
   done
@@ -1015,32 +922,28 @@ while true; do
     gum style --foreground 212 "$(roll_fascination)"
     _first_run=0
   fi
-choice=$(tactile_choose --height 20 \
-    '🚨 SIGINT' \
-    '📻 RADIO' \
-    '🎬 MEDIA' \
-    '🐉 TEXTWORLDS' \
-    '📡 NETWORK' \
-    '💾 DRIVES' \
-    '🛠️ OPS' \
-    '🎵 SOULSEEK' \
-    '🐱 CLUB' \
-    '📝 NOTES' \
-    '💬 CHAT' \
-    '🚪 Exit')
+choice=$(tactile_choose --height 15 \
+    '🚨 sigint' \
+    '📻 radio' \
+    '🎬 media' \
+    '📡 network' \
+    '💾 drives' \
+    '🛠️ ops' \
+    '🎵 soulseek' \
+    '🐱 club' \
+    '📝 desk' \
+    '🚪 exit')
 
   case "$choice" in
-    '🚨 SIGINT') sigint_menu ;;
-    '📻 RADIO') radio_menu ;;
-    '🎬 MEDIA') media_menu ;;
-    '🐉 TEXTWORLDS') textworld_menu ;;
-    '📡 NETWORK') network_menu ;;
-    '💾 DRIVES') drives_menu ;;
-    '🛠️ OPS') ops_menu ;;
-    '🎵 SOULSEEK') slskd_menu ;;
-    '🐱 CLUB') club_menu ;;
-    '📝 NOTES') notes_menu ;;
-    '💬 CHAT') open_chat_client ;;
-    '🚪 Exit'|'') clear; echo 'Neural link severed.'; exit 0 ;;
+    '🚨 sigint') sigint_menu ;;
+    '📻 radio') radio_menu ;;
+    '🎬 media') media_menu ;;
+    '📡 network') network_menu ;;
+    '💾 drives') drives_menu ;;
+    '🛠️ ops') ops_menu ;;
+    '🎵 soulseek') slskd_menu ;;
+    '🐱 club') club_menu ;;
+    '📝 desk') desk_menu ;;
+    '🚪 exit'|'') clear; echo 'Neural link severed.'; exit 0 ;;
   esac
 done
