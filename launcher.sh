@@ -822,6 +822,8 @@ media_menu() {
     local action
     action=$(tactile_choose \
       '⬇️ Download Watch' \
+      '🎬 Grab a Movie' \
+      '📺 Grab a Show' \
       '🔎 Find My Media' \
       '📂 Browse Passport Drive' \
       '📦 Biggest Media Dirs' \
@@ -831,6 +833,14 @@ media_menu() {
       'Back')
     case "$action" in
       '⬇️ Download Watch') bash ~/pibulus-os/scripts/dlwatch.sh ;;
+      '🎬 Grab a Movie')
+        title=$(gum input --placeholder "movie title (e.g. chopper 2000)")
+        [ -n "$title" ] && python3 ~/pibulus-os/scripts/grab_movie.py "$title"
+        pause_screen ;;
+      '📺 Grab a Show')
+        title=$(gum input --placeholder "show name (e.g. joe pera talks with you)")
+        [ -n "$title" ] && python3 ~/pibulus-os/scripts/grab_show.py "$title"
+        pause_screen ;;
       '🔎 Find My Media') media_finder_menu ;;
       '📂 Browse Passport Drive') nnn /media/pibulus/passport ;;
       '📦 Biggest Media Dirs') show_top_media_dirs; pause_screen ;;
