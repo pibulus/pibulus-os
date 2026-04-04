@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 import hashlib, os, uuid, base64, sqlite3, sys, json
 
+if os.geteuid() != 0:
+    os.execvp('sudo', ['sudo', sys.executable] + sys.argv)
+
 if len(sys.argv) < 2:
     print('Usage: add_club_member.py username [password]')
     sys.exit(1)

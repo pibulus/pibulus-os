@@ -772,7 +772,7 @@ club_menu() {
     local action
     action=$(tactile_choose '➕ Add Member' '🔎 Audit Account Parity' 'Back')
     case "$action" in
-      '➕ Add Club Member')
+      '➕ Add Member')
         local name=$(gum input --placeholder 'Username...')
         [ -n "$name" ] && sudo python3 ~/pibulus-os/scripts/add_club_member.py "$name" && pause_screen ;;
       '🔎 Audit Account Parity')
