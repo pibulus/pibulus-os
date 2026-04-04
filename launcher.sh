@@ -821,6 +821,7 @@ media_menu() {
       'Search, browse, and inspect the archive. Less clicking around, more seeing what is actually on disk.'
     local action
     action=$(tactile_choose \
+      '⬇️ Download Watch' \
       '🔎 Find My Media' \
       '📂 Browse Passport Drive' \
       '📦 Biggest Media Dirs' \
@@ -829,6 +830,7 @@ media_menu() {
       '🕰️ Recent File Activity' \
       'Back')
     case "$action" in
+      '⬇️ Download Watch') bash ~/pibulus-os/scripts/dlwatch.sh ;;
       '🔎 Find My Media') media_finder_menu ;;
       '📂 Browse Passport Drive') nnn /media/pibulus/passport ;;
       '📦 Biggest Media Dirs') show_top_media_dirs; pause_screen ;;
