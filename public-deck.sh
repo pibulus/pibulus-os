@@ -22,7 +22,7 @@ while true; do
     '🐉  Aardwolf MUD — one of the largest MUDs online' \
     '⚔️  Realms of Despair — classic DIKU MUD (1994)' \
     '📟  Fozz BBS — retro computing bulletin board' \
-    '⭐  Star Wars — ASCII movie via telnet' \
+    '🐺  BatMUD — Finnish MUD, running since 1990' \
     '🚪  Disconnect')
 
   case "$choice" in
@@ -66,12 +66,12 @@ while true; do
       echo
       TERM=ansi telnet bbs.fozztexx.com
       ;;
-    *'Star Wars'*)
+    *'BatMUD'*)
       clear
-      printf 'STAR WARS\n' | figlet -f small | lolcat
-      echo 'Ctrl+] then type "quit" to disconnect.'
+      printf 'BATMUD\n' | figlet -f small | lolcat
+      echo 'Type "quit" to disconnect. New players: type "create" at the prompt.'
       echo
-      telnet towel.blinkenlights.nl
+      telnet bat.org
       ;;
     *'Disconnect'*|'')
       clear
