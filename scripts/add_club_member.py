@@ -106,3 +106,35 @@ try:
     urllib.request.urlopen(req)
     print(f'✅ RM: {user} added.')
 except Exception as e: print(f'❌ RM: {e}')
+
+# Jellyfin avatar — DiceBear thumbs in the club palette
+try:
+    import urllib.parse
+    BG_COLORS = [
+        'ffb3c6', 'ffd1dc', 'ffdfba', 'ffd6a5', 'fce4ec',
+        'fff1a8', 'fde68a', 'ff9baa', 'ffcad4', 'ffddd2', 'ffc8dd', 'ffe5b4',
+    ]
+    SHAPE_COLORS = [
+        'f4a261', 'e9c46a', 'ffb347', 'ff9a8b', 'ffa07a', 'e8a0bf', 'c9b1d0', 'ffcc99',
+    ]
+    def _pick(palette, seed):
+        return palette[int(hashlib.md5(seed.encode()).hexdigest(), 16) % len(palette)]
+    bg    = _pick(BG_COLORS,    user)
+    shape = _pick(SHAPE_COLORS, user + 'shape')
+    avatar_url = (f'https://api.dicebear.com/9.x/thumbs/png'
+                  f'?seed={urllib.parse.quote(user)}'
+                  f'&backgroundColor={bg}&shapeColor={shape}'
+                  f'&backgroundType=gradientLinear&size=256')
+    img = urllib.request.urlopen(avatar_url, timeout=15).read()
+    # look up the new user's JF id
+    jf_users = json.loads(urllib.request.urlopen(
+        urllib.request.Request('http://localhost:8096/Users',
+        headers={'X-Emby-Token': '1980cdafcfec43b58b04b89c4d1f5b99'})).read())
+    jf_uid = next((u['Id'] for u in jf_users if u['Name'].lower() == user), None)
+    if jf_uid:
+        urllib.request.urlopen(urllib.request.Request(
+            f'http://localhost:8096/Users/{jf_uid}/Images/Primary', data=img,
+            headers={'X-Emby-Token': '1980cdafcfec43b58b04b89c4d1f5b99', 'Content-Type': 'image/png'},
+            method='POST'))
+    print(f'✅ AV: {user} avatar set.')
+except Exception as e: print(f'❌ AV: {e}')
