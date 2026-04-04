@@ -773,7 +773,8 @@
       btn.textContent = '...';
       status.textContent = '';
 
-      fetch('https://kpab.fm/mutiny/mutiny', { method: 'POST', cache: 'no-store' })
+      fetch('/mutiny/mutiny', { method: 'POST', cache: 'no-store' })
+        .catch(function() { return fetch('https://kpab.fm/mutiny/mutiny', { method: 'POST', cache: 'no-store' }); })
         .then(function(r) {
           return r.json().catch(function() { return {}; }).then(function(data) {
             return { ok: r.ok, status: r.status, data: data };
