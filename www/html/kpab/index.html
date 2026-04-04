@@ -2367,6 +2367,20 @@
     const shoutList = document.getElementById('shoutList');
     let shoutsInterval = null;
 
+    // Pre-fill a random handle if none saved
+    (function() {
+      const adjs = ['DARK','WILD','NEON','LOST','LOUD','FAST','SOFT','COLD','WARM','STRAY','DRIFT','HAZY','ROGUE','DEAD','LIVE','RAW','FREE','GRIM','COOL','SHARP'];
+      const nouns = ['CAT','DOG','RAT','FOX','EEL','OWL','BAT','COD','FLY','BUG','HAT','CUP','CAN','MAP','KEY','LOG','GUN','NET','PIT','RIG'];
+      const saved = localStorage.getItem('kpab-handle');
+      if (saved) {
+        msgName.value = saved;
+      } else {
+        const handle = adjs[Math.floor(Math.random()*adjs.length)] + '_' + nouns[Math.floor(Math.random()*nouns.length)];
+        msgName.value = handle;
+        localStorage.setItem('kpab-handle', handle);
+      }
+    })();
+
     async function loadShouts() {
       try {
         const res = await fetch('/msg/shouts.json');
@@ -2381,7 +2395,7 @@
             <div class="shout-item">
               <div class="shout-header">
                 <span class="shout-name">${escHtml(s.n)}</span>
-                <span class="shout-time">${(() => { const d = new Date(s.t * 1000); return `${d.getDate()}/${d.getMonth()+1} ${d.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"})}`; })()}</span>
+                <span class="shout-time">${(() => { const d = new Date(s.t * 1000); return `${d.getDate()}/${d.getMonth()+1}`; })()}</span>
               </div>
               <div class="shout-msg">${escHtml(s.m)}</div>
               ${s.track ? `<div class="shout-track">\u266B ${escHtml(s.track)}</div>` : ''}
@@ -2411,7 +2425,7 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            name: msgName.value.trim() || 'Anonymous listener',
+            name: msgName.value.trim() || 'ANON',
             msg: text,
             source: 'kpab.fm'
           })
@@ -2436,6 +2450,7 @@
       msgSend.disabled = false;
       msgSend.textContent = 'TRANSMIT';
     }
+    msgName.addEventListener('change', () => { if (msgName.value.trim()) localStorage.setItem('kpab-handle', msgName.value.trim()); });
     msgSend.addEventListener('click', submitShout);
     msgSend.addEventListener('touchend', (e) => { e.preventDefault(); submitShout(); });
 
