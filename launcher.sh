@@ -133,12 +133,11 @@ render_hud() {
   fi
 
   print_logo
-  echo
   print_statusline
   echo
-  show_tonight_ops
-  gum style --border rounded --border-foreground 212 --padding '0 2' --margin '1 0' \
+  gum style --border rounded --border-foreground 212 --padding '0 1' --margin '0 0' \
     "🌡️ $temp  |  🧠 $mem  |  🧵 load $load  |  💾 $(get_storage_bar)  |  📻 $(get_status azuracast) azuracast"
+  echo
 }
 
 tactile_choose() {
@@ -1009,13 +1008,13 @@ notes_menu() {
   done
 }
 
-# STARTUP ROLL
-render_hud
-gum style --foreground 212 "$(roll_fascination)"
-sleep 1.5
-
+_first_run=1
 while true; do
   render_hud
+  if [ "$_first_run" = "1" ]; then
+    gum style --foreground 212 "$(roll_fascination)"
+    _first_run=0
+  fi
 choice=$(tactile_choose --height 20 \
     '🚨 SIGINT' \
     '📻 RADIO' \
