@@ -23,6 +23,10 @@ while true; do
     '⚔️  Realms of Despair — classic DIKU MUD (1994)' \
     '📟  Fozz BBS — retro computing bulletin board' \
     '🐺  BatMUD — Finnish MUD, running since 1990' \
+    '🏰  Medievia — classic medieval fantasy MUD' \
+    '🔥  Threshold RPG — story-driven fantasy world' \
+    '🌀  Lost Souls — deep lore, been running since 1990' \
+    '🐍  Achaea — polished Iron Realms MUD' \
     '🚪  Disconnect')
 
   case "$choice" in
@@ -72,6 +76,34 @@ while true; do
       echo 'Type "quit" to disconnect. New players: type "create" at the prompt.'
       echo
       telnet bat.org
+      ;;
+    *'Medievia'*)
+      clear
+      printf 'MEDIEVIA\n' | figlet -f small | lolcat
+      echo 'Type "quit" to disconnect. New players: follow the prompts to create a character.'
+      echo
+      telnet medievia.com 4000
+      ;;
+    *'Threshold'*)
+      clear
+      printf 'THRESHOLD RPG\n' | figlet -f small | lolcat
+      echo 'Type "quit" to disconnect. New players: type "new" at the prompt.'
+      echo
+      telnet thresholdrpg.com 3333
+      ;;
+    *'Lost Souls'*)
+      clear
+      printf 'LOST SOULS\n' | figlet -f small | lolcat
+      echo 'Type "quit" to disconnect. Deep lore — take your time at the intro.'
+      echo
+      telnet lostsouls.org
+      ;;
+    *'Achaea'*)
+      clear
+      printf 'ACHAEA\n' | figlet -f small | lolcat
+      echo 'Type "quit" to disconnect. New players: type "new" at the prompt.'
+      echo
+      telnet achaea.com
       ;;
     *'Disconnect'*|'')
       clear
