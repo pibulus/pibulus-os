@@ -148,6 +148,8 @@ services:
     volumes:
       - /home/pibulus/.config/qbittorrent:/config
       - /media/pibulus/passport/The_Bucket:/downloads
+      - /media/pibulus/passport/Shows:/shows
+      - /media/pibulus/passport/Movies:/movies
     restart: unless-stopped
 
   # --- THE VPN SHIELD (PUREVPN) ---

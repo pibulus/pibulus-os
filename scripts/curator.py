@@ -46,8 +46,8 @@ SCRIPTS_DIR  = Path("/home/pibulus/pibulus-os/scripts")
 QB_URL       = "http://localhost:8888"
 QB_USER      = "admin"
 QB_PASS      = "meringue"
-QB_MOVIES    = "/downloads/Movies/"
-QB_SHOWS     = "/downloads/"
+QB_MOVIES    = "/movies/"
+QB_SHOWS     = "/shows/"
 
 # ── Claude API ────────────────────────────────────────────────────────────────
 CLAUDE_MODEL = "claude-opus-4-6"

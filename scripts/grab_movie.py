@@ -23,7 +23,7 @@ from http.cookiejar import CookieJar
 QB_URL  = "http://localhost:8888"
 QB_USER = "admin"
 QB_PASS = "meringue"
-QB_SAVE = "/downloads/Movies/"   # inside container = /media/pibulus/passport/The_Bucket/Movies/
+QB_SAVE = "/movies/"   # inside container = /media/pibulus/passport/Movies/
 
 # Size limits (bytes)
 MAX_MOVIE_SIZE   = 8 * 1024 ** 3    # 8GB max

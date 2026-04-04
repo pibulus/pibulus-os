@@ -24,7 +24,7 @@ from http.cookiejar import CookieJar
 QB_URL  = "http://localhost:8888"
 QB_USER = "admin"
 QB_PASS = "meringue"
-QB_SAVE = "/downloads/"   # inside container = /media/pibulus/passport/The_Bucket/
+QB_SAVE = "/shows/"   # inside container = /media/pibulus/passport/Shows/
 
 # Size limits (bytes)
 MAX_EPISODE_SIZE = 2 * 1024 ** 3    # 2GB per episode — 1080p should never need more
