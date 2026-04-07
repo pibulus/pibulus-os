@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import hashlib, os, uuid, base64, sqlite3, sys, json
+import hashlib, os, uuid, base64, sqlite3, sys, json, urllib.request
 
 if os.geteuid() != 0:
     os.execvp('sudo', ['sudo', sys.executable] + sys.argv)
@@ -13,7 +13,6 @@ pw = sys.argv[2] if len(sys.argv) > 2 else f'{user}123!'
 email = f'{user}@quickcat.club'
 
 dbs = {
-    'JF': '/home/pibulus/.config/jellyfin/data/jellyfin.db',
     'CW': '/home/pibulus/.config/calibre-web/app.db',
     'KV': '/home/pibulus/.config/kavita/kavita.db',
     'ND': '/home/pibulus/.config/navidrome/navidrome.db'
@@ -25,18 +24,18 @@ KV_ROLE_IDS = {
     'Login': 7,
 }
 
-def add_jf(conn, user, pw):
-    uid, salt = uuid.uuid4().hex.upper(), os.urandom(16)
-    hash_val = hashlib.pbkdf2_hmac('sha512', pw.encode(), salt, 210000)
-    jf_hash = f'$PBKDF2-SHA512$iterations=210000${salt.hex().upper()}${hash_val.hex().upper()}'
-    conn.execute("""INSERT INTO Users (Id, Username, Password, AuthenticationProviderId, PasswordResetProviderId,
-        DisplayCollectionsView, DisplayMissingEpisodes, EnableAutoLogin, EnableLocalPassword,
-        EnableNextEpisodeAutoPlay, EnableUserPreferenceAccess, HidePlayedInLatest, InternalId,
-        InvalidLoginAttemptCount, MaxActiveSessions, MustUpdatePassword, RowVersion,
-        PlayDefaultAudioTrack, RememberAudioSelections, RememberSubtitleSelections, SubtitleMode, SyncPlayAccess
-    ) VALUES (?, ?, ?, 'Jellyfin.Server.Implementations.Users.DefaultAuthenticationProvider', 
-    'Jellyfin.Server.Implementations.Users.DefaultPasswordResetProvider', 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1)""", 
-    (uid, user, jf_hash))
+def add_jf_api(user, pw):
+    JF_KEY = '1980cdafcfec43b58b04b89c4d1f5b99'
+    headers = {'Content-Type': 'application/json', 'X-Emby-Token': JF_KEY}
+    # Create user
+    payload = json.dumps({'Name': user}).encode()
+    req = urllib.request.Request('http://localhost:8096/Users/New', data=payload, headers=headers, method='POST')
+    d = json.loads(urllib.request.urlopen(req).read())
+    uid = d['Id']
+    # Set password
+    payload2 = json.dumps({'NewPw': pw}).encode()
+    req2 = urllib.request.Request(f'http://localhost:8096/Users/{uid}/Password', data=payload2, headers=headers, method='POST')
+    urllib.request.urlopen(req2)
 
 def add_cw(conn, user, pw, email):
     salt = b'salt_' + os.urandom(8)
@@ -85,11 +84,17 @@ def add_nd(conn, user, pw, email):
     conn.execute("INSERT INTO user (id, user_name, name, email, password, is_admin, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
     (uid, user, user, email, nd_hash))
 
-for label, path in dbs.items():
+# Jellyfin via API (direct DB writes cause EF Core UUID/RowVersion issues)
+try:
+    add_jf_api(user, pw)
+    print(f'✅ JF: {user} added.')
+except Exception as e: print(f'❌ JF: {e}')
+
+dbs_sqlite = {k: v for k, v in dbs.items() if k != 'JF'}
+for label, path in dbs_sqlite.items():
     try:
         conn = sqlite3.connect(path)
-        if label == 'JF': add_jf(conn, user, pw)
-        elif label == 'CW': add_cw(conn, user, pw, email)
+        if label == 'CW': add_cw(conn, user, pw, email)
         elif label == 'KV': add_kv(conn, user, pw, email)
         elif label == 'ND': add_nd(conn, user, pw, email)
         conn.commit(); conn.close()
@@ -98,7 +103,6 @@ for label, path in dbs.items():
 
 # RomM (API-based, not SQLite)
 try:
-    import urllib.request
     auth_str = base64.b64encode(b'pibulus:meringue').decode()
     romm_headers = {'Authorization': f'Basic {auth_str}', 'Content-Type': 'application/json'}
     payload = json.dumps({'username': user, 'password': pw, 'email': email, 'role': 'viewer'}).encode()
@@ -126,6 +130,9 @@ try:
                   f'&backgroundColor={bg}&shapeColor={shape}'
                   f'&backgroundType=gradientLinear&size=256')
     img = urllib.request.urlopen(avatar_url, timeout=15).read()
+    # Jellyfin 10.11+ expects base64-encoded body, not raw binary
+    import base64
+    img_b64 = base64.b64encode(img)
     # look up the new user's JF id
     jf_users = json.loads(urllib.request.urlopen(
         urllib.request.Request('http://localhost:8096/Users',
@@ -133,7 +140,7 @@ try:
     jf_uid = next((u['Id'] for u in jf_users if u['Name'].lower() == user), None)
     if jf_uid:
         urllib.request.urlopen(urllib.request.Request(
-            f'http://localhost:8096/Users/{jf_uid}/Images/Primary', data=img,
+            f'http://localhost:8096/Users/{jf_uid}/Images/Primary', data=img_b64,
             headers={'X-Emby-Token': '1980cdafcfec43b58b04b89c4d1f5b99', 'Content-Type': 'image/png'},
             method='POST'))
     print(f'✅ AV: {user} avatar set.')
