@@ -813,6 +813,76 @@ radio_menu() {
   done
 }
 
+yt_download() {
+  local url
+  url=$(gum input --placeholder "YouTube (or any) URL...")
+  [ -z "$url" ] && return
+
+  local dest="/media/pibulus/passport/The_Bucket"
+  local subs
+  subs=$(printf '%s\n' 'Yes — download SRT subtitles' 'No subtitles' | gum choose --header "Subtitles?")
+  [ -z "$subs" ] && return
+
+  local sub_flags=()
+  if [[ "$subs" == Yes* ]]; then
+    sub_flags=(--write-sub --write-auto-sub --sub-lang en --convert-subs srt)
+  fi
+
+  echo "Downloading to $dest ..."
+  yt-dlp \
+    "${sub_flags[@]}" \
+    -f "bestvideo[height<=1080]+bestaudio/best[height<=1080]" \
+    --merge-output-format mkv \
+    -o "$dest/%(title)s.%(ext)s" \
+    "$url"
+
+  pause_screen
+}
+
+drop_magnet_or_url() {
+  local link
+  link=$(gum input --placeholder "Paste magnet link or HTTP URL...")
+  [ -z "$link" ] && return
+
+  if [[ "$link" == magnet:* ]]; then
+    local dest
+    dest=$(printf '%s\n' 'The Bucket (general)' 'Movies' 'Shows' | gum choose --header "Where should it go?")
+    [ -z "$dest" ] && return
+    local savepath
+    case "$dest" in
+      'The Bucket (general)') savepath="/downloads/" ;;
+      'Movies')               savepath="/movies/" ;;
+      'Shows')                savepath="/shows/" ;;
+    esac
+    curl -s -c /tmp/qb_cookies.txt -b /tmp/qb_cookies.txt \
+      -d "username=admin&password=meringue" \
+      http://localhost:8888/api/v2/auth/login > /dev/null
+    local result
+    result=$(curl -s -b /tmp/qb_cookies.txt \
+      -F "urls=$link" \
+      -F "savepath=$savepath" \
+      http://localhost:8888/api/v2/torrents/add)
+    echo "Magnet queued → $dest  ($result)"
+
+  elif [[ "$link" == http* ]]; then
+    local dest_dir="/media/pibulus/passport/The_Bucket"
+    echo "Downloading via aria2c → $dest_dir"
+    aria2c \
+      --dir="$dest_dir" \
+      --max-connection-per-server=4 \
+      --split=4 \
+      --console-log-level=warn \
+      --summary-interval=10 \
+      "$link"
+    echo "Done."
+
+  else
+    echo "Unrecognised format — paste a magnet: link or an http(s):// URL."
+  fi
+
+  pause_screen
+}
+
 media_menu() {
   while true; do
     render_hud
@@ -824,6 +894,8 @@ media_menu() {
       '⬇️ Download Watch' \
       '🎬 Grab a Movie' \
       '📺 Grab a Show' \
+      '🧲 Drop a Magnet / URL' \
+      '📹 YouTube Download' \
       '🔎 Find My Media' \
       '📂 Browse Passport Drive' \
       '📦 Biggest Media Dirs' \
@@ -835,12 +907,14 @@ media_menu() {
       '⬇️ Download Watch') bash ~/pibulus-os/scripts/dlwatch.sh ;;
       '🎬 Grab a Movie')
         title=$(gum input --placeholder "movie title (e.g. chopper 2000)")
-        [ -n "$title" ] && python3 ~/pibulus-os/scripts/grab_movie.py "$title"
+        [ -n "$title" ] && python3 ~/pibulus-os/scripts/grab_movie.py "$title" --pick
         pause_screen ;;
       '📺 Grab a Show')
         title=$(gum input --placeholder "show name (e.g. joe pera talks with you)")
         [ -n "$title" ] && python3 ~/pibulus-os/scripts/grab_show.py "$title"
         pause_screen ;;
+      '🧲 Drop a Magnet / URL') drop_magnet_or_url ;;
+      '📹 YouTube Download') yt_download ;;
       '🔎 Find My Media') media_finder_menu ;;
       '📂 Browse Passport Drive') nnn /media/pibulus/passport ;;
       '📦 Biggest Media Dirs') show_top_media_dirs; pause_screen ;;
@@ -883,12 +957,14 @@ ops_menu() {
       'Sharp tools for changing the box. Not vibes. Real interventions.'
     local action
     action=$(tactile_choose \
+      '⚡ Staggered Startup' \
       '🚀 Deploy Something New' \
       '🧹 Flush RAM' \
       '🧠 Scavenger Search' \
       '🏴‍☠️ Media Grab' \
       'Back')
     case "$action" in
+      '⚡ Staggered Startup') ~/pibulus-os/scripts/startup.sh; pause_screen ;;
       '🚀 Deploy Something New') ~/pibulus-os/scripts/deploy.sh ;;
       '🧹 Flush RAM') ~/pibulus-os/scripts/flush_ram.sh; pause_screen ;;
       '🧠 Scavenger Search') manage_scavenger ;;
