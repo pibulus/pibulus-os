@@ -113,6 +113,36 @@ def pick_best(results):
     return sorted(pool, key=sort_key, reverse=True)[0]
 
 
+def gum_pick(candidates):
+    """Present candidates via gum choose and return the selected result."""
+    import subprocess
+    pool = sorted(candidates, key=lambda r: int(r.get("seeders", 0)), reverse=True)
+    lines = []
+    for r in pool:
+        seeders = int(r.get("seeders", 0))
+        size = int(r.get("size", 0)) // 1024 // 1024
+        ok, _ = is_acceptable(r)
+        flag = "  " if ok else "✗ "
+        spot = "*" if in_sweet_spot(int(r.get("size", 0))) else " "
+        lines.append(f"{flag}{spot} S:{seeders:>4}  {size:>5}MB  {r['name'][:70]}")
+    try:
+        result = subprocess.run(
+            ["gum", "choose", "--height", "20"],
+            input="\n".join(lines),
+            capture_output=True,
+            text=True,
+        )
+        chosen = result.stdout.strip()
+        if not chosen:
+            return None
+        for i, line in enumerate(lines):
+            if line == chosen:
+                return pool[i]
+    except FileNotFoundError:
+        pass
+    return pick_best(candidates)
+
+
 def qb_login():
     cj = CookieJar()
     opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cj))
@@ -141,6 +171,7 @@ def main():
     ap.add_argument("movie", help="Movie title to search for")
     ap.add_argument("--dry-run", action="store_true", help="Show what would be added, don't add")
     ap.add_argument("--list", action="store_true", help="List all found results without picking")
+    ap.add_argument("--pick", action="store_true", help="Interactively choose from results with gum")
     args = ap.parse_args()
 
     print(f"  searching TPB for: {args.movie!r} ...")
@@ -185,7 +216,13 @@ def main():
         print("  no matching results (try --list to see raw results)")
         sys.exit(1)
 
-    best = pick_best(candidates)
+    if args.pick:
+        best = gum_pick(candidates)
+        if best is None:
+            print("  cancelled.")
+            sys.exit(0)
+    else:
+        best = pick_best(candidates)
     seeders = int(best.get("seeders", 0))
     size = int(best.get("size", 0)) // 1024 // 1024
     ok, reason = is_acceptable(best)

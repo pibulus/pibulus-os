@@ -1689,7 +1689,7 @@
 
           <div class="faq-item">
             <div class="faq-q">WILL IT GO DOWN?</div>
-            <div class="faq-a">Almost certainly. It's an $80 raspberry pi strapped to a hard drive on a desk in my house. It crashes when I look at it funny. But it always comes back. Just chill and come back in halfa.</div>
+            <div class="faq-a">Almost certainly. It's an $80 raspberry pi strapped to a hard drive on a desk in my house. It crashes when I look at it funny. But it always comes back. Just chill and come back in halfa. It'll be back soon.</div>
           </div>
 
           <div class="faq-item">
@@ -2367,20 +2367,6 @@
     const shoutList = document.getElementById('shoutList');
     let shoutsInterval = null;
 
-    // Pre-fill a random handle if none saved
-    (function() {
-      const adjs = ['DARK','WILD','NEON','LOST','LOUD','FAST','SOFT','COLD','WARM','STRAY','DRIFT','HAZY','ROGUE','DEAD','LIVE','RAW','FREE','GRIM','COOL','SHARP'];
-      const nouns = ['CAT','DOG','RAT','FOX','EEL','OWL','BAT','COD','FLY','BUG','HAT','CUP','CAN','MAP','KEY','LOG','GUN','NET','PIT','RIG'];
-      const saved = localStorage.getItem('kpab-handle');
-      if (saved) {
-        msgName.value = saved;
-      } else {
-        const handle = adjs[Math.floor(Math.random()*adjs.length)] + '_' + nouns[Math.floor(Math.random()*nouns.length)];
-        msgName.value = handle;
-        localStorage.setItem('kpab-handle', handle);
-      }
-    })();
-
     async function loadShouts() {
       try {
         const res = await fetch('/msg/shouts.json');
@@ -2395,7 +2381,7 @@
             <div class="shout-item">
               <div class="shout-header">
                 <span class="shout-name">${escHtml(s.n)}</span>
-                <span class="shout-time">${(() => { const d = new Date(s.t * 1000); return `${d.getDate()}/${d.getMonth()+1}`; })()}</span>
+                <span class="shout-time">${new Date(s.t * 1000).toLocaleTimeString([], {hour: "2-digit", minute:"2-digit"})}</span>
               </div>
               <div class="shout-msg">${escHtml(s.m)}</div>
               ${s.track ? `<div class="shout-track">\u266B ${escHtml(s.track)}</div>` : ''}
@@ -2425,7 +2411,7 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            name: msgName.value.trim() || 'ANON',
+            name: msgName.value.trim() || 'Anonymous listener',
             msg: text,
             source: 'kpab.fm'
           })
@@ -2450,7 +2436,6 @@
       msgSend.disabled = false;
       msgSend.textContent = 'TRANSMIT';
     }
-    msgName.addEventListener('change', () => { if (msgName.value.trim()) localStorage.setItem('kpab-handle', msgName.value.trim()); });
     msgSend.addEventListener('click', submitShout);
     msgSend.addEventListener('touchend', (e) => { e.preventDefault(); submitShout(); });
 
@@ -2531,6 +2516,17 @@
           mutinyToggle.innerHTML = '&#x2620; SKIPPED!';
           showMutinyToast('Track walked the plank.');
           setTimeout(() => setMutinyCooldown(data.remaining || 600), 1500);
+          // Bounce the stream so audio catches up with the track change
+          if (isPlaying) {
+            setTimeout(() => {
+              audioEl.src = '';
+              audioEl.src = STATION.streamUrl + '?t=' + Date.now();
+              audioEl.load();
+              audioEl.play().catch(() => {});
+            }, 600);
+          }
+          // Immediately poll for new metadata
+          setTimeout(() => poll(), 800);
         } else {
           showMutinyToast(data.message || 'Mutiny failed. Radio resists.');
           mutinyFire.innerHTML = '&#x2620; WALK THE PLANK';
@@ -2685,5 +2681,6 @@
     // Stronger haptic on play button
     playBtn.addEventListener('touchstart', () => haptic(15), { passive: true });
   </script>
+
 </body>
 </html>

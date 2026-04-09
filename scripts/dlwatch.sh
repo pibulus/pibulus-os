@@ -14,13 +14,14 @@ while true; do
     "http://localhost:8888/api/v2/auth/login" > /dev/null 2>&1
 
   curl -s --max-time 5 -b /tmp/qb-watch.txt \
-    "http://localhost:8888/api/v2/torrents/info" 2>/dev/null | python3 - "$FILTER" << 'EOF'
+    "http://localhost:8888/api/v2/torrents/info" 2>/dev/null > /tmp/qb-info.json
+
+  python3 - "$FILTER" << 'EOF'
 import json, sys, os
 
-data = sys.stdin.read()
 try:
-    torrents = json.loads(data)
-except:
+    torrents = json.load(open('/tmp/qb-info.json'))
+except Exception:
     print("  (no data)")
     sys.exit()
 

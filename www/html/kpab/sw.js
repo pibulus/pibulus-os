@@ -1,7 +1,8 @@
-const CACHE_NAME = 'kpab-v7';
+const CACHE_NAME = 'kpab-v5';
 const STATIC_ASSETS = [
   '/',
-  '/manifest.json'
+  '/manifest.json',
+  '/offline.html'
 ];
 
 self.addEventListener('install', (e) => {
@@ -23,7 +24,7 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
 
-  // Never cache the stream, API calls, dynamic routes, or catalog
+  // Never intercept: stream, API, dynamic routes, catalog, third-party
   if (url.pathname === '/radio.mp3' ||
       url.pathname.startsWith('/api/') ||
       url.pathname.startsWith('/listen/') ||
@@ -34,8 +35,10 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // Network-first for HTML, cache-first for static assets
-  if (e.request.mode === 'navigate') {
+  // Network-first for HTML, JS, and CSS (always get latest)
+  if (e.request.mode === 'navigate' ||
+      url.pathname.endsWith('.js') ||
+      url.pathname.endsWith('.css')) {
     e.respondWith(
       fetch(e.request).then(res => {
         if (res.ok) {
@@ -43,11 +46,13 @@ self.addEventListener('fetch', (e) => {
           caches.open(CACHE_NAME).then(cache => cache.put(e.request, clone));
         }
         return res;
-      }).catch(() => caches.match(e.request))
+      }).catch(() => caches.match(e.request).then(cached => cached || caches.match('/offline.html')))
     );
-  } else {
-    e.respondWith(
-      caches.match(e.request).then(cached => cached || fetch(e.request))
-    );
+    return;
   }
+
+  // Cache-first for static assets (icons, fonts, images)
+  e.respondWith(
+    caches.match(e.request).then(cached => cached || fetch(e.request))
+  );
 });

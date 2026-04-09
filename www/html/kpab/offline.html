@@ -105,7 +105,7 @@
   <div class="msg">Technical Difficulties</div>
   <div class="sub">
     The pirate signal is temporarily offline.<br>
-    Our <span>Pi 5</span> is probably rebooting.<br><br>
+    The server is probably rebooting.<br><br>
     Try again in a minute or two.<br><br>
     <span id="retry">Retrying in <span id="countdown">30</span>s...</span>
   </div>
@@ -118,7 +118,7 @@
     cd.textContent = sec;
     if (sec <= 0) {
       // Try to reach the API before redirecting back
-      fetch('/api/nowplaying/kpab.fm', { cache: 'no-store' })
+      fetch('/', { cache: 'no-store' })
         .then(r => { if (r.ok) window.location.href = '/'; else sec = 15; })
         .catch(() => { sec = 15; });
     }
