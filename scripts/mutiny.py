@@ -3,7 +3,7 @@
 One skip per 10 minutes per listener. No voting. Just skip.
 """
 
-import json, os, time, hashlib
+import json, os, time, hashlib, socket
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
 from urllib.request import Request, urlopen
@@ -117,11 +117,20 @@ class MutinyHandler(BaseHTTPRequestHandler):
             })
 
 
+class MutinyServer(HTTPServer):
+    # Allow fast restart without "Address already in use" errors when
+    # the old process is still in TIME_WAIT or wasn't reaped cleanly.
+    # TCPServer.server_bind() already calls setsockopt(SO_REUSEADDR)
+    # when this flag is True — no override needed.
+    allow_reuse_address = True
+
+
 if __name__ == "__main__":
     port = 8090
-    server = HTTPServer(("0.0.0.0", port), MutinyHandler)
+    server = MutinyServer(("0.0.0.0", port), MutinyHandler)
     print(f"[MUTINY] Armed on port {port} | Cooldown={COOLDOWN}s | No voting, just skip")
     try:
         server.serve_forever()
     except KeyboardInterrupt:
         print("\n[MUTINY] Standing down.")
+        server.server_close()

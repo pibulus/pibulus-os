@@ -60,10 +60,32 @@
     }
   });
 
+  // Seconds of psychological delay before the skip actually fires.
+  // Removes the feeling of instant control — the listener commits,
+  // then waits. The countdown also signals to others watching the UI.
+  const SKIP_DELAY_SECS = 1;
+
   mutinyFire.addEventListener('click', async () => {
     if (mutinyCooldown) return;
     mutinyFire.disabled = true;
-    mutinyFire.textContent = '...';
+
+    // ── Countdown phase ──────────────────────────────────────
+    await new Promise(resolve => {
+      let left = SKIP_DELAY_SECS;
+      mutinyFire.innerHTML = '&#x2620; ' + left + '...';
+      const tick = setInterval(() => {
+        left--;
+        if (left <= 0) {
+          clearInterval(tick);
+          mutinyFire.innerHTML = '&#x2620; FIRING...';
+          resolve();
+        } else {
+          mutinyFire.innerHTML = '&#x2620; ' + left + '...';
+        }
+      }, 1000);
+    });
+
+    // ── Fire the skip ────────────────────────────────────────
     try {
       const res = await fetch(STATION.mutinyEndpoint, { method: 'POST' });
       const data = await res.json();
@@ -73,9 +95,11 @@
         return;
       }
       if (data.action === 'skipped') {
+        // Signal player.js to gracefully fade out + reconnect
+        document.dispatchEvent(new CustomEvent('kpab-skip'));
         mutinyPanel.classList.remove('open');
         mutinyToggle.innerHTML = '&#x2620; SKIPPED!';
-        showMutinyToast('Track walked the plank.');
+        showMutinyToast('Track walked the plank. ⚓');
         setTimeout(() => setMutinyCooldown(data.remaining || 600), 1500);
       } else {
         showMutinyToast(data.message || 'Mutiny failed. Radio resists.');

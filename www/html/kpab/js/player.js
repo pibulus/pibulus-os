@@ -288,10 +288,79 @@
     }
   }
 
+  // ── Volume fades & stream reconnect ───────────────────────
+  // All mutable reconnect/fade state lives here so every code path
+  // that touches playback can cleanly cancel in-flight work.
+
+  let reconnectTimer = null;
+  let fadeTick       = null;
+
+  function cancelFade() {
+    if (fadeTick) { clearInterval(fadeTick); fadeTick = null; }
+  }
+
+  // Fade audioEl.volume → 0 in ~300ms, then call onDone.
+  function fadeOut(onDone) {
+    cancelFade();
+    const start = audioEl.volume;
+    if (start === 0) { onDone(); return; }
+    let step = 0;
+    const steps = 6;
+    fadeTick = setInterval(() => {
+      step++;
+      audioEl.volume = Math.max(0, start * (1 - step / steps));
+      if (step >= steps) { cancelFade(); onDone(); }
+    }, 50);
+  }
+
+  // Fade audioEl.volume 0 → slider value in ~500ms.
+  function fadeIn() {
+    cancelFade();
+    const target = parseFloat(volSlider.value);
+    if (target === 0) return;
+    audioEl.volume = 0;
+    let step = 0;
+    const steps = 10;
+    fadeTick = setInterval(() => {
+      step++;
+      audioEl.volume = Math.min(target, target * (step / steps));
+      if (step >= steps) { cancelFade(); audioEl.volume = target; }
+    }, 50);
+  }
+
+  // Queue a stream reconnect after delayMs.
+  // withFadeIn=true: mute before connecting, then fade in on 'playing'.
+  // Guards against double-queuing via reconnectTimer check.
+  function scheduleReconnect(delayMs, withFadeIn) {
+    if (reconnectTimer) return;
+    setPlaying(false);
+    reconnectTimer = setTimeout(() => {
+      reconnectTimer = null;
+      if (withFadeIn) audioEl.volume = 0;
+      audioEl.src = STATION.streamUrl;
+      const p = audioEl.play();
+      if (p !== undefined) {
+        p.then(() => {
+          setPlaying(true);
+          if (withFadeIn) fadeIn();
+        }).catch(() => {
+          audioEl.volume = parseFloat(volSlider.value);
+          setPlaying(false);
+        });
+      }
+    }, delayMs);
+  }
+
+  // ── Play / pause button ────────────────────────────────────
+  // Cancels any in-flight fade or pending reconnect first so an
+  // explicit user action is never overridden by an auto-reconnect.
   playBtn.addEventListener('click', () => {
+    cancelFade();
+    if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
     if (isPlaying) {
       audioEl.pause();
       audioEl.src = '';
+      audioEl.volume = parseFloat(volSlider.value); // restore if mid-fade
       setPlaying(false);
     } else {
       audioEl.src = STATION.streamUrl;
@@ -301,9 +370,35 @@
   });
 
   audioEl.addEventListener('playing', () => setPlaying(true));
-  audioEl.addEventListener('pause', () => setPlaying(false));
-  audioEl.addEventListener('ended', () => setPlaying(false));
-  audioEl.addEventListener('error', () => setPlaying(false));
+  audioEl.addEventListener('pause',   () => setPlaying(false));
+  audioEl.addEventListener('ended',   () => {
+    // For a live stream 'ended' means the connection dropped.
+    // Reconnect silently — no fade, just restore ASAP.
+    if (isPlaying) scheduleReconnect(2000, false);
+  });
+  audioEl.addEventListener('error',   () => {
+    if (isPlaying) scheduleReconnect(2000, false);
+    else setPlaying(false);
+  });
+
+  // ── Mutiny skip coordination ───────────────────────────────
+  // mutiny.js dispatches 'kpab-skip' the instant AzuraCast confirms
+  // the skip. Sequence:
+  //   1. fadeOut (~400ms) — intentional, feels like a DJ transition
+  //   2. clear src — pre-empts the stream blip from Liquidsoap's cut
+  //   3. wait 1.5s — Liquidsoap settles onto the next track
+  //   4. reconnect + fadeIn (~600ms) — smooth entry to new song
+  // Total: ~2.5s. Deliberate pause > jarring error stop.
+  document.addEventListener('kpab-skip', () => {
+    if (!isPlaying) return;
+    cancelFade();
+    if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
+    fadeOut(() => {
+      audioEl.pause();
+      audioEl.src = '';
+      scheduleReconnect(900, true);
+    });
+  });
 
   volSlider.addEventListener('input', () => {
     const v = parseFloat(volSlider.value);
