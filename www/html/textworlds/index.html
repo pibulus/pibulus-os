@@ -204,6 +204,18 @@
       note.style.display = 'block';
     }, 2100);
 
+    function focusTerminal(frame) {
+      frame.focus();
+      try {
+        const doc = frame.contentDocument || frame.contentWindow.document;
+        const terminal = doc.querySelector('.xterm-helper-textarea') || doc.querySelector('.xterm') || doc.querySelector('canvas');
+        if (terminal) terminal.focus();
+        else frame.contentWindow.focus();
+      } catch(e) {
+        frame.focus();
+      }
+    }
+
     function connect() {
       const landing = document.getElementById('landing');
       const container = document.getElementById('terminal-container');
@@ -212,8 +224,7 @@
       container.classList.add('active');
       frame.src = '/deck/';
       frame.addEventListener('load', () => {
-        frame.focus();
-        try { frame.contentWindow.focus(); } catch(e) {}
+        setTimeout(() => focusTerminal(frame), 300);
       });
     }
 
@@ -222,10 +233,14 @@
       const landing = document.getElementById('landing');
       if (landing.style.display !== 'none' && (e.key === 'Enter' || e.key === ' ')) {
         connect();
-      } else if (frame.src && document.activeElement !== frame) {
-        frame.focus();
-        try { frame.contentWindow.focus(); } catch(e) {}
+      } else if (frame.src && frame.src !== window.location.href && document.activeElement !== frame) {
+        focusTerminal(frame);
       }
+    });
+
+    document.getElementById('terminal-container').addEventListener('click', () => {
+      const frame = document.getElementById('deck-frame');
+      focusTerminal(frame);
     });
   </script>
 
