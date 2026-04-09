@@ -112,7 +112,7 @@ render_hud() {
   print_statusline
   echo
   gum style --border rounded --border-foreground 212 --padding '0 1' --margin '0 0' \
-    "🌡️ $temp  |  🧠 $mem  |  🧵 load $load  |  💾 $(get_storage_bar)  |  📻 $(get_status azuracast) azuracast"
+    "🌡️ $temp  |  🧠 $mem  |  🧵 load $load  |  💾 $(get_storage_bar)  |  🌐 $(get_status cloudflared) tunnel  |  📻 $(get_status azuracast) radio"
   echo
 }
 
@@ -211,6 +211,14 @@ show_tunnel_snapshot() {
   journalctl -u cloudflared -n 20 --no-pager 2>/dev/null || true
 }
 
+show_live_pulse() {
+  while true; do
+    clear
+    python3 ~/pibulus-os/scripts/pulse.py
+    sleep 15 || break
+  done
+}
+
 show_critical_services() {
   echo "Critical services"
   echo "================="
@@ -222,15 +230,17 @@ show_critical_services() {
 }
 
 show_recent_errors() {
-  echo "Recent service noise"
-  echo "===================="
+  echo "Recent service noise (errors/warnings only)"
+  echo "============================================"
   echo
-  printf '\n--- %s ---\n' "cloudflared"
-  journalctl -u cloudflared -n 8 --no-pager 2>/dev/null || true
-  docker ps --format '{{.Names}}' | while read -r name; do
-    [ -z "$name" ] && continue
+  printf '\n--- cloudflared ---\n'
+  journalctl -u cloudflared -n 40 --no-pager 2>/dev/null \
+    | grep -iE '\berr|\bwarn|\bcrit|\bfail|\bfatal' | tail -5 || echo "  (clean)"
+  for name in web_host azuracast slskd memos qbittorrent; do
+    docker ps --format '{{.Names}}' | grep -qx "$name" || continue
     printf '\n--- %s ---\n' "$name"
-    docker logs --tail 5 "$name" 2>&1 | tail -5
+    docker logs --tail 60 "$name" 2>&1 \
+      | grep -iE '\berr|\bwarn|\bcrit|\bfail|\bfatal' | tail -5 || echo "  (clean)"
   done
 }
 
@@ -361,41 +371,7 @@ PY
 }
 
 refresh_recent_listeners_cache() {
-  python3 - <<'PY'
-import subprocess
-import textwrap
-from pathlib import Path
-
-script = textwrap.dedent('''
-docker exec -i azuracast sh <<'INNER'
-cat >/tmp/kpab_listener_sample.php <<'PHP'
-<?php
-$dsn = sprintf('mysql:host=%s;port=%s;dbname=%s;charset=utf8mb4', '127.0.0.1', getenv('MYSQL_PORT'), getenv('MYSQL_DATABASE'));
-$pdo = new PDO($dsn, getenv('MYSQL_USER'), getenv('MYSQL_PASSWORD'));
-$sql = "SELECT listener_ip, listener_user_agent, timestamp_start FROM listener ORDER BY id DESC LIMIT 8";
-foreach ($pdo->query($sql) as $row) {
-    echo implode("\\t", [
-        $row['listener_ip'],
-        preg_replace('/\\s+/', ' ', (string)$row['listener_user_agent']),
-        $row['timestamp_start']
-    ]), PHP_EOL;
-}
-PHP
-php /tmp/kpab_listener_sample.php
-INNER
-''').strip()
-
-result = subprocess.run(["bash", "-lc", script], capture_output=True, text=True)
-output = result.stdout.strip()
-if not output:
-    print("Could not fetch recent listener rows.")
-    if result.stderr.strip():
-        print(result.stderr.strip())
-    raise SystemExit(0)
-
-Path("/tmp/kpab_recent_listeners.tsv").write_text(output + "\n")
-print("Listener snapshot refreshed.")
-PY
+  bash ~/pibulus-os/scripts/refresh_listeners.sh
 }
 
 show_public_ip() {
@@ -425,7 +401,7 @@ show_recent_media() {
   echo "Recent file activity"
   echo "===================="
   echo
-  find /media/pibulus/passport -type f -mtime -7 2>/dev/null | tail -60
+  find /media/pibulus/passport -maxdepth 5 -type f -mtime -7 2>/dev/null | tail -40
 }
 
 show_media_tree() {
@@ -443,7 +419,7 @@ preview_cover_art() {
     return
   fi
   local file
-  file=$(find /media/pibulus/passport -type f \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \) 2>/dev/null | head -200 | gum choose --height 20)
+  file=$(find /media/pibulus/passport -maxdepth 4 -type f \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \) 2>/dev/null | head -400 | fzf --prompt="pick image > " --height 20 --border 2>/dev/null || true)
   [ -z "$file" ] && return
   chafa -f symbols -s 80x40 "$file"
 }
@@ -512,6 +488,25 @@ show_recent_notes() {
     return
   fi
   tail -n 80 "$file"
+}
+
+search_field_notes() {
+  local file query results
+  file="$(deck_note_file)"
+  if [ ! -f "$file" ]; then
+    echo "No field notes yet."
+    pause_screen
+    return
+  fi
+  query=$(gum input --placeholder "Search notes...")
+  [ -z "$query" ] && return
+  results=$(grep -n -i "$query" "$file" 2>/dev/null)
+  if [ -z "$results" ]; then
+    echo "No matches for: $query"
+  else
+    echo "$results"
+  fi
+  pause_screen
 }
 
 open_notes_in_glow() {
@@ -648,6 +643,48 @@ open_tmux_shell() {
   fi
 }
 
+mediainfo_picker() {
+  if ! tool_exists fzf; then echo "fzf not installed."; pause_screen; return; fi
+  local file
+  file=$(find /media/pibulus/passport -maxdepth 4 -type f \
+    \( -iname '*.mkv' -o -iname '*.mp4' -o -iname '*.avi' -o -iname '*.mov' \
+       -o -iname '*.mp3' -o -iname '*.flac' -o -iname '*.m4a' -o -iname '*.ogg' \
+       -o -iname '*.opus' -o -iname '*.cbz' -o -iname '*.epub' \) \
+    2>/dev/null | fzf --prompt="pick file > " --height 40 --border)
+  [ -z "$file" ] && return
+  mediainfo "$file" | bat --plain -l ini 2>/dev/null || mediainfo "$file" | less
+}
+
+inspect_stack() {
+  local stacks_dir=~/pibulus-os/config/stacks
+  local pick
+  pick=$(ls "$stacks_dir"/*.yml 2>/dev/null | fzf --prompt="pick stack > " --height 15 --border)
+  [ -z "$pick" ] && return
+  bat -l yaml "$pick" 2>/dev/null || cat "$pick"
+  pause_screen
+}
+
+tldr_lookup() {
+  local cmd
+  cmd=$(gum input --placeholder "command name (e.g. rsync, docker, yt-dlp)")
+  [ -z "$cmd" ] && return
+  tldr "$cmd" 2>/dev/null | bat --plain 2>/dev/null || tldr "$cmd" 2>/dev/null || echo "No page for: $cmd"
+  pause_screen
+}
+
+entr_watch() {
+  local dir pattern cmd
+  dir=$(gum input --placeholder "dir to watch (default: ~/pibulus-os)")
+  dir="${dir:-$HOME/pibulus-os}"
+  pattern=$(gum input --placeholder "file pattern (e.g. *.py, *.sh, *.yml)")
+  [ -z "$pattern" ] && return
+  cmd=$(gum input --placeholder "command to run on change (e.g. bash deploy.sh)")
+  [ -z "$cmd" ] && return
+  echo "Watching $dir for $pattern changes → $cmd"
+  echo "(Ctrl-C to stop)"
+  find "$dir" -name "$pattern" | entr -c bash -c "$cmd"
+}
+
 media_finder_menu() {
   local query
   query=$(gum input --placeholder "Find local media (e.g. valis philip k dick)")
@@ -702,9 +739,36 @@ network_menu() {
       'network' \
       'Switch between home and away modes, or inspect the current state before blaming the tunnel.'
     local action
-    action=$(tactile_choose '📡 Network Status' '🏠 Home Wi-Fi Mode' '🧳 Hotspot / Away Mode' 'Back')
+    action=$(tactile_choose \
+      '📡 Network Status' \
+      '🚀 Speed Test' \
+      '📊 Bandwidth Usage' \
+      '📈 Live Bandwidth' \
+      '🔗 Live Connections' \
+      '🏓 Ping Graph' \
+      '🔍 Trace Route' \
+      '🏠 Home Wi-Fi Mode' \
+      '🧳 Hotspot / Away Mode' \
+      'Back')
     case "$action" in
       '📡 Network Status') ~/pibulus-os/scripts/network_mode.sh status; pause_screen ;;
+      '🚀 Speed Test')
+        echo "Running speedtest... (takes ~30s)"
+        speedtest-cli --simple
+        pause_screen ;;
+      '📊 Bandwidth Usage') vnstat -i eth0; pause_screen ;;
+      '📈 Live Bandwidth') nload eth0 ;;
+      '🔗 Live Connections') sudo iftop -i eth0 ;;
+      '🏓 Ping Graph')
+        local target
+        target=$(gum input --placeholder "Host to ping (default: 1.1.1.1)")
+        target="${target:-1.1.1.1}"
+        gping "$target" ;;
+      '🔍 Trace Route')
+        local target
+        target=$(gum input --placeholder "Host to trace (default: 1.1.1.1)")
+        target="${target:-1.1.1.1}"
+        mtr "$target" ;;
       '🏠 Home Wi-Fi Mode') ~/pibulus-os/scripts/network_mode.sh home; pause_screen ;;
       '🧳 Hotspot / Away Mode') ~/pibulus-os/scripts/network_mode.sh away; pause_screen ;;
       'Back'|'') return ;;
@@ -720,23 +784,29 @@ sigint_menu() {
       'Fast state of the machine: health, tunnel, service status, public edge, and recent noise.'
     local action
     action=$(tactile_choose \
+      '📡 Live Pulse' \
+      '🖥️ System Info' \
       '📊 System Snapshot' \
       '📈 Live Monitor' \
       '💽 Disk Overview' \
       '🚨 Critical Services' \
       '🌐 Tunnel + Edge' \
       '🪪 Public IP' \
+      '🔗 Service Links' \
       '🪵 Log Navigator' \
       '🧾 Registry JSON' \
       '🧯 Recent Service Noise' \
       'Back')
     case "$action" in
+      '📡 Live Pulse') show_live_pulse ;;
+      '🖥️ System Info') fastfetch; pause_screen ;;
       '📊 System Snapshot') show_system_snapshot; pause_screen ;;
       '📈 Live Monitor') open_system_monitor ;;
       '💽 Disk Overview') show_disk_overview; pause_screen ;;
       '🚨 Critical Services') show_critical_services; pause_screen ;;
       '🌐 Tunnel + Edge') show_tunnel_snapshot; pause_screen ;;
       '🪪 Public IP') show_public_ip; pause_screen ;;
+      '🔗 Service Links') show_public_links; pause_screen ;;
       '🪵 Log Navigator') open_log_navigator ;;
       '🧾 Registry JSON') show_json_services; pause_screen ;;
       '🧯 Recent Service Noise') show_recent_errors; pause_screen ;;
@@ -790,7 +860,7 @@ radio_menu() {
       'radio' \
       'Check what KPAB is doing right now: current track, listeners, service health, and public links.'
     local action
-    action=$(tactile_choose '📻 Now Playing' '📜 Recent Tracks' '👂 Recent Listeners' '🛰️ Service Status' '🌐 Public Links' 'Back')
+    action=$(tactile_choose '📻 Now Playing' '📜 Recent Tracks' '👂 Recent Listeners' '🛰️ Service Status' '🎵 Visualizer' 'Back')
     case "$action" in
       '📻 Now Playing')
         show_radio_snapshot
@@ -805,9 +875,7 @@ radio_menu() {
       '🛰️ Service Status')
         radio_status
         pause_screen ;;
-      '🌐 Public Links')
-        show_public_links
-        pause_screen ;;
+      '🎵 Visualizer') cava ;;
       'Back'|'') return ;;
     esac
   done
@@ -896,7 +964,10 @@ media_menu() {
       '📺 Grab a Show' \
       '🧲 Drop a Magnet / URL' \
       '📹 YouTube Download' \
+      '🧠 Scavenger Search' \
+      '🏴‍☠️ Pirate Grab' \
       '🔎 Find My Media' \
+      'ℹ️ Media Info' \
       '📂 Browse Passport Drive' \
       '📦 Biggest Media Dirs' \
       '🌲 Media Tree' \
@@ -915,7 +986,10 @@ media_menu() {
         pause_screen ;;
       '🧲 Drop a Magnet / URL') drop_magnet_or_url ;;
       '📹 YouTube Download') yt_download ;;
+      '🧠 Scavenger Search') manage_scavenger ;;
+      '🏴‍☠️ Pirate Grab') manage_pirate_grab ;;
       '🔎 Find My Media') media_finder_menu ;;
+      'ℹ️ Media Info') mediainfo_picker ;;
       '📂 Browse Passport Drive') nnn /media/pibulus/passport ;;
       '📦 Biggest Media Dirs') show_top_media_dirs; pause_screen ;;
       '🌲 Media Tree') show_media_tree; pause_screen ;;
@@ -949,6 +1023,286 @@ drives_menu() {
   done
 }
 
+stacks_menu() {
+  while true; do
+    render_hud
+    show_section_intro \
+      'stacks' \
+      'Start, stop, or restart Docker stacks. Pirate stack (web, jellyfin, kavita...) excluded — too risky to toggle casually.'
+    local stack
+    stack=$(tactile_choose \
+      '📸 immich' \
+      '🕹️  scummvm' \
+      '💬 social' \
+      '🛠️  admin' \
+      '🔧 utilities' \
+      'Back')
+    case "$stack" in 'Back'|'') return ;; esac
+
+    local yml
+    case "$stack" in
+      '📸 immich')    yml=~/pibulus-os/config/stacks/immich.yml ;;
+      '🕹️  scummvm')  yml=~/pibulus-os/config/stacks/scummvm.yml ;;
+      '💬 social')    yml=~/pibulus-os/config/stacks/social.yml ;;
+      '🛠️  admin')    yml=~/pibulus-os/config/stacks/admin.yml ;;
+      '🔧 utilities') yml=~/pibulus-os/config/stacks/utilities.yml ;;
+    esac
+
+    local action
+    action=$(tactile_choose '▶️  Start' '⏹️  Stop' '🔄 Restart' '📋 Status' 'Back')
+    case "$action" in
+      '▶️  Start')   docker compose -f "$yml" up -d; pause_screen ;;
+      '⏹️  Stop')    docker compose -f "$yml" down; pause_screen ;;
+      '🔄 Restart') docker compose -f "$yml" restart; pause_screen ;;
+      '📋 Status')  docker compose -f "$yml" ps; pause_screen ;;
+      'Back'|'') ;;
+    esac
+  done
+}
+
+# ── APPS ──────────────────────────────────────────────────────────────────────
+
+# Discover apps: any dir in ~/apps/ that has a corresponding systemd service unit
+_discover_apps() {
+  local apps_root="/home/pibulus/apps"
+  [ -d "$apps_root" ] || return
+  for dir in "$apps_root"/*/; do
+    local name; name=$(basename "$dir")
+    systemctl list-units --type=service --all --no-legend 2>/dev/null \
+      | grep -q "^  *${name}\.service" && echo "$name"
+  done
+}
+
+# Read PORT= from systemd environment or ExecStart --port flag
+_app_port() {
+  local p
+  p=$(systemctl show "$1" --property=Environment 2>/dev/null \
+    | sed 's/^Environment=//' | tr ' ' '\n' | grep '^PORT=' | cut -d= -f2 | head -1)
+  [ -z "$p" ] && p=$(systemctl show "$1" --property=ExecStart 2>/dev/null \
+    | grep -oP '(?<=--port=)\d+' | head -1)
+  echo "$p"
+}
+
+_app_status_line() {
+  local name=$1
+  local port; port=$(_app_port "$name")
+  local state; state=$(systemctl is-active "$name" 2>/dev/null)
+  local color=46; [ "$state" != "active" ] && color=196
+  gum style --foreground $color \
+    "$(printf '  ● %-18s %s  %s' "$name" "${port:+:$port}" "$state")"
+}
+
+app_redeploy() {
+  local name=$1
+  local dir="/home/pibulus/apps/$name"
+  local meta="$dir/.pibulus-meta"
+  local github_url=""
+  [ -f "$meta" ] && source "$meta"
+
+  if [ -z "$GITHUB_URL" ]; then
+    github_url=$(gum input --placeholder "GitHub URL for $name")
+    [ -z "$github_url" ] && return
+    mkdir -p "$dir"
+    echo "GITHUB_URL=$github_url" > "$meta"
+  else
+    github_url=$GITHUB_URL
+    if ! gum confirm "Redeploy $name from $github_url?"; then return; fi
+  fi
+
+  local tmp="/tmp/$name-redeploy"
+  rm -rf "$tmp"
+  gum spin --spinner dot --title "Cloning $name..." -- git clone "$github_url" "$tmp" \
+    || { gum style --foreground 196 "Clone failed."; pause_screen; return; }
+
+  if [ -f "$tmp/deno.json" ]; then
+    local has_build; has_build=$(python3 -c \
+      "import json; d=json.load(open('$tmp/deno.json')); print('yes' if 'build' in d.get('tasks',{}) else '')" 2>/dev/null)
+    [ -n "$has_build" ] && gum spin --spinner dot --title "deno task build..." -- \
+      bash -c "cd '$tmp' && /home/pibulus/.deno/bin/deno task build 2>/dev/null"
+  elif [ -f "$tmp/package.json" ]; then
+    gum spin --spinner dot --title "npm ci..." -- bash -c "cd '$tmp' && npm ci 2>/dev/null"
+    local has_build; has_build=$(python3 -c \
+      "import json; d=json.load(open('$tmp/package.json')); print('yes' if 'build' in d.get('scripts',{}) else '')" 2>/dev/null)
+    [ -n "$has_build" ] && gum spin --spinner dot --title "npm run build..." -- \
+      bash -c "cd '$tmp' && npm run build 2>/dev/null"
+  fi
+
+  gum spin --spinner moon --title "Stopping $name..." -- sudo systemctl stop "$name"
+  gum spin --spinner dot --title "Swapping files..." -- \
+    bash -c "rsync -a --delete --exclude='.pibulus-meta' --exclude='node_modules/.cache' '$tmp/' '$dir/'"
+  [ -f "$dir/package.json" ] && gum spin --spinner dot --title "Installing prod deps..." -- \
+    bash -c "cd '$dir' && npm ci --omit=dev 2>/dev/null"
+  echo "GITHUB_URL=$github_url" > "$dir/.pibulus-meta"
+
+  gum spin --spinner moon --title "Starting $name..." -- sudo systemctl start "$name"
+  sleep 1
+  local state; state=$(systemctl is-active "$name" 2>/dev/null)
+  if [ "$state" = "active" ]; then
+    gum style --foreground 46 "✓ $name is live"
+  else
+    gum style --foreground 196 "✗ $name failed — check: journalctl -u $name -n 30"
+  fi
+  rm -rf "$tmp"
+  pause_screen
+}
+
+app_submenu() {
+  local name=$1
+  while true; do
+    render_hud
+    local port; port=$(_app_port "$name")
+    local state; state=$(systemctl is-active "$name" 2>/dev/null)
+    local color=46; [ "$state" != "active" ] && color=196
+    gum style --foreground $color --bold "  $name  ${port:+:$port}  [$state]"
+    echo ""
+    local action
+    action=$(tactile_choose \
+      '📋 Status' \
+      '📜 Tail Logs' \
+      '🔄 Restart' \
+      '🌐 Health Ping' \
+      '🚀 Redeploy from GitHub' \
+      'Back')
+    case "$action" in
+      '📋 Status') sudo systemctl status "$name" --no-pager; pause_screen ;;
+      '📜 Tail Logs') journalctl -u "$name" -n 60 --no-pager \
+          | bat --language=log --paging=never 2>/dev/null \
+          || journalctl -u "$name" -n 60 --no-pager
+        pause_screen ;;
+      '🔄 Restart') sudo systemctl restart "$name"; sleep 1
+        gum style --foreground 46 "Restarted."; pause_screen ;;
+      '🌐 Health Ping')
+        local code; code=$(curl -s -o /dev/null -w "%{http_code}" \
+          --connect-timeout 3 "http://localhost:${port:-80}" 2>/dev/null)
+        if [[ "$code" =~ ^(200|301|302)$ ]]; then
+          gum style --foreground 46 "✓ HTTP $code — $name is responding"
+        else
+          gum style --foreground 196 "✗ HTTP $code — $name not responding${port:+ on :$port}"
+        fi
+        pause_screen ;;
+      '🚀 Redeploy from GitHub') app_redeploy "$name" ;;
+      'Back'|'') return ;;
+    esac
+  done
+}
+
+apps_menu() {
+  while true; do
+    render_hud
+    show_section_intro \
+      'apps' \
+      'Your live apps. All systemd, all on this box, all behind Cloudflare.'
+    echo ""
+    # Discover apps dynamically from ~/apps/ + systemd
+    local discovered=()
+    while IFS= read -r app; do
+      discovered+=("$app")
+      _app_status_line "$app"
+    done < <(_discover_apps)
+    echo ""
+    if [ ${#discovered[@]} -eq 0 ]; then
+      gum style --foreground 226 "  No apps found in ~/apps/ with a systemd service."
+      pause_screen; return
+    fi
+    # Build the menu from discovered list
+    local menu_items=()
+    for app in "${discovered[@]}"; do menu_items+=("🗂️ $app"); done
+    menu_items+=('Back')
+    local action
+    action=$(tactile_choose "${menu_items[@]}")
+    case "$action" in
+      'Back'|'') return ;;
+      *) app_submenu "${action#🗂️ }" ;;
+    esac
+  done
+}
+
+# ── CLIP IT ───────────────────────────────────────────────────────────────────
+
+clip_it() {
+  local clips_dir="/media/pibulus/passport/clips"
+  mkdir -p "$clips_dir"
+
+  local url
+  url=$(gum input --placeholder "Paste URL (YouTube or webpage)...")
+  [ -z "$url" ] && return
+
+  local ts; ts=$(date +%Y-%m-%d_%H%M)
+
+  if echo "$url" | grep -qE "youtube\.com|youtu\.be"; then
+    # YouTube → transcript via yt-dlp auto captions
+    local tmpdir; tmpdir=$(mktemp -d)
+    gum spin --spinner dot --title "Fetching transcript..." -- \
+      yt-dlp --write-auto-sub --sub-lang en --skip-download \
+        --sub-format vtt -o "$tmpdir/%(title)s" "$url" 2>/dev/null
+    local vtt; vtt=$(ls "$tmpdir"/*.vtt 2>/dev/null | head -1)
+    if [ -n "$vtt" ]; then
+      local title; title=$(basename "$vtt" .en.vtt)
+      local outfile="$clips_dir/${ts}_$(echo "$title" | tr ' /' '_-' | cut -c1-60).txt"
+      # Strip VTT timestamps and deduplicate
+      python3 -c "
+import re, sys
+text = open('$vtt').read()
+lines = text.split('\n')
+seen = set(); out = []
+for line in lines:
+    line = line.strip()
+    if re.match(r'^[\d:.,\-> ]+$', line) or line.startswith('WEBVTT') or line.startswith('Kind:') or line.startswith('Language:'): continue
+    if line and line not in seen:
+        seen.add(line); out.append(line)
+print('\n'.join(out))
+" > "$outfile" 2>/dev/null
+      rm -rf "$tmpdir"
+      gum style --foreground 46 "✓ Saved: $(basename "$outfile")"
+      if gum confirm "View it now?"; then
+        bat "$outfile" 2>/dev/null || less "$outfile"
+      fi
+    else
+      rm -rf "$tmpdir"
+      gum style --foreground 226 "No auto-captions found for this video."
+    fi
+  else
+    # Webpage → trafilatura
+    gum spin --spinner dot --title "Extracting content..." -- sleep 0.2
+    local outfile="$clips_dir/${ts}_clip.txt"
+    python3 -c "
+import trafilatura, sys
+text = trafilatura.fetch_url('$url')
+result = trafilatura.extract(text, include_comments=False, include_tables=False)
+if result:
+    print(result)
+else:
+    print('[trafilatura: no main content found]')
+" > "$outfile" 2>/dev/null
+    local lines; lines=$(wc -l < "$outfile" 2>/dev/null)
+    if [ "${lines:-0}" -gt 2 ]; then
+      gum style --foreground 46 "✓ Saved $lines lines → $(basename "$outfile")"
+      if gum confirm "View it now?"; then
+        bat "$outfile" 2>/dev/null || less "$outfile"
+      fi
+    else
+      gum style --foreground 196 "✗ Nothing extracted. Try a different URL."
+    fi
+  fi
+  pause_screen
+}
+
+# ── QUICK EDIT ────────────────────────────────────────────────────────────────
+
+quick_edit() {
+  local search_roots=(/home/pibulus/apps /home/pibulus/pibulus-os)
+  local file
+  file=$(find "${search_roots[@]}" -type f \
+    \( -name "*.js" -o -name "*.ts" -o -name "*.svelte" -o -name "*.json" \
+       -o -name "*.sh" -o -name "*.yml" -o -name "*.yaml" -o -name "*.env" \
+       -o -name "*.md" -o -name "*.jsonc" \) \
+    ! -path "*/node_modules/*" ! -path "*/.git/*" ! -path "*/_fresh/*" \
+    2>/dev/null \
+    | fzf --prompt="edit > " --preview='bat --color=always --line-range :80 {}' \
+          --preview-window=right:60% --height=80%)
+  [ -n "$file" ] && micro "$file"
+}
+
 ops_menu() {
   while true; do
     render_hud
@@ -960,15 +1314,17 @@ ops_menu() {
       '⚡ Staggered Startup' \
       '🚀 Deploy Something New' \
       '🧹 Flush RAM' \
-      '🧠 Scavenger Search' \
-      '🏴‍☠️ Media Grab' \
+      '📦 Stacks' \
+      '🔍 Inspect Stack' \
+      '💾 Drive Bay' \
       'Back')
     case "$action" in
       '⚡ Staggered Startup') ~/pibulus-os/scripts/startup.sh; pause_screen ;;
       '🚀 Deploy Something New') ~/pibulus-os/scripts/deploy.sh ;;
       '🧹 Flush RAM') ~/pibulus-os/scripts/flush_ram.sh; pause_screen ;;
-      '🧠 Scavenger Search') manage_scavenger ;;
-      '🏴‍☠️ Media Grab') manage_pirate_grab ;;
+      '📦 Stacks') stacks_menu ;;
+      '🔍 Inspect Stack') inspect_stack ;;
+      '💾 Drive Bay') drives_menu ;;
       'Back'|'') return ;;
     esac
   done
@@ -984,20 +1340,59 @@ desk_menu() {
     action=$(tactile_choose \
       '✍️ Write Field Note' \
       '📜 Recent Notes' \
+      '🔍 Search Notes' \
       '✨ Pretty Viewer' \
       '📖 Field Manual' \
       '📰 Feed Reader' \
+      '📚 tldr' \
+      '👁️ Watch & Run' \
+      '✂️ Clip It' \
+      '✏️ Quick Edit' \
       '🧵 tmux' \
       '💬 Chat' \
+      '🌿 Bonsai' \
       'Back')
     case "$action" in
       '✍️ Write Field Note') write_field_note; pause_screen ;;
       '📜 Recent Notes') show_recent_notes; pause_screen ;;
+      '🔍 Search Notes') search_field_notes ;;
       '✨ Pretty Viewer') open_notes_in_glow ;;
       '📖 Field Manual') open_field_manual_pretty ;;
       '📰 Feed Reader') open_feed_reader ;;
+      '📚 tldr') tldr_lookup ;;
+      '👁️ Watch & Run') entr_watch ;;
+      '✂️ Clip It') clip_it ;;
+      '✏️ Quick Edit') quick_edit ;;
       '🧵 tmux') open_tmux_shell ;;
       '💬 Chat') open_chat_client ;;
+      '🌿 Bonsai') cbonsai -l ;;
+      'Back'|'') return ;;
+    esac
+  done
+}
+
+ai_menu() {
+  while true; do
+    render_hud
+    show_section_intro \
+      'ai' \
+      'Direct lines to the machines. Standard = confirmation prompts. Full autonomy = unsupervised execution. Handle accordingly.'
+    local action
+    action=$(tactile_choose \
+      '🤖 Claude' \
+      '🔓 Claude — full autonomy' \
+      '💎 Gemini' \
+      '🔓 Gemini — full autonomy' \
+      '⚡ Codex' \
+      '🔓 Codex — full autonomy' \
+      'Back')
+    case "$action" in
+      '🤖 Claude') claude ;;
+      '🔓 Claude — full autonomy') claude --dangerously-skip-permissions ;;
+      '💎 Gemini') gemini ;;
+      '🔓 Gemini — full autonomy') gemini --yolo ;;
+      '⚡ Codex') codex ;;
+      '🔓 Codex — full autonomy') codex --dangerously-bypass-approvals-and-sandbox ;;
       'Back'|'') return ;;
     esac
   done
@@ -1010,28 +1405,30 @@ while true; do
     gum style --foreground 212 "$(roll_fascination)"
     _first_run=0
   fi
-choice=$(tactile_choose --height 15 \
+choice=$(tactile_choose --height 14 \
     '🚨 sigint' \
     '📻 radio' \
     '🎬 media' \
     '📡 network' \
-    '💾 drives' \
     '🛠️ ops' \
+    '📱 apps' \
     '🎵 soulseek' \
     '🐱 club' \
     '📝 desk' \
-    '🚪 exit')
+    '🤖 ai' \
+    '🚪 shell')
 
   case "$choice" in
     '🚨 sigint') sigint_menu ;;
     '📻 radio') radio_menu ;;
     '🎬 media') media_menu ;;
     '📡 network') network_menu ;;
-    '💾 drives') drives_menu ;;
     '🛠️ ops') ops_menu ;;
+    '📱 apps') apps_menu ;;
     '🎵 soulseek') slskd_menu ;;
     '🐱 club') club_menu ;;
     '📝 desk') desk_menu ;;
-    '🚪 exit'|'') clear; echo 'Neural link severed.'; exit 0 ;;
+    '🤖 ai') ai_menu ;;
+    '🚪 shell'|'') clear; echo 'Neural link suspended. Dropping to shell. Run launcher.sh to return.'; exec bash -l ;;
   esac
 done

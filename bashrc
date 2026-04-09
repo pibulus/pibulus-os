@@ -116,6 +116,26 @@ export DENO_INSTALL="/home/pibulus/.deno"
 export PATH="$DENO_INSTALL/bin:$PATH"
 alias deck="~/pibulus-os/launcher.sh"
 
+# ── fzf: fuzzy everything ──────────────────────────────
+[ -f /usr/share/fzf/key-bindings.bash ] && source /usr/share/fzf/key-bindings.bash
+# Ctrl-R: fuzzy history  |  Ctrl-T: fuzzy file picker  |  Alt-C: fuzzy cd
+export FZF_DEFAULT_OPTS='
+  --height 40% --border --ansi --cycle
+  --color=fg:#C8D8E8,bg:#0D0F14,hl:#4DFFD2
+  --color=fg+:#4DFFD2,bg+:#161922,hl+:#E040FB
+  --color=prompt:#E040FB,pointer:#4DFFD2,marker:#F5C842,border:#4DFFD2
+'
+export FZF_CTRL_T_OPTS='--preview "bat --color=always --plain {} 2>/dev/null | head -100"'
+export FZF_CTRL_R_OPTS='--sort --exact'
+
+# ── bat: syntax-highlighted cat ────────────────────────
+export BAT_THEME="Dracula"
+alias cat='bat --plain --paging=never'
+
+# ── bigger history so fzf ctrl-r is actually useful ────
+HISTSIZE=50000
+HISTFILESIZE=100000
+
 # --- PIBULUS SAFETY NET ---
 alias halp="deck --help"
 alias sos='deck --help'

@@ -1,33 +1,41 @@
 :root{--cream:#FAF7F2;--lavender:#E8E0F5;--lavender-2:#D4C8EE;--mint:#D4EFE1;--peach:#FFE8DC;--yellow:#FFF3C4;--ink:#1A1A2E;--ink-soft:#3D3A5C;--border:3px solid #1A1A2E;--radius:12px;--shadow:4px 4px 0px #1A1A2E;--shadow-lg:6px 6px 0px #1A1A2E;--transition:all .2s cubic-bezier(.68,-.55,.265,1.55);--transition-smooth:all .18s cubic-bezier(.4,0,.2,1)}
-body{background-color:var(--cream)!important;background-image:radial-gradient(circle at 15% 20%,rgba(232,224,245,.5) 0%,transparent 40%),radial-gradient(circle at 85% 80%,rgba(212,239,225,.4) 0%,transparent 40%)!important;color:var(--ink)!important;font-family:Poppins,system-ui,-apple-system,sans-serif!important}
-.kiwixNav{background:var(--lavender)!important;border-bottom:var(--border)!important;box-shadow:0 3px 0 #1A1A2E!important;padding:12px 16px!important}
-.kiwixNav__select{background:#fff!important;border:var(--border)!important;border-radius:8px!important;box-shadow:2px 2px 0 #1A1A2E!important;overflow:hidden!important;transition:var(--transition-smooth)!important}
+/* solid background — gradient was muddying the neo-brutalist borders */
+body{background-color:var(--cream)!important;background-image:none!important;color:var(--ink)!important;font-family:Poppins,system-ui,-apple-system,sans-serif!important}
+/* nav: ensure inputs aren't clipping descenders */
+.kiwixNav{background:var(--lavender)!important;border-bottom:var(--border)!important;box-shadow:0 3px 0 #1A1A2E!important;padding:14px 16px!important;display:flex!important;align-items:center!important;gap:8px!important}
+.kiwixNav__select{background:#fff!important;border:var(--border)!important;border-radius:8px!important;box-shadow:2px 2px 0 #1A1A2E!important;overflow:hidden!important;transition:var(--transition-smooth)!important;flex-shrink:0!important}
 .kiwixNav__select:hover{box-shadow:3px 3px 0 #1A1A2E!important;transform:translateY(-1px)!important}
-.kiwixNav__kiwixFilter{background:transparent!important;border:none!important;color:var(--ink)!important;font-family:inherit!important;font-size:13px!important;font-weight:600!important;padding:8px 12px!important;cursor:pointer!important}
+/* line-height fix: kiwix clips descenders without enough vertical room */
+.kiwixNav__kiwixFilter{background:transparent!important;border:none!important;color:var(--ink)!important;font-family:inherit!important;font-size:13px!important;font-weight:600!important;padding:9px 12px!important;line-height:1.4!important;cursor:pointer!important}
 .tagFilterLabel{background:var(--peach)!important;border:2px solid var(--ink)!important;border-radius:20px!important;color:var(--ink)!important;font-size:12px!important;font-weight:700!important;padding:4px 12px!important;cursor:pointer!important;transition:var(--transition)!important;display:inline-block!important}
 .tagFilterLabel:hover,.tagFilterLabel.selected,.tagFilterLabel[aria-pressed="true"]{background:var(--ink)!important;color:var(--cream)!important;transform:scale(1.05)!important}
-.kiwixSearch{background:#fff!important;border:var(--border)!important;border-radius:10px!important;box-shadow:3px 3px 0 #1A1A2E!important;color:var(--ink)!important;font-family:inherit!important;font-size:14px!important;font-weight:500!important;padding:10px 16px!important;transition:var(--transition-smooth)!important;outline:none!important}
+.kiwixSearch{background:#fff!important;border:var(--border)!important;border-radius:10px!important;box-shadow:3px 3px 0 #1A1A2E!important;color:var(--ink)!important;font-family:inherit!important;font-size:14px!important;font-weight:500!important;padding:10px 16px!important;line-height:1.4!important;transition:var(--transition-smooth)!important;outline:none!important;flex:1!important;min-width:0!important}
 .kiwixSearch:focus{box-shadow:4px 4px 0 #1A1A2E,0 0 0 3px rgba(168,130,245,.35)!important;transform:translateY(-1px)!important}
 .kiwixSearch::placeholder{color:#9D91B8!important;font-style:italic!important}
-.kiwixButton{background:var(--mint)!important;border:var(--border)!important;border-radius:10px!important;box-shadow:var(--shadow)!important;color:var(--ink)!important;cursor:pointer!important;font-family:inherit!important;font-size:14px!important;font-weight:700!important;padding:10px 20px!important;transition:var(--transition)!important;min-height:44px!important;min-width:44px!important}
+.kiwixButton{background:var(--mint)!important;border:var(--border)!important;border-radius:10px!important;box-shadow:var(--shadow)!important;color:var(--ink)!important;cursor:pointer!important;font-family:inherit!important;font-size:14px!important;font-weight:700!important;padding:10px 20px!important;transition:var(--transition)!important;min-height:44px!important;min-width:44px!important;flex-shrink:0!important}
 .kiwixButton:hover{background:var(--ink)!important;color:var(--cream)!important;box-shadow:var(--shadow-lg)!important;transform:translate(-2px,-2px)!important}
 .kiwixButton:active{box-shadow:1px 1px 0 var(--ink)!important;transform:translate(2px,2px)!important}
-.kiwixHomeBody{padding:24px!important}
+/* 4-column grid cap — 5 cols was too narrow */
+.kiwixHomeBody{padding:24px!important;max-width:1100px!important;margin:0 auto!important}
+.book__list,.library{grid-template-columns:repeat(4,1fr)!important;max-width:1100px!important}
 .book__wrapper{background:#fff!important;border:var(--border)!important;border-radius:var(--radius)!important;box-shadow:var(--shadow)!important;transition:var(--transition)!important;overflow:hidden!important;position:relative!important}
 .book__wrapper::before{content:""!important;position:absolute!important;left:0!important;top:0!important;bottom:0!important;width:5px!important;background:linear-gradient(180deg,var(--lavender-2),var(--mint))!important;border-radius:var(--radius) 0 0 var(--radius)!important}
 .book__wrapper:hover{box-shadow:var(--shadow-lg)!important;transform:translate(-2px,-3px) rotate(-.5deg)!important}
 .book__icon{background:var(--lavender)!important;border-right:2px solid var(--ink)!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:8px!important}
-.book__header{background:var(--yellow)!important;border-bottom:2px solid var(--ink)!important;padding:10px 12px!important}
-.book__title{color:var(--ink)!important;font-family:Poppins,sans-serif!important;font-size:13px!important;font-weight:700!important;line-height:1.3!important;letter-spacing:-.01em!important}
-.book__description{color:var(--ink-soft)!important;font-family:Roboto,system-ui,sans-serif!important;font-size:12px!important;line-height:1.5!important;padding:8px 12px!important}
+.book__header{background:var(--yellow)!important;border-bottom:2px solid var(--ink)!important;padding:12px 14px!important}
+/* title: bump size so it dominates the card hierarchy */
+.book__title{color:var(--ink)!important;font-family:Poppins,sans-serif!important;font-size:14px!important;font-weight:800!important;line-height:1.3!important;letter-spacing:-.01em!important}
+.book__description{color:var(--ink-soft)!important;font-family:Roboto,system-ui,sans-serif!important;font-size:12px!important;line-height:1.5!important;padding:10px 14px!important}
 .book__download>span{background:var(--mint)!important;border:2px solid var(--ink)!important;border-radius:6px!important;box-shadow:2px 2px 0 var(--ink)!important;color:var(--ink)!important;font-weight:700!important;font-size:11px!important;padding:3px 8px!important;transition:var(--transition)!important}
 .book__download>span:hover{background:var(--ink)!important;color:var(--cream)!important}
 .book__languageTag{background:var(--peach)!important;border:2px solid var(--ink)!important;border-radius:6px!important;color:var(--ink)!important;font-size:10px!important;font-weight:800!important;letter-spacing:.05em!important;padding:2px 7px!important;text-transform:uppercase!important}
-.book__tags{display:flex!important;flex-wrap:wrap!important;gap:4px!important;padding:6px 12px 10px!important}
-.book__tags span,.book__tags a{background:var(--lavender)!important;border:1.5px solid var(--lavender-2)!important;border-radius:20px!important;color:var(--ink-soft)!important;font-size:11px!important;font-weight:600!important;padding:2px 10px!important;text-decoration:none!important;transition:var(--transition-smooth)!important}
+.book__tags{display:flex!important;flex-wrap:wrap!important;gap:4px!important;padding:8px 14px 12px!important}
+/* tag pills: solid dark ink text (not ink-soft) + defined border so they don't melt into the lavender */
+.book__tags span,.book__tags a{background:var(--lavender)!important;border:2px solid var(--ink)!important;border-radius:20px!important;color:var(--ink)!important;font-size:11px!important;font-weight:700!important;padding:2px 10px!important;text-decoration:none!important;transition:var(--transition-smooth)!important}
 .book__tags span:hover,.book__tags a:hover{background:var(--ink)!important;border-color:var(--ink)!important;color:var(--cream)!important}
 .kiwixfooter{background:var(--lavender)!important;border-top:var(--border)!important;color:var(--ink-soft)!important;font-size:13px!important;font-weight:500!important;padding:20px 24px!important;text-align:center!important}
 .kiwixfooter a{color:var(--ink)!important;font-weight:700!important;text-underline-offset:3px!important}
 .kiwixfooter::before{content:"QUICK CAT KNOWLEDGE LIBRARY  \2022  "!important;font-weight:800!important;letter-spacing:.06em!important;text-transform:uppercase!important;font-size:11px!important;color:var(--ink)!important;display:inline!important}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
-@media(max-width:600px){.kiwixButton{min-height:48px!important;padding:12px 20px!important;width:100%!important}.kiwixSearch{min-height:48px!important;font-size:16px!important}.kiwixHomeBody{padding:16px!important}.book__wrapper:hover{transform:none!important}}
+@media(max-width:900px){.book__list,.library{grid-template-columns:repeat(3,1fr)!important}}
+@media(max-width:600px){.book__list,.library{grid-template-columns:repeat(2,1fr)!important}.kiwixButton{min-height:48px!important;padding:12px 20px!important;width:100%!important}.kiwixSearch{min-height:48px!important;font-size:16px!important}.kiwixHomeBody{padding:16px!important}.book__wrapper:hover{transform:none!important}}

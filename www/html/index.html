@@ -237,6 +237,34 @@
     .faq details[open] p { max-height: 300px; padding-bottom: 1rem; }
     .faq details p a { color: var(--cyan); text-decoration: none; }
 
+    /* ─── CARD GLEAM: slow independent sweeps, 80/20 idle life ─── */
+    @keyframes cardGleam {
+      0%, 78%  { transform: skewX(-15deg) translateX(-160%); opacity: 0; }
+      82%      { opacity: 0; transform: skewX(-15deg) translateX(-160%); }
+      89%      { opacity: 1; transform: skewX(-15deg) translateX(260%); }
+      100%     { opacity: 0; transform: skewX(-15deg) translateX(260%); }
+    }
+    .card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 35%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(77,255,210,0.1), transparent);
+      pointer-events: none;
+      animation: cardGleam 9s ease-in-out infinite;
+      will-change: transform, opacity;
+    }
+    .card.fun::after      { background: linear-gradient(90deg, transparent, rgba(245,200,66,0.12), transparent); }
+    .card.solidarity::after { background: linear-gradient(90deg, transparent, rgba(57,217,138,0.11), transparent); }
+    .card.danger::after   { background: linear-gradient(90deg, transparent, rgba(255,68,85,0.1), transparent); }
+    /* stagger gleam so cards fire independently */
+    .grid .card:nth-child(1)::after { animation-delay: 0s; }
+    .grid .card:nth-child(2)::after { animation-delay: 1.5s; }
+    .grid .card:nth-child(3)::after { animation-delay: 3.0s; }
+    .grid .card:nth-child(4)::after { animation-delay: 4.5s; }
+    .grid .card:nth-child(5)::after { animation-delay: 6.0s; }
+    .grid .card:nth-child(6)::after { animation-delay: 7.5s; }
+
     /* ─── REDUCED MOTION: kill everything ─── */
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation: none !important; transition: none !important; }
