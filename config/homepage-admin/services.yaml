@@ -1,6 +1,37 @@
 # CAPTAIN'S DECK - PIBULUS OS Admin
 # All running services with Docker status
 
+- Apps:
+    - TalkType:
+        icon: mdi-microphone-#ff6b9d
+        href: https://talktype.app
+        description: Voice to text, anywhere
+        ping: https://talktype.app
+
+    - ZipList:
+        icon: mdi-format-list-bulleted-#4ade80
+        href: https://ziplist.app
+        description: Speak your shopping list
+        ping: https://ziplist.app
+
+    - SlideOMatic:
+        icon: mdi-presentation-play-#60a5fa
+        href: https://slideomatic.app
+        description: Instant slide decks
+        ping: https://slideomatic.app
+
+    - QR Buddy:
+        icon: mdi-qrcode-#a78bfa
+        href: https://qrbuddy.app
+        description: QR code generator
+        ping: https://qrbuddy.app
+
+    - Asciifier:
+        icon: mdi-image-text-#fbbf24
+        href: https://asciifier.deno.dev
+        description: Image to ASCII art
+        ping: https://asciifier.deno.dev
+
 - Media:
     - Jellyfin:
         icon: jellyfin.png
