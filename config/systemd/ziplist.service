@@ -1,0 +1,17 @@
+[Unit]
+Description=ZipList SvelteKit App
+After=network.target
+
+[Service]
+Type=simple
+User=pibulus
+WorkingDirectory=/home/pibulus/apps/ziplist
+ExecStart=/usr/bin/node index.js
+Environment=PORT=9003
+Environment=HOST=0.0.0.0
+Environment=ORIGIN=https://ziplist.app
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

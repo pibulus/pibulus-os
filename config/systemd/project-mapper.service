@@ -1,0 +1,17 @@
+[Unit]
+Description=Project Mapper SvelteKit App
+After=network.target
+
+[Service]
+Type=simple
+User=pibulus
+WorkingDirectory=/home/pibulus/apps/project_mapper
+ExecStart=/usr/bin/node index.js
+Environment=PORT=9005
+Environment=HOST=0.0.0.0
+Environment=ORIGIN=https://promapper.app
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
