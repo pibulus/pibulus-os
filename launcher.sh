@@ -542,6 +542,10 @@ build_newsboat_lane_file() {
   local tmp="/tmp/newsboat-lane-${USER}.urls"
   src="$(newsboat_urls_file)"
 
+  if [ ! -r "$src" ]; then
+    return 1
+  fi
+
   case "$lane" in
     ground)
       awk '/^https?:/ && $0 ~ /(^| )ground( |$)/ { print }' "$src" > "$tmp"
@@ -577,7 +581,11 @@ run_newsboat_lane() {
     return
   fi
 
-  lane_file="$(build_newsboat_lane_file "$lane")"
+  lane_file="$(build_newsboat_lane_file "$lane")" || {
+    gum style --foreground 196 "newsboat feed file missing: $(newsboat_urls_file)"
+    pause_screen
+    return
+  }
   newsboat -u "$lane_file"
 }
 
@@ -656,6 +664,7 @@ mediainfo_picker() {
 }
 
 inspect_stack() {
+  if ! tool_exists fzf; then echo "fzf not installed."; pause_screen; return; fi
   local stacks_dir=~/pibulus-os/config/stacks
   local pick
   pick=$(ls "$stacks_dir"/*.yml 2>/dev/null | fzf --prompt="pick stack > " --height 15 --border)
@@ -1097,15 +1106,13 @@ app_redeploy() {
   local dir="/home/pibulus/apps/$name"
   local meta="$dir/.pibulus-meta"
   local github_url=""
-  [ -f "$meta" ] && source "$meta"
+  [ -f "$meta" ] && github_url=$(grep '^GITHUB_URL=' "$meta" | head -1 | cut -d= -f2-)
 
-  if [ -z "$GITHUB_URL" ]; then
+  if [ -z "$github_url" ]; then
     github_url=$(gum input --placeholder "GitHub URL for $name")
     [ -z "$github_url" ] && return
     mkdir -p "$dir"
-    echo "GITHUB_URL=$github_url" > "$meta"
   else
-    github_url=$GITHUB_URL
     if ! gum confirm "Redeploy $name from $github_url?"; then return; fi
   fi
 
@@ -1117,22 +1124,34 @@ app_redeploy() {
   if [ -f "$tmp/deno.json" ]; then
     local has_build; has_build=$(python3 -c \
       "import json; d=json.load(open('$tmp/deno.json')); print('yes' if 'build' in d.get('tasks',{}) else '')" 2>/dev/null)
-    [ -n "$has_build" ] && gum spin --spinner dot --title "deno task build..." -- \
-      bash -c "cd '$tmp' && /home/pibulus/.deno/bin/deno task build 2>/dev/null"
+    if [ -n "$has_build" ]; then
+      gum spin --spinner dot --title "deno task build..." -- \
+        bash -c "cd '$tmp' && /home/pibulus/.deno/bin/deno task build 2>/dev/null" \
+        || { gum style --foreground 196 "Build failed. Live app left untouched."; rm -rf "$tmp"; pause_screen; return; }
+    fi
   elif [ -f "$tmp/package.json" ]; then
-    gum spin --spinner dot --title "npm ci..." -- bash -c "cd '$tmp' && npm ci 2>/dev/null"
+    gum spin --spinner dot --title "npm ci..." -- bash -c "cd '$tmp' && npm ci 2>/dev/null" \
+      || { gum style --foreground 196 "npm ci failed. Live app left untouched."; rm -rf "$tmp"; pause_screen; return; }
     local has_build; has_build=$(python3 -c \
       "import json; d=json.load(open('$tmp/package.json')); print('yes' if 'build' in d.get('scripts',{}) else '')" 2>/dev/null)
-    [ -n "$has_build" ] && gum spin --spinner dot --title "npm run build..." -- \
-      bash -c "cd '$tmp' && npm run build 2>/dev/null"
+    if [ -n "$has_build" ]; then
+      gum spin --spinner dot --title "npm run build..." -- \
+        bash -c "cd '$tmp' && npm run build 2>/dev/null" \
+        || { gum style --foreground 196 "Build failed. Live app left untouched."; rm -rf "$tmp"; pause_screen; return; }
+    fi
   fi
 
-  gum spin --spinner moon --title "Stopping $name..." -- sudo systemctl stop "$name"
+  gum spin --spinner moon --title "Stopping $name..." -- sudo systemctl stop "$name" \
+    || { gum style --foreground 196 "Could not stop $name."; rm -rf "$tmp"; pause_screen; return; }
   gum spin --spinner dot --title "Swapping files..." -- \
-    bash -c "rsync -a --delete --exclude='.pibulus-meta' --exclude='node_modules/.cache' '$tmp/' '$dir/'"
-  [ -f "$dir/package.json" ] && gum spin --spinner dot --title "Installing prod deps..." -- \
-    bash -c "cd '$dir' && npm ci --omit=dev 2>/dev/null"
-  echo "GITHUB_URL=$github_url" > "$dir/.pibulus-meta"
+    bash -c "rsync -a --delete --exclude='.pibulus-meta' --exclude='node_modules/.cache' '$tmp/' '$dir/'" \
+    || { gum style --foreground 196 "File swap failed."; pause_screen; return; }
+  if [ -f "$dir/package.json" ]; then
+    gum spin --spinner dot --title "Installing prod deps..." -- \
+      bash -c "cd '$dir' && npm ci --omit=dev 2>/dev/null" \
+      || { gum style --foreground 196 "Prod dependency install failed."; pause_screen; return; }
+  fi
+  printf 'GITHUB_URL=%s\n' "$github_url" > "$dir/.pibulus-meta"
 
   gum spin --spinner moon --title "Starting $name..." -- sudo systemctl start "$name"
   sleep 1
@@ -1290,6 +1309,8 @@ else:
 # ── QUICK EDIT ────────────────────────────────────────────────────────────────
 
 quick_edit() {
+  if ! tool_exists fzf; then echo "fzf not installed."; pause_screen; return; fi
+  if ! tool_exists micro; then echo "micro not installed."; pause_screen; return; fi
   local search_roots=(/home/pibulus/apps /home/pibulus/pibulus-os)
   local file
   file=$(find "${search_roots[@]}" -type f \
