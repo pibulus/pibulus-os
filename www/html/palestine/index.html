@@ -156,6 +156,14 @@
     footer { text-align: center; margin-top: 3rem; padding-top: 1rem; border-top: 1px solid rgba(85,204,85,0.1); }
     .footer-text { color: var(--dim-soft); font-size: 0.9rem; letter-spacing: 2px; }
     #root-view, #browse-view { display: none; }
+    .search-bar { margin: 0.5rem 0 1rem; display: none; }
+    .search-bar input {
+      width: 100%; background: var(--panel); border: 1px solid var(--border);
+      border-left: 3px solid var(--green); color: var(--text); font-family: inherit;
+      font-size: 1rem; padding: 10px 14px; outline: none; letter-spacing: 1px;
+    }
+    .search-bar input::placeholder { color: var(--dim-soft); }
+    .search-bar input:focus { border-color: var(--green); background: rgba(85,204,85,0.03); }
     @media (max-width: 560px) {
       .file-name { font-size: 1rem; }
       .file-action { opacity: 1; }
@@ -189,6 +197,10 @@
     </header>
 
     <div class="breadcrumbs" id="breadcrumbs"></div>
+
+    <div class="search-bar" id="search-bar">
+      <input type="text" id="search-input" placeholder="[ filter files... ]" autocomplete="off" autocorrect="off" spellcheck="false">
+    </div>
 
     <div id="root-view">
       <div class="section-divider"><span class="section-label">[ FILMS &amp; DOCUMENTARIES ]</span></div>
@@ -225,7 +237,7 @@
     var AUDIO_EXT = ['.mp3','.flac','.ogg','.m4a','.wav','.opus'];
     var DOC_EXT = ['.pdf','.epub','.mobi','.djvu','.txt'];
     var IMG_EXT = ['.jpg','.jpeg','.png','.gif','.webp'];
-    var INLINE_VIDEO = ['.mp4','.webm']; // browsers can play these natively
+    var INLINE_VIDEO = ['.mp4','.webm','.mkv']; // browsers can play these natively
     var currentPath = '';
 
     function ext(name) {
@@ -325,11 +337,19 @@
       }
     }
 
-    // Close preview on Escape
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') {
         closeModal('preview-modal');
         closeModal('confirm-modal');
+      }
+      if ((e.key === 'Backspace' || e.key === 'ArrowLeft') && currentPath &&
+          !document.getElementById('preview-modal').classList.contains('active') &&
+          !document.getElementById('confirm-modal').classList.contains('active') &&
+          !['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) {
+        e.preventDefault();
+        var parts = currentPath.split('/').filter(Boolean);
+        parts.pop();
+        navigate(parts.join('/'));
       }
     });
 
@@ -342,11 +362,11 @@
       if (e === '.pdf') {
         html += '<iframe src="' + url + '#toolbar=1" title="' + displayName + '"></iframe>';
       } else if (INLINE_VIDEO.includes(e)) {
-        html += '<video src="' + url + '" controls autoplay></video>';
+        html += '<video src="' + url + '" controls></video>';
       } else if (AUDIO_EXT.some(function(x){return e===x;})) {
         html += '<div style="text-align:center;padding:2rem;">' +
           '<div style="font-size:4rem;margin-bottom:1rem;">\u{1F3B5}</div>' +
-          '<audio src="' + url + '" controls autoplay style="width:100%;max-width:500px;"></audio>' +
+          '<audio id="preview-audio" src="' + url + '" controls style="width:100%;max-width:500px;"></audio>' +
           '</div>';
       } else if (IMG_EXT.some(function(x){return e===x;})) {
         html += '<img src="' + url + '" alt="' + displayName + '">';
@@ -359,6 +379,14 @@
 
       content.innerHTML = html;
       document.getElementById('preview-modal').classList.add('active');
+
+      if (AUDIO_EXT.some(function(x){return e===x;})) {
+        var audio = document.getElementById('preview-audio');
+        if (audio) { audio.load(); audio.play().catch(function(){}); }
+      } else if (INLINE_VIDEO.includes(e)) {
+        var video = content.querySelector('video');
+        if (video) { video.play().catch(function(){}); }
+      }
     }
 
     function handleClick(entry, isDir) {
@@ -370,15 +398,6 @@
       var url = fileUrl(entry.name);
       if (canInlinePlay(entry.name)) {
         openPreview(url, entry.name);
-      } else if (ext(entry.name) === '.mkv') {
-        // MKV can't play inline in most browsers — offer download with note
-        document.getElementById('confirm-text').innerHTML =
-          '<b>' + cleanDisplayName(entry.name) + '</b><br><br>' +
-          sizeStr(entry.size) + '<br><br>' +
-          '<span style="color:var(--dim);font-size:0.85em;">MKV files need a local player (VLC). For inline playback, use MP4/WebM files.</span>';
-        var btn = document.getElementById('confirm-btn');
-        btn.onclick = function() { window.location.href = url; closeModal('confirm-modal'); };
-        document.getElementById('confirm-modal').classList.add('active');
       } else {
         document.getElementById('confirm-text').innerHTML =
           'Download <b>' + cleanDisplayName(entry.name) + '</b>?<br><br>' + sizeStr(entry.size);
@@ -422,9 +441,11 @@
 
     function navigate(path) {
       currentPath = path;
+      var si = document.getElementById('search-input');
+      if (si) { si.value = ''; }
+      document.querySelectorAll('.file-item').forEach(function(item) { item.style.display = ''; });
       renderBreadcrumbs();
       load();
-      // Scroll to top on navigation
       window.scrollTo(0, 0);
     }
 
@@ -465,6 +486,7 @@
           } else {
             renderBrowse(entries);
           }
+          document.getElementById('search-bar').style.display = 'block';
         })
         .catch(function() {
           if (isRoot) {
@@ -476,6 +498,14 @@
           }
         });
     }
+
+    document.getElementById('search-input').addEventListener('input', function() {
+      var q = this.value.toLowerCase();
+      document.querySelectorAll('.file-item').forEach(function(item) {
+        var name = item.querySelector('.file-name').textContent.toLowerCase();
+        item.style.display = (!q || name.indexOf(q) !== -1) ? '' : 'none';
+      });
+    });
 
     function renderRoot(entries) {
       var filmFolders = [];  // folders containing films
