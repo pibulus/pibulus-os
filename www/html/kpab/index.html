@@ -1766,6 +1766,7 @@
     let progressTimer = null;
     let lastHistoryKey = '';
     let pollFailCount = 0;
+    let reconnectTimer = null;
 
     const audioEl        = document.getElementById('audioEl');
     const playBtn        = document.getElementById('playBtn');
@@ -2119,8 +2120,24 @@
       }
     });
     audioEl.addEventListener('pause', () => setPlaying(false));
-    audioEl.addEventListener('ended', () => setPlaying(false));
-    audioEl.addEventListener('error', () => setPlaying(false));
+    audioEl.addEventListener('ended', () => {
+      if (isPlaying) scheduleStreamReconnect(2000);
+      else setPlaying(false);
+    });
+    audioEl.addEventListener('error', () => {
+      if (isPlaying) scheduleStreamReconnect(2000);
+      else setPlaying(false);
+    });
+
+    function scheduleStreamReconnect(ms) {
+      if (reconnectTimer) return;
+      setPlaying(false);
+      reconnectTimer = setTimeout(() => {
+        reconnectTimer = null;
+        audioEl.src = STREAM_URL;
+        audioEl.play().catch(() => {});
+      }, ms);
+    }
 
 
     // Media Session API for lock screen / notification controls
@@ -2516,14 +2533,33 @@
           mutinyToggle.innerHTML = '&#x2620; SKIPPED!';
           showMutinyToast('Track walked the plank.');
           setTimeout(() => setMutinyCooldown(data.remaining || 600), 1500);
-          // Bounce the stream so audio catches up with the track change
+          // Graceful fade-out → silence → reconnect with fade-in
           if (isPlaying) {
-            setTimeout(() => {
-              audioEl.src = '';
-              audioEl.src = STATION.streamUrl + '?t=' + Date.now();
-              audioEl.load();
-              audioEl.play().catch(() => {});
-            }, 600);
+            if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
+            setPlaying(false);
+            let fadeStep = 0;
+            const origVol = audioEl.volume;
+            const fadeTick = setInterval(() => {
+              fadeStep++;
+              audioEl.volume = Math.max(0, origVol * (1 - fadeStep / 6));
+              if (fadeStep >= 6) {
+                clearInterval(fadeTick);
+                audioEl.pause();
+                audioEl.src = '';
+                setTimeout(() => {
+                  audioEl.volume = 0;
+                  audioEl.src = STREAM_URL;
+                  audioEl.play().then(() => {
+                    let s = 0;
+                    const fi = setInterval(() => {
+                      s++;
+                      audioEl.volume = Math.min(origVol, origVol * (s / 10));
+                      if (s >= 10) { clearInterval(fi); audioEl.volume = origVol; }
+                    }, 50);
+                  }).catch(() => { audioEl.volume = origVol; });
+                }, 900);
+              }
+            }, 50);
           }
           // Immediately poll for new metadata
           setTimeout(() => poll(), 800);
