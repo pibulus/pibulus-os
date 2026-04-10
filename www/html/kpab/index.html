@@ -2533,36 +2533,13 @@
           mutinyToggle.innerHTML = '&#x2620; SKIPPED!';
           showMutinyToast('Track walked the plank.');
           setTimeout(() => setMutinyCooldown(data.remaining || 600), 1500);
-          // Graceful fade-out → silence → reconnect with fade-in
-          if (isPlaying) {
-            if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
-            setPlaying(false);
-            let fadeStep = 0;
-            const origVol = audioEl.volume;
-            const fadeTick = setInterval(() => {
-              fadeStep++;
-              audioEl.volume = Math.max(0, origVol * (1 - fadeStep / 6));
-              if (fadeStep >= 6) {
-                clearInterval(fadeTick);
-                audioEl.pause();
-                audioEl.src = '';
-                setTimeout(() => {
-                  audioEl.volume = 0;
-                  audioEl.src = STREAM_URL;
-                  audioEl.play().then(() => {
-                    let s = 0;
-                    const fi = setInterval(() => {
-                      s++;
-                      audioEl.volume = Math.min(origVol, origVol * (s / 10));
-                      if (s >= 10) { clearInterval(fi); audioEl.volume = origVol; }
-                    }, 50);
-                  }).catch(() => { audioEl.volume = origVol; });
-                }, 900);
-              }
-            }, 50);
-          }
-          // Immediately poll for new metadata
-          setTimeout(() => poll(), 800);
+          // Backend skip is the source of truth. Do not locally pause/reconnect here
+          // or the browser can fight the live stream transition and create a double-skip feel.
+          if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
+          // Refresh metadata shortly after the skip, then again once the stream settles.
+          poll();
+          setTimeout(() => poll(), 1200);
+          setTimeout(() => poll(), 2500);
         } else {
           showMutinyToast(data.message || 'Mutiny failed. Radio resists.');
           mutinyFire.innerHTML = '&#x2620; WALK THE PLANK';
