@@ -126,6 +126,7 @@ services:
       - /media/pibulus/passport/www/html/fiction/games:/usr/share/nginx/html/fiction/games:ro
       # Other passport content
       - /media/pibulus/passport/Roms:/usr/share/nginx/roms:ro
+      - /media/pibulus/passport/Roms/pico-8/pico8:/usr/share/nginx/html/pico/carts:ro
       - /media/pibulus/MEMBOT/Roms:/usr/share/nginx/membot-roms:ro
       - /media/pibulus/passport/Palestine:/usr/share/nginx/palestine:ro
       - /media/pibulus/passport/Conspiracy:/usr/share/nginx/conspiracy:ro
