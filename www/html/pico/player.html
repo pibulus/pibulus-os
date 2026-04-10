@@ -2,11 +2,27 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>PICO-8 Player</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
+        html, body {
+            width: 100%;
+            height: 100%;
+            background: #000;
+            overflow: hidden;
+            overscroll-behavior: none;
+            touch-action: none;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        body {
+            background:
+                radial-gradient(circle at top left, rgba(0,255,234,0.12), transparent 24%),
+                radial-gradient(circle at top right, rgba(255,0,214,0.1), transparent 22%),
+                #000;
+        }
         #canvas {
             display: block;
             image-rendering: optimizeSpeed;
@@ -14,15 +30,19 @@
             image-rendering: -webkit-optimize-contrast;
             image-rendering: pixelated;
             -ms-interpolation-mode: nearest-neighbor;
+            touch-action: none;
         }
-        /* Desktop: canvas fills everything */
         .no-touch #canvas {
             width: 100% !important;
             height: 100% !important;
             object-fit: contain;
         }
-        /* Mobile: canvas on top, controls below */
-        .has-touch { display: flex; flex-direction: column; height: 100%; }
+        .has-touch {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
+        }
         .has-touch #canvas {
             width: 100% !important;
             flex: 1 1 auto;
@@ -30,88 +50,128 @@
             object-fit: contain;
         }
         #loading {
-            position: fixed; inset: 0;
-            display: flex; align-items: center; justify-content: center;
-            font-family: monospace; color: #ffe066; font-size: 16px;
-            background: #000; z-index: 10;
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: monospace;
+            color: #ffe066;
+            font-size: 16px;
+            background: #000;
+            z-index: 10;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
         }
         #loading.hidden { display: none; }
-
-        /* Touch controls — hidden on desktop */
         #touch-controls {
             display: none;
             flex: 0 0 auto;
-            height: 140px;
-            padding: 10px 16px;
+            min-height: 154px;
+            padding: 10px max(16px, env(safe-area-inset-right, 0)) max(10px, env(safe-area-inset-bottom, 0)) max(16px, env(safe-area-inset-left, 0));
             justify-content: space-between;
             align-items: center;
-            user-select: none;
-            -webkit-user-select: none;
+            gap: 12px;
             touch-action: none;
         }
         .has-touch #touch-controls { display: flex; }
-
-        /* D-pad */
         .dpad {
             position: relative;
-            width: 120px; height: 120px;
+            width: 132px;
+            height: 132px;
+            flex: 0 0 auto;
         }
         .dpad-btn {
             position: absolute;
-            width: 40px; height: 40px;
-            background: rgba(255,224,102,0.15);
-            border: 1px solid rgba(255,224,102,0.3);
-            border-radius: 6px;
-            display: flex; align-items: center; justify-content: center;
-            color: rgba(255,224,102,0.6);
+            width: 44px;
+            height: 44px;
+            background: rgba(255,230,0,0.14);
+            border: 2px solid rgba(255,230,0,0.34);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255,230,0,0.78);
             font-size: 18px;
             font-family: monospace;
             touch-action: none;
+            box-shadow: 0 0 18px rgba(255,230,0,0.1);
         }
-        .dpad-btn.active { background: rgba(255,224,102,0.4); border-color: rgba(255,224,102,0.7); }
-        .dpad-up    { top: 0;    left: 40px; }
-        .dpad-down  { bottom: 0; left: 40px; }
-        .dpad-left  { top: 40px; left: 0; }
-        .dpad-right { top: 40px; right: 0; }
-
-        /* Action buttons */
-        .action-btns { display: flex; gap: 12px; align-items: center; }
+        .dpad-btn.active {
+            background: rgba(255,230,0,0.34);
+            border-color: rgba(255,230,0,0.9);
+        }
+        .dpad-up { top: 0; left: 44px; }
+        .dpad-down { bottom: 0; left: 44px; }
+        .dpad-left { top: 44px; left: 0; }
+        .dpad-right { top: 44px; right: 0; }
+        .utility-btns {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 auto;
+        }
+        .utility-btn,
         .action-btn {
-            width: 56px; height: 56px;
-            border-radius: 50%;
-            border: 2px solid rgba(0,255,234,0.4);
-            background: rgba(0,255,234,0.1);
-            color: rgba(0,255,234,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-family: monospace;
-            font-size: 20px; font-weight: bold;
-            display: flex; align-items: center; justify-content: center;
+            font-weight: 700;
             touch-action: none;
         }
-        .action-btn.active { background: rgba(0,255,234,0.35); border-color: rgba(0,255,234,0.8); }
-
-        /* Pause button */
-        .pause-btn {
-            width: 36px; height: 28px;
-            border-radius: 4px;
-            border: 1px solid rgba(255,255,255,0.2);
-            background: rgba(255,255,255,0.05);
-            color: rgba(255,255,255,0.4);
-            font-family: monospace; font-size: 10px;
-            display: flex; align-items: center; justify-content: center;
-            touch-action: none;
+        .utility-btn {
+            min-width: 54px;
+            height: 36px;
+            padding: 0 10px;
+            border-radius: 999px;
+            border: 2px solid rgba(255,0,214,0.34);
+            background: rgba(255,0,214,0.12);
+            color: rgba(255,240,255,0.92);
+            font-size: 11px;
+            letter-spacing: 0.08em;
         }
-        .pause-btn.active { background: rgba(255,255,255,0.15); }
-
-        /* Landscape on short screens */
+        .utility-btn.active {
+            background: rgba(255,0,214,0.3);
+            border-color: rgba(255,0,214,0.9);
+        }
+        .utility-btn.hidden { display: none; }
+        .action-btns {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            flex: 0 0 auto;
+        }
+        .action-btn {
+            width: 62px;
+            height: 62px;
+            border-radius: 50%;
+            border: 2px solid rgba(0,255,234,0.45);
+            background: rgba(0,255,234,0.12);
+            color: rgba(0,255,234,0.84);
+            font-size: 22px;
+            box-shadow: 0 0 22px rgba(0,255,234,0.12);
+        }
+        .action-btn.active {
+            background: rgba(0,255,234,0.36);
+            border-color: rgba(0,255,234,0.88);
+        }
         @media (orientation: landscape) and (max-height: 500px) {
-            #touch-controls { height: 100px; padding: 4px 16px; }
-            .dpad { width: 90px; height: 90px; }
-            .dpad-btn { width: 30px; height: 30px; font-size: 14px; }
-            .dpad-up    { left: 30px; }
-            .dpad-down  { left: 30px; }
-            .dpad-right { top: 30px; }
-            .dpad-left  { top: 30px; }
-            .action-btn { width: 44px; height: 44px; font-size: 16px; }
+            #touch-controls {
+                min-height: 108px;
+                padding-top: 6px;
+                gap: 10px;
+            }
+            .dpad { width: 102px; height: 102px; }
+            .dpad-btn { width: 34px; height: 34px; font-size: 14px; }
+            .dpad-up { left: 34px; }
+            .dpad-down { left: 34px; }
+            .dpad-left { top: 34px; }
+            .dpad-right { top: 34px; }
+            .utility-btn { min-width: 48px; height: 32px; font-size: 10px; }
+            .action-btn { width: 48px; height: 48px; font-size: 17px; }
         }
     </style>
 </head>
@@ -126,7 +186,10 @@
             <div class="dpad-btn dpad-left" data-btn="left">&#9664;</div>
             <div class="dpad-btn dpad-right" data-btn="right">&#9654;</div>
         </div>
-        <div class="pause-btn" data-btn="pause">&#9612;&#9612;</div>
+        <div class="utility-btns">
+            <div class="utility-btn pause-btn" data-btn="pause">PAUSE</div>
+            <button class="utility-btn fullscreen-btn hidden" id="fullscreen-btn" type="button">FULL</button>
+        </div>
         <div class="action-btns">
             <div class="action-btn" data-btn="o">O</div>
             <div class="action-btn" data-btn="x">X</div>
@@ -137,11 +200,9 @@
     <script src="UPNG.js?v=10d2924"></script>
 
     <script>
-        // Detect touch device
         var isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
         document.body.classList.add(isTouchDevice ? 'has-touch' : 'no-touch');
 
-        // Canvas sizing override for desktop (block runtime from setting CSS size)
         if (!isTouchDevice) {
             var _canvas = document.getElementById('canvas');
             Object.defineProperty(_canvas.style, 'width', {
@@ -154,8 +215,6 @@
             });
         }
 
-        // pico8_buttons: bitmask per player
-        // bit 0=left, 1=right, 2=up, 3=down, 4=O(z), 5=X, 6=pause
         var pico8_buttons = [0, 0, 0, 0, 0, 0, 0, 0];
 
         var btnBits = {
@@ -197,12 +256,28 @@
             });
         }
 
+        function enterFullscreen() {
+            var target = document.documentElement;
+            var request = target.requestFullscreen || target.webkitRequestFullscreen || target.msRequestFullscreen;
+            if (request) request.call(target);
+        }
+
         if (isTouchDevice) {
             var controls = document.getElementById('touch-controls');
             controls.addEventListener('touchstart', handleTouch, { passive: false });
             controls.addEventListener('touchmove', handleTouch, { passive: false });
             controls.addEventListener('touchend', handleTouch, { passive: false });
             controls.addEventListener('touchcancel', handleTouch, { passive: false });
+
+            var fullscreenBtn = document.getElementById('fullscreen-btn');
+            var canFullscreen = !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen || document.documentElement.msRequestFullscreen);
+            if (canFullscreen) {
+                fullscreenBtn.classList.remove('hidden');
+                fullscreenBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    enterFullscreen();
+                }, { passive: false });
+            }
         }
 
         var Module = {
@@ -217,7 +292,6 @@
             }
         };
 
-        // Prevent scroll/zoom on canvas
         document.getElementById('canvas').addEventListener('touchstart', function(e) { e.preventDefault(); }, { passive: false });
         document.getElementById('canvas').addEventListener('touchmove', function(e) { e.preventDefault(); }, { passive: false });
     </script>
