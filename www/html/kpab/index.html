@@ -2520,6 +2520,9 @@
       if (mutinyCooldown) return;
       mutinyFire.disabled = true;
       mutinyFire.textContent = '...';
+      // Small pre-fire pause gives the interaction a bit of radio-style ceremony
+      // without reintroducing any local stream bounce logic.
+      await new Promise(resolve => setTimeout(resolve, 650));
       try {
         const res = await fetch('/mutiny/mutiny', { method: 'POST' });
         const data = await res.json();
