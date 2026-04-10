@@ -324,8 +324,14 @@ function getFiltered() {
 
 let renderedCount = 0;
 
+function encodeCartPath(file) {
+  return file.split('/').map(function(part) {
+    return encodeURIComponent(part);
+  }).join('/');
+}
+
 function cardHTML(g, globalIdx) {
-  const imgUrl = '/pico/carts/' + encodeURI(g.file);
+  const imgUrl = '/pico/carts/' + encodeCartPath(g.file);
   const title = esc(g.title);
   const genre = esc(g.genre);
   return '<div class="card" tabindex="0" role="button" data-idx="' + globalIdx + '" data-file="' + esc(g.file) + '" data-title="' + title + '" data-genre="' + genre + '">' +
@@ -385,7 +391,7 @@ function openPlayer(globalIndex) {
 
   const modal = document.getElementById('modal');
   const player = document.getElementById('modal-player');
-  const cartUrl = '/pico/carts/' + encodeURI(g.file);
+  const cartUrl = '/pico/carts/' + encodeCartPath(g.file);
 
   document.getElementById('modal-title').textContent = g.title;
   document.getElementById('modal-genre').textContent = g.genre;
