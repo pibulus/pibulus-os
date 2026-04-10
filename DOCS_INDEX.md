@@ -24,6 +24,9 @@ This is the sane starting map for both humans and AI agents.
 - [BACKUP_REDUNDANCY_PLAN.md](./BACKUP_REDUNDANCY_PLAN.md)
   Recovery posture now and the Pi vs EliteDesk split.
 
+- [ELITEDESK_MIGRATION.md](./ELITEDESK_MIGRATION.md)
+  The shortest sane path from Pi + Passport to the new EliteDesk.
+
 ## Context / Archaeology
 
 - [ELI.md](./ELI.md)
