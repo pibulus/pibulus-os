@@ -6,12 +6,13 @@ Modes:
   --generate    Scan the library, call Claude API, write themed weekly batches to
                 ~/pibulus-os/data/curator_list.json
 
-  (default)     Load the list, find the next unfinished batch, grab everything,
-                mark it done. Run this weekly via cron.
+  (default)     Load the list, find the next unfinished batch, and preview it.
+                Use --apply to queue torrents.
 
   --status      Show all batches and completion state.
   --batch N     Run a specific batch number (1-indexed) instead of the next one.
   --dry-run     Show what would be grabbed, don't actually queue anything.
+  --apply       Actually queue torrents in qBittorrent.
 
 Usage:
   python3 curator.py --generate
@@ -60,6 +61,10 @@ SWEET_SPOT_MIN   = 1  * 1024 ** 3
 SWEET_SPOT_MAX   = 3  * 1024 ** 3
 MAX_EP_SIZE      = 2  * 1024 ** 3
 MIN_EP_SIZE      = 50 * 1024 ** 2
+MIN_SEEDERS      = 3
+MAX_TORRENTS_PER_RUN = 8
+MAX_SHOW_EPISODES_PER_SHOW = 0
+TITLE_STOPWORDS = {"a", "an", "and", "of", "the", "to", "with"}
 
 SKIP_KEYWORDS = ["2160p", "4k", "uhd", "hevc-d3g", "remux", "bluray.remux", "sample", "cam", "camrip", "hdcam"]
 
@@ -209,7 +214,10 @@ def quality_score(name):
 def is_acceptable_movie(r):
     name_lower = r["name"].lower()
     size = int(r.get("size", 0))
+    seeders = int(r.get("seeders", 0))
     if any(kw in name_lower for kw in SKIP_KEYWORDS):
+        return False
+    if seeders < MIN_SEEDERS:
         return False
     if size > MAX_MOVIE_SIZE or (size < MIN_MOVIE_SIZE and size > 0):
         return False
@@ -219,7 +227,10 @@ def is_acceptable_movie(r):
 def is_acceptable_ep(r):
     name_lower = r["name"].lower()
     size = int(r.get("size", 0))
+    seeders = int(r.get("seeders", 0))
     if any(kw in name_lower for kw in SKIP_KEYWORDS):
+        return False
+    if seeders < MIN_SEEDERS:
         return False
     if size > MAX_EP_SIZE or (size < MIN_EP_SIZE and size > 0):
         return False
@@ -243,8 +254,21 @@ def parse_episode(name):
     return None
 
 
+def title_year(title):
+    m = re.search(r'\((\d{4})\)', title)
+    return m.group(1) if m else None
+
+
+def title_keywords(title):
+    clean = re.sub(r'\s*\(\d{4}\)\s*$', '', title).lower()
+    words = re.findall(r"[a-z0-9]+", clean)
+    return [w for w in words if len(w) > 2 and w not in TITLE_STOPWORDS]
+
+
 def pick_best_movie(results):
-    pool = [r for r in results if is_acceptable_movie(r)] or results
+    pool = [r for r in results if is_acceptable_movie(r)]
+    if not pool:
+        return None
 
     def key(r):
         seeders = int(r.get("seeders", 0))
@@ -257,7 +281,9 @@ def pick_best_movie(results):
 
 
 def pick_best_ep(results):
-    pool = [r for r in results if is_acceptable_ep(r)] or results
+    pool = [r for r in results if is_acceptable_ep(r)]
+    if not pool:
+        return None
 
     def key(r):
         seeders = int(r.get("seeders", 0))
@@ -266,6 +292,37 @@ def pick_best_ep(results):
         return (seeders, q, size)
 
     return sorted(pool, key=key, reverse=True)[0]
+
+
+def unsafe_reason(r, media_type):
+    size = int(r.get("size", 0))
+    seeders = int(r.get("seeders", 0))
+    name_lower = r.get("name", "").lower()
+    if seeders < MIN_SEEDERS:
+        return f"low seeders S:{seeders} < {MIN_SEEDERS}"
+    if any(kw in name_lower for kw in SKIP_KEYWORDS):
+        return "blocked quality keyword"
+    if media_type == "movie":
+        if size > MAX_MOVIE_SIZE:
+            return f"too large {size//1024//1024}MB"
+        if size < MIN_MOVIE_SIZE and size > 0:
+            return f"suspiciously small {size//1024//1024}MB"
+    else:
+        if size > MAX_EP_SIZE:
+            return f"too large {size//1024//1024}MB"
+        if size < MIN_EP_SIZE and size > 0:
+            return f"suspiciously small {size//1024//1024}MB"
+    return ""
+
+
+def movie_mismatch_reason(requested_title, result):
+    year = title_year(requested_title)
+    if year and year not in result.get("name", ""):
+        return f"year mismatch: wanted {year}"
+    words = title_keywords(requested_title)
+    if words and not all(w in result.get("name", "").lower() for w in words):
+        return "title mismatch"
+    return ""
 
 
 def qb_login():
@@ -294,7 +351,8 @@ def qb_add(opener, magnet, save_path, category):
 def resolve_movie(title):
     """Search TPB and return the best result dict, or None."""
     search_query = re.sub(r'\s*\(\d{4}\)\s*$', '', title).strip()
-    keywords = [w.lower() for w in search_query.split() if not re.match(r'^\d{4}$', w.lower())]
+    keywords = title_keywords(title)
+    year = title_year(title)
 
     results = search_tpb(search_query, cat=207)
     if not results:
@@ -302,9 +360,11 @@ def resolve_movie(title):
     if not results:
         return None
 
-    candidates = [r for r in results if all(w in r["name"].lower() for w in keywords[:3])]
-    if not candidates:
-        candidates = [r for r in results if all(w in r["name"].lower() for w in keywords[:2])]
+    candidates = results
+    if year:
+        candidates = [r for r in candidates if year in r["name"]]
+    if keywords:
+        candidates = [r for r in candidates if all(w in r["name"].lower() for w in keywords)]
     if not candidates:
         return None
 
@@ -315,10 +375,16 @@ def grab_movie(opener, title, dry_run=False, prefetched=None):
     """Queue a single movie. Uses prefetched result if available. Returns (success, name, size_mb, note)."""
     best = prefetched or resolve_movie(title)
     if not best:
-        return False, None, 0, "no results"
+        return False, None, 0, f"no safe result (S>={MIN_SEEDERS}, size/quality limits)"
 
     size_mb = int(best.get("size", 0)) // 1024 // 1024
     seeders = int(best.get("seeders", 0))
+    mismatch = movie_mismatch_reason(title, best)
+    if mismatch:
+        return False, best.get("name"), size_mb, mismatch
+    reason = unsafe_reason(best, "movie")
+    if reason:
+        return False, best.get("name"), size_mb, reason
 
     if dry_run:
         return True, best["name"], size_mb, f"S:{seeders}"
@@ -348,25 +414,48 @@ def resolve_show(show_title):
             continue
         episodes.setdefault(ep, []).append(r)
 
-    return {k: pick_best_ep(v) for k, v in episodes.items()}
+    picked = {}
+    for k, v in episodes.items():
+        best = pick_best_ep(v)
+        if best:
+            picked[k] = best
+    return picked
 
 
-def grab_show(opener, show_title, dry_run=False, prefetched=None):
+def grab_show(opener, show_title, dry_run=False, prefetched=None, max_episodes=MAX_SHOW_EPISODES_PER_SHOW):
     """Queue all episodes of a show. Uses prefetched results if available. Returns (count, episodes_queued, note)."""
+    if max_episodes <= 0:
+        return 0, [], "show auto-queue disabled; use --max-show-episodes N to opt in"
+
     if prefetched is not None:
         picks = prefetched
     else:
         picks = resolve_show(show_title)
 
     if not picks:
-        return 0, [], "no episodes matched"
+        return 0, [], f"no safe episodes (S>={MIN_SEEDERS}, size/quality limits)"
+
+    safe_picks = {}
+    skipped = 0
+    for ep, result in picks.items():
+        if unsafe_reason(result, "episode"):
+            skipped += 1
+            continue
+        safe_picks[ep] = result
+
+    if not safe_picks:
+        return 0, [], "all matched episodes failed safety checks"
+
+    limited = dict(sorted(safe_picks.items())[:max_episodes])
+    cap_note = f"; capped {len(limited)}/{len(safe_picks)} safe eps" if len(safe_picks) > len(limited) else ""
+    skip_note = f"; skipped {skipped} unsafe" if skipped else ""
 
     if dry_run:
-        return len(picks), list(picks.keys()), f"{len(picks)} eps"
+        return len(limited), list(limited.keys()), f"{len(limited)} eps{cap_note}{skip_note}"
 
     save_path = QB_SHOWS + show_title.title().replace("  ", " ") + "/"
     queued = []
-    for (s, e), r in sorted(picks.items()):
+    for (s, e), r in limited.items():
         magnet = make_magnet(r["info_hash"], r["name"])
         try:
             qb_add(opener, magnet, save_path, "shows")
@@ -375,7 +464,7 @@ def grab_show(opener, show_title, dry_run=False, prefetched=None):
         except Exception:
             pass
 
-    return len(queued), queued, f"{len(queued)}/{len(picks)} eps"
+    return len(queued), queued, f"{len(queued)}/{len(limited)} eps{cap_note}{skip_note}"
 
 
 def log(msg):
@@ -509,8 +598,12 @@ def cmd_run(args):
     print(f"\n  batch {batch['batch']}: {batch['theme']}")
     print(f"  {batch['note']}\n")
 
+    dry_run = args.dry_run or not args.apply
+    if dry_run and not args.dry_run:
+        print("  safe preview mode — pass --apply to queue torrents.\n")
+
     opener = None
-    if not args.dry_run:
+    if not dry_run:
         print("  logging into qBittorrent...")
         try:
             opener = qb_login()
@@ -524,18 +617,28 @@ def cmd_run(args):
     prefetched_shows  = batch.get("prefetched_shows", {})
 
     print("  movies:")
+    planned_count = 0
     for title in batch["movies"]:
+        if planned_count >= args.max_torrents:
+            print(f"    · {title}  (skipped: run cap {args.max_torrents} reached)")
+            continue
         pre = prefetched_movies.get(title)
-        ok, name, size_mb, note = grab_movie(opener, title, dry_run=args.dry_run, prefetched=pre)
+        ok, name, size_mb, note = grab_movie(opener, title, dry_run=dry_run, prefetched=pre)
         marker = "+" if ok else "✗"
         display = name[:60] if name else title
         cached = " (cached)" if pre else ""
         print(f"    {marker} {display}  ({size_mb}MB  {note}){cached}")
         results["movies"].append({"title": title, "ok": ok, "note": note})
+        if ok:
+            planned_count += 1
         time.sleep(0.5 if pre else 1)
 
     print("\n  shows:")
     for show in batch["shows"]:
+        remaining = max(0, args.max_torrents - planned_count)
+        if remaining <= 0:
+            print(f"    · {show}  (skipped: run cap {args.max_torrents} reached)")
+            continue
         pre_raw = prefetched_shows.get(show)
         # Reconstruct picks dict from stored format
         if pre_raw:
@@ -545,18 +648,20 @@ def cmd_run(args):
                 pre[(int(s), int(e))] = r
         else:
             pre = None
-        count, eps, note = grab_show(opener, show, dry_run=args.dry_run, prefetched=pre)
+        max_eps = min(args.max_show_episodes, remaining)
+        count, eps, note = grab_show(opener, show, dry_run=dry_run, prefetched=pre, max_episodes=max_eps)
         marker = "+" if count > 0 else "✗"
         cached = " (cached)" if pre_raw else ""
         print(f"    {marker} {show}  ({note}){cached}")
         results["shows"].append({"title": show, "ok": count > 0, "note": note})
+        planned_count += count
         time.sleep(0.5 if pre_raw else 1)
 
-    if not args.dry_run:
+    if not dry_run:
         batches[idx]["done"] = True
         batches[idx]["grabbed_at"] = datetime.now().strftime("%Y-%m-%d")
         LIST_FILE.write_text(json.dumps(data, indent=2))
-        log(f"batch {batch['batch']} '{batch['theme']}' — {len(batch['movies'])} movies, {len(batch['shows'])} shows")
+        log(f"batch {batch['batch']} '{batch['theme']}' — queued {planned_count} torrents")
         print(f"\n  batch {batch['batch']} marked done.")
     else:
         print("\n  dry run — nothing queued.")
@@ -568,7 +673,10 @@ def main():
     ap.add_argument("--prefetch", action="store_true", help="Pre-search TPB and cache magnets for all pending batches")
     ap.add_argument("--status",   action="store_true", help="Show batch completion status")
     ap.add_argument("--dry-run",  action="store_true", help="Preview what would be grabbed")
+    ap.add_argument("--apply",    action="store_true", help="Actually queue torrents in qBittorrent")
     ap.add_argument("--batch",    type=int, default=None, help="Run a specific batch number")
+    ap.add_argument("--max-torrents", type=int, default=MAX_TORRENTS_PER_RUN, help=f"Max torrents to queue/preview per run (default: {MAX_TORRENTS_PER_RUN})")
+    ap.add_argument("--max-show-episodes", type=int, default=MAX_SHOW_EPISODES_PER_SHOW, help=f"Max episodes per show (default: {MAX_SHOW_EPISODES_PER_SHOW})")
     args = ap.parse_args()
 
     if args.generate:
