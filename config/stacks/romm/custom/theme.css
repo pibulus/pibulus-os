@@ -436,22 +436,16 @@ body {
    LIBRARY GAME CARDS — cleaner, let cover art breathe
    ═══════════════════════════════════════════════════════ */
 
-/* Hide the bottom-right technical overlay on cards
-   (format/file-type badge e.g. .zip, .chd) */
-.append-inner {
-  opacity: 0 !important;
-  transition: opacity 0.2s !important;
-}
-.v-card:hover .append-inner {
-  opacity: 0.5 !important;
+/* Hide the metadata-source icon row on cards (IGDB/Moby/Screenscraper match
+   badges + region/language emoji chips — noise for casual browsing).
+   Class confirmed from RomM 4.8.1 source: v-row.text-white.px-1 inside .game-card */
+.game-card .v-row.text-white {
+  display: none !important;
 }
 
-/* .chip-type: platform/format chips shown on some card views — reduce to subtle */
-.chip-type {
-  opacity: 0.5 !important;
-  font-size: 10px !important;
-  transform: scale(0.85) !important;
-  transform-origin: bottom right !important;
+/* Restore just the favorites star chip — useful context */
+.game-card .v-chip[color="secondary"] {
+  display: inline-flex !important;
 }
 
 /* ═══════════════════════════════════════════════════════
