@@ -36,16 +36,16 @@
       position: relative; z-index: 1;
       max-width: 880px; margin: 0 auto; padding: 2rem 1.5rem 4rem;
     }
-    .back { color: var(--dim); text-decoration: none; font-size: 1rem; }
+    .back { color: var(--dim); text-decoration: none; font-size: 1rem; min-height: 44px; display: inline-flex; align-items: center; }
     .back:hover { color: var(--green); }
     header { text-align: center; padding: 2rem 0 1rem; }
     h1 {
-      font-size: clamp(2.5rem, 8vw, 4rem);
+      font-size: 3.6rem;
       color: var(--green);
       text-shadow: 0 0 10px var(--green), 0 0 30px rgba(85,204,85,0.3);
-      letter-spacing: 4px; line-height: 1;
+      letter-spacing: 0; line-height: 1;
     }
-    .subtitle { color: var(--dim); font-size: 1.1rem; margin-top: 0.5rem; letter-spacing: 2px; }
+    .subtitle { color: var(--dim); font-size: 1.1rem; margin-top: 0.5rem; letter-spacing: 0; }
     .intro {
       text-align: center; color: var(--dim-soft); font-size: 0.95rem;
       max-width: 600px; margin: 0.75rem auto 0; line-height: 1.5;
@@ -63,11 +63,12 @@
       position: fixed; inset: 0; background: rgba(0,0,0,0.92); backdrop-filter: blur(8px);
       z-index: 1000; display: none; align-items: center; justify-content: center;
       opacity: 0; transition: opacity 0.2s;
+      padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
     }
     .modal-overlay.active { display: flex; opacity: 1; }
     .modal-card {
       background: #111; border: 1px solid var(--green);
-      padding: 2rem; max-width: 500px; width: 90%;
+      padding: 2rem; max-width: 500px; width: min(90vw, 500px); max-height: calc(100dvh - 2rem); overflow: auto;
       text-align: center; position: relative;
       box-shadow: 0 0 30px rgba(85,204,85,0.15);
     }
@@ -76,34 +77,34 @@
     .modal-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
     .btn {
       background: transparent; border: 1px solid var(--dim); color: var(--dim);
-      padding: 0.5rem 1.5rem; cursor: pointer; font-family: inherit; font-size: 1rem;
-      transition: all 0.2s;
+      padding: 0.55rem 1.5rem; min-height: 44px; cursor: pointer; font-family: inherit; font-size: 1rem;
+      transition: all 0.2s; border-radius: 4px;
     }
     .btn:hover { border-color: var(--text); color: var(--text); }
     .btn-primary { border-color: var(--green); color: var(--green); }
     .btn-primary:hover { background: var(--green); color: #000; }
     .close-preview {
-      position: absolute; top: 1rem; right: 1.5rem;
-      color: #fff; font-size: 2.5rem; cursor: pointer; z-index: 1001;
-      text-shadow: 0 0 10px #000; line-height: 1;
+      position: absolute; top: max(0.75rem, env(safe-area-inset-top)); right: max(0.75rem, env(safe-area-inset-right));
+      color: #fff; font-size: 2.5rem; cursor: pointer; z-index: 1001; background: transparent; border: 0;
+      text-shadow: 0 0 10px #000; line-height: 1; width: 44px; height: 44px; display: grid; place-items: center;
     }
     .close-preview:hover { color: var(--green); }
     #preview-content {
-      width: 95vw; height: 90vh;
+      width: 95vw; height: calc(100dvh - 2rem);
       display: flex; justify-content: center; align-items: center;
       position: relative; flex-direction: column;
     }
-    #preview-content iframe { width: 95vw; height: 88vh; border: none; background: #111; }
-    #preview-content video { max-width: 95vw; max-height: 88vh; background: #000; }
+    #preview-content iframe { width: 95vw; height: min(88vh, calc(100dvh - 7rem)); border: none; background: #111; }
+    #preview-content video { max-width: 95vw; max-height: min(88vh, calc(100dvh - 7rem)); background: #000; }
     #preview-content audio { width: 80vw; max-width: 500px; }
-    #preview-content img { max-width: 95vw; max-height: 88vh; object-fit: contain; }
+    #preview-content img { max-width: 95vw; max-height: min(88vh, calc(100dvh - 7rem)); object-fit: contain; }
     .preview-title {
       color: var(--green); font-size: 1.1rem; margin-bottom: 0.75rem;
-      text-align: center; letter-spacing: 1px; max-width: 90vw;
+      text-align: center; letter-spacing: 0; max-width: 90vw;
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
     .preview-actions {
-      margin-top: 1rem; display: flex; gap: 1rem; justify-content: center;
+      margin-top: 1rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
     }
 
     .section-divider { display: flex; align-items: center; gap: 0.75rem; margin: 2.5rem 0 1rem; }
@@ -111,12 +112,12 @@
       content: ''; flex: 1; height: 1px;
       background: linear-gradient(90deg, transparent, var(--green-dim), transparent);
     }
-    .section-label { font-size: 1.1rem; color: var(--green); letter-spacing: 4px; white-space: nowrap; }
-    .count { font-size: 0.85rem; color: var(--dim); letter-spacing: 1px; margin-bottom: 0.5rem; text-align: right; }
+    .section-label { font-size: 1.1rem; color: var(--green); letter-spacing: 0; white-space: nowrap; }
+    .count { font-size: 0.85rem; color: var(--dim); letter-spacing: 0; margin-bottom: 0.5rem; text-align: right; }
     .file-list { display: flex; flex-direction: column; gap: 4px; }
     .file-item {
       display: flex; align-items: center; gap: 12px;
-      padding: 14px 16px;
+      padding: 14px 16px; min-height: 56px;
       background: var(--panel);
       border: 1px solid var(--border);
       border-left: 3px solid transparent;
@@ -144,30 +145,45 @@
     .file-type-tag {
       display: inline-block; font-size: 0.7rem; color: var(--green);
       border: 1px solid var(--green-dim); padding: 1px 6px;
-      letter-spacing: 1px; margin-left: 6px; vertical-align: middle;
+      letter-spacing: 0; margin-left: 6px; vertical-align: middle;
     }
     .file-action {
-      font-size: 0.85rem; color: var(--green); letter-spacing: 2px;
+      font-size: 0.85rem; color: var(--green); letter-spacing: 0;
       flex-shrink: 0; opacity: 0; transition: opacity 0.15s;
     }
     .file-item:hover .file-action { opacity: 1; }
     .loading { text-align: center; color: var(--dim); padding: 2rem 0; }
     .empty-section { text-align: center; color: var(--dim-soft); padding: 1rem 0; font-style: italic; }
     footer { text-align: center; margin-top: 3rem; padding-top: 1rem; border-top: 1px solid rgba(85,204,85,0.1); }
-    .footer-text { color: var(--dim-soft); font-size: 0.9rem; letter-spacing: 2px; }
+    .footer-text { color: var(--dim-soft); font-size: 0.9rem; letter-spacing: 0; }
     #root-view, #browse-view { display: none; }
     .search-bar { margin: 0.5rem 0 1rem; display: none; }
+    .empty-search { display: none; color: var(--dim); border: 1px dashed var(--border); padding: 1rem; text-align: center; margin-bottom: 1rem; }
+    .empty-search.active { display: block; }
     .search-bar input {
       width: 100%; background: var(--panel); border: 1px solid var(--border);
       border-left: 3px solid var(--green); color: var(--text); font-family: inherit;
-      font-size: 1rem; padding: 10px 14px; outline: none; letter-spacing: 1px;
+      font-size: 1rem; padding: 10px 14px; min-height: 48px; outline: none; letter-spacing: 0;
     }
     .search-bar input::placeholder { color: var(--dim-soft); }
     .search-bar input:focus { border-color: var(--green); background: rgba(85,204,85,0.03); }
     @media (max-width: 560px) {
+      .wrapper { padding: 1rem 0.75rem 3rem; }
+      header { padding: 1rem 0 0.5rem; }
+      h1 { font-size: 2.65rem; }
+      .section-divider { gap: 0.5rem; margin: 1.75rem 0 0.75rem; }
+      .section-label { font-size: 1rem; white-space: normal; text-align: center; }
+      .file-item { gap: 8px; padding: 12px; }
       .file-name { font-size: 1rem; }
       .file-action { opacity: 1; }
       .file-type-tag { display: none; }
+      .preview-title { max-width: calc(100vw - 5rem); white-space: normal; line-height: 1.15; }
+      .preview-actions { width: 100%; }
+      .preview-actions .btn { flex: 1; min-width: 9rem; text-align: center; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+      .file-item:hover { transform: none; }
     }
   </style>
 </head>
@@ -184,7 +200,7 @@
   </div>
 
   <div class="modal-overlay" id="preview-modal">
-    <span class="close-preview" onclick="closeModal('preview-modal')">&times;</span>
+    <button class="close-preview" type="button" onclick="closeModal('preview-modal')" aria-label="Close preview">&times;</button>
     <div id="preview-content"></div>
   </div>
 
@@ -201,6 +217,7 @@
     <div class="search-bar" id="search-bar">
       <input type="text" id="search-input" placeholder="[ filter files... ]" autocomplete="off" autocorrect="off" spellcheck="false">
     </div>
+    <div class="empty-search" id="empty-search">no matching files here</div>
 
     <div id="root-view">
       <div class="section-divider"><span class="section-label">[ FILMS &amp; DOCUMENTARIES ]</span></div>
@@ -211,9 +228,11 @@
       <div class="count" id="book-count"></div>
       <div class="file-list" id="books"><div class="loading">scanning library...</div></div>
 
-      <div class="section-divider"><span class="section-label">[ RECIPES &amp; OTHER ]</span></div>
-      <div class="count" id="other-count"></div>
-      <div class="file-list" id="others"><div class="loading">scanning library...</div></div>
+      <div id="other-section">
+        <div class="section-divider"><span class="section-label">[ RECIPES &amp; OTHER ]</span></div>
+        <div class="count" id="other-count"></div>
+        <div class="file-list" id="others"><div class="loading">scanning library...</div></div>
+      </div>
     </div>
 
     <div id="browse-view">
@@ -278,6 +297,12 @@
       return '';
     }
 
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, function(char) {
+        return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char];
+      });
+    }
+
     function cleanDisplayName(name) {
       return name
         .replace(/\.(mp4|mkv|avi|webm|pdf|epub|mobi|djvu|txt|srt|nfo|jpg|png|gif|mp3|flac|ogg|m4a|cbr|cbz)$/i, '')
@@ -318,9 +343,9 @@
         accumulated += (accumulated ? '/' : '') + parts[i];
         html += '<span class="sep">/</span>';
         if (i === parts.length - 1) {
-          html += '<span>' + decodeURIComponent(parts[i]) + '</span>';
+          html += '<span>' + escapeHtml(decodeURIComponent(parts[i])) + '</span>';
         } else {
-          html += '<a onclick="navigate(\'' + accumulated.replace(/'/g, "\\'") + '\')">' + decodeURIComponent(parts[i]) + '</a>';
+          html += '<a onclick="navigate(\'' + accumulated.replace(/'/g, "\\'") + '\')">' + escapeHtml(decodeURIComponent(parts[i])) + '</a>';
         }
       }
       bc.innerHTML = html;
@@ -357,10 +382,11 @@
       var e = ext(name);
       var content = document.getElementById('preview-content');
       var displayName = cleanDisplayName(name);
-      var html = '<div class="preview-title">' + displayName + '</div>';
+      var safeName = escapeHtml(displayName);
+      var html = '<div class="preview-title">' + safeName + '</div>';
 
       if (e === '.pdf') {
-        html += '<iframe src="' + url + '#toolbar=1" title="' + displayName + '"></iframe>';
+        html += '<iframe src="' + url + '#toolbar=1" title="' + safeName + '"></iframe>';
       } else if (INLINE_VIDEO.includes(e)) {
         html += '<video src="' + url + '" controls></video>';
       } else if (AUDIO_EXT.some(function(x){return e===x;})) {
@@ -369,7 +395,7 @@
           '<audio id="preview-audio" src="' + url + '" controls style="width:100%;max-width:500px;"></audio>' +
           '</div>';
       } else if (IMG_EXT.some(function(x){return e===x;})) {
-        html += '<img src="' + url + '" alt="' + displayName + '">';
+        html += '<img src="' + url + '" alt="' + safeName + '">';
       }
 
       html += '<div class="preview-actions">' +
@@ -400,7 +426,7 @@
         openPreview(url, entry.name);
       } else {
         document.getElementById('confirm-text').innerHTML =
-          'Download <b>' + cleanDisplayName(entry.name) + '</b>?<br><br>' + sizeStr(entry.size);
+          'Download <b>' + escapeHtml(cleanDisplayName(entry.name)) + '</b>?<br><br>' + sizeStr(entry.size);
         var btn = document.getElementById('confirm-btn');
         btn.onclick = function() { window.location.href = url; closeModal('confirm-modal'); };
         document.getElementById('confirm-modal').classList.add('active');
@@ -422,7 +448,7 @@
     }
 
     function makeItem(entry, isDir) {
-      var displayName = cleanDisplayName(entry.name);
+      var displayName = escapeHtml(cleanDisplayName(entry.name));
       var meta = isDir ? 'folder' : (sizeStr(entry.size || 0) + typeTag(entry.name));
 
       var a = document.createElement('a');
@@ -444,6 +470,7 @@
       var si = document.getElementById('search-input');
       if (si) { si.value = ''; }
       document.querySelectorAll('.file-item').forEach(function(item) { item.style.display = ''; });
+      updateSearchState();
       renderBreadcrumbs();
       load();
       window.scrollTo(0, 0);
@@ -487,6 +514,7 @@
             renderBrowse(entries);
           }
           document.getElementById('search-bar').style.display = 'block';
+          updateSearchState();
         })
         .catch(function() {
           if (isRoot) {
@@ -499,12 +527,28 @@
         });
     }
 
+    function updateSearchState() {
+      var empty = document.getElementById('empty-search');
+      if (!empty) return;
+      var q = document.getElementById('search-input').value.toLowerCase();
+      var items = Array.prototype.slice.call(document.querySelectorAll('.file-item'));
+      var visibleCount = 0;
+      items.forEach(function(item) {
+        var name = item.querySelector('.file-name').textContent.toLowerCase();
+        var visible = !q || name.indexOf(q) !== -1;
+        item.style.display = visible ? '' : 'none';
+        if (visible) visibleCount++;
+      });
+      empty.classList.toggle('active', !!q && visibleCount === 0);
+    }
+
     document.getElementById('search-input').addEventListener('input', function() {
       var q = this.value.toLowerCase();
       document.querySelectorAll('.file-item').forEach(function(item) {
         var name = item.querySelector('.file-name').textContent.toLowerCase();
         item.style.display = (!q || name.indexOf(q) !== -1) ? '' : 'none';
       });
+      updateSearchState();
     });
 
     function renderRoot(entries) {
@@ -539,6 +583,7 @@
       var filmsList = document.getElementById('films');
       var booksList = document.getElementById('books');
       var othersList = document.getElementById('others');
+      var otherSection = document.getElementById('other-section');
       filmsList.innerHTML = '';
       booksList.innerHTML = '';
       othersList.innerHTML = '';
@@ -547,21 +592,11 @@
       document.getElementById('book-count').textContent = books.length + ' titles';
       document.getElementById('other-count').textContent = others.length + ' items';
 
-      // Hide empty sections
-      document.getElementById('other-count').parentElement.querySelector('.section-divider') ||
-      (others.length === 0 && (document.getElementById('others').closest ?
-        document.getElementById('others').previousElementSibling.previousElementSibling.style.display = 'none' : null));
+      otherSection.style.display = others.length ? 'block' : 'none';
 
       allFilms.forEach(function(e) { filmsList.appendChild(makeItem(e, e.type === 'directory')); });
       books.forEach(function(e) { booksList.appendChild(makeItem(e, false)); });
-      if (others.length > 0) {
-        others.forEach(function(e) { othersList.appendChild(makeItem(e, false)); });
-      } else {
-        othersList.innerHTML = '';
-        // hide the section
-        othersList.previousElementSibling.style.display = 'none';
-        othersList.previousElementSibling.previousElementSibling.style.display = 'none';
-      }
+      others.forEach(function(e) { othersList.appendChild(makeItem(e, false)); });
     }
 
     function renderBrowse(entries) {
