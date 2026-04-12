@@ -6,7 +6,7 @@
 # What gets backed up:
 #   configs/     — app config dirs (rsync, incremental)
 #   docker-db/   — database dumps (AzuraCast MariaDB, Memos SQLite)
-#   volumes/     — Docker named volumes (AzuraCast station data)
+#   volumes/     — Docker/app state that is awkward to recreate
 #   system/      — crontab, fstab, cloudflared, docker service list
 #   pibulus-os/  — scripts, compose files, www (excludes secrets)
 
@@ -58,6 +58,14 @@ rsync -a --delete \
   /home/pibulus/.config/calibre-web/ "$BACKUP_DIR/configs/calibre-web/" >> "$LOG" 2>&1
 log "  calibre-web: OK"
 
+if [ -d /home/pibulus/.config/audiobookshelf ]; then
+    rsync -a --delete \
+      /home/pibulus/.config/audiobookshelf/ "$BACKUP_DIR/configs/audiobookshelf/" >> "$LOG" 2>&1
+    log "  audiobookshelf: OK"
+else
+    log "  audiobookshelf: SKIP (not found)"
+fi
+
 rsync -a --delete \
   /home/pibulus/.config/memos/ "$BACKUP_DIR/configs/memos/" >> "$LOG" 2>&1
 log "  memos: OK"
@@ -80,6 +88,14 @@ rsync -a --delete \
   /home/pibulus/filebrowser-db/ "$BACKUP_DIR/configs/filebrowser/" >> "$LOG" 2>&1
 log "  filebrowser: OK"
 
+if [ -d /home/pibulus/.config/pibulus-youtube-archive ]; then
+    rsync -a --delete \
+      /home/pibulus/.config/pibulus-youtube-archive/ "$BACKUP_DIR/configs/pibulus-youtube-archive/" >> "$LOG" 2>&1
+    log "  youtube-archive: OK"
+else
+    log "  youtube-archive: SKIP (not found)"
+fi
+
 # ── 2. AzuraCast MariaDB dump ─────────────────────────────────────────────────
 
 log "[db] Dumping AzuraCast database..."
@@ -95,8 +111,20 @@ fi
 # Keep 14 days
 ls -t "$BACKUP_DIR/docker-db/azuracast-"*.sql.gz 2>/dev/null | tail -n +15 | xargs rm -f 2>/dev/null
 
-# ── 3. AzuraCast station_data volume ─────────────────────────────────────────
-# Contains playlists, station config, media — critical for restore
+log "[db] Dumping RomM database..."
+if docker exec romm-db \
+    sh -c 'mariadb-dump --single-transaction -u"$MARIADB_USER" -p"$MARIADB_PASSWORD" "$MARIADB_DATABASE"' 2>/dev/null \
+    | gzip > "$BACKUP_DIR/docker-db/romm-$DATE.sql.gz"; then
+    SIZE=$(ls -lh "$BACKUP_DIR/docker-db/romm-$DATE.sql.gz" | awk '{print $5}')
+    log "  romm-db: OK ($SIZE)"
+else
+    log "  romm-db: FAILED"
+fi
+# Keep 14 days
+ls -t "$BACKUP_DIR/docker-db/romm-"*.sql.gz 2>/dev/null | tail -n +15 | xargs rm -f 2>/dev/null
+
+# ── 3. Docker/app state ───────────────────────────────────────────────────────
+# Contains playlists, station config, media metadata, and presentation assets.
 
 log "[volumes] Backing up AzuraCast station_data..."
 if docker run --rm \
@@ -107,6 +135,22 @@ if docker run --rm \
     log "  station_data: OK ($SIZE)"
 else
     log "  station_data: FAILED"
+fi
+
+if [ -d /media/pibulus/passport/app-data/romm/config ]; then
+    rsync -a --delete \
+      /media/pibulus/passport/app-data/romm/config/ "$BACKUP_DIR/volumes/romm-config/" >> "$LOG" 2>&1
+    log "  romm-config: OK"
+else
+    log "  romm-config: SKIP (not found)"
+fi
+
+if [ -d /media/pibulus/passport/app-data/romm/assets ]; then
+    rsync -a --delete \
+      /media/pibulus/passport/app-data/romm/assets/ "$BACKUP_DIR/volumes/romm-assets/" >> "$LOG" 2>&1
+    log "  romm-assets: OK"
+else
+    log "  romm-assets: SKIP (not found)"
 fi
 
 # ── 4. Key system files ───────────────────────────────────────────────────────

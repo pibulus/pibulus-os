@@ -1,6 +1,6 @@
 # Backup + Redundancy Plan
 
-Snapshot: 2026-04-02
+Snapshot: 2026-04-13
 
 This is the actual current state, not the aspirational one.
 
@@ -19,7 +19,11 @@ This is the actual current state, not the aspirational one.
 - Navidrome config
 - Kavita config
 - Calibre-Web config
+- Audiobookshelf config + metadata
+- YouTube archive subscription config
 - AzuraCast MariaDB dump
+- RomM MariaDB dump
+- RomM config/assets from Passport app-data
 - Memos DB copy
 - system files:
   - `fstab`
@@ -33,6 +37,7 @@ This is the actual current state, not the aspirational one.
 - `/media/pibulus/passport/Backups/pi-system`
 - `/media/pibulus/passport/Backups/pi-config-*`
 - golden images also live on Passport
+- source code also lives in GitHub via `/home/pibulus/pibulus-os`
 
 ## What this protects against
 
@@ -48,11 +53,12 @@ This is the actual current state, not the aspirational one.
 - the whole Pi setup disappearing physically
 - theft / power event / enclosure disaster
 - "both the live media and the backup copy were on the same box"
+- mistakes that delete media before the next backup/restore check catches them
 
 So the current setup is:
 
 - recovery: yes
-- redundancy: not really
+- off-box redundancy: not really
 
 ## Why this is still fine for now
 
@@ -61,6 +67,7 @@ Because it is an honest 80/20 home-server backup:
 - small configs matter more than re-copying terabytes
 - media is bulky and mostly replaceable
 - the repo + DB + service configs are the real soul
+- Passport is new enough that drive-death panic is not useful, but it is still one physical disk
 
 That is a sane approach.
 
@@ -124,12 +131,15 @@ That boundary is already improving.
 - keep the quick snapshots
 - keep secrets local-only
 - keep using Passport as the practical recovery target
+- keep `/media/pibulus/passport/pibulus-os` quarantined so agents/humans do not edit the wrong checkout
+- keep uninstalled game archives if they are useful as download objects; installed game folders are lower-value cleanup candidates
 
 ### Next
 
 1. Mirror `pi-system` backup output to the EliteDesk.
 2. Mirror the private repo there too.
 3. Test one real restore on the EliteDesk using the cleaned branch.
+4. Add Passport media cleanup as a separate job: delete only explicit installed-game candidates, not archives or ROM libraries.
 
 ### Later
 

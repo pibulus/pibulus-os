@@ -234,6 +234,7 @@ services:
       - /media/pibulus/MEMBOT/Roms:/usr/share/nginx/membot-roms:ro
       - /media/pibulus/passport/Palestine:/usr/share/nginx/palestine:ro
       - /media/pibulus/passport/Conspiracy:/usr/share/nginx/conspiracy:ro
+      - /media/pibulus/passport/Games/@Uninstalled:/usr/share/nginx/conspiracy/Uninstalled Games:ro
       - /home/pibulus/pibulus-os/config/nginx/.htpasswd:/etc/nginx/.htpasswd:ro
     restart: always
 
