@@ -3,19 +3,20 @@ name: pirate
 services:
   # --- THE PIRATE BROADCASTER ---
   jellyfin:
-    image: jellyfin/jellyfin
+    image: jellyfin/jellyfin:10.11.5
     container_name: jellyfin
     network_mode: "host"
     volumes:
       - /home/pibulus/.config/jellyfin:/config
       - /home/pibulus/.cache/jellyfin:/cache
       - /media/pibulus/passport/Music:/media/music
+      - /media/pibulus/passport/Soulseek:/media/soulseek:ro
       - /media/pibulus/passport/Movies:/media/movies
       - /media/pibulus/passport/Shows:/media/shows
       - /media/pibulus/passport/Audiobooks:/media/audiobooks
       - /media/pibulus/passport/Palestine:/media/palestine
-      - /media/pibulus/MEMBOT/Movies:/media/membot-movies
-      - /media/pibulus/MEMBOT/Shows:/media/membot-shows
+      - /media/pibulus/MEMBOT/Movies:/media/membot-movies:ro
+      - /media/pibulus/MEMBOT/Shows:/media/membot-shows:ro
     devices:
       - /dev/dri:/dev/dri
       - /dev/video19:/dev/video19
