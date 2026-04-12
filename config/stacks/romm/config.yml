@@ -48,49 +48,70 @@ emulatorjs:
       threads: enabled
       shader: none
 exclude:
-  platforms: &id001
-  - '@eaDir'
-  - __MACOSX
+  platforms:
   - $RECYCLE.BIN
-  - .Trash-*
-  - .stfolder
-  - .Spotlight-V100
-  - .fseventsd
   - .DocumentRevisions-V100
-  - System Volume Information
+  - .Spotlight-V100
+  - .Trash-*
   - ._*
+  - .fseventsd
+  - .stfolder
+  - '@eaDir'
+  - System Volume Information
+  - __MACOSX
   roms:
     multi_file:
-      names: *id001
+      names:
+      - $RECYCLE.BIN
+      - .DocumentRevisions-V100
+      - .Spotlight-V100
+      - .Trash-*
+      - ._*
+      - .fseventsd
+      - .stfolder
+      - '@eaDir'
+      - System Volume Information
+      - __MACOSX
       parts:
         extensions:
-        - db
-        - ini
-        - tmp
         - bak
-        - lock
-        - log
         - cache
         - crdownload
-        names: &id002
+        - db
+        - ini
+        - lock
+        - log
+        - tmp
+        names:
         - .DS_Store
-        - .localized
         - .Trashes
+        - ._*
+        - .localized
         - .stfolder
         - '@SynoResource'
         - gamelist.xml
-        - ._*
+        - metadata.pegasus.xml
     single_file:
       extensions:
-      - db
-      - ini
-      - tmp
       - bak
-      - lock
-      - log
       - cache
       - crdownload
-      names: *id002
+      - db
+      - ini
+      - lock
+      - log
+      - tmp
+      names:
+      - .DS_Store
+      - .Trashes
+      - ._*
+      - .localized
+      - .stfolder
+      - '@SynoResource'
+      - gamelist.xml
+      - metadata.pegasus.xml
+      - Cat's Tale of Love & Friendship, A - Jingle Cats - On a Mission of Love (Japan)
+        [T-En by Hilltop v1.0] [n].chd
 filesystem:
   firmware_folder: bios
   roms_folder: roms

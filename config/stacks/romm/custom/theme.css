@@ -1,0 +1,449 @@
+/* ═══════════════════════════════════════════════════════
+   QUICKCAT ROMM THEME — Clean, minimal, let the art breathe
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Dark palette override ── */
+.v-theme--dark {
+  --v-theme-background: 10, 12, 16 !important;
+  --v-theme-surface: 16, 19, 26 !important;
+  --v-theme-surface-variant: 22, 26, 35 !important;
+  --v-theme-primary: 160, 140, 220 !important;
+  --v-theme-on-background: 200, 210, 225 !important;
+  --v-theme-on-surface: 200, 210, 225 !important;
+}
+
+/* ── Global feel ── */
+body {
+  background: #0a0c10 !important;
+}
+
+/* ── Cleaner cards — subtle borders, no heavy shadows ── */
+.v-card {
+  border-radius: 8px !important;
+  box-shadow: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  transition: border-color 0.2s ease, transform 0.15s ease !important;
+}
+
+.v-card:hover {
+  border-color: rgba(160, 140, 220, 0.3) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* ── ROM grid cards — let cover art be the star ── */
+.v-card .v-img {
+  border-radius: 6px 6px 0 0 !important;
+}
+
+/* ── Sidebar / navigation — slim and quiet ── */
+.v-navigation-drawer {
+  background: #0d0f14 !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.v-navigation-drawer .v-list-item {
+  border-radius: 6px !important;
+  margin: 2px 8px !important;
+}
+
+.v-navigation-drawer .v-list-item:hover {
+  background: rgba(160, 140, 220, 0.08) !important;
+}
+
+.v-navigation-drawer .v-list-item--active {
+  background: rgba(160, 140, 220, 0.12) !important;
+}
+
+/* ── Top bar — blend in, don't dominate ── */
+.v-app-bar,
+.v-toolbar {
+  background: #0d0f14 !important;
+  box-shadow: none !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+/* ── Scrollbar — minimal ── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(160, 140, 220, 0.2);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(160, 140, 220, 0.4);
+}
+
+/* ── Dialogs / modals — softer ── */
+.v-overlay__scrim {
+  background: rgba(0, 0, 0, 0.7) !important;
+}
+
+.v-dialog .v-card {
+  background: #12151c !important;
+  border: 1px solid rgba(160, 140, 220, 0.15) !important;
+}
+
+/* ── Buttons — understated ── */
+.v-btn {
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  font-weight: 500 !important;
+}
+
+/* ── Chips / tags — softer ── */
+.v-chip {
+  border-radius: 6px !important;
+}
+
+/* ── Search bar — clean ── */
+.v-text-field .v-field {
+  border-radius: 8px !important;
+}
+
+/* ── Platform selector alphabet bar (right side) — tone down ── */
+.v-list--nav {
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+.v-list--nav:hover {
+  opacity: 1;
+}
+
+/* ── Placeholder cards (missing art) — nicer than default ── */
+.v-card .v-responsive__sizer + .v-responsive__content {
+  background: linear-gradient(135deg, #1a1d28 0%, #14171f 100%) !important;
+}
+
+/* ── Loading skeleton — subtle pulse ── */
+.v-skeleton-loader__bone {
+  background: rgba(160, 140, 220, 0.06) !important;
+}
+
+/* ── Footer / bottom elements — fade out ── */
+.v-footer {
+  background: transparent !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.04) !important;
+}
+
+/* ── Reorder homepage: Platforms first ── */
+/* The main content area needs flex column for ordering to work */
+.v-main .v-container,
+.v-main__wrap > div,
+.v-main > div > div {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Stats bar stays at top */
+.v-main .v-container > :first-child,
+.v-main__wrap > div > :first-child,
+.v-main > div > div > :first-child {
+  order: -10 !important;
+}
+
+/* Target the Platforms section — it has platform card grid */
+.v-main .v-container > div:has(.v-card [class*='platform']),
+.v-main__wrap > div > div:has(.v-card [class*='platform']) {
+  order: -5 !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+   EMULATORJS PLAYER — Bigger controls, friendlier UI
+   ═══════════════════════════════════════════════════════ */
+
+/* Make the control bar bigger and more visible */
+.ejs_parent .ejs_control_bar {
+  padding: 8px 12px !important;
+  background: linear-gradient(0deg, rgba(10,12,16,0.95) 0%, rgba(10,12,16,0.7) 100%) !important;
+  min-height: 52px !important;
+}
+
+/* Bigger control buttons */
+.ejs_parent .ejs_control_bar button,
+.ejs_parent .ejs_control_bar .ejs_menu_button {
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  padding: 8px !important;
+  opacity: 0.8 !important;
+  transition: opacity 0.2s, transform 0.15s !important;
+}
+
+.ejs_parent .ejs_control_bar button:hover,
+.ejs_parent .ejs_control_bar .ejs_menu_button:hover {
+  opacity: 1 !important;
+  transform: scale(1.15) !important;
+}
+
+/* Bigger icons inside buttons */
+.ejs_parent .ejs_control_bar svg {
+  width: 22px !important;
+  height: 22px !important;
+}
+
+/* Make the game area fill more space */
+.ejs_parent {
+  border-radius: 8px !important;
+}
+
+/* Volume slider wider */
+.ejs_parent .ejs_volume_parent {
+  width: 100px !important;
+}
+
+/* Menu popups - nicer styling */
+.ejs_parent .ejs_menu_bar,
+.ejs_parent .ejs_settings_menu {
+  background: rgba(16, 19, 26, 0.97) !important;
+  border: 1px solid rgba(160, 140, 220, 0.2) !important;
+  border-radius: 8px !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+/* Save/Load state buttons - highlight them */
+.ejs_parent .ejs_save_state,
+.ejs_parent .ejs_load_state {
+  background: rgba(160, 140, 220, 0.15) !important;
+  border-radius: 6px !important;
+}
+
+/* Fullscreen button - make it pop */
+.ejs_parent .ejs_fullscreen_btn {
+  background: rgba(160, 140, 220, 0.1) !important;
+  border-radius: 6px !important;
+}
+
+/* Loading screen - cleaner */
+.ejs_parent .ejs_loading_text {
+  color: rgba(160, 140, 220, 0.9) !important;
+  font-size: 18px !important;
+}
+
+/* FPS counter — small and unobtrusive */
+.ejs_parent .ejs_fps {
+  font-size: 10px !important;
+  opacity: 0.45 !important;
+  padding: 1px 4px !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+   MOBILE / TABLET — iPad & phone improvements
+   ═══════════════════════════════════════════════════════ */
+
+@media (max-width: 960px) {
+  /* Tighter card grid padding so more games fit */
+  .v-col { padding: 4px !important; }
+
+  /* Bigger tap targets in nav */
+  .v-navigation-drawer .v-list-item {
+    min-height: 48px !important;
+    padding: 0 12px !important;
+  }
+
+  /* App bar — compact on mobile */
+  .v-app-bar, .v-toolbar {
+    padding: 0 8px !important;
+  }
+
+  /* Emulator: full-width, no radius, feels native */
+  .ejs_parent {
+    border-radius: 0 !important;
+  }
+
+  /* Emulator control bar — slightly taller for fat fingers */
+  .ejs_parent .ejs_control_bar {
+    min-height: 56px !important;
+    padding: 8px 6px !important;
+  }
+
+  /* Control buttons — bigger hit area on touch */
+  .ejs_parent .ejs_control_bar button,
+  .ejs_parent .ejs_control_bar .ejs_menu_button {
+    width: 46px !important;
+    height: 46px !important;
+    min-width: 46px !important;
+  }
+
+  /* Virtual gamepad — more visible on small screens */
+  .ejs_parent .ejs_virtualGamepad,
+  .ejs_parent .ejs_gamepad {
+    opacity: 0.75 !important;
+  }
+
+  /* Dialog/modal — full width on mobile */
+  .v-dialog { margin: 8px !important; }
+  .v-dialog .v-card { border-radius: 8px !important; }
+
+  /* Search — full width */
+  .v-toolbar .v-text-field { max-width: 100% !important; }
+}
+
+@media (max-width: 600px) {
+  /* Phone: 2-col game grid */
+  .v-col-sm-4, .v-col-md-3, .v-col-lg-2 {
+    flex: 0 0 50% !important;
+    max-width: 50% !important;
+  }
+
+  /* Emulator control bar icons — slightly smaller to fit row */
+  .ejs_parent .ejs_control_bar svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+
+  /* FPS on phone — hide it, screen is too small */
+  .ejs_parent .ejs_fps {
+    display: none !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   CONTROL BAR — simplified, chonky, essentials only
+   ═══════════════════════════════════════════════════════ */
+
+/* Hide non-essential buttons */
+.ejs_parent .ejs_screenshot_btn,
+.ejs_parent .ejs_netplay_btn,
+.ejs_parent .ejs_cheat_btn,
+
+.ejs_parent .ejs_cachemanager_btn,
+.ejs_parent .ejs_record_btn {
+  display: none !important;
+}
+
+/* Bigger, chonkier control bar */
+.ejs_parent .ejs_control_bar {
+  min-height: 60px !important;
+  padding: 8px 16px !important;
+  gap: 6px !important;
+  align-items: center !important;
+}
+
+/* All remaining buttons — chonky */
+.ejs_parent .ejs_control_bar button,
+.ejs_parent .ejs_control_bar .ejs_menu_button {
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 48px !important;
+  border-radius: 8px !important;
+  background: rgba(255,255,255,0.05) !important;
+  transition: background 0.15s, transform 0.1s !important;
+}
+
+.ejs_parent .ejs_control_bar button:hover,
+.ejs_parent .ejs_control_bar .ejs_menu_button:hover {
+  background: rgba(160,140,220,0.2) !important;
+  transform: scale(1.08) !important;
+}
+
+/* Icons inside — slightly bigger */
+.ejs_parent .ejs_control_bar svg {
+  width: 24px !important;
+  height: 24px !important;
+}
+
+/* Save/load state — highlight these since they matter */
+.ejs_parent .ejs_save_state_btn,
+.ejs_parent .ejs_load_state_btn {
+  background: rgba(160,140,220,0.12) !important;
+}
+
+/* Fullscreen — highlight it too */
+.ejs_parent .ejs_fullscreen_btn {
+  background: rgba(160,140,220,0.12) !important;
+}
+
+/* Volume slider — a bit wider */
+.ejs_parent .ejs_volume_parent {
+  width: 90px !important;
+  margin: 0 4px !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+   iOS TOUCH FIX — virtual gamepad not registering touches
+   Root cause: Safari intercepts touchstart/touchmove for
+   scroll & zoom unless touch-action: none is declared.
+   ═══════════════════════════════════════════════════════ */
+
+/* Virtual gamepad buttons and D-pad */
+.ejs_virtualGamepad,
+.ejs_virtualGamepad *,
+.ejs_gamepad,
+.ejs_gamepad * {
+  touch-action: none !important;
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+}
+
+/* Game canvas — must also opt out of Safari touch handling */
+.ejs_parent canvas,
+#ejs_canvas,
+#ejs_canvas_parent {
+  touch-action: none !important;
+  -webkit-touch-callout: none !important;
+}
+
+/* Emulator container — no scroll context to bleed into */
+.ejs_parent {
+  touch-action: none !important;
+  overflow: hidden !important;
+  -webkit-overflow-scrolling: auto !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+   MOBILE IMMERSIVE MODE — go full-game, ditch the chrome
+   :has() supported in iOS 15.4+ Safari (mid-2022+)
+   ═══════════════════════════════════════════════════════ */
+
+@media (max-width: 960px) {
+  /* Hide RomM navigation/toolbar when emulator is on screen */
+  body:has(.ejs_parent) .v-app-bar,
+  body:has(.ejs_parent) .v-toolbar,
+  body:has(.ejs_parent) .v-navigation-drawer,
+  body:has(.ejs_parent) .v-footer {
+    display: none !important;
+  }
+
+  /* Remove v-main padding that leaves dead space around game */
+  body:has(.ejs_parent) .v-main {
+    padding: 0 !important;
+  }
+
+  /* Pin emulator to cover every pixel of the viewport */
+  body:has(.ejs_parent) .ejs_parent {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100dvh !important;  /* dvh handles Safari address bar */
+    z-index: 9999 !important;
+    border-radius: 0 !important;
+  }
+
+  /* Lock body scroll — stops iOS rubber-band from eating game input */
+  body:has(.ejs_parent) {
+    overflow: hidden !important;
+    position: fixed !important;
+    width: 100% !important;
+  }
+
+  /* ── iPhone safe area — gamepad above home indicator ──
+     Requires viewport-fit=cover (injected via nginx script).
+     env(safe-area-inset-bottom) ≈ 34px on notch iPhones, 0 elsewhere.
+     We shrink the emulator height by that amount so the gamepad
+     and control bar never sit behind the home indicator bar.      */
+  body:has(.ejs_parent) .ejs_parent {
+    height: calc(100dvh - env(safe-area-inset-bottom)) !important;
+    bottom: env(safe-area-inset-bottom) !important;
+  }
+
+  /* Control bar: extra bottom padding on top of its normal padding */
+  body:has(.ejs_parent) .ejs_parent .ejs_control_bar {
+    padding-bottom: calc(8px + env(safe-area-inset-bottom)) !important;
+  }
+}

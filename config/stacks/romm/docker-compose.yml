@@ -35,10 +35,8 @@ services:
       - /media/pibulus/passport/Roms/psx:/romm/library/roms/psx:ro
       - /media/pibulus/passport/Roms/megadrive/openemu:/romm/library/roms/megadrive:ro
       - /media/pibulus/passport/Roms/nds:/romm/library/roms/nds:ro
-      - /media/pibulus/passport/app-data/romm/custom/theme.css:/romm/custom/theme.css:ro
-      - /media/pibulus/passport/app-data/romm/custom/default.conf.template:/etc/nginx/templates/default.conf.template:ro
-      - /media/pibulus/passport/app-data/romm/emulatorjs/emulator.js:/var/www/html/assets/emulatorjs/data/src/emulator.js:ro
-      - /media/pibulus/passport/app-data/romm/emulatorjs/emulator.css:/var/www/html/assets/emulatorjs/data/emulator.css:ro
+      - ./custom/theme.css:/romm/custom/theme.css:ro
+      - ./custom/default.conf.template:/etc/nginx/templates/default.conf.template:ro
     ports:
       - "8095:8080"
     depends_on:
