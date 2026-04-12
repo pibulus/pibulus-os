@@ -224,11 +224,9 @@ body {
   font-size: 18px !important;
 }
 
-/* FPS counter — small and unobtrusive */
+/* FPS counter — hidden by default (enabled per-game via settings if needed) */
 .ejs_parent .ejs_fps {
-  font-size: 10px !important;
-  opacity: 0.45 !important;
-  padding: 1px 4px !important;
+  display: none !important;
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -394,6 +392,66 @@ body {
   touch-action: none !important;
   overflow: hidden !important;
   -webkit-overflow-scrolling: auto !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+   CONSOLE GAME PRE-PLAY PAGE — reduce information overload
+   The game page shows: cover, title, platform, date, region,
+   genres, description, Play/Details buttons, saves, screenshots.
+   We strip out the noise and keep just what matters.
+   ═══════════════════════════════════════════════════════ */
+
+/* Hide genres chip (truncate + metadata text colour — too verbose) */
+[style*="--console-game-metadata-text"][class*="truncate"] {
+  display: none !important;
+}
+
+/* Hide the "Details" button — opens a modal with file size, hash, etc.
+   That info is for power users; most people never need it.
+   They can still access it via the ⋯ menu if they want. */
+[style*="--console-game-details-button-bg"],
+[style*="--console-game-details-button-text"] {
+  display: none !important;
+}
+
+/* Screenshots panel (fixed at bottom of game page):
+   Collapse it to a thin strip; slide up on hover/focus.
+   On mobile hide entirely — touchscreen real estate is precious. */
+[style*="--console-game-screenshot-panel-bg"] {
+  transform: translateY(calc(100% - 36px)) !important;
+  transition: transform 0.25s ease !important;
+  cursor: pointer !important;
+}
+[style*="--console-game-screenshot-panel-bg"]:hover,
+[style*="--console-game-screenshot-panel-bg"]:focus-within {
+  transform: translateY(0) !important;
+}
+@media (max-width: 768px) {
+  [style*="--console-game-screenshot-panel-bg"] {
+    display: none !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   LIBRARY GAME CARDS — cleaner, let cover art breathe
+   ═══════════════════════════════════════════════════════ */
+
+/* Hide the bottom-right technical overlay on cards
+   (format/file-type badge e.g. .zip, .chd) */
+.append-inner {
+  opacity: 0 !important;
+  transition: opacity 0.2s !important;
+}
+.v-card:hover .append-inner {
+  opacity: 0.5 !important;
+}
+
+/* .chip-type: platform/format chips shown on some card views — reduce to subtle */
+.chip-type {
+  opacity: 0.5 !important;
+  font-size: 10px !important;
+  transform: scale(0.85) !important;
+  transform-origin: bottom right !important;
 }
 
 /* ═══════════════════════════════════════════════════════

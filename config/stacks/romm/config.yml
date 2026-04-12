@@ -9,7 +9,7 @@ emulatorjs:
     ice_servers: []
   settings:
     default:
-      fps: show
+      fps: off
       shader: crt-easymode.glslp
       vsync: disabled
       threads: enabled          # SharedArrayBuffer threading; COOP/COEP headers are set

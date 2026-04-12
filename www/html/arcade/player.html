@@ -129,6 +129,19 @@
       { type: "button", text: "Select", id: "select", location: "center", left: -30, fontSize: 15, input_value: 2 }
     ];
 
+    // NDS: ABXY face buttons + L/R + Start/Select (touchscreen = tap bottom-screen area directly)
+    const ndsPad = [
+      { type: "zone", location: "left", left: "50%", top: "50%", joystickInput: false, inputValues: [4, 5, 6, 7] },
+      { type: "button", text: "A", id: "a", location: "right", left: 60, top: 40, bold: true, input_value: 8 },
+      { type: "button", text: "B", id: "b", location: "right", left: 20, top: 70, bold: true, input_value: 0 },
+      { type: "button", text: "X", id: "x", location: "right", left: 20, top: 10, bold: true, input_value: 9 },
+      { type: "button", text: "Y", id: "y", location: "right", left: -20, top: 40, bold: true, input_value: 1 },
+      { type: "button", text: "L", id: "l", location: "left", left: 0, top: -40, bold: true, input_value: 10 },
+      { type: "button", text: "R", id: "r", location: "right", left: 110, top: 0, bold: true, input_value: 11 },
+      { type: "button", text: "Start", id: "start", location: "center", left: 30, fontSize: 15, input_value: 3 },
+      { type: "button", text: "Select", id: "select", location: "center", left: -30, fontSize: 15, input_value: 2 }
+    ];
+
     const padMap = {
       'megadrive': megadrivePad,
       'genesis': megadrivePad,
@@ -136,6 +149,9 @@
       'n64': n64Pad,
       'psx': psxPad,
       'gba': gbaPad,
+      'gb': gbaPad,
+      'gbc': gbaPad,
+      'nds': ndsPad,
     };
 
     const isTouchMobile = window.matchMedia('(max-width: 768px) and (pointer: coarse)').matches;
@@ -167,6 +183,32 @@
     EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
     EJS_color = '#00ffea';
     EJS_startOnLoaded = true;
+    EJS_fps = false;
+
+    // Multi-threading: requires COOP/COEP headers (set in nginx for this page)
+    if (window.SharedArrayBuffer) {
+      EJS_threads = true;
+    }
+
+    // Per-core RetroArch options for better performance
+    EJS_defaultOptions = {};
+    if (system === 'psx') {
+      EJS_defaultOptions = {
+        'pcsx_rearmed_frameskip_type': 'auto',
+        'pcsx_rearmed_frameskip': '1',
+        'pcsx_rearmed_drc': 'enabled',
+      };
+    } else if (system === 'n64') {
+      EJS_defaultOptions = {
+        'mupen64plus-cpucore': 'dynamic_recompiler',
+        'mupen64plus-43screensize': '640x480',
+      };
+    } else if (system === 'nds') {
+      EJS_defaultOptions = {
+        'melonds_screen_layout': 'top/bottom',
+        'melonds_touch_mode': 'touch',
+      };
+    }
 
     // Apply system-specific virtual gamepad if available
     if (padMap[system]) {
