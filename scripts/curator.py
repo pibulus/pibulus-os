@@ -142,20 +142,22 @@ CURRENT SHOWS ({len(shows)} total):
 
 The vibe: indie music, cult films, documentary, comedy classics, DIY/underground culture. The person running this knows Mac DeMarco, is friends with Amyl and the Sniffers, loves King Gizzard and the Lizard Wizard, is into Joe Pera, has connections to the Pervirella underground film world (Josh Collins), and their band Mesa Cosa plays noisy, fun music.
 
-Your job: generate 12 themed weekly batches of media to acquire, filling gaps in the library and adding things that fit the vibe. Each batch has:
+Your job: generate 12 themed weekly batches of media to acquire, filling gaps in the library and adding things that fit the vibe. Each batch should be cool but obtainable, not a flex. Think "good Saturday night server surprise", not "archive archaeology". Each batch has:
 - A theme name (short, evocative — e.g. "australian chaos", "deadpan comedy", "documentary weirdos")
 - A theme note (1-2 sentences on the vibe — casual, no jargon)
-- 5 movies (exact titles with year — things likely to be on The Pirate Bay)
-- 2 shows (exact show titles — full series, cult or indie preferred)
+- 5 movies (exact titles with year — things likely to have healthy 720p/1080p torrents)
+- 0 or 1 show (exact show title only if it is very likely to have healthy episode torrents)
 
 Rules:
 - Skip anything already in the library (listed below)
-- Prefer things with some cult or underground pedigree — not just mainstream blockbusters
-- Comedy, documentary, horror, indie drama, cult classics all welcome
+- Prefer things with some cult or underground pedigree, but stay reachable and seeded
+- Comedy, documentary, horror, indie drama, cult classics, and good mainstream-adjacent picks are all welcome
 - Avoid 4K-only releases — aim for 1080p territory
+- Avoid ultra-obscure restorations, festival-only films, one-off shorts, and titles that mostly exist as dead torrents
+- Avoid ambiguous one-word titles unless the title is extremely famous and easy to distinguish
 - Mix eras, don't cluster everything in one decade
-- Shows: prefer series that are complete or at least several seasons in
-- Be realistic — choose things actually available as torrents, not super obscure
+- Shows: prefer none; if included, choose short, widely available series only
+- Be realistic — choose things people actually seed, not just things that would impress a cool clerk
 
 {library_block}
 
@@ -317,11 +319,19 @@ def unsafe_reason(r, media_type):
 
 def movie_mismatch_reason(requested_title, result):
     year = title_year(requested_title)
-    if year and year not in result.get("name", ""):
+    result_name = result.get("name", "")
+    result_lower = result_name.lower()
+    requested_clean = re.sub(r'\s*\(\d{4}\)\s*$', '', requested_title).lower()
+    requested_words = title_keywords(requested_title)
+    if year and year not in result_name:
         return f"year mismatch: wanted {year}"
-    words = title_keywords(requested_title)
-    if words and not all(w in result.get("name", "").lower() for w in words):
+    if requested_words and not all(w in result_lower for w in requested_words):
         return "title mismatch"
+    if len(requested_words) == 1 and year:
+        before_year = result_lower.split(year, 1)[0]
+        before_year = re.sub(r"[^a-z0-9]+", " ", before_year).strip()
+        if before_year != requested_clean:
+            return f"title mismatch: wanted {requested_clean}"
     return ""
 
 
@@ -513,6 +523,69 @@ def cmd_status(args):
         print(f"  [{b['batch']:>2}] {'✓' if done else '·'} {b['theme']:<30}  {status}")
 
 
+def cmd_vet_list(args):
+    """Rewrite pending batches to keep only items that pass the current safety gates."""
+    if not LIST_FILE.exists():
+        print("  no curator list found — run with --generate first")
+        sys.exit(1)
+
+    data = json.load(open(LIST_FILE))
+    changed = False
+
+    for batch in data["batches"]:
+        if batch.get("done", False):
+            continue
+
+        print(f"\n  batch {batch['batch']}: {batch['theme']}")
+        old_movies = list(batch.get("movies", []))
+        old_shows = list(batch.get("shows", []))
+        prefetched_movies = batch.get("prefetched_movies", {})
+        kept_movies = []
+        kept_prefetched = {}
+
+        for title in old_movies:
+            pre = prefetched_movies.get(title)
+            ok, name, size_mb, note = grab_movie(None, title, dry_run=True, prefetched=pre)
+            if ok:
+                kept_movies.append(title)
+                if pre:
+                    kept_prefetched[title] = pre
+                else:
+                    result = resolve_movie(title)
+                    if result:
+                        kept_prefetched[title] = {
+                            "info_hash": result["info_hash"],
+                            "name": result["name"],
+                            "size": result.get("size", 0),
+                            "seeders": result.get("seeders", 0),
+                        }
+                print(f"    + keep {title} -> {name[:60]} ({size_mb}MB {note})")
+            else:
+                changed = True
+                print(f"    - drop {title}: {note}")
+            time.sleep(0.5 if pre else 1)
+
+        if old_movies != kept_movies:
+            batch["movies"] = kept_movies
+            batch["prefetched_movies"] = kept_prefetched
+            changed = True
+
+        if old_shows and not args.keep_shows:
+            print(f"    - clear shows: {', '.join(old_shows)}")
+            batch["shows"] = []
+            batch["prefetched_shows"] = {}
+            changed = True
+
+    if changed:
+        if args.dry_run:
+            print("\n  dry run — curator list not changed.")
+        else:
+            LIST_FILE.write_text(json.dumps(data, indent=2))
+            print(f"\n  updated {LIST_FILE}")
+    else:
+        print("\n  curator list already passes current safety gates.")
+
+
 def cmd_prefetch(args):
     """Search TPB for all pending batches and store magnet links in the JSON."""
     if not LIST_FILE.exists():
@@ -671,18 +744,22 @@ def main():
     ap = argparse.ArgumentParser(description="Weekly themed media curator")
     ap.add_argument("--generate", action="store_true", help="Generate a fresh batch list via Claude")
     ap.add_argument("--prefetch", action="store_true", help="Pre-search TPB and cache magnets for all pending batches")
+    ap.add_argument("--vet-list", action="store_true", help="Rewrite pending batches to keep only currently safe movie picks")
     ap.add_argument("--status",   action="store_true", help="Show batch completion status")
     ap.add_argument("--dry-run",  action="store_true", help="Preview what would be grabbed")
     ap.add_argument("--apply",    action="store_true", help="Actually queue torrents in qBittorrent")
     ap.add_argument("--batch",    type=int, default=None, help="Run a specific batch number")
     ap.add_argument("--max-torrents", type=int, default=MAX_TORRENTS_PER_RUN, help=f"Max torrents to queue/preview per run (default: {MAX_TORRENTS_PER_RUN})")
     ap.add_argument("--max-show-episodes", type=int, default=MAX_SHOW_EPISODES_PER_SHOW, help=f"Max episodes per show (default: {MAX_SHOW_EPISODES_PER_SHOW})")
+    ap.add_argument("--keep-shows", action="store_true", help="When vetting, keep shows in the list instead of clearing them")
     args = ap.parse_args()
 
     if args.generate:
         cmd_generate(args)
     elif args.prefetch:
         cmd_prefetch(args)
+    elif args.vet_list:
+        cmd_vet_list(args)
     elif args.status:
         cmd_status(args)
     else:

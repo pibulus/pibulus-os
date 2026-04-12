@@ -96,6 +96,11 @@ else
     log "  youtube-archive: SKIP (not found)"
 fi
 
+mkdir -p "$BACKUP_DIR/configs/curator"
+cp /home/pibulus/pibulus-os/data/curator_list.json "$BACKUP_DIR/configs/curator/curator_list.json" 2>> "$LOG" || true
+cp /home/pibulus/pibulus-os/data/curator_log.txt "$BACKUP_DIR/configs/curator/curator_log.txt" 2>> "$LOG" || true
+log "  curator-state: OK"
+
 # ── 2. AzuraCast MariaDB dump ─────────────────────────────────────────────────
 
 log "[db] Dumping AzuraCast database..."
