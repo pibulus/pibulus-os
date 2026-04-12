@@ -69,7 +69,9 @@ get_status() {
 }
 
 pause_screen() {
-  gum input --placeholder 'Press Enter to continue...' >/dev/null
+  echo
+  gum style --foreground 240 "  ─── [ enter ] ───"
+  read -rs
 }
 
 get_storage_bar() {
@@ -117,7 +119,7 @@ render_hud() {
 }
 
 tactile_choose() {
-  gum choose "$@"
+  gum choose --cursor "› " "$@"
 }
 
 deck_note_file() {
@@ -748,7 +750,7 @@ network_menu() {
       'network' \
       'Switch between home and away modes, or inspect the current state before blaming the tunnel.'
     local action
-    action=$(tactile_choose \
+    action=$(tactile_choose --height 12 \
       '📡 Network Status' \
       '🚀 Speed Test' \
       '📊 Bandwidth Usage' \
@@ -792,11 +794,11 @@ sigint_menu() {
       'sigint' \
       'Fast state of the machine: health, tunnel, service status, public edge, and recent noise.'
     local action
-    action=$(tactile_choose \
-      '📡 Live Pulse' \
+    action=$(tactile_choose --height 15 \
+      '💓 Live Pulse' \
+      '⚡ Live Monitor' \
       '🖥️ System Info' \
       '📊 System Snapshot' \
-      '📈 Live Monitor' \
       '💽 Disk Overview' \
       '🚨 Critical Services' \
       '🌐 Tunnel + Edge' \
@@ -807,10 +809,10 @@ sigint_menu() {
       '🧯 Recent Service Noise' \
       'Back')
     case "$action" in
-      '📡 Live Pulse') show_live_pulse ;;
+      '💓 Live Pulse') show_live_pulse ;;
+      '⚡ Live Monitor') open_system_monitor ;;
       '🖥️ System Info') fastfetch; pause_screen ;;
       '📊 System Snapshot') show_system_snapshot; pause_screen ;;
-      '📈 Live Monitor') open_system_monitor ;;
       '💽 Disk Overview') show_disk_overview; pause_screen ;;
       '🚨 Critical Services') show_critical_services; pause_screen ;;
       '🌐 Tunnel + Edge') show_tunnel_snapshot; pause_screen ;;
@@ -831,9 +833,14 @@ slskd_menu() {
       'soulseek' \
       'Peer-to-peer intake control: wake it, inspect it, or jump into the local UI without leaving the deck.'
     local action
-    action=$(tactile_choose '🎵 Wake' '😴 Sleep' '🔎 Status' '🌐 Open UI' 'Back')
+    action=$(tactile_choose \
+      '▶️  Wake' \
+      '😴 Sleep' \
+      '🔎 Status' \
+      '🌐 Open UI' \
+      'Back')
     case "$action" in
-      '🎵 Wake') docker start slskd; pause_screen ;;
+      '▶️  Wake') docker start slskd; pause_screen ;;
       '😴 Sleep') docker stop slskd; pause_screen ;;
       '🔎 Status') docker ps --filter 'name=slskd' --format 'table {{.Names}}\t{{.Status}}'; pause_screen ;;
       '🌐 Open UI') open_local_browserish 'http://localhost:5030' ;;
@@ -1002,45 +1009,45 @@ media_menu() {
     render_hud
     show_section_intro \
       'media' \
-      'Search, browse, and inspect the archive. Less clicking around, more seeing what is actually on disk.'
+      'Grab new content or dig through the archive. Acquire first, browse second.'
     local action
-    action=$(tactile_choose \
-      '⬇️ Download Watch' \
+    action=$(tactile_choose --height 16 \
       '🎬 Grab a Movie' \
-      '📺 Grab a Show' \
+      '🎞️ Grab a Show' \
       '🧲 Drop a Magnet / URL' \
-      '📺 YouTube Archive' \
-      '🧠 Scavenger Search' \
+      '▶️  YouTube Archive' \
       '🏴‍☠️ Pirate Grab' \
+      '🧠 Scavenger Search' \
+      '⬇️ Active Downloads' \
       '🔎 Find My Media' \
-      'ℹ️ Media Info' \
       '📂 Browse Passport Drive' \
-      '📦 Biggest Media Dirs' \
       '🌲 Media Tree' \
       '🖼️ Cover Art Preview' \
+      '📏 Biggest Media Dirs' \
       '🕰️ Recent File Activity' \
+      'ℹ️ Media Info' \
       'Back')
     case "$action" in
-      '⬇️ Download Watch') bash ~/pibulus-os/scripts/dlwatch.sh ;;
       '🎬 Grab a Movie')
         title=$(gum input --placeholder "movie title (e.g. chopper 2000)")
         [ -n "$title" ] && python3 ~/pibulus-os/scripts/grab_movie.py "$title" --pick
         pause_screen ;;
-      '📺 Grab a Show')
+      '🎞️ Grab a Show')
         title=$(gum input --placeholder "show name (e.g. joe pera talks with you)")
         [ -n "$title" ] && python3 ~/pibulus-os/scripts/grab_show.py "$title"
         pause_screen ;;
       '🧲 Drop a Magnet / URL') drop_magnet_or_url ;;
-      '📺 YouTube Archive') yt_download ;;
-      '🧠 Scavenger Search') manage_scavenger ;;
+      '▶️  YouTube Archive') yt_download ;;
       '🏴‍☠️ Pirate Grab') manage_pirate_grab ;;
+      '🧠 Scavenger Search') manage_scavenger ;;
+      '⬇️ Active Downloads') bash ~/pibulus-os/scripts/dlwatch.sh ;;
       '🔎 Find My Media') media_finder_menu ;;
-      'ℹ️ Media Info') mediainfo_picker ;;
       '📂 Browse Passport Drive') nnn /media/pibulus/passport ;;
-      '📦 Biggest Media Dirs') show_top_media_dirs; pause_screen ;;
       '🌲 Media Tree') show_media_tree; pause_screen ;;
       '🖼️ Cover Art Preview') preview_cover_art; pause_screen ;;
+      '📏 Biggest Media Dirs') show_top_media_dirs; pause_screen ;;
       '🕰️ Recent File Activity') show_recent_media; pause_screen ;;
+      'ℹ️ Media Info') mediainfo_picker ;;
       'Back'|'') return ;;
     esac
   done
@@ -1055,14 +1062,14 @@ drives_menu() {
     local action
     action=$(tactile_choose \
       '💾 Drive Status' \
-      '🔼 Mount MEMBOT' \
       '🔌 USB / Kernel Noise' \
+      '🔼 Mount MEMBOT' \
       '⏏️ Unmount MEMBOT' \
       'Back')
     case "$action" in
       '💾 Drive Status') show_drive_status; pause_screen ;;
-      '🔼 Mount MEMBOT') safe_mount_membot; pause_screen ;;
       '🔌 USB / Kernel Noise') show_usb_kernel_noise; pause_screen ;;
+      '🔼 Mount MEMBOT') safe_mount_membot; pause_screen ;;
       '⏏️ Unmount MEMBOT') safe_unmount_membot; pause_screen ;;
       'Back'|'') return ;;
     esac
@@ -1210,7 +1217,7 @@ app_submenu() {
     local state; state=$(systemctl is-active "$name" 2>/dev/null)
     local color=46; [ "$state" != "active" ] && color=196
     gum style --foreground $color --bold "  $name  ${port:+:$port}  [$state]"
-    echo ""
+    echo
     local action
     action=$(tactile_choose \
       '📋 Status' \
@@ -1248,14 +1255,14 @@ apps_menu() {
     show_section_intro \
       'apps' \
       'Your live apps. All systemd, all on this box, all behind Cloudflare.'
-    echo ""
+    echo
     # Discover apps dynamically from ~/apps/ + systemd
     local discovered=()
     while IFS= read -r app; do
       discovered+=("$app")
       _app_status_line "$app"
     done < <(_discover_apps)
-    echo ""
+    echo
     if [ ${#discovered[@]} -eq 0 ]; then
       gum style --foreground 226 "  No apps found in ~/apps/ with a systemd service."
       pause_screen; return
@@ -1395,20 +1402,22 @@ desk_menu() {
       'desk' \
       'Capture, read, browse feeds, and get a shell. The quiet end of the deck.'
     local action
-    action=$(tactile_choose \
+    action=$(tactile_choose --height 16 \
       '✍️ Write Field Note' \
       '📜 Recent Notes' \
       '🔍 Search Notes' \
       '✨ Pretty Viewer' \
       '📖 Field Manual' \
       '📰 Feed Reader' \
+      '✂️ Clip It' \
       '📚 tldr' \
       '👁️ Watch & Run' \
-      '✂️ Clip It' \
       '✏️ Quick Edit' \
       '🧵 tmux' \
       '💬 Chat' \
-      '🌿 Bonsai' \
+      '📋 Cheatsheets' \
+      '🎨 Eye Candy' \
+      '🔮 Oracle' \
       'Back')
     case "$action" in
       '✍️ Write Field Note') write_field_note; pause_screen ;;
@@ -1417,13 +1426,15 @@ desk_menu() {
       '✨ Pretty Viewer') open_notes_in_glow ;;
       '📖 Field Manual') open_field_manual_pretty ;;
       '📰 Feed Reader') open_feed_reader ;;
+      '✂️ Clip It') clip_it ;;
       '📚 tldr') tldr_lookup ;;
       '👁️ Watch & Run') entr_watch ;;
-      '✂️ Clip It') clip_it ;;
       '✏️ Quick Edit') quick_edit ;;
       '🧵 tmux') open_tmux_shell ;;
       '💬 Chat') open_chat_client ;;
-      '🌿 Bonsai') cbonsai -l ;;
+      '📋 Cheatsheets') open_cheatsheets ;;
+      '🎨 Eye Candy') eye_candy ;;
+      '🔮 Oracle') show_oracle ;;
       'Back'|'') return ;;
     esac
   done
@@ -1456,37 +1467,516 @@ ai_menu() {
   done
 }
 
+# ── RECON ─────────────────────────────────────────────────────────────────────
+
+recon_menu() {
+  while true; do
+    render_hud
+    show_section_intro \
+      'recon' \
+      'Passive before active. Your own network first. Know the territory before you move.'
+    local action
+    action=$(tactile_choose --height 12 \
+      '🗺️ LAN Map' \
+      '👁️ Passive Scan' \
+      '🌊 Live Traffic' \
+      '🔍 Web Fingerprint' \
+      '🌐 OSINT Harvest' \
+      '🧅 Tor Status' \
+      '🔐 Box Audit' \
+      '📡 Wireless Watch' \
+      '📖 Cheatsheets' \
+      'Back')
+    case "$action" in
+      '🗺️ LAN Map')
+        if tool_exists nmap; then
+          local subnet
+          subnet=$(ip -4 addr show eth0 2>/dev/null | awk '/inet / {print $2}' | head -1)
+          subnet="${subnet:-192.168.1.0/24}"
+          gum style --foreground 212 "  scanning $subnet ..."
+          echo
+          nmap -sn "$subnet"
+          pause_screen
+        else
+          gum style --foreground 196 "  nmap not installed — sudo apt install nmap"
+          pause_screen
+        fi ;;
+      '👁️ Passive Scan')
+        if tool_exists bettercap; then
+          gum style --foreground 212 "  running bettercap ARP probe — Ctrl-C to stop"
+          echo
+          sudo bettercap -eval "net.probe on; sleep 5; net.show; quit"
+          pause_screen
+        else
+          gum style --foreground 196 "  bettercap not installed — sudo apt install bettercap"
+          pause_screen
+        fi ;;
+      '🌊 Live Traffic')
+        if tool_exists tshark; then
+          local iface
+          iface=$(ip -4 route show default 2>/dev/null | awk '/default/ {print $5}' | head -1)
+          iface="${iface:-eth0}"
+          gum style --foreground 212 "  capturing on $iface — Ctrl-C to stop"
+          echo
+          sudo tshark -i "$iface" 2>/dev/null
+        else
+          gum style --foreground 196 "  tshark not installed — sudo apt install tshark"
+          pause_screen
+        fi ;;
+      '🔍 Web Fingerprint')
+        if tool_exists whatweb; then
+          local target
+          target=$(gum input --placeholder "URL to fingerprint (e.g. https://example.com)")
+          [ -z "$target" ] && continue
+          echo
+          whatweb --color=always "$target"
+          pause_screen
+        else
+          gum style --foreground 196 "  whatweb not installed — sudo apt install whatweb"
+          pause_screen
+        fi ;;
+      '🌐 OSINT Harvest')
+        if tool_exists theHarvester; then
+          local domain
+          domain=$(gum input --placeholder "domain to harvest (e.g. example.com)")
+          [ -z "$domain" ] && continue
+          echo
+          theHarvester -d "$domain" -b all 2>/dev/null | head -80
+          pause_screen
+        else
+          gum style --foreground 196 "  theHarvester not installed — sudo apt install theharvester"
+          pause_screen
+        fi ;;
+      '🧅 Tor Status')
+        echo
+        gum style --foreground 212 "  tor service:"
+        systemctl is-active tor 2>/dev/null || echo "  not running"
+        echo
+        if tool_exists curl; then
+          gum style --foreground 212 "  exit node IP:"
+          torify curl -s https://check.torproject.org/api/ip 2>/dev/null && echo || echo "  torify unavailable"
+          echo
+          gum style --foreground 212 "  direct IP:"
+          curl -fsS https://1.1.1.1/cdn-cgi/trace 2>/dev/null | grep '^ip=' | cut -d= -f2 || echo "  unreachable"
+        fi
+        pause_screen ;;
+      '🔐 Box Audit')
+        if tool_exists lynis; then
+          gum confirm "Run full lynis audit? Takes ~2 minutes." && {
+            echo
+            sudo lynis audit system
+            pause_screen
+          }
+        else
+          gum style --foreground 196 "  lynis not installed — sudo apt install lynis"
+          pause_screen
+        fi ;;
+      '📡 Wireless Watch')
+        if tool_exists kismet; then
+          local wiface
+          wiface=$(gum input --placeholder "monitor-mode interface (e.g. wlan1)")
+          [ -z "$wiface" ] && continue
+          sudo kismet -c "$wiface"
+        else
+          gum style --foreground 196 "  kismet not installed — sudo apt install kismet"
+          gum style --foreground 240 "  also needs a monitor-mode USB WiFi adapter (Alfa AWUS036ACM)"
+          pause_screen
+        fi ;;
+      '📖 Cheatsheets') open_cheatsheets nmap tshark bettercap netcat tor-proxychains lynis scapy ;;
+      'Back'|'') return ;;
+    esac
+  done
+}
+
+# ── SDR ───────────────────────────────────────────────────────────────────────
+
+sdr_menu() {
+  while true; do
+    render_hud
+    show_section_intro \
+      'sdr' \
+      'The air is full of signals. Needs an RTL-SDR v4 dongle (~£35). HackRF for TX.'
+    local action
+    action=$(tactile_choose \
+      '✈️ Track Planes (ADS-B)' \
+      '📻 FM Radio' \
+      '🌡️ Local Sensors (433MHz)' \
+      '📟 Pager Decode (POCSAG)' \
+      '🌊 Raw Spectrum (gqrx)' \
+      '📡 APRS Packet Radio' \
+      '📖 Cheatsheets' \
+      'Back')
+    case "$action" in
+      '✈️ Track Planes (ADS-B)')
+        if tool_exists dump1090; then
+          gum style --foreground 212 "  starting dump1090 — open localhost:8080 in a browser"
+          echo
+          dump1090 --interactive --net
+        else
+          gum style --foreground 196 "  not installed — sudo apt install dump1090-mutability"
+          pause_screen
+        fi ;;
+      '📻 FM Radio')
+        if tool_exists rtl_fm && tool_exists sox; then
+          local freq
+          freq=$(gum input --placeholder "FM frequency in MHz (e.g. 95.8)")
+          [ -z "$freq" ] && continue
+          gum style --foreground 212 "  tuning ${freq}MHz — Ctrl-C to stop"
+          echo
+          rtl_fm -f "${freq}M" -M wbfm -s 200000 -r 48000 - \
+            | sox -t raw -r 48k -e signed -b 16 -c 1 - -d
+        else
+          gum style --foreground 196 "  needs rtl-sdr + sox — sudo apt install rtl-sdr sox"
+          pause_screen
+        fi ;;
+      '🌡️ Local Sensors (433MHz)')
+        if tool_exists rtl_433; then
+          gum style --foreground 212 "  listening for 433MHz devices (weather stations, car fobs, sensors) — Ctrl-C to stop"
+          echo
+          rtl_433 -G
+        else
+          gum style --foreground 196 "  not installed — sudo apt install rtl-433"
+          pause_screen
+        fi ;;
+      '📟 Pager Decode (POCSAG)')
+        if tool_exists rtl_fm && tool_exists multimon-ng; then
+          gum style --foreground 212 "  decoding POCSAG pagers — Ctrl-C to stop"
+          echo
+          rtl_fm -f 152.25M -s 22050 - \
+            | multimon-ng -t raw -a POCSAG512 -a POCSAG1200 -a POCSAG2400 -
+        else
+          gum style --foreground 196 "  needs rtl-sdr + multimon-ng — sudo apt install rtl-sdr multimon-ng"
+          pause_screen
+        fi ;;
+      '🌊 Raw Spectrum (gqrx)')
+        if tool_exists gqrx; then
+          gqrx &
+        else
+          gum style --foreground 196 "  not installed — sudo apt install gqrx"
+          gum style --foreground 240 "  (heavy GUI app — needs a display)"
+          pause_screen
+        fi ;;
+      '📡 APRS Packet Radio')
+        if tool_exists direwolf; then
+          gum style --foreground 212 "  starting direwolf APRS decoder — Ctrl-C to stop"
+          echo
+          direwolf -r 24000
+        else
+          gum style --foreground 196 "  not installed — sudo apt install direwolf"
+          pause_screen
+        fi ;;
+      '📖 Cheatsheets') open_cheatsheets rtl-sdr ;;
+      'Back'|'') return ;;
+    esac
+  done
+}
+
+# ── UNDERGROUND ───────────────────────────────────────────────────────────────
+
+underground_menu() {
+  while true; do
+    render_hud
+    show_section_intro \
+      'underground' \
+      'The pre-web internet never died. Tilde communities, Gemini, Usenet, IRC — all still running.'
+    local action
+    action=$(tactile_choose --height 12 \
+      '🕹️  Textworlds (BBS / MUD / Wonders)' \
+      '🌌 Gemini Browser' \
+      '🐚 SDF Public UNIX' \
+      '🏘️ Tilde.town' \
+      '📰 Usenet' \
+      '💬 IRC' \
+      '🎨 ANSI Art' \
+      '🔮 Oracle' \
+      '📖 Cheatsheets' \
+      'Back')
+    case "$action" in
+      '🕹️  Textworlds (BBS / MUD / Wonders)')
+        if [ -x "$HOME/pibulus-os/public-deck.sh" ]; then
+          bash "$HOME/pibulus-os/public-deck.sh"
+        else
+          gum style --foreground 196 "  public-deck.sh not found"
+          pause_screen
+        fi ;;
+      '🌌 Gemini Browser')
+        if tool_exists amfora; then
+          amfora
+        elif tool_exists bombadillo; then
+          bombadillo
+        else
+          gum style --foreground 196 "  no Gemini browser found"
+          gum style --foreground 240 "  snap install amfora  OR  go install tildegit.org/sloum/bombadillo@latest"
+          echo
+          echo "  good starting capsules:"
+          echo "  gemini://gemini.circumlunar.space"
+          echo "  gemini://tilde.town"
+          echo "  gemini://rawtext.club"
+          pause_screen
+        fi ;;
+      '🐚 SDF Public UNIX')
+        gum style --foreground 212 "  connecting to SDF (public UNIX since 1987)..."
+        echo "  free account: https://sdf.org"
+        echo
+        ssh -4 sdf.org ;;
+      '🏘️ Tilde.town')
+        gum style --foreground 212 "  connecting to tilde.town..."
+        echo "  part of the tildeverse — small public linux boxes run with care"
+        echo
+        ssh -4 tilde.town ;;
+      '📰 Usenet')
+        gum style --foreground 212 "  eternal-september.org — free text Usenet access"
+        echo "  register: https://www.eternal-september.org"
+        echo
+        if tool_exists slrn; then
+          NNTPSERVER=news.eternal-september.org slrn
+        elif tool_exists tin; then
+          tin -g news.eternal-september.org
+        else
+          gum style --foreground 196 "  no newsreader found"
+          gum style --foreground 240 "  sudo apt install slrn"
+          pause_screen
+        fi ;;
+      '💬 IRC')
+        local pick
+        pick=$(printf '%s\n' \
+          'Libera.chat (open source / tech)' \
+          'Hackint (hacker/security)' \
+          'EFnet (the original)' \
+          'IRCnet (old school EU)' \
+          'Back' | gum choose)
+        local server
+        case "$pick" in
+          'Libera.chat (open source / tech)') server='irc.libera.chat' ;;
+          'Hackint (hacker/security)') server='irc.hackint.org' ;;
+          'EFnet (the original)') server='irc.efnet.org' ;;
+          'IRCnet (old school EU)') server='open.ircnet.net' ;;
+          *) continue ;;
+        esac
+        if tool_exists weechat; then
+          weechat
+        elif tool_exists irssi; then
+          irssi --connect "$server"
+        else
+          gum style --foreground 196 "  no IRC client — sudo apt install weechat"
+          pause_screen
+        fi ;;
+      '🎨 ANSI Art')
+        local pick
+        pick=$(printf '%s\n' \
+          'Local .ans / .nfo files' \
+          'Cowsay gallery' \
+          'figlet fonts showcase' \
+          'Back' | gum choose)
+        case "$pick" in
+          'Local .ans / .nfo files')
+            if tool_exists chafa && tool_exists fzf; then
+              local file
+              file=$(find ~ /media/pibulus/passport -name '*.ans' -o -name '*.nfo' -o -name '*.asc' 2>/dev/null \
+                | head -200 | fzf --prompt="pick art > " --height 20 --border 2>/dev/null || true)
+              [ -n "$file" ] && { chafa "$file" 2>/dev/null || cat "$file"; pause_screen; }
+            else
+              gum style --foreground 196 "  needs chafa + fzf"
+              pause_screen
+            fi ;;
+          'Cowsay gallery')
+            if tool_exists cowsay; then
+              cowsay -l | tail -n +2 | tr ' ' '\n' | while read -r cow; do
+                clear
+                printf '  %s\n\n' "$cow"
+                cowsay -f "$cow" "Quick Cat Club" 2>/dev/null | rainbow
+                sleep 1
+              done
+            else
+              gum style --foreground 196 "  cowsay not installed — sudo apt install cowsay"
+              pause_screen
+            fi ;;
+          'figlet fonts showcase')
+            if tool_exists figlet; then
+              figlet -l | head -20 | while read -r font; do
+                clear
+                figlet -f "$font" "QUICK CAT" 2>/dev/null | rainbow
+                gum style --foreground 240 "  font: $font"
+                sleep 1.2
+              done
+            else
+              gum style --foreground 196 "  figlet not installed — sudo apt install figlet"
+              pause_screen
+            fi ;;
+        esac ;;
+      '🔮 Oracle') show_oracle ;;
+      '📖 Cheatsheets') open_cheatsheets gemini weechat sdf-tilde ;;
+      'Back'|'') return ;;
+    esac
+  done
+}
+
+# ── ORACLE ────────────────────────────────────────────────────────────────────
+
+show_oracle() {
+  clear
+  echo
+  if tool_exists fortune; then
+    fortune | rainbow
+  else
+    local wisdoms=(
+      "The map is not the territory."
+      "Complexity is the enemy of security."
+      "Every packet is a postcard."
+      "Root access is a responsibility, not a trophy."
+      "The best firewall is understanding why you need one."
+      "There are no backdoors that only the good guys can use."
+      "Security through obscurity is not security."
+      "If you can't explain it simply, you don't understand it well enough."
+      "The network is the computer. You are on the network."
+      "Real power is not needing anyone to see it."
+    )
+    local idx=$(( RANDOM % ${#wisdoms[@]} ))
+    echo "  ${wisdoms[$idx]}" | rainbow
+  fi
+  echo
+  if tool_exists cowsay && tool_exists fortune; then
+    echo
+    fortune | cowsay -f $(cowsay -l | tail -n +2 | tr ' ' '\n' | shuf | head -1) 2>/dev/null | rainbow
+  fi
+  echo
+  pause_screen
+}
+
+# ── EYE CANDY ─────────────────────────────────────────────────────────────────
+
+eye_candy() {
+  while true; do
+    render_hud
+    show_section_intro \
+      'eye candy' \
+      'Decorative computation. Justified purely on aesthetic grounds.'
+    local pick
+    pick=$(tactile_choose \
+      '🌧️ Matrix Rain' \
+      '🚂 Steam Locomotive' \
+      '🐟 Aquarium' \
+      '🌿 Bonsai Loop' \
+      '🕐 Terminal Clock' \
+      '🐮 Cowsay' \
+      '🌈 figlet Rainbow' \
+      '🔮 Oracle' \
+      'Back')
+    case "$pick" in
+      '🌧️ Matrix Rain')
+        tool_exists cmatrix && cmatrix \
+          || { gum style --foreground 196 "  sudo apt install cmatrix"; pause_screen; } ;;
+      '🚂 Steam Locomotive')
+        tool_exists sl && sl \
+          || { gum style --foreground 196 "  sudo apt install sl"; pause_screen; } ;;
+      '🐟 Aquarium')
+        tool_exists asciiquarium && asciiquarium \
+          || { gum style --foreground 196 "  sudo apt install asciiquarium"; pause_screen; } ;;
+      '🌿 Bonsai Loop')
+        tool_exists cbonsai && cbonsai -l -t 0.08 \
+          || { gum style --foreground 196 "  cbonsai not found"; pause_screen; } ;;
+      '🕐 Terminal Clock')
+        tool_exists tty-clock && tty-clock -c -C 5 \
+          || { gum style --foreground 196 "  sudo apt install tty-clock"; pause_screen; } ;;
+      '🐮 Cowsay')
+        if tool_exists cowsay; then
+          local msg
+          msg=$(gum input --placeholder "say what?")
+          [ -n "$msg" ] && echo "$msg" | cowsay | rainbow
+          pause_screen
+        else
+          gum style --foreground 196 "  sudo apt install cowsay"
+          pause_screen
+        fi ;;
+      '🌈 figlet Rainbow')
+        if tool_exists figlet; then
+          local txt
+          txt=$(gum input --placeholder "text to render")
+          [ -n "$txt" ] && figlet -f big "$txt" | rainbow
+          pause_screen
+        else
+          gum style --foreground 196 "  sudo apt install figlet"
+          pause_screen
+        fi ;;
+      '🔮 Oracle') show_oracle ;;
+      'Back'|'') return ;;
+    esac
+  done
+}
+
+# ── CHEATSHEETS ───────────────────────────────────────────────────────────────
+
+open_cheatsheets() {
+  # Args: optional list of sheet names (without .md) to scope the menu.
+  # No args = show everything.
+  local dir="$HOME/pibulus-os/docs/cheatsheets"
+  if [ ! -d "$dir" ]; then
+    gum style --foreground 196 "  no cheatsheets found at $dir"
+    pause_screen
+    return
+  fi
+  local names=()
+  if [ $# -gt 0 ]; then
+    for name in "$@"; do
+      [ -f "$dir/$name.md" ] && names+=("$name")
+    done
+  else
+    while IFS= read -r f; do
+      names+=("$(basename "$f" .md)")
+    done < <(ls "$dir"/*.md 2>/dev/null)
+  fi
+  if [ ${#names[@]} -eq 0 ]; then
+    gum style --foreground 196 "  no matching cheatsheets found"
+    pause_screen
+    return
+  fi
+  local pick
+  pick=$(printf '%s\n' "${names[@]}" | gum choose --height 14 --header "  pick a tool")
+  [ -z "$pick" ] && return
+  if tool_exists glow; then
+    glow -p "$dir/$pick.md"
+  else
+    bat --language markdown "$dir/$pick.md" 2>/dev/null || less "$dir/$pick.md"
+  fi
+}
+
 _first_run=1
 while true; do
   render_hud
   if [ "$_first_run" = "1" ]; then
-    gum style --foreground 212 "$(roll_fascination)"
+    echo "$(roll_fascination)" | rainbow
     _first_run=0
   fi
-choice=$(tactile_choose --height 14 \
-    '🚨 sigint' \
+  choice=$(tactile_choose --height 16 \
+    '🔭 sigint' \
+    '🕵️ recon' \
+    '🎛️ sdr' \
     '📻 radio' \
     '🎬 media' \
-    '📡 network' \
-    '🛠️ ops' \
-    '📱 apps' \
     '🎵 soulseek' \
-    '🐱 club' \
     '📝 desk' \
     '🤖 ai' \
+    '🕸️ underground' \
+    '📡 network' \
+    '🛠️ ops' \
+    '⚙️ apps' \
+    '🐱 club' \
     '🚪 shell')
 
   case "$choice" in
-    '🚨 sigint') sigint_menu ;;
+    '🔭 sigint') sigint_menu ;;
+    '🕵️ recon') recon_menu ;;
+    '🎛️ sdr') sdr_menu ;;
     '📻 radio') radio_menu ;;
     '🎬 media') media_menu ;;
-    '📡 network') network_menu ;;
-    '🛠️ ops') ops_menu ;;
-    '📱 apps') apps_menu ;;
     '🎵 soulseek') slskd_menu ;;
-    '🐱 club') club_menu ;;
     '📝 desk') desk_menu ;;
     '🤖 ai') ai_menu ;;
+    '🕸️ underground') underground_menu ;;
+    '📡 network') network_menu ;;
+    '🛠️ ops') ops_menu ;;
+    '⚙️ apps') apps_menu ;;
+    '🐱 club') club_menu ;;
     '🚪 shell'|'') clear; echo 'Neural link suspended. Dropping to shell. Run launcher.sh to return.'; exec bash -l ;;
   esac
 done

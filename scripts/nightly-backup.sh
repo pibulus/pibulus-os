@@ -130,16 +130,21 @@ ls -t "$BACKUP_DIR/docker-db/romm-"*.sql.gz 2>/dev/null | tail -n +15 | xargs rm
 
 # ── 3. Docker/app state ───────────────────────────────────────────────────────
 # Contains playlists, station config, media metadata, and presentation assets.
+# station_data is 1.3GB and changes rarely — only back it up on Sundays.
 
-log "[volumes] Backing up AzuraCast station_data..."
-if docker run --rm \
-    -v azuracast_station_data:/source:ro \
-    -v "$BACKUP_DIR/volumes":/backup \
-    alpine tar -czf /backup/azuracast-station_data.tar.gz -C /source . >> "$LOG" 2>&1; then
-    SIZE=$(ls -lh "$BACKUP_DIR/volumes/azuracast-station_data.tar.gz" | awk '{print $5}')
-    log "  station_data: OK ($SIZE)"
+if [ "$(date +%u)" = "7" ]; then
+    log "[volumes] Backing up AzuraCast station_data (weekly)..."
+    if docker run --rm \
+        -v azuracast_station_data:/source:ro \
+        -v "$BACKUP_DIR/volumes":/backup \
+        alpine tar -czf /backup/azuracast-station_data.tar.gz -C /source . >> "$LOG" 2>&1; then
+        SIZE=$(ls -lh "$BACKUP_DIR/volumes/azuracast-station_data.tar.gz" | awk '{print $5}')
+        log "  station_data: OK ($SIZE)"
+    else
+        log "  station_data: FAILED"
+    fi
 else
-    log "  station_data: FAILED"
+    log "[volumes] Skipping station_data (weekly on Sundays only)"
 fi
 
 if [ -d /media/pibulus/passport/app-data/romm/config ]; then
