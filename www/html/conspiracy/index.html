@@ -285,6 +285,21 @@
     function isIso(n) { return ISO_EXT.some(function(e) { return n.toLowerCase().endsWith(e); }); }
     function isOccult(n) { var l = n.toLowerCase(); return OCCULT_KEYWORDS.some(function(k) { return l.indexOf(k) !== -1; }); }
 
+    function typeRank(name) {
+      var n = name.toLowerCase();
+      if (isVideo(n)) return 10;
+      if (isAudio(n)) return 20;
+      if (isDoc(n)) return 30;
+      if (isImage(n)) return 40;
+      if (isIso(n)) return 50;
+      if (n.endsWith('.cbr') || n.endsWith('.cbz') || n.endsWith('.zip') || n.endsWith('.rar') || n.endsWith('.7z')) return 60;
+      return 90;
+    }
+
+    function typeSort(a, b) {
+      return (typeRank(a.name) - typeRank(b.name)) || cleanName(a.name).localeCompare(cleanName(b.name));
+    }
+
     function canInlinePlay(n) {
       var e = ext(n);
       return INLINE_VIDEO.includes(e) || e === '.pdf' || AUDIO_EXT.some(function(x){return e===x;}) || IMG_EXT.some(function(x){return e===x;});
@@ -613,7 +628,7 @@
       });
 
       folders.sort(function(a,b) { return a.name.toLowerCase().localeCompare(b.name.toLowerCase()); });
-      files.sort(function(a,b) { return a.name.toLowerCase().localeCompare(b.name.toLowerCase()); });
+      files.sort(typeSort);
 
       var foldersEl = document.getElementById('browse-folders');
       var filesEl = document.getElementById('browse-files');

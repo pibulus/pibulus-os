@@ -891,29 +891,66 @@ radio_menu() {
 }
 
 yt_download() {
-  local url
-  url=$(gum input --placeholder "YouTube (or any) URL...")
-  [ -z "$url" ] && return
-
-  local dest="/media/pibulus/passport/The_Bucket"
-  local subs
-  subs=$(printf '%s\n' 'Yes — download SRT subtitles' 'No subtitles' | gum choose --header "Subtitles?")
-  [ -z "$subs" ] && return
-
-  local sub_flags=()
-  if [[ "$subs" == Yes* ]]; then
-    sub_flags=(--write-sub --write-auto-sub --sub-lang en --convert-subs srt)
+  local helper="$HOME/pibulus-os/scripts/youtube_archive.py"
+  if [[ ! -x "$helper" ]]; then
+    echo "Missing helper: $helper"
+    pause_screen
+    return
   fi
 
-  echo "Downloading to $dest ..."
-  yt-dlp \
-    "${sub_flags[@]}" \
-    -f "bestvideo[height<=1080]+bestaudio/best[height<=1080]" \
-    --merge-output-format mkv \
-    -o "$dest/%(title)s.%(ext)s" \
-    "$url"
+  while true; do
+    local action
+    action=$(tactile_choose \
+      '📥 Add URL' \
+      '🔁 Sync subscriptions now' \
+      '📜 List subscriptions' \
+      'Back')
 
-  pause_screen
+    case "$action" in
+      '📥 Add URL')
+        local url section_label section mode_label mode subscribe_label name subscribe_flag
+        url=$(gum input --placeholder "YouTube video, playlist, channel, or tab URL...")
+        [ -z "$url" ] && continue
+
+        section_label=$(printf '%s\n' 'Forbidden / Conspiracy' 'Palestine' 'The Bucket' | gum choose --header "Where should this live?")
+        [ -z "$section_label" ] && continue
+        case "$section_label" in
+          'Forbidden / Conspiracy') section='conspiracy' ;;
+          'Palestine') section='palestine' ;;
+          'The Bucket') section='bucket' ;;
+        esac
+
+        mode_label=$(printf '%s\n' 'One video only' 'Playlist / group' 'Whole channel' | gum choose --header "What should yt-dlp pull?")
+        [ -z "$mode_label" ] && continue
+        case "$mode_label" in
+          'One video only') mode='video' ;;
+          'Playlist / group') mode='playlist' ;;
+          'Whole channel') mode='channel' ;;
+        esac
+
+        name=$(gum input --placeholder "Folder name (optional; Enter to auto-detect)")
+        subscribe_flag=()
+        if [[ "$mode" != "video" ]]; then
+          subscribe_label=$(printf '%s\n' 'Yes — keep pulling new uploads weekly' 'No — just download once' | gum choose --header "Subscribe?")
+          [ -z "$subscribe_label" ] && continue
+          [[ "$subscribe_label" == Yes* ]] && subscribe_flag=(--subscribe)
+        fi
+
+        if [[ -n "$name" ]]; then
+          python3 "$helper" add --url "$url" --section "$section" --mode "$mode" --name "$name" "${subscribe_flag[@]}"
+        else
+          python3 "$helper" add --url "$url" --section "$section" --mode "$mode" "${subscribe_flag[@]}"
+        fi
+        pause_screen ;;
+      '🔁 Sync subscriptions now')
+        python3 "$helper" sync
+        pause_screen ;;
+      '📜 List subscriptions')
+        python3 "$helper" list
+        pause_screen ;;
+      'Back'|'') return ;;
+    esac
+  done
 }
 
 drop_magnet_or_url() {
@@ -972,7 +1009,7 @@ media_menu() {
       '🎬 Grab a Movie' \
       '📺 Grab a Show' \
       '🧲 Drop a Magnet / URL' \
-      '📹 YouTube Download' \
+      '📺 YouTube Archive' \
       '🧠 Scavenger Search' \
       '🏴‍☠️ Pirate Grab' \
       '🔎 Find My Media' \
@@ -994,7 +1031,7 @@ media_menu() {
         [ -n "$title" ] && python3 ~/pibulus-os/scripts/grab_show.py "$title"
         pause_screen ;;
       '🧲 Drop a Magnet / URL') drop_magnet_or_url ;;
-      '📹 YouTube Download') yt_download ;;
+      '📺 YouTube Archive') yt_download ;;
       '🧠 Scavenger Search') manage_scavenger ;;
       '🏴‍☠️ Pirate Grab') manage_pirate_grab ;;
       '🔎 Find My Media') media_finder_menu ;;

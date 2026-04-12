@@ -1,2 +1,7 @@
 0 */6 * * * /usr/bin/python3 /home/pibulus/pibulus-os/scripts/gen_request_catalog.py >> /tmp/catalog-regen.log 2>&1
 0 3 * * * /home/pibulus/pibulus-os/scripts/nightly-backup.sh >> /tmp/nightly-backup.log 2>&1
+* * * * * /bin/bash /home/pibulus/pibulus-os/scripts/status.sh >/dev/null 2>&1
+0 4 * * * /bin/bash /home/pibulus/pibulus-os/scripts/counts.sh >/dev/null 2>&1
+0 10 * * 5 /usr/bin/python3 /home/pibulus/pibulus-os/scripts/curator.py >> /tmp/curator.log 2>&1
+*/10 * * * * /home/pibulus/pibulus-os/scripts/qb_unstick.sh >> /tmp/qb_unstick.log 2>&1
+30 4 * * 1 /usr/bin/flock -n /tmp/pibulus-youtube-archive.lock /usr/bin/python3 /home/pibulus/pibulus-os/scripts/youtube_archive.py sync >> /tmp/youtube-archive.log 2>&1
