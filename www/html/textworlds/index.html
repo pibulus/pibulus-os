@@ -82,6 +82,8 @@
       max-width: 780px;
       width: 100%;
       margin: 0 auto;
+      min-height: 0;
+      overflow-y: auto;
     }
 
     #boot-output {
@@ -111,7 +113,8 @@
       font-size: 1.1rem;
       letter-spacing: 2px;
       cursor: pointer;
-      padding: 0;
+      min-height: 44px;
+      padding: 0 0.5rem;
       text-shadow: 0 0 6px var(--green);
     }
     .connect-btn:hover { color: #fff; text-shadow: 0 0 12px var(--green); }
@@ -132,13 +135,77 @@
       display: none;
       flex-direction: column;
       z-index: 11;
+      min-height: 0;
+      position: relative;
+      background: #020402;
     }
     #terminal-container.active { display: flex; }
+    #terminal-container::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      background:
+        repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2) 1px, transparent 1px, transparent 4px),
+        radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.48) 100%);
+      mix-blend-mode: screen;
+      opacity: 0.24;
+      animation: terminal-flicker 8s steps(2, end) infinite;
+    }
+    #terminal-container::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      pointer-events: none;
+      box-shadow:
+        inset 0 0 28px rgba(51, 255, 51, 0.13),
+        inset 0 0 80px rgba(51, 255, 51, 0.06);
+    }
     iframe {
       flex: 1;
       width: 100%;
       border: none;
       display: block;
+      min-height: 0;
+      position: relative;
+      z-index: 1;
+      filter: contrast(1.06) saturate(1.08);
+    }
+
+    @keyframes terminal-flicker {
+      0%, 100% { opacity: 0.22; }
+      12% { opacity: 0.28; }
+      13% { opacity: 0.2; }
+      52% { opacity: 0.25; }
+      53% { opacity: 0.21; }
+      81% { opacity: 0.3; }
+    }
+
+    @media (max-width: 560px) {
+      body { font-size: 16px; }
+      .header { padding: 0.5rem 0.75rem; }
+      .header-title { letter-spacing: 2px; }
+      #landing {
+        justify-content: flex-start;
+        padding: 1rem;
+      }
+      #boot-output {
+        line-height: 1.35;
+        min-height: auto;
+      }
+      #prompt-line {
+        align-items: center;
+        flex-wrap: wrap;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .cursor,
+      #terminal-container::before {
+        animation: none;
+      }
     }
   </style>
 </head>
@@ -171,19 +238,15 @@
       { text: '', cls: '', delay: 550 },
       { text: '  available destinations:', cls: 'dim', delay: 650 },
       { text: '', cls: '', delay: 700 },
-      { text: '  [1]  NETHACK             classic ASCII dungeon crawler', cls: 'line', delay: 780 },
-      { text: '  [2]  TEXT ADVENTURES     interactive fiction (5 titles)', cls: 'line', delay: 880 },
-      { text: '  [3]  AARDWOLF MUD        one of the largest MUDs online', cls: 'line', delay: 980 },
-      { text: '  [4]  REALMS OF DESPAIR   classic DIKU MUD — since 1994', cls: 'line', delay: 1080 },
-      { text: '  [5]  FOZZ BBS            retro computing bulletin board', cls: 'line', delay: 1180 },
-      { text: '  [6]  BATMUD              Finnish MUD, running since 1990', cls: 'line', delay: 1280 },
-      { text: '  [7]  MEDIEVIA            classic medieval fantasy MUD', cls: 'line', delay: 1380 },
-      { text: '  [8]  THRESHOLD RPG       story-driven fantasy world', cls: 'line', delay: 1480 },
-      { text: '  [9]  LOST SOULS          deep lore, been running since 1990', cls: 'line', delay: 1580 },
-      { text: '  [10] ACHAEA              polished Iron Realms MUD', cls: 'line', delay: 1680 },
-      { text: '', cls: '', delay: 1780 },
-      { text: '  destination selected via interactive menu after connect.', cls: 'dim', delay: 1860 },
-      { text: '', cls: '', delay: 1960 },
+      { text: '  [0]  START HERE          keys, exits, unsticking yourself', cls: 'line', delay: 780 },
+      { text: '  [1]  ROGUELIKE VAULT     NetHack, Crawl, Angband, Moria', cls: 'line', delay: 880 },
+      { text: '  [2]  TEXT ADVENTURES     interactive fiction (5 titles)', cls: 'line', delay: 980 },
+      { text: '  [3]  BBS GATEWAY         LORD, door games, classic boards', cls: 'line', delay: 1080 },
+      { text: '  [4]  MUD PORTAL          Aardwolf, Discworld, MUME, Achaea', cls: 'line', delay: 1180 },
+      { text: '  [5]  TERMINAL WONDERS    Telehack, MapSCII, SSHTron', cls: 'line', delay: 1280 },
+      { text: '', cls: '', delay: 1380 },
+      { text: '  destination selected via interactive menu after connect.', cls: 'dim', delay: 1460 },
+      { text: '', cls: '', delay: 1560 },
     ];
 
     const out = document.getElementById('boot-output');

@@ -84,6 +84,21 @@ def add_nd(conn, user, pw, email):
     conn.execute("INSERT INTO user (id, user_name, name, email, password, is_admin, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
     (uid, user, user, email, nd_hash))
 
+def add_abs_api(user, pw, email):
+    login_payload = json.dumps({'username': 'pibulus', 'password': 'meringue'}).encode()
+    login_req = urllib.request.Request('http://localhost:13378/login', data=login_payload, headers={'Content-Type': 'application/json'}, method='POST')
+    login = json.loads(urllib.request.urlopen(login_req).read())
+    token = login['user']['accessToken']
+    headers = {'Content-Type': 'application/json', 'Authorization': f'Bearer {token}'}
+    permissions = {
+        'download': True, 'update': False, 'delete': False, 'upload': False, 'createEreader': False,
+        'accessAllLibraries': True, 'accessAllTags': True, 'accessExplicitContent': True,
+        'selectedTagsNotAccessible': False, 'librariesAccessible': [], 'itemTagsSelected': []
+    }
+    payload = json.dumps({'username': user, 'password': pw, 'email': email, 'type': 'user', 'isActive': True, 'permissions': permissions}).encode()
+    req = urllib.request.Request('http://localhost:13378/api/users', data=payload, headers=headers, method='POST')
+    urllib.request.urlopen(req)
+
 # Jellyfin via API (direct DB writes cause EF Core UUID/RowVersion issues)
 try:
     add_jf_api(user, pw)
@@ -100,6 +115,12 @@ for label, path in dbs_sqlite.items():
         conn.commit(); conn.close()
         print(f'✅ {label}: {user} added.')
     except Exception as e: print(f'❌ {label}: {e}')
+
+# Audiobookshelf
+try:
+    add_abs_api(user, pw, email)
+    print(f'✅ ABS: {user} added.')
+except Exception as e: print(f'❌ ABS: {e}')
 
 # RomM (API-based, not SQLite)
 try:

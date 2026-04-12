@@ -10,10 +10,15 @@
 - Listen:
     - The Jukebox:
         icon: navidrome.png
-        href: http://pibulus.local:4533
-        description: Hi-fi music collection
+        href: http://pibulus.local:9180
+        description: Modern music player backed by Navidrome
 
 - Read:
+    - Audiobooks:
+        icon: audiobookshelf.png
+        href: http://pibulus.local:13378
+        description: Audiobooks and longform listening
+
     - Comics:
         icon: kavita.png
         href: http://pibulus.local:5000

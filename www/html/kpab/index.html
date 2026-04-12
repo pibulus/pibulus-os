@@ -2069,6 +2069,19 @@
 
     audioEl.volume = 0.8;
 
+    function fadeVolume(from, to, duration) {
+      const steps = 20;
+      const interval = duration / steps;
+      const delta = (to - from) / steps;
+      let step = 0;
+      audioEl.volume = Math.max(0, Math.min(1, from));
+      const t = setInterval(() => {
+        step++;
+        audioEl.volume = Math.max(0, Math.min(1, from + delta * step));
+        if (step >= steps) clearInterval(t);
+      }, interval);
+    }
+
     const playerChassis = document.getElementById('playerChassis');
 
     function setPlaying(state) {
@@ -2539,6 +2552,9 @@
           // Backend skip is the source of truth. Do not locally pause/reconnect here
           // or the browser can fight the live stream transition and create a double-skip feel.
           if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
+          // Fade out, let the stream switch, fade back in.
+          fadeVolume(audioEl.volume, 0, 400);
+          setTimeout(() => fadeVolume(0, 0.8, 600), 900);
           // Refresh metadata shortly after the skip, then again once the stream settles.
           poll();
           setTimeout(() => poll(), 1200);

@@ -12,13 +12,39 @@ emulatorjs:
       fps: show
       shader: crt-easymode.glslp
       vsync: disabled
-      threads: enabled          # SharedArrayBuffer threading — COOP/COEP headers already set
+      threads: enabled          # SharedArrayBuffer threading; COOP/COEP headers are set
       virtual_gamepad: enabled  # show touch controls on mobile/tablet
       autosave: enabled         # auto save state on exit, auto load on launch
+    # RomM merges settings by actual EmulatorJS core name, so keep both
+    # broad labels and concrete core names for heavy systems.
     n64:
       threads: enabled
       shader: none              # CRT shader tanks N64 framerate, disable it
+    mupen64plus_next:
+      threads: enabled
+      shader: none
+    parallel_n64:
+      threads: enabled
+      shader: none
     psx:
+      threads: enabled
+      shader: none
+    pcsx_rearmed:
+      threads: enabled
+      shader: none
+    mednafen_psx_hw:
+      threads: enabled
+      shader: none
+    nds:
+      threads: enabled
+      shader: none
+    melonds:
+      threads: enabled
+      shader: none
+    desmume:
+      threads: enabled
+      shader: none
+    desmume2015:
       threads: enabled
       shader: none
 exclude:

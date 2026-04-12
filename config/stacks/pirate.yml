@@ -14,6 +14,8 @@ services:
       - /media/pibulus/passport/Shows:/media/shows
       - /media/pibulus/passport/Audiobooks:/media/audiobooks
       - /media/pibulus/passport/Palestine:/media/palestine
+      - /media/pibulus/MEMBOT/Movies:/media/membot-movies
+      - /media/pibulus/MEMBOT/Shows:/media/membot-shows
     devices:
       - /dev/dri:/dev/dri
       - /dev/video19:/dev/video19
@@ -43,6 +45,21 @@ services:
       start_period: 60s
 
   # --- THE BOOK LIBRARY ---
+
+  audiobookshelf:
+    image: ghcr.io/advplyr/audiobookshelf:latest
+    container_name: audiobookshelf
+    ports:
+      - "13378:80"
+    environment:
+      - TZ=Australia/Melbourne
+    volumes:
+      - /home/pibulus/.config/audiobookshelf/config:/config
+      - /home/pibulus/.config/audiobookshelf/metadata:/metadata
+      - /media/pibulus/passport/Audiobooks:/audiobooks
+      - /home/pibulus/pibulus-os/config/audiobookshelf/pibulus-polish.sh:/pibulus-polish.sh:ro
+    command: sh -lc "/pibulus-polish.sh || true; exec node index.js"
+    restart: unless-stopped
   calibre-web:
     image: lscr.io/linuxserver/calibre-web:latest
     container_name: calibre-web
@@ -74,6 +91,92 @@ services:
       - /home/pibulus/.config/navidrome:/data
       - "/media/pibulus/passport/Music/MusicBee/Music:/music/Library"
       - /media/pibulus/passport/Soulseek:/music/Soulseek
+    restart: unless-stopped
+
+  feishin:
+    image: ghcr.io/jeffvli/feishin:latest
+    container_name: feishin
+    ports:
+      - "9180:9180"
+    volumes:
+      - /home/pibulus/pibulus-os/config/feishin/pibulus-polish.sh:/docker-entrypoint.d/99-pibulus-polish.sh:ro
+    environment:
+      SERVER_NAME: Quick Cat Club Music
+      SERVER_TYPE: navidrome
+      SERVER_URL: http://pibulus.local:4533
+      SERVER_LOCK: "true"
+      ANALYTICS_DISABLED: "true"
+      FS_GENERAL_THEME: glassyDark
+      FS_GENERAL_EXTERNAL_LINKS: "false"
+      FS_GENERAL_LAST_FM: "false"
+      FS_GENERAL_LISTEN_BRAINZ: "false"
+      FS_GENERAL_MUSIC_BRAINZ: "false"
+      FS_GENERAL_QOBUZ: "false"
+      FS_GENERAL_SHOW_RATINGS: "false"
+      FS_GENERAL_SIDEBAR_PLAYLIST_LIST: "false"
+      FS_AUTO_DJ_ENABLED: "false"
+      FS_CSS_ENABLED: "true"
+      FS_CSS_CONTENT: |
+        .fs-full-screen-player-queue-module-grid-container:before {
+            background: #0000000d;
+            border-radius: 3rem;
+            backdrop-filter: blur(60px);
+        }
+
+        .fs-full-screen-player-image-module-image {
+            border-radius: 3rem;
+            filter: none !important;
+        }
+
+        .fs-badge-module-root {
+            background-color: #ffffff1c !important;
+        }
+
+        .fs-playerbar-module-controls-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+            gap: 1rem;
+            height: 100%;
+            backdrop-filter: blur(40px);
+            background-color: #0000001c;
+        }
+
+        [data-mantine-color-scheme=dark] .fs-button-module-root[data-variant=subtle]:hover,
+        [data-mantine-color-scheme=dark] .fs-button-module-root[data-variant=subtle]:active,
+        [data-mantine-color-scheme=dark] .fs-button-module-root[data-variant=subtle]:focus-visible {
+            background-color: #00000025;
+        }
+
+        .fs-button-module-root[data-variant=subtle] {
+            border-radius: 1rem;
+        }
+
+        .fs-full-screen-player-queue-module-grid-container {
+            padding: 1.5rem 3rem;
+        }
+
+        .fs-synchronized-lyrics-module-container {
+            text-shadow: 0 0px 4px #fffffffa;
+        }
+
+        .fs-lyric-line-module-lyric-line.active {
+            text-shadow: 0 0px 4px #fffffffa;
+            filter: none !important;
+        }
+
+        .fs-lyric-line-module-lyric-line.synchronized {
+            filter: blur(2px);
+        }
+
+        @media (pointer: coarse), (max-width: 700px) {
+            .fs-playerbar-module-controls-grid { gap: 0.5rem; }
+            .fs-playerbar-module-controls-grid .fs-button-module-root,
+            .fs-full-screen-player-module-container .fs-button-module-root,
+            .fs-item-card-controls-module-container .fs-button-module-root {
+                min-width: 44px;
+                min-height: 44px;
+            }
+        }
     restart: unless-stopped
 
   slskd:

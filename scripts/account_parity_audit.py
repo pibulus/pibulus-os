@@ -25,6 +25,10 @@ SERVICES = {
         "db": Path("/home/pibulus/.config/jellyfin/data/jellyfin.db"),
         "query": "select lower(Username) from Users where Username is not null",
     },
+    "audiobookshelf": {
+        "db": Path("/home/pibulus/.config/audiobookshelf/config/absdatabase.sqlite"),
+        "query": "select lower(username) from users where username is not null",
+    },
 }
 
 

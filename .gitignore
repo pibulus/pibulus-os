@@ -24,5 +24,8 @@ data/
 
 # Local backups / junk
 *.bak
+*.bak-*
 *.backup
 *.sqlite
+__pycache__/
+*.pyc

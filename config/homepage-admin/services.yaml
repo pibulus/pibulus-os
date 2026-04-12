@@ -16,6 +16,20 @@
         server: my-docker
         container: navidrome
 
+    - Feishin:
+        icon: navidrome.png
+        href: http://pibulus.local:9180
+        description: Modern Navidrome player
+        server: my-docker
+        container: feishin
+
+    - Audiobookshelf:
+        icon: audiobookshelf.png
+        href: http://pibulus.local:13378
+        description: Audiobooks and podcasts
+        server: my-docker
+        container: audiobookshelf
+
     - Kavita:
         icon: kavita.png
         href: http://pibulus.local:5000
