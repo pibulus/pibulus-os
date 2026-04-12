@@ -193,19 +193,19 @@
       <h3 class="modal-title">Download File</h3>
       <p class="modal-text" id="confirm-text"></p>
       <div class="modal-actions">
-        <button class="btn" onclick="closeModal('confirm-modal')">Cancel</button>
-        <button class="btn btn-primary" id="confirm-btn">Download</button>
+        <button class="btn" onclick="closeModal('confirm-modal')" data-sound-hover="hover" data-sound-click="click">Cancel</button>
+        <button class="btn btn-primary" id="confirm-btn" data-sound-hover="hover" data-sound-click="click">Download</button>
       </div>
     </div>
   </div>
 
   <div class="modal-overlay" id="preview-modal">
-    <button class="close-preview" type="button" onclick="closeModal('preview-modal')" aria-label="Close preview">&times;</button>
+    <button class="close-preview" type="button" onclick="closeModal('preview-modal')" aria-label="Close preview" data-sound-hover="hover" data-sound-click="click">&times;</button>
     <div id="preview-content"></div>
   </div>
 
   <div class="wrapper">
-    <a href="/" class="back">&larr; quickcat.club</a>
+    <a href="/" class="back" data-sound-hover="hover" data-sound-click="click">&larr; quickcat.club</a>
     <header>
       <h1>Palestine</h1>
       <p class="subtitle">films, books &amp; documents</p>
@@ -351,7 +351,7 @@
       var bc = document.getElementById('breadcrumbs');
       if (!currentPath) { bc.innerHTML = ''; return; }
       var parts = currentPath.split('/').filter(Boolean);
-      var html = '<a onclick="navigate(\'\')">Library</a>';
+      var html = '<a onclick="navigate(\'\')" data-sound-hover="hover" data-sound-click="click">Library</a>';
       var accumulated = '';
       for (var i = 0; i < parts.length; i++) {
         accumulated += (accumulated ? '/' : '') + parts[i];
@@ -359,7 +359,7 @@
         if (i === parts.length - 1) {
           html += '<span>' + escapeHtml(decodeURIComponent(parts[i])) + '</span>';
         } else {
-          html += '<a onclick="navigate(\'' + accumulated.replace(/'/g, "\\'") + '\')">' + escapeHtml(decodeURIComponent(parts[i])) + '</a>';
+          html += '<a onclick="navigate(\'' + accumulated.replace(/'/g, "\\'") + '\')" data-sound-hover="hover" data-sound-click="click">' + escapeHtml(decodeURIComponent(parts[i])) + '</a>';
         }
       }
       bc.innerHTML = html;
@@ -413,8 +413,8 @@
       }
 
       html += '<div class="preview-actions">' +
-        '<a class="btn btn-primary" href="' + url + '" download style="text-decoration:none;">Download</a>' +
-        '<button class="btn" onclick="closeModal(\'preview-modal\')">Close</button>' +
+        '<a class="btn btn-primary" href="' + url + '" download style="text-decoration:none;" data-sound-hover="hover" data-sound-click="click">Download</a>' +
+        '<button class="btn" onclick="closeModal(\'preview-modal\')" data-sound-hover="hover" data-sound-click="click">Close</button>' +
         '</div>';
 
       content.innerHTML = html;
@@ -467,6 +467,8 @@
 
       var a = document.createElement('a');
       a.className = 'file-item' + (isDir ? ' is-folder' : '');
+      a.setAttribute('data-sound-hover', 'hover');
+      a.setAttribute('data-sound-click', 'click');
       a.onclick = function() { handleClick(entry, isDir); };
 
       a.innerHTML =
@@ -654,5 +656,7 @@
 
     navigate('');
   </script>
+  <script src="/ui-sounds.js?v=organic-ui"></script>
+  <script>UISounds.init();</script>
 </body>
 </html>

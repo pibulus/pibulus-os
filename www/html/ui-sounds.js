@@ -8,6 +8,7 @@
   var ctx = null;
   var enabled = true;
   var lastPlay = {};
+  var initialized = false;
 
   function getCtx() {
     if (!ctx) {
@@ -95,11 +96,19 @@
   }
 
   function init() {
-    document.querySelectorAll("[data-sound-hover]").forEach(function (el) {
-      el.addEventListener("mouseenter", hover);
+    if (initialized) return;
+    initialized = true;
+
+    document.addEventListener("mouseover", function (event) {
+      var el = event.target.closest && event.target.closest("[data-sound-hover]");
+      if (!el || (event.relatedTarget && el.contains(event.relatedTarget))) return;
+      hover();
     });
-    document.querySelectorAll("[data-sound-click]").forEach(function (el) {
-      el.addEventListener("click", click);
+
+    document.addEventListener("click", function (event) {
+      var el = event.target.closest && event.target.closest("[data-sound-click]");
+      if (!el) return;
+      click();
     });
   }
 
