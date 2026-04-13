@@ -109,7 +109,7 @@ class HeartHandler(BaseHTTPRequestHandler):
 
             # Trust forwarded headers only from localhost (nginx proxy)
             actual_ip = self.client_address[0]
-            if actual_ip in ("127.0.0.1", "::1", "172.17.0.1"):
+            if actual_ip in ("127.0.0.1", "::1", "172.17.0.1", "172.23.0.1"):
                 ip = self.headers.get("X-Real-IP", self.headers.get("X-Forwarded-For", actual_ip))
             else:
                 ip = actual_ip
@@ -163,6 +163,6 @@ class HeartHandler(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    server = HTTPServer(("127.0.0.1", PORT), HeartHandler)
-    print(f"[HEARTS] Listening on 127.0.0.1:{PORT}")
+    server = HTTPServer(("0.0.0.0", PORT), HeartHandler)
+    print(f"[HEARTS] Listening on 0.0.0.0:{PORT}")
     server.serve_forever()

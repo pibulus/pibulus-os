@@ -2731,7 +2731,9 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ song_id: lastSongId, song_text: lastSongText })
-        }).catch(() => {});
+        }).then(res => {
+          if (!res.ok && res.status !== 429) console.warn('[KPAB] Heart failed:', res.status);
+        }).catch(err => console.warn('[KPAB] Heart failed:', err.message));
       }
       if (lovePopped) return;
       loveLevel++;
