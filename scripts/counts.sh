@@ -14,6 +14,10 @@ COMIC_COUNT=$(find /media/pibulus/passport/Comics -mindepth 1 -maxdepth 1 -type 
 
 ROM_COUNT=$(find /media/pibulus/passport/Roms -maxdepth 2 -type f 2>/dev/null | wc -l | tr -d ' ')
 
+AUDIOBOOK_COUNT=$(find /media/pibulus/passport/Audiobooks -type f 2>/dev/null | wc -l | tr -d ' ')
+CRATES_COUNT=$(find /media/pibulus/passport/Resources/Guitar /media/pibulus/passport/Resources/Piano "/media/pibulus/passport/Ebooks/Music Theory - eBook Collection" -type f 2>/dev/null | wc -l | tr -d ' ')
+LOOPS_COUNT=$(find /media/pibulus/passport/Resources/Loops -type f 2>/dev/null | wc -l | tr -d ' ')
+
 cat > /media/pibulus/passport/www/html/counts.json <<JSON
 {
   "movies": ${MOVIE_COUNT:-0},
@@ -21,6 +25,9 @@ cat > /media/pibulus/passport/www/html/counts.json <<JSON
   "books": ${BOOK_COUNT:-0},
   "comics": ${COMIC_COUNT:-0},
   "roms": ${ROM_COUNT:-0},
+  "audiobooks": ${AUDIOBOOK_COUNT:-0},
+  "crates": ${CRATES_COUNT:-0},
+  "loops": ${LOOPS_COUNT:-0},
   "ts": "$(date '+%Y-%m-%d %H:%M')"
 }
 JSON

@@ -338,9 +338,9 @@
       <a class="card" href="https://comics.quickcat.club" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click"><span class="card-emoji">💥</span><span class="card-label">Comics</span><span class="card-desc" id="cdesc-comics">110 series</span></a>
     </div>
     <div class="grid grid-3" style="margin-top: 1.1rem;">
-      <a class="card" href="https://audiobooks.quickcat.club" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click"><span class="card-emoji">🎧</span><span class="card-label">Audiobooks</span><span class="card-desc">longform listening</span></a>
-      <a class="card" href="/crates/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click"><span class="card-emoji">🎼</span><span class="card-label">Crates</span><span class="card-desc">tabs & lessons</span></a>
-      <a class="card" href="/loops/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click"><span class="card-emoji">🎛</span><span class="card-label">Loops</span><span class="card-desc">samples & sounds</span></a>
+      <a class="card" href="https://audiobooks.quickcat.club" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click"><span class="card-emoji">🎧</span><span class="card-label">Audiobooks</span><span class="card-desc" id="cdesc-audiobooks">3,144 files</span></a>
+      <a class="card" href="/crates/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click"><span class="card-emoji">🎼</span><span class="card-label">Crates</span><span class="card-desc" id="cdesc-crates">288 files</span></a>
+      <a class="card" href="/loops/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click"><span class="card-emoji">🎛</span><span class="card-label">Loops</span><span class="card-desc" id="cdesc-loops">26,665 sounds</span></a>
     </div>
 
     <div class="section-divider"><span class="section-label">[ EXPLORE ]</span></div>
@@ -537,6 +537,9 @@
           if (d.books)  { document.getElementById('lib-books').textContent  = '📖 ' + d.books;  document.getElementById('cdesc-books').textContent  = d.books + ' titles'; }
           if (d.comics) { document.getElementById('lib-comics').textContent = '💥 ' + d.comics; document.getElementById('cdesc-comics').textContent = d.comics + ' series'; }
           if (d.roms)   document.getElementById('lib-roms').textContent   = '🎮 ' + d.roms;
+          if (d.audiobooks) document.getElementById('cdesc-audiobooks').textContent = Number(d.audiobooks).toLocaleString() + ' files';
+          if (d.crates) document.getElementById('cdesc-crates').textContent = Number(d.crates).toLocaleString() + ' files';
+          if (d.loops) document.getElementById('cdesc-loops').textContent = Number(d.loops).toLocaleString() + ' sounds';
         })
         .catch(function() {});
     })();
