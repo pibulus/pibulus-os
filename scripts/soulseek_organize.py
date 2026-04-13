@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Build a clean Artist/Album symlink mirror for Soulseek downloads.
+Build a clean Artist/Album hardlink mirror for Soulseek downloads.
 
-Default mode is dry-run. Use --apply to create links under:
-  /media/pibulus/passport/Soulseek/_Organized
+Default mode is dry-run. Use --apply to create hardlinks under:
+  /media/pibulus/passport/Music/Soulseek Organized
 
 The raw Soulseek downloads are never moved, renamed, or retagged.
 """
@@ -15,12 +15,11 @@ import json
 import os
 import re
 import subprocess
-import sys
 from collections import Counter
 from pathlib import Path
 
 SOURCE = Path("/media/pibulus/passport/Soulseek")
-DEST = SOURCE / "_Organized"
+DEST = Path("/media/pibulus/passport/Music/Soulseek Organized")
 AUDIO_EXTS = {".mp3", ".flac", ".m4a", ".ogg", ".opus", ".wav", ".aiff", ".aif"}
 BAD_CHARS = re.compile(r'[<>:"/\\|?*\x00-\x1f]')
 SPACE_RE = re.compile(r"\s+")
@@ -111,7 +110,7 @@ def read_tags(path: Path) -> dict[str, object]:
 def audio_files(source: Path) -> list[Path]:
     files: list[Path] = []
     for path in source.rglob("*"):
-        if DEST in path.parents or path.name.startswith("."):
+        if path.is_relative_to(DEST) or path.name.startswith("."):
             continue
         if path.is_file() and path.suffix.lower() in AUDIO_EXTS:
             files.append(path)
@@ -136,12 +135,11 @@ def target_for(path: Path) -> tuple[Path | None, str, dict[str, object]]:
 def unique_target(target: Path, source: Path) -> Path:
     if not target.exists() and not target.is_symlink():
         return target
-    if target.is_symlink():
-        try:
-            if target.resolve() == source.resolve():
-                return target
-        except FileNotFoundError:
-            pass
+    try:
+        if target.samefile(source):
+            return target
+    except FileNotFoundError:
+        pass
     stem = target.stem
     suffix = target.suffix
     for idx in range(2, 1000):
@@ -151,23 +149,30 @@ def unique_target(target: Path, source: Path) -> Path:
     raise RuntimeError(f"could not pick unique target for {target}")
 
 
-def link_file(source: Path, target: Path) -> str:
+def link_file(source: Path, target: Path, mode: str) -> str:
     target.parent.mkdir(parents=True, exist_ok=True)
     target = unique_target(target, source)
-    if target.is_symlink() and target.resolve() == source.resolve():
-        return "exists"
-    rel = os.path.relpath(source, target.parent)
-    target.symlink_to(rel)
+    try:
+        if target.exists() and target.samefile(source):
+            return "exists"
+    except FileNotFoundError:
+        pass
+    if mode == "symlink":
+        rel = os.path.relpath(source, target.parent)
+        target.symlink_to(rel)
+    else:
+        os.link(source, target)
     return "linked"
 
 
 def main() -> int:
     global SOURCE, DEST
 
-    parser = argparse.ArgumentParser(description="Build a clean Soulseek Artist/Album symlink mirror")
+    parser = argparse.ArgumentParser(description="Build a clean Soulseek Artist/Album hardlink mirror")
     parser.add_argument("--source", type=Path, default=SOURCE)
     parser.add_argument("--dest", type=Path, default=DEST)
-    parser.add_argument("--apply", action="store_true", help="create symlinks; default is dry-run")
+    parser.add_argument("--apply", action="store_true", help="create links; default is dry-run")
+    parser.add_argument("--mode", choices=("hardlink", "symlink"), default="hardlink", help="link type to create with --apply")
     parser.add_argument("--limit", type=int, default=0, help="only inspect the first N audio files")
     parser.add_argument("--album", help="only inspect source paths containing this text")
     args = parser.parse_args()
@@ -191,7 +196,7 @@ def main() -> int:
             if len(preview) < 20:
                 preview.append({"status": reason, "source": str(source.relative_to(SOURCE))})
             continue
-        status = link_file(source, target) if args.apply else "would_link"
+        status = link_file(source, target, args.mode) if args.apply else f"would_{args.mode}"
         stats[status] += 1
         if len(preview) < 40:
             preview.append({
@@ -202,7 +207,7 @@ def main() -> int:
                 "album": str(tags.get("album") or ""),
             })
 
-    report = {"source": str(SOURCE), "dest": str(DEST), "apply": args.apply, "stats": dict(stats), "preview": preview}
+    report = {"source": str(SOURCE), "dest": str(DEST), "mode": args.mode, "apply": args.apply, "stats": dict(stats), "preview": preview}
     print(json.dumps(report, indent=2, ensure_ascii=False))
     return 0
 
