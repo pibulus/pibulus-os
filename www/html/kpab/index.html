@@ -1756,7 +1756,7 @@
 
     const API_URL    = '/api/nowplaying/kpab.fm';
     const STREAM_URL = '/radio.mp3';
-    const POLL_MS    = 5000;
+    const POLL_MS    = 3000;
 
     let isPlaying    = false;
     let lastSongId   = null;
@@ -1768,6 +1768,10 @@
     let lastHistoryKey = '';
     let pollFailCount = 0;
     let reconnectTimer = null;
+    let transitionPollTimer = null;
+    let progressAnchorWall = Date.now();
+    let progressAnchorElapsed = 0;
+    let currentMediaPayload = null;
 
     const audioEl        = document.getElementById('audioEl');
     const playBtn        = document.getElementById('playBtn');
@@ -1811,25 +1815,84 @@
       } catch (e) { return url; }
     }
 
+    function absoluteUrl(url) {
+      if (!url) return null;
+      try {
+        return new URL(url, window.location.origin).href;
+      } catch (e) { return url; }
+    }
+
     function escHtml(s) {
       return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
-    let lastTickWall = 0;
+    function currentTrackElapsed() {
+      if (!trackDuration) return progressAnchorElapsed || 0;
+      const elapsed = progressAnchorElapsed + ((Date.now() - progressAnchorWall) / 1000);
+      return Math.max(0, Math.min(elapsed, trackDuration));
+    }
+
+    function renderProgress() {
+      trackElapsed = currentTrackElapsed();
+      if (trackDuration > 0) {
+        const pct = (trackElapsed / trackDuration) * 100;
+        progressFill.style.width = pct + '%';
+      }
+      timeElapsed.textContent = fmtTime(trackElapsed);
+      timeDuration.textContent = fmtTime(trackDuration);
+    }
+
     function startProgressTick() {
       clearInterval(progressTimer);
-      lastTickWall = Date.now();
       progressTimer = setInterval(() => {
-        if (trackDuration > 0) {
-          const now = Date.now();
-          const delta = Math.round((now - lastTickWall) / 1000);
-          lastTickWall = now;
-          trackElapsed = Math.min(trackElapsed + delta, trackDuration);
-          const pct = (trackElapsed / trackDuration) * 100;
-          progressFill.style.width = pct + '%';
-          timeElapsed.textContent = fmtTime(trackElapsed);
-        }
+        renderProgress();
       }, 1000);
+    }
+
+    function scheduleTransitionPoll() {
+      clearTimeout(transitionPollTimer);
+      if (!trackDuration) return;
+      const remainingMs = Math.max(250, (trackDuration - currentTrackElapsed() + 0.35) * 1000);
+      transitionPollTimer = setTimeout(() => {
+        poll();
+        transitionPollTimer = setTimeout(poll, 1200);
+      }, Math.min(remainingMs, 30000));
+    }
+
+    function setProgressFromNowPlaying(np) {
+      trackDuration = Number(np.duration) || 0;
+      progressAnchorElapsed = Number(np.elapsed) || 0;
+      progressAnchorWall = Date.now();
+      renderProgress();
+      scheduleTransitionPoll();
+    }
+
+    function pushMediaSession(payload = currentMediaPayload) {
+      if (!payload || !('mediaSession' in navigator)) return;
+      const artSrc = absoluteUrl(payload.artUrl || '/icon-512.png');
+      const artwork = [
+        { src: artSrc, sizes: '96x96', type: payload.artType },
+        { src: artSrc, sizes: '128x128', type: payload.artType },
+        { src: artSrc, sizes: '192x192', type: payload.artType },
+        { src: artSrc, sizes: '256x256', type: payload.artType },
+        { src: artSrc, sizes: '384x384', type: payload.artType },
+        { src: artSrc, sizes: '512x512', type: payload.artType }
+      ];
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: payload.title || 'KPAB.FM',
+        artist: payload.artist || 'Pirate Radio',
+        album: payload.album || 'KPAB.FM',
+        artwork
+      });
+      if (typeof navigator.mediaSession.setPositionState === 'function' && trackDuration > 0) {
+        try {
+          navigator.mediaSession.setPositionState({
+            duration: trackDuration,
+            playbackRate: 1,
+            position: currentTrackElapsed()
+          });
+        } catch (e) {}
+      }
     }
 
     function updateNowPlaying(data) {
@@ -1850,14 +1913,7 @@
 
       if (!song) return;
 
-      // Update progress from API
-      trackElapsed = np.elapsed || 0;
-      trackDuration = np.duration || 0;
-      timeElapsed.textContent = fmtTime(trackElapsed);
-      timeDuration.textContent = fmtTime(trackDuration);
-      if (trackDuration > 0) {
-        progressFill.style.width = ((trackElapsed / trackDuration) * 100) + '%';
-      }
+      setProgressFromNowPlaying(np);
 
       const songId = song.id || song.title;
 
@@ -1877,9 +1933,7 @@
         progressFill.style.width = '0%';
         requestAnimationFrame(() => {
           progressFill.style.transition = 'width 1s linear';
-          if (trackDuration > 0) {
-            progressFill.style.width = ((trackElapsed / trackDuration) * 100) + '%';
-          }
+          renderProgress();
         });
 
         startProgressTick();
@@ -1927,25 +1981,14 @@
           artPlaceholder.style.display = 'flex';
         }
 
-        // Update Media Session for lock screen / notification controls
-        if ('mediaSession' in navigator) {
-          const msArt = artUrl
-            ? [
-                { src: artUrl, sizes: '96x96', type: 'image/jpeg' },
-                { src: artUrl, sizes: '128x128', type: 'image/jpeg' },
-                { src: artUrl, sizes: '192x192', type: 'image/jpeg' },
-                { src: artUrl, sizes: '256x256', type: 'image/jpeg' },
-                { src: artUrl, sizes: '384x384', type: 'image/jpeg' },
-                { src: artUrl, sizes: '512x512', type: 'image/jpeg' }
-              ]
-            : [{ src: '/icon-512.png', sizes: '512x512', type: 'image/png' }];
-          navigator.mediaSession.metadata = new MediaMetadata({
-            title: song.title || 'KPAB.FM',
-            artist: song.artist || 'Pirate Radio',
-            album: song.album || 'KPAB.FM',
-            artwork: msArt
-          });
-        }
+        currentMediaPayload = {
+          title: song.title || 'KPAB.FM',
+          artist: song.artist || 'Pirate Radio',
+          album: song.album || 'KPAB.FM',
+          artUrl: artUrl || '/icon-512.png',
+          artType: artUrl ? 'image/jpeg' : 'image/png'
+        };
+        pushMediaSession();
       }
 
       if (history.length > 0) {
@@ -2043,6 +2086,7 @@
       timeElapsed.textContent = '--:--';
       timeDuration.textContent = '--:--';
       progressFill.style.width = '0%';
+      clearTimeout(transitionPollTimer);
     }
 
     async function poll() {
@@ -2125,13 +2169,8 @@
 
     audioEl.addEventListener('playing', () => {
       setPlaying(true);
-      // Re-push metadata to lock screen on play — iOS often drops it on reconnect
-      if ('mediaSession' in navigator && navigator.mediaSession.metadata) {
-        const m = navigator.mediaSession.metadata;
-        navigator.mediaSession.metadata = new MediaMetadata({
-          title: m.title, artist: m.artist, album: m.album, artwork: Array.from(m.artwork)
-        });
-      }
+      poll();
+      pushMediaSession();
     });
     audioEl.addEventListener('pause', () => setPlaying(false));
     audioEl.addEventListener('ended', () => {
@@ -2163,6 +2202,11 @@
         if (isPlaying) playBtn.click();
       });
     }
+
+    window.addEventListener('pageshow', () => {
+      poll();
+      pushMediaSession();
+    });
 
     startPolling();
     startProgressTick();
@@ -2371,11 +2415,13 @@
 
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
+        pushMediaSession();
+      } else {
         clearInterval(pollTimer);
         clearInterval(progressTimer);
-      } else {
         startPolling();
         startProgressTick();
+        pushMediaSession();
       }
     });
 
