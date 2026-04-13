@@ -675,6 +675,8 @@
 
     /* REQUEST PANEL */
     .request-section { position: relative; }
+    .request-section + .mutiny-section,
+    .mutiny-section + .about-section { margin-top: -8px; }
 
     .request-toggle {
       width: 100%;
@@ -990,6 +992,8 @@
       .about-toggle { font-size: 16px; padding: 12px 16px; }
       .msg-toggle { font-size: 16px; padding: 12px 16px; }
       .mutiny-toggle { font-size: 16px; padding: 12px 16px; }
+      .request-section + .mutiny-section,
+      .mutiny-section + .about-section { margin-top: -4px; }
     }
 
     /* TAGLINE */
@@ -1721,12 +1725,12 @@
 
           <div class="faq-item">
             <div class="faq-q">WILL IT GO DOWN?</div>
-            <div class="faq-a">Almost certainly. It's an $80 raspberry pi strapped to a hard drive on a desk in my house. It crashes when I look at it funny. But it always comes back. Just chill and come back in halfa. It'll be back soon.</div>
+            <div class="faq-a">Almost certainly. It's an $80 raspberry pi strapped to a hard drive on a desk in my house. It crashes when I look at it funny. But it always comes back. Just chill and come back in halfa.</div>
           </div>
 
           <div class="faq-item">
             <div class="faq-q">WHO MADE THIS?</div>
-            <div class="faq-a">Pablo. Medium sized Mexican-Australian in Brunswick, Melbourne. Card carrying Subgenius. Plays in <a href="https://mesacosa.bandcamp.com/album/el-es-demons" target="_blank" rel="noopener" style="color: var(--cyan); text-decoration: none; border-bottom: 1px solid rgba(0,255,234,0.3);">Mesa Cosa</a>, runs <a href="https://bonesouprules.com" target="_blank" rel="noopener" style="color: var(--cyan); text-decoration: none; border-bottom: 1px solid rgba(0,255,234,0.3);">Bone Soup</a> touring, and is part of the <a href="https://quickcat.club" target="_blank" rel="noopener" style="color: var(--cyan); text-decoration: none; border-bottom: 1px solid rgba(0,255,234,0.3);">Quick Cat Club</a>. Pro choice, pro Palestine, pro wrestling. <a href="https://ko-fi.com/madebypablo" target="_blank" rel="noopener" style="color: var(--magenta); text-decoration: none; border-bottom: 1px solid rgba(255,0,255,0.3);">Buy me a coffee</a>.</div>
+            <div class="faq-a">Pablo. Medium sized Mexican-Australian in Brunswick, Melbourne. Card carrying Subgenius. Plays in <a href="https://mesacosa.bandcamp.com/album/el-es-demons" target="_blank" rel="noopener" style="color: var(--cyan); text-decoration: none; border-bottom: 1px solid rgba(0,255,234,0.3);">Mesa Cosa</a>, runs <a href="https://bonesouprules.com" target="_blank" rel="noopener" style="color: var(--cyan); text-decoration: none; border-bottom: 1px solid rgba(0,255,234,0.3);">Bone Soup</a> touring, and is part of the <a href="https://quickcat.club" target="_blank" rel="noopener" style="color: var(--cyan); text-decoration: none; border-bottom: 1px solid rgba(0,255,234,0.3);">Quick Cat Club</a>. Pro choice, pro Palestine, pro wrestling.</div>
           </div>
         </div>
       </div>
@@ -2515,8 +2519,8 @@
 
     function formatShoutTime(ts) {
       const d = new Date(ts * 1000);
-      const date = d.getDate() + '/' + (d.getMonth() + 1);
-      const time = d.toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'});
+      const date = d.getDate() + '|' + (d.getMonth() + 1);
+      const time = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
       return date + ' ' + time;
     }
 
