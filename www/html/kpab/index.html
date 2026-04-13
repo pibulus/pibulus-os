@@ -437,6 +437,27 @@
 
     .listeners-badge { font-size: 11px; color: var(--dim); letter-spacing: 1px; white-space: nowrap; }
     .listeners-count { color: var(--cyan); font-size: 13px; }
+    .share-btn {
+      min-width: 44px;
+      min-height: 44px;
+      border: 1px solid rgba(0,255,234,0.35);
+      background: rgba(0,0,0,0.55);
+      color: var(--cyan);
+      font-family: 'VT323', monospace;
+      font-size: 15px;
+      letter-spacing: 1px;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: border-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .share-btn:hover {
+      border-color: var(--cyan);
+      color: var(--text);
+      box-shadow: 0 0 14px rgba(0,255,234,0.14);
+    }
+    .share-btn:active { transform: scale(0.95); }
+    .share-btn.copied { border-color: var(--magenta); color: var(--magenta); }
 
     /* HISTORY */
     .history-section { flex: 1; }
@@ -638,6 +659,7 @@
       .visualizer { min-width: 60px; }
       input[type="range"] { width: 60px; }
       .listeners-badge { font-size: 10px; }
+      .share-btn { min-width: 42px; min-height: 42px; font-size: 14px; }
       .progress-section { padding: 8px 14px 10px; border-bottom: 1px solid #151515; }
       input[type="range"]::-webkit-slider-thumb { width: 18px; height: 18px; }
       .progress-times { font-size: 13px; }
@@ -928,7 +950,7 @@
     .request-toast {
       position: absolute;
       bottom: 0; left: 0; right: 0;
-      background: rgba(0,255,234,0.12);
+      background: #020707;
       border-top: 1px solid var(--cyan);
       color: var(--cyan);
       font-family: 'VT323', monospace;
@@ -940,11 +962,12 @@
       transition: transform 0.3s ease;
       pointer-events: none;
       z-index: 10;
+      box-shadow: 0 -10px 28px rgba(0,0,0,0.8), inset 0 1px 0 rgba(0,255,234,0.12);
     }
 
     .request-toast.show { transform: translateY(0); }
     .request-toast.error {
-      background: rgba(255,68,68,0.12);
+      background: #0a0303;
       border-top-color: #ff4444;
       color: #ff4444;
     }
@@ -1606,6 +1629,7 @@
       <button class="play-btn" id="playBtn" aria-label="Play stream" title="Play / Pause">&#x25B6;</button>
       <div class="visualizer" id="visualizer" aria-hidden="true"></div>
       <div class="listeners-badge">&#x1F465; <span class="listeners-count" id="listenerCount">&mdash;</span> listening</div>
+      <button class="share-btn" id="shareBtn" aria-label="Share current track" title="Share current track" type="button">SHARE</button>
     </section>
     </div>
 
@@ -1795,6 +1819,7 @@
     const progressFill   = document.getElementById('progressFill');
     const timeElapsed    = document.getElementById('timeElapsed');
     const timeDuration   = document.getElementById('timeDuration');
+    const shareBtn       = document.getElementById('shareBtn');
 
     // Visualizer bars
     for (let i = 0; i < 18; i++) {
@@ -2190,6 +2215,42 @@
       else setPlaying(false);
     });
 
+    function shareTrackText() {
+      const track = lastSongText || 'KPAB.FM';
+      return 'Listening to ' + track + ' on KPAB.FM';
+    }
+
+    function flashShareLabel(label) {
+      const old = shareBtn.textContent;
+      shareBtn.textContent = label;
+      shareBtn.classList.add('copied');
+      setTimeout(() => {
+        shareBtn.textContent = old;
+        shareBtn.classList.remove('copied');
+      }, 1600);
+    }
+
+    async function shareCurrentTrack() {
+      const shareData = {
+        title: 'KPAB.FM',
+        text: shareTrackText(),
+        url: window.location.origin + '/'
+      };
+      try {
+        if (navigator.share) {
+          await navigator.share(shareData);
+          return;
+        }
+        await navigator.clipboard.writeText(shareData.text + ' ' + shareData.url);
+        flashShareLabel('COPIED');
+      } catch (e) {
+        if (e && e.name === 'AbortError') return;
+        flashShareLabel('NOPE');
+      }
+    }
+
+    shareBtn.addEventListener('click', shareCurrentTrack);
+
     function scheduleStreamReconnect(ms) {
       if (reconnectTimer) return;
       setPlaying(false);
@@ -2452,6 +2513,13 @@
     const shoutList = document.getElementById('shoutList');
     let shoutsInterval = null;
 
+    function formatShoutTime(ts) {
+      const d = new Date(ts * 1000);
+      const date = d.getDate() + '/' + (d.getMonth() + 1);
+      const time = d.toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'});
+      return date + ' ' + time;
+    }
+
     async function loadShouts() {
       try {
         const res = await fetch('/msg/shouts.json');
@@ -2466,7 +2534,7 @@
             <div class="shout-item">
               <div class="shout-header">
                 <span class="shout-name">${escHtml(s.n)}</span>
-                <span class="shout-time">${new Date(s.t * 1000).toLocaleTimeString([], {hour: "2-digit", minute:"2-digit"})}</span>
+                <span class="shout-time">${formatShoutTime(s.t)}</span>
               </div>
               <div class="shout-msg">${escHtml(s.m)}</div>
               ${s.track ? `<div class="shout-track">\u266B ${escHtml(s.track)}</div>` : ''}
