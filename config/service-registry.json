@@ -64,6 +64,14 @@
       "container": "calibre-web"
     },
     {
+      "key": "audiobooks",
+      "name": "Audiobooks",
+      "url": "https://audiobooks.quickcat.club",
+      "category": "public",
+      "description": "audiobooks and longform listening",
+      "container": "audiobookshelf"
+    },
+    {
       "key": "comics",
       "name": "Kavita",
       "url": "https://comics.quickcat.club",

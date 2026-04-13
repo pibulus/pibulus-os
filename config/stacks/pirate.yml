@@ -235,6 +235,10 @@ services:
       - /media/pibulus/passport/Palestine:/usr/share/nginx/palestine:ro
       - /media/pibulus/passport/Conspiracy:/usr/share/nginx/conspiracy:ro
       - /media/pibulus/passport/Games/@Uninstalled:/usr/share/nginx/conspiracy/Uninstalled Games:ro
+      - /media/pibulus/passport/Resources/Guitar:/usr/share/nginx/crates/Guitar:ro
+      - /media/pibulus/passport/Resources/Piano:/usr/share/nginx/crates/Piano:ro
+      - /media/pibulus/passport/Ebooks/Music Theory - eBook Collection:/usr/share/nginx/crates/Music Theory:ro
+      - /media/pibulus/passport/Resources/Loops:/usr/share/nginx/loops:ro
       - /home/pibulus/pibulus-os/config/nginx/.htpasswd:/etc/nginx/.htpasswd:ro
     restart: always
 

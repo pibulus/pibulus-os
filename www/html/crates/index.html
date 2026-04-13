@@ -3,19 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The Forbidden Library - quickcat.club</title>
+  <title>Crates - quickcat.club</title>
   <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --bg: #050505;
-      --accent: #ff3333;
-      --accent-dim: rgba(255,51,51,0.3);
+      --accent: #f5c842;
+      --accent-dim: rgba(245,200,66,0.3);
       --text: #e0e0e0;
       --dim: #888;
       --dim-soft: #555;
-      --panel: rgba(10,0,0,0.8);
-      --border: rgba(255,51,51,0.2);
+      --panel: rgba(12,10,0,0.82);
+      --border: rgba(245,200,66,0.22);
       --gold: #cc9933;
       --gold-dim: rgba(204,153,51,0.3);
     }
@@ -44,7 +44,7 @@
     h1 {
       font-size: 3.6rem;
       color: var(--accent);
-      text-shadow: 0 0 10px var(--accent), 0 0 30px rgba(255,0,0,0.4);
+      text-shadow: 0 0 10px var(--accent), 0 0 30px rgba(245,200,66,0.35);
       letter-spacing: 0; line-height: 1; text-transform: uppercase;
     }
     .subtitle { color: var(--dim); font-size: 1.1rem; margin-top: 0.5rem; letter-spacing: 0; }
@@ -72,7 +72,7 @@
       background: #111; border: 1px solid var(--accent);
       padding: 2rem; max-width: 500px; width: min(90vw, 500px); max-height: calc(100dvh - 2rem); overflow: auto;
       text-align: center; position: relative;
-      box-shadow: 0 0 30px rgba(255,0,0,0.15);
+      box-shadow: 0 0 30px rgba(245,200,66,0.15);
     }
     .modal-title { font-size: 1.5rem; color: var(--accent); margin-bottom: 1rem; }
     .modal-text { color: var(--text); margin-bottom: 2rem; line-height: 1.5; }
@@ -134,7 +134,7 @@
     }
     .file-item:hover {
       border-left-color: var(--accent);
-      background: rgba(255,51,51,0.04);
+      background: rgba(245,200,66,0.04);
       transform: translateX(4px);
     }
     .file-item.is-folder {
@@ -142,7 +142,7 @@
     }
     .file-item.is-folder:hover {
       border-left-color: var(--accent);
-      background: rgba(255,51,51,0.08);
+      background: rgba(245,200,66,0.08);
     }
     .file-icon { font-size: 1.5rem; flex-shrink: 0; width: 2rem; text-align: center; }
     .file-info { flex: 1; min-width: 0; }
@@ -159,7 +159,7 @@
     }
     .file-item:hover .file-action { opacity: 1; }
     .loading { text-align: center; color: var(--dim); padding: 2rem 0; }
-    footer { text-align: center; margin-top: 3rem; padding-top: 1rem; border-top: 1px solid rgba(255,51,51,0.1); }
+    footer { text-align: center; margin-top: 3rem; padding-top: 1rem; border-top: 1px solid rgba(245,200,66,0.1); }
     .footer-text { color: var(--dim-soft); font-size: 0.9rem; letter-spacing: 0; }
     .search-bar { margin: 0.5rem 0 1rem; display: none; }
     .empty-search { display: none; color: var(--dim); border: 1px dashed var(--border); padding: 1rem; text-align: center; margin-bottom: 1rem; }
@@ -170,7 +170,7 @@
       font-size: 1rem; padding: 10px 14px; min-height: 48px; outline: none; letter-spacing: 0;
     }
     .search-bar input::placeholder { color: var(--dim-soft); }
-    .search-bar input:focus { border-color: var(--accent); background: rgba(255,51,51,0.03); }
+    .search-bar input:focus { border-color: var(--accent); background: rgba(245,200,66,0.03); }
     @media (max-width: 560px) {
       .wrapper { padding: 1rem 0.75rem 3rem; }
       header { padding: 1rem 0 0.5rem; }
@@ -211,9 +211,9 @@
   <div class="wrapper">
     <a href="/" class="back" data-sound-hover="hover" data-sound-click="click">&larr; quickcat.club</a>
     <header>
-      <h1>Forbidden Library</h1>
-      <p class="subtitle">esoteric &amp; suppressed knowledge</p>
-      <p class="intro">warning: these files are for research purposes only. question everything.</p>
+      <h1>Crates</h1>
+      <p class="subtitle">tabs, lessons &amp; music theory</p>
+      <p class="intro">dig through the practice shelf: tabs, songbooks, theory, piano and guitar lessons.</p>
     </header>
 
     <div class="breadcrumbs" id="breadcrumbs"></div>
@@ -224,15 +224,15 @@
     <div class="empty-search" id="empty-search">no matching files here</div>
 
     <div id="root-view" style="display:none">
-      <div class="section-divider"><span class="section-label">[ COLLECTIONS ]</span></div>
+      <div class="section-divider"><span class="section-label">[ SHELVES ]</span></div>
       <div class="count" id="folder-count"></div>
       <div class="file-list" id="folders"></div>
 
-      <div class="section-divider gold"><span class="section-label gold">[ OCCULT &amp; ESOTERIC ]</span></div>
+      <div class="section-divider gold"><span class="section-label gold">[ LESSONS &amp; TEXTS ]</span></div>
       <div class="count" id="occult-count"></div>
       <div class="file-list" id="occult"></div>
 
-      <div class="section-divider"><span class="section-label">[ VIDEO &amp; MEDIA ]</span></div>
+      <div class="section-divider"><span class="section-label">[ AUDIO &amp; MEDIA ]</span></div>
       <div class="count" id="media-count"></div>
       <div class="file-list" id="media"></div>
 
@@ -256,7 +256,7 @@
     </div>
 
     <footer>
-      <p class="footer-text">semper vigilo &mdash; trust no one</p>
+      <p class="footer-text">stay loose &mdash; keep practicing</p>
     </footer>
   </div>
   <script>
@@ -269,9 +269,7 @@
     var currentPath = '';
 
     // Occult/esoteric keywords for smart categorisation
-    var OCCULT_KEYWORDS = ['occult','magick','magic','tarot','witch','grimoire','shaman','astrol',
-      'freemasonry','masonic','esoteric','mystical','paranormal','alchemy','hermetic','ritual',
-      'divination','kabbalah','qabalah','theoccult','palmistry','subgenius','chaos magic'];
+    var OCCULT_KEYWORDS = ['guitar','piano','music','theory','chord','tab','song','beginner','play','keyboard','lesson','method','sourcebook'];
 
     function ext(name) {
       var m = name.toLowerCase().match(/\.[a-z0-9]+$/);
@@ -349,13 +347,13 @@
     }
 
     function buildPath(subpath) {
-      var base = '/conspiracy/files/';
+      var base = '/crates/files/';
       if (!subpath) return base;
       return base + subpath.split('/').map(encodeURIComponent).join('/') + '/';
     }
 
     function fileUrl(name) {
-      var base = '/conspiracy/files/';
+      var base = '/crates/files/';
       var path = currentPath ? currentPath + '/' + name : name;
       return base + path.split('/').map(encodeURIComponent).join('/');
     }
@@ -509,7 +507,7 @@
       document.getElementById('root-view').style.display = isRoot ? 'block' : 'none';
       document.getElementById('browse-view').style.display = isRoot ? 'none' : 'block';
 
-      var loadingMsg = 'decrypting manifest...';
+      var loadingMsg = 'checking the crates...';
 
       fetch(url, { cache: 'no-cache' })
         .then(function(res) { return res.text(); })
@@ -537,9 +535,9 @@
         })
         .catch(function() {
           if (isRoot) {
-            document.getElementById('folders').innerHTML = '<div class="loading">access denied</div>';
+            document.getElementById('folders').innerHTML = '<div class="loading">shelf unavailable</div>';
           } else {
-            document.getElementById('browse-files').innerHTML = '<div class="loading">access denied</div>';
+            document.getElementById('browse-files').innerHTML = '<div class="loading">shelf unavailable</div>';
           }
         });
     }

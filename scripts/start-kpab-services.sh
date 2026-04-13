@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Quick Cat Club microservices launcher.
-# Starts: shoutbox (8087), wall (8086), hearts (8092), public deck (7683), admin shell (7684).
+# Starts: shoutbox (8087), wall (8086), hearts (8092), archive browser (8093), public deck (7683), admin shell (7684).
 
 set -u
 
@@ -30,6 +30,7 @@ log 'Cleaning up any existing aggregate microservice processes...'
 pkill -f 'kpab_shoutbox.py' 2>/dev/null || true
 pkill -f 'wall_server.py' 2>/dev/null || true
 pkill -f 'kpab_hearts.py' 2>/dev/null || true
+pkill -f 'archive_browser.py' 2>/dev/null || true
 pkill -f 'ttyd.*768[34]' 2>/dev/null || true
 sleep 2
 
@@ -41,6 +42,7 @@ log 'Starting Quick Cat Club microservices...'
 start_python_service 'Shoutbox' 'kpab_shoutbox.py' '8087'
 start_python_service 'Wall Server' 'wall_server.py' '8086'
 start_python_service 'Hearts' 'kpab_hearts.py' '8092'
+start_python_service 'Archive Browser' 'archive_browser.py' '8093'
 
 # Public Cyberdeck: no auth, sandboxed to the textworld launcher.
 /usr/local/bin/ttyd --writable -p 7683 \
