@@ -1464,6 +1464,13 @@
     .love-btn:hover .love-heart-wrap svg {
       filter: drop-shadow(0 0 6px rgba(220,60,180,0.45));
     }
+    .love-btn.loved {
+      opacity: 1;
+      cursor: default;
+    }
+    .love-btn.loved .love-heart-wrap svg {
+      filter: drop-shadow(0 0 12px rgba(220,60,180,0.7));
+    }
     .love-btn:active {
       transform: scale(0.9);
     }
@@ -1989,6 +1996,7 @@
           artType: artUrl ? 'image/jpeg' : 'image/png'
         };
         pushMediaSession();
+        updateLoveStateForSong();
       }
 
       if (history.length > 0) {
@@ -2640,8 +2648,9 @@
     const loveFill = document.getElementById('loveHeartFill');
     const loveSparks = document.getElementById('loveSparks');
     let loveLevel = 0;
-    const loveMax = 10;
+    const loveMax = 1;
     let lovePopped = false;
+    let lovePending = false;
     let loveScl = 1;
     let loveVel = 0;
     let loveTarget = 1;
@@ -2712,38 +2721,67 @@
       loveSvg.style.filter = 'drop-shadow(0 0 18px rgba(220,60,180,0.8))';
       setTimeout(function() { loveTarget = 0; loveVel = -0.1; loveBurst(); }, 380);
       setTimeout(function() {
-        loveLevel = 0; lovePopped = false; loveUpdateFill();
-        loveScl = 0; loveVel = 0; loveTarget = 1; loveStartSpring(1);
+        lovePopped = false;
+        loveLevel = loveMax;
+        loveUpdateFill();
+        loveScl = 0.95; loveVel = 0; loveTarget = 1; loveStartSpring(1);
       }, 1400);
     }
 
-    // Restore state from localStorage
-    if (localStorage.getItem('kpab-love')) {
-      loveLevel = loveMax;
+    const loveStoreKey = 'kpab-loved-songs';
+    localStorage.removeItem('kpab-love');
+
+    function lovedSongs() {
+      try {
+        return JSON.parse(localStorage.getItem(loveStoreKey) || '{}') || {};
+      } catch (e) {
+        return {};
+      }
+    }
+
+    function setSongLoved(songId, value) {
+      if (!songId) return;
+      const songs = lovedSongs();
+      if (value) songs[songId] = Date.now();
+      else delete songs[songId];
+      localStorage.setItem(loveStoreKey, JSON.stringify(songs));
+    }
+
+    function isSongLoved(songId) {
+      return !!(songId && lovedSongs()[songId]);
+    }
+
+    function updateLoveStateForSong() {
+      lovePending = false;
+      lovePopped = false;
+      const loved = isSongLoved(lastSongId);
+      loveLevel = loved ? loveMax : 0;
+      loveBtn.classList.toggle('loved', loved);
+      loveBtn.disabled = loved;
+      loveBtn.setAttribute('aria-label', loved ? 'Loved this track' : 'Show this track some love');
+      loveBtn.setAttribute('aria-pressed', loved ? 'true' : 'false');
       loveUpdateFill();
     }
 
     loveBtn.addEventListener('click', () => {
-      localStorage.setItem('kpab-love', '1');
-      // Send heart to backend
-      if (lastSongId) {
-        fetch('/hearts/love', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ song_id: lastSongId, song_text: lastSongText })
-        }).then(res => {
-          if (!res.ok && res.status !== 429) console.warn('[KPAB] Heart failed:', res.status);
-        }).catch(err => console.warn('[KPAB] Heart failed:', err.message));
-      }
-      if (lovePopped) return;
-      loveLevel++;
-      if (loveLevel >= loveMax) {
-        loveUpdateFill();
-        lovePop();
-      } else {
-        loveUpdateFill();
-        loveKick();
-      }
+      if (!lastSongId || lovePending || isSongLoved(lastSongId)) return;
+      lovePending = true;
+      setSongLoved(lastSongId, true);
+      loveBtn.classList.add('loved');
+      loveBtn.disabled = true;
+      loveBtn.setAttribute('aria-label', 'Loved this track');
+      loveBtn.setAttribute('aria-pressed', 'true');
+      loveLevel = loveMax;
+      loveUpdateFill();
+      lovePop();
+      fetch('/hearts/love', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ song_id: lastSongId, song_text: lastSongText })
+      }).then(res => {
+        if (!res.ok && res.status !== 429) console.warn('[KPAB] Heart failed:', res.status);
+      }).catch(err => console.warn('[KPAB] Heart failed:', err.message))
+        .finally(() => { lovePending = false; });
       if (navigator.vibrate) navigator.vibrate(12);
     });
     loveBtn.addEventListener('mouseenter', function() {
@@ -2752,7 +2790,7 @@
     loveBtn.addEventListener('mouseleave', function() {
       if (!lovePopped) loveStartSpring(1);
     });
-    loveUpdateFill();
+    updateLoveStateForSong();
 
     // Haptic feedback — subtle vibration on interactive taps
     function haptic(ms) { if (navigator.vibrate) navigator.vibrate(ms); }
