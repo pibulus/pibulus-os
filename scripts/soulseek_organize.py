@@ -107,6 +107,12 @@ def read_tags(path: Path) -> dict[str, object]:
     return tag_with_mediafile(path) or tag_with_ffprobe(path)
 
 
+def match_text(value: object, needle: str) -> bool:
+    if not needle:
+        return True
+    return needle in str(value or "").lower()
+
+
 def audio_files(source: Path) -> list[Path]:
     files: list[Path] = []
     for path in source.rglob("*"):
@@ -174,15 +180,17 @@ def main() -> int:
     parser.add_argument("--apply", action="store_true", help="create links; default is dry-run")
     parser.add_argument("--mode", choices=("hardlink", "symlink"), default="hardlink", help="link type to create with --apply")
     parser.add_argument("--limit", type=int, default=0, help="only inspect the first N audio files")
-    parser.add_argument("--album", help="only inspect source paths containing this text")
+    parser.add_argument("--album", help="only include files whose album tag contains this text")
+    parser.add_argument("--artist", help="only include files whose artist/albumartist tag contains this text")
+    parser.add_argument("--path", help="only include source paths containing this text")
     args = parser.parse_args()
 
     SOURCE = args.source
     DEST = args.dest
 
     files = audio_files(SOURCE)
-    if args.album:
-        needle = args.album.lower()
+    if args.path:
+        needle = args.path.lower()
         files = [p for p in files if needle in str(p.relative_to(SOURCE)).lower()]
     if args.limit:
         files = files[: args.limit]
@@ -191,6 +199,14 @@ def main() -> int:
     preview: list[dict[str, str]] = []
     for source in files:
         target, reason, tags = target_for(source)
+        if args.artist:
+            artist_needle = args.artist.lower()
+            if not (match_text(tags.get("albumartist"), artist_needle) or match_text(tags.get("artist"), artist_needle)):
+                stats["filtered"] += 1
+                continue
+        if args.album and not match_text(tags.get("album"), args.album.lower()):
+            stats["filtered"] += 1
+            continue
         stats[reason] += 1
         if not target:
             if len(preview) < 20:
