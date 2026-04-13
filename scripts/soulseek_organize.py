@@ -3,7 +3,7 @@
 Build a clean Artist/Album hardlink mirror for Soulseek downloads.
 
 Default mode is dry-run. Use --apply to create hardlinks under:
-  /media/pibulus/passport/Music/Soulseek Organized
+  /media/pibulus/passport/Soulseek Organized
 
 The raw Soulseek downloads are never moved, renamed, or retagged.
 """
@@ -19,7 +19,7 @@ from collections import Counter
 from pathlib import Path
 
 SOURCE = Path("/media/pibulus/passport/Soulseek")
-DEST = Path("/media/pibulus/passport/Music/Soulseek Organized")
+DEST = Path("/media/pibulus/passport/Soulseek Organized")
 AUDIO_EXTS = {".mp3", ".flac", ".m4a", ".ogg", ".opus", ".wav", ".aiff", ".aif"}
 BAD_CHARS = re.compile(r'[<>:"/\\|?*\x00-\x1f]')
 SPACE_RE = re.compile(r"\s+")
