@@ -33,10 +33,10 @@
     },
     {
       "key": "deck",
-      "name": "Deck",
+      "name": "Portal",
       "url": "https://deck.quickcat.club",
       "category": "admin",
-      "description": "admin deck",
+      "description": "admin portal",
       "canonical": true
     },
     {

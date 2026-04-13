@@ -1,25 +1,25 @@
 (() => {
   const rules = [
-    [/^\/kpab\//, "📻"],
+    [/^\/kpab\//, "🌴"],
     [/^\/arcade\//, "🕹️"],
     [/^\/pico\//, "👾"],
     [/^\/conspiracy\//, "🛸"],
     [/^\/palestine\//, "🍉"],
-    [/^\/crates\//, "🎼"],
-    [/^\/loops\//, "🎛️"],
+    [/^\/crates\//, "🗝️"],
+    [/^\/loops\//, "🎹"],
     [/^\/drop\//, "📦"],
-    [/^\/wall\//, "🧱"],
+    [/^\/wall\//, "🖌️"],
     [/^\/fiction\//, "📖"],
     [/^\/textworlds\//, "🧙"],
     [/^\/terminal\//, "💻"],
-    [/^\/deck\//, "🖥️"],
+    [/^\/deck\//, "🔮"],
     [/^\/mission-control\//, "🛰️"],
-    [/^\/$/, "🐈"],
+    [/^\/$/, "🐱"],
   ];
 
   function emojiForPath(path) {
     const match = rules.find(([pattern]) => pattern.test(path));
-    return match ? match[1] : "🐈";
+    return match ? match[1] : "🐱";
   }
 
   function setEmojiFavicon(emoji) {
