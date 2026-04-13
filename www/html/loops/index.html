@@ -512,8 +512,12 @@
       var loadingMsg = 'loading the packs...';
 
       fetch(url, { cache: 'no-cache' })
-        .then(function(res) { return res.text(); })
+        .then(function(res) {
+          if (!res.ok) throw new Error('file list unavailable');
+          return res.text();
+        })
         .then(function(text) {
+          if (!text.trim()) throw new Error('empty file list');
           var entries;
           try {
             entries = JSON.parse(text);
@@ -603,14 +607,12 @@
       occultEl.innerHTML = '';
       document.getElementById('occult-count').textContent = occultFiles.length + ' files';
       occultFiles.forEach(function(e) { occultEl.appendChild(makeItem(e, false)); });
-      occultEl.parentElement.style.display = occultFiles.length ? 'block' : 'none';
 
       // Media
       var mediaEl = document.getElementById('media');
       mediaEl.innerHTML = '';
       document.getElementById('media-count').textContent = mediaFiles.length + ' files';
       mediaFiles.forEach(function(e) { mediaEl.appendChild(makeItem(e, false)); });
-      mediaEl.parentElement.style.display = mediaFiles.length ? 'block' : 'none';
 
       // Misc
       var miscEl = document.getElementById('misc');
@@ -664,7 +666,7 @@
 
     navigate('');
   </script>
-  <script src="/archive-browser.js?v=peek-v1"></script>
+  <script src="/archive-browser.js?v=peek-v2"></script>
   <script src="/ui-sounds.js?v=organic-ui"></script>
   <script>UISounds.init();</script>
 </body>

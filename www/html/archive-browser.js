@@ -167,5 +167,4 @@
 
   window.ArchiveBrowser = { install, isArchive, openArchive };
   install();
-  if (typeof window.load === "function") window.load();
 })();

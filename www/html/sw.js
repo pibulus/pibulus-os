@@ -9,9 +9,3 @@ self.addEventListener('activate', (event) => {
     self.registration.unregister().then(() => self.clients.claim())
   );
 });
-
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    fetch(event.request).catch(() => new Response('', { status: 504, statusText: 'Network unavailable' }))
-  );
-});

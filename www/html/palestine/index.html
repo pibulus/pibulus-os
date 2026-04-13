@@ -507,8 +507,12 @@
       }
 
       fetch(url, { cache: 'no-cache' })
-        .then(function(res) { return res.text(); })
+        .then(function(res) {
+          if (!res.ok) throw new Error('file list unavailable');
+          return res.text();
+        })
         .then(function(text) {
+          if (!text.trim()) throw new Error('empty file list');
           var entries;
           try {
             entries = JSON.parse(text);
@@ -657,7 +661,7 @@
 
     navigate('');
   </script>
-  <script src="/archive-browser.js?v=peek-v1"></script>
+  <script src="/archive-browser.js?v=peek-v2"></script>
   <script src="/ui-sounds.js?v=organic-ui"></script>
   <script>UISounds.init();</script>
 </body>
