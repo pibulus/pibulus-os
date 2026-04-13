@@ -219,14 +219,33 @@
 
     .now-playing-label { display: none; }
 
-    .art-wrapper { position: relative; width: 130px; height: 130px; flex-shrink: 0; }
+    .art-wrapper {
+      position: relative;
+      width: 130px;
+      height: 130px;
+      flex-shrink: 0;
+      display: block;
+      color: inherit;
+      text-decoration: none;
+      cursor: pointer;
+    }
 
     .album-art {
       width: 130px; height: 130px;
       object-fit: cover;
       border: 2px solid #222;
       display: block;
-      transition: border-color 0.4s ease;
+      transition: border-color 0.4s ease, transform 0.2s ease, box-shadow 0.2s ease;
+      transform-origin: center;
+    }
+
+    .art-wrapper:hover .album-art,
+    .art-wrapper:focus-visible .album-art,
+    .art-wrapper:hover .art-placeholder,
+    .art-wrapper:focus-visible .art-placeholder {
+      transform: scale(1.035);
+      border-color: var(--magenta);
+      box-shadow: 0 0 18px rgba(255,0,255,0.22), 0 0 36px rgba(0,255,234,0.12);
     }
 
     .album-art.playing {
@@ -248,6 +267,8 @@
       justify-content: center;
       font-size: 44px;
       color: var(--dim);
+      transition: border-color 0.4s ease, transform 0.2s ease, box-shadow 0.2s ease;
+      transform-origin: center;
     }
 
     .track-info { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
@@ -1606,10 +1627,10 @@
     <div class="love-sparks" id="loveSparks"></div>
     <section class="now-playing" id="nowPlaying" aria-label="Now playing">
       <span class="now-playing-label">NOW PLAYING</span>
-      <div class="art-wrapper">
+      <a class="art-wrapper" id="artistSearchLink" href="https://www.google.com/search?q=KPAB.FM" target="_blank" rel="noopener" aria-label="Search current artist">
         <img class="album-art" id="albumArt" src="" alt="Album art" style="display:none">
         <div class="art-placeholder" id="artPlaceholder">&#x1F4FB;</div>
-      </div>
+      </a>
       <div class="track-info">
         <div class="signal-lost" id="signalLost">&#x26A1; SIGNAL LOST &#x26A1;</div>
         <div class="track-artist" id="trackArtist">LOADING...</div>
@@ -1810,6 +1831,7 @@
 
     const audioEl        = document.getElementById('audioEl');
     const playBtn        = document.getElementById('playBtn');
+    const artistSearchLink = document.getElementById('artistSearchLink');
     const albumArt       = document.getElementById('albumArt');
     const artPlaceholder = document.getElementById('artPlaceholder');
     const trackArtist    = document.getElementById('trackArtist');
@@ -1856,6 +1878,13 @@
       try {
         return new URL(url, window.location.origin).href;
       } catch (e) { return url; }
+    }
+
+    function artistSearchUrl(song) {
+      const artist = (song?.artist || '').trim();
+      const title = (song?.title || '').trim();
+      const query = artist ? (artist + ' upcoming shows merch') : (title ? title + ' music' : 'KPAB.FM');
+      return 'https://www.google.com/search?q=' + encodeURIComponent(query);
     }
 
     function escHtml(s) {
@@ -2024,6 +2053,8 @@
           artUrl: artUrl || '/icon-512.png',
           artType: artUrl ? 'image/jpeg' : 'image/png'
         };
+        artistSearchLink.href = artistSearchUrl(song);
+        artistSearchLink.setAttribute('aria-label', 'Search ' + (song.artist || song.title || 'this track'));
         pushMediaSession();
         updateLoveStateForSong();
       }
