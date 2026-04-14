@@ -46,7 +46,7 @@ start_python_service 'Archive Browser' 'archive_browser.py' '8093'
 
 # Public Cyberdeck: no auth, sandboxed to the textworld launcher.
 /usr/local/bin/ttyd --writable -p 7683 \
-  -t fontSize=16 \
+  -t fontSize=18 \
   -t fontFamily=monospace \
   -t cursorBlink=true \
   -t 'theme={"background":"#020402","foreground":"#d8f3dc","cursor":"#ffb000","selection":"#244c2f"}' \

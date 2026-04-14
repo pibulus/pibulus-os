@@ -8,6 +8,17 @@ MOVIE_COUNT=$(curl -s --max-time 5 "http://localhost:8096/Items?IncludeItemTypes
 SHOW_COUNT=$(curl -s --max-time 5 "http://localhost:8096/Items?IncludeItemTypes=Series&Recursive=true&Limit=0&api_key=1980cdafcfec43b58b04b89c4d1f5b99" 2>/dev/null | \
   python3 -c "import sys,json; print(json.load(sys.stdin).get('TotalRecordCount',0))" 2>/dev/null || echo "0")
 
+MOVIE_FS_COUNT=$(find /media/pibulus/passport/Movies -mindepth 1 -maxdepth 1 ! -name '.*' 2>/dev/null | wc -l | tr -d ' ')
+SHOW_FS_COUNT=$(find /media/pibulus/passport/Shows -mindepth 1 -maxdepth 1 -type d ! -name '.*' 2>/dev/null | wc -l | tr -d ' ')
+
+if [ "${MOVIE_COUNT:-0}" -le 0 ] && [ "${MOVIE_FS_COUNT:-0}" -gt 0 ]; then
+  MOVIE_COUNT="$MOVIE_FS_COUNT"
+fi
+
+if [ "${SHOW_COUNT:-0}" -le 0 ] && [ "${SHOW_FS_COUNT:-0}" -gt 0 ]; then
+  SHOW_COUNT="$SHOW_FS_COUNT"
+fi
+
 BOOK_COUNT=$(python3 -c "import sqlite3; c=sqlite3.connect('/media/pibulus/passport/Ebooks/Calibre-Library/metadata.db'); print(c.execute('SELECT COUNT(*) FROM books').fetchone()[0])" 2>/dev/null || echo "0")
 
 COMIC_COUNT=$(find /media/pibulus/passport/Comics -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')

@@ -1,0 +1,24 @@
+[Unit]
+Description=ttyd - Public Cyberdeck Terminal
+After=network.target
+
+[Service]
+Type=simple
+User=pibulus
+ExecStart=/usr/local/bin/ttyd -p 7683 -t fontSize=18 -t fontFamily=monospace -t cursorBlink=true -t theme={"background":"#020402","foreground":"#d8f3dc","cursor":"#ffb000","selection":"#244c2f"} --writable --max-clients 5 /home/pibulus/pibulus-os/public-deck.sh
+Restart=on-failure
+RestartSec=5
+KillMode=control-group
+CPUAccounting=yes
+CPUQuota=80%
+CPUWeight=20
+MemoryAccounting=yes
+MemoryHigh=384M
+MemoryMax=512M
+TasksMax=80
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+
+[Install]
+WantedBy=multi-user.target

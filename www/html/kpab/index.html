@@ -459,16 +459,23 @@
     .listeners-badge { font-size: 11px; color: var(--dim); letter-spacing: 1px; white-space: nowrap; }
     .listeners-count { color: var(--cyan); font-size: 13px; }
     .share-btn {
-      min-width: 44px;
-      min-height: 44px;
+      display: none !important;
+      position: absolute;
+      top: 52px;
+      right: 10px;
+      width: 44px;
+      height: 44px;
       border: 1px solid rgba(0,255,234,0.35);
-      background: rgba(0,0,0,0.55);
+      border-radius: 50%;
+      background: rgba(0,0,0,0.28);
       color: var(--cyan);
       font-family: 'VT323', monospace;
-      font-size: 15px;
-      letter-spacing: 1px;
+      font-size: 20px;
+      line-height: 1;
       cursor: pointer;
-      flex-shrink: 0;
+      z-index: 10;
+      align-items: center;
+      justify-content: center;
       transition: border-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
       -webkit-tap-highlight-color: transparent;
     }
@@ -478,7 +485,7 @@
       box-shadow: 0 0 14px rgba(0,255,234,0.14);
     }
     .share-btn:active { transform: scale(0.95); }
-    .share-btn.copied { border-color: var(--magenta); color: var(--magenta); }
+    .share-btn.copied { border-color: var(--magenta); color: var(--magenta); box-shadow: 0 0 14px rgba(255,0,255,0.18); }
 
     /* HISTORY */
     .history-section { flex: 1; }
@@ -680,7 +687,7 @@
       .visualizer { min-width: 60px; }
       input[type="range"] { width: 60px; }
       .listeners-badge { font-size: 10px; }
-      .share-btn { min-width: 42px; min-height: 42px; font-size: 14px; }
+      .share-btn { top: 50px; right: 8px; width: 42px; height: 42px; font-size: 18px; }
       .progress-section { padding: 8px 14px 10px; border-bottom: 1px solid #151515; }
       input[type="range"]::-webkit-slider-thumb { width: 18px; height: 18px; }
       .progress-times { font-size: 13px; }
@@ -1624,6 +1631,7 @@
         </svg>
       </div>
     </button>
+    <button class="share-btn" id="shareBtn" aria-label="Share current track" title="Share current track" type="button">↗</button>
     <div class="love-sparks" id="loveSparks"></div>
     <section class="now-playing" id="nowPlaying" aria-label="Now playing">
       <span class="now-playing-label">NOW PLAYING</span>
@@ -1654,7 +1662,6 @@
       <button class="play-btn" id="playBtn" aria-label="Play stream" title="Play / Pause">&#x25B6;</button>
       <div class="visualizer" id="visualizer" aria-hidden="true"></div>
       <div class="listeners-badge">&#x1F465; <span class="listeners-count" id="listenerCount">&mdash;</span> listening</div>
-      <button class="share-btn" id="shareBtn" aria-label="Share current track" title="Share current track" type="button">SHARE</button>
     </section>
     </div>
 
@@ -1673,7 +1680,7 @@
     </section>
 
         <section class="request-section" id="requestSection">
-      <button class="request-toggle" id="requestToggle" aria-label="Request a song">&#x1F4FB; Request a Song</button>
+      <button class="request-toggle" id="requestToggle" aria-label="Request a song">&#x1F334; Request a Song</button>
       <div class="request-panel" id="requestPanel" aria-label="Song request">
         <div class="request-header">
           <span class="request-title">REQUEST A TRACK</span>
@@ -2336,10 +2343,10 @@
       const isOpen = requestPanel.classList.contains('open');
       if (isOpen) {
         requestPanel.classList.remove('open');
-        requestToggle.innerHTML = '&#x1F4FB; Request a Song';
+        requestToggle.innerHTML = '&#x1F334; Request a Song';
       } else {
         requestPanel.classList.add('open');
-        requestToggle.innerHTML = '&#x1F4FB; Close Requests';
+        requestToggle.innerHTML = '&#x1F334; Close Requests';
         setTimeout(() => {
           requestSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
           requestSearch.focus();
@@ -2351,14 +2358,14 @@
     requestToggle.addEventListener('click', toggleRequestPanel);
     requestClose.addEventListener('click', () => {
       requestPanel.classList.remove('open');
-      requestToggle.innerHTML = '&#x1F4FB; Request a Song';
+      requestToggle.innerHTML = '&#x1F334; Request a Song';
     });
 
     document.addEventListener('keydown', (e) => {
       if (e.key !== 'Escape') return;
       if (requestPanel.classList.contains('open')) {
         requestPanel.classList.remove('open');
-        requestToggle.innerHTML = '&#x1F4FB; Request a Song';
+        requestToggle.innerHTML = '&#x1F334; Request a Song';
       }
       const aboutPanel = document.getElementById('aboutPanel');
       if (aboutPanel && aboutPanel.classList.contains('open')) {
@@ -2897,7 +2904,7 @@
 
     // Haptic feedback — subtle vibration on interactive taps
     function haptic(ms) { if (navigator.vibrate) navigator.vibrate(ms); }
-    document.querySelectorAll('.play-btn, .request-toggle, .about-toggle, .mutiny-toggle, .msg-send, .mutiny-fire, .history-action-btn').forEach(el => {
+    document.querySelectorAll('.play-btn, .share-btn, .request-toggle, .about-toggle, .mutiny-toggle, .msg-send, .mutiny-fire, .history-action-btn').forEach(el => {
       el.addEventListener('touchstart', () => haptic(8), { passive: true });
     });
     // Stronger haptic on play button

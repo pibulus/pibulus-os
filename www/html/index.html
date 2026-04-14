@@ -340,18 +340,18 @@
     </div>
     <div class="grid grid-3" style="margin-top: 1.1rem;">
       <a class="card" href="https://audiobooks.quickcat.club" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click"><span class="card-emoji">🎧</span><span class="card-label">Audiobooks</span><span class="card-desc">audiobooks &amp; talks</span></a>
-      <a class="card" href="/crates/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click"><span class="card-emoji">🗝️</span><span class="card-label">Crates</span><span class="card-desc">tabs & songbooks</span></a>
-      <a class="card" href="/loops/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click"><span class="card-emoji">🎹</span><span class="card-label">Loops</span><span class="card-desc">loops & samples</span></a>
+      <a class="card" href="https://games.quickcat.club" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click"><span class="card-emoji">🎮</span><span class="card-label">Games</span><span class="card-desc">rom library</span></a>
+      <a class="card" href="/textworlds/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click"><span class="card-emoji">🔮</span><span class="card-label">Portal</span><span class="card-desc">BBS &amp; MUD</span></a>
     </div>
 
     <div class="section-divider"><span class="section-label">[ EXPLORE ]</span></div>
     <div class="grid grid-3">
-      <a class="card fun" href="https://games.quickcat.club" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click"><span class="card-emoji">🎮</span><span class="card-label">Games</span><span class="card-desc">rom library</span></a>
+      <a class="card fun" href="/crates/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click"><span class="card-emoji">🗝️</span><span class="card-label">Crates</span><span class="card-desc">tabs &amp; songbooks</span></a>
+      <a class="card fun" href="/loops/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click"><span class="card-emoji">🎹</span><span class="card-label">Loops</span><span class="card-desc">loops &amp; samples</span></a>
       <a class="card fun" href="/pico/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click"><span class="card-emoji">🕹️</span><span class="card-label">PICO-8</span><span class="card-desc">3000+ carts</span></a>
-      <a class="card fun" href="/fiction/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click"><span class="card-emoji">📖</span><span class="card-label">Fiction</span><span class="card-desc">text adventures</span></a>
     </div>
     <div class="grid grid-3" style="margin-top: 1.1rem;">
-      <a class="card fun" href="/textworlds/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click"><span class="card-emoji">🔮</span><span class="card-label">Portal</span><span class="card-desc">BBS & MUD</span></a>
+      <a class="card fun" href="/fiction/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click"><span class="card-emoji">📖</span><span class="card-label">Fiction</span><span class="card-desc">text adventures</span></a>
       <a class="card fun" href="/drop/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click"><span class="card-emoji">📥</span><span class="card-label">Contribute</span><span class="card-desc">dead centre</span></a>
       <a class="card fun" href="/wall/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click"><span class="card-emoji">🖌️</span><span class="card-label">The Wall</span><span class="card-desc">graffiti</span></a>
     </div>
@@ -533,11 +533,11 @@
       fetch('/counts.json', { cache: 'no-cache' })
         .then(function(r) { return r.json(); })
         .then(function(d) {
-          if (d.movies) { document.getElementById('lib-movies').textContent = '🎬 ' + d.movies; document.getElementById('cdesc-movies').textContent = d.movies + ' films'; }
-          if (d.shows)  { document.getElementById('lib-shows').textContent  = '📺 ' + d.shows;  document.getElementById('cdesc-shows').textContent  = d.shows + ' series'; }
-          if (d.books)  { document.getElementById('lib-books').textContent  = '📖 ' + d.books;  document.getElementById('cdesc-books').textContent  = d.books + ' titles'; }
-          if (d.comics) { document.getElementById('lib-comics').textContent = '💥 ' + d.comics; document.getElementById('cdesc-comics').textContent = d.comics + ' series'; }
-          if (d.roms)   document.getElementById('lib-roms').textContent   = '🎮 ' + d.roms;
+          if (Number.isFinite(Number(d.movies))) { document.getElementById('lib-movies').textContent = '🎬 ' + d.movies; document.getElementById('cdesc-movies').textContent = d.movies + ' films'; }
+          if (Number.isFinite(Number(d.shows)))  { document.getElementById('lib-shows').textContent  = '📺 ' + d.shows;  document.getElementById('cdesc-shows').textContent  = d.shows + ' series'; }
+          if (Number.isFinite(Number(d.books)))  { document.getElementById('lib-books').textContent  = '📖 ' + d.books;  document.getElementById('cdesc-books').textContent  = d.books + ' titles'; }
+          if (Number.isFinite(Number(d.comics))) { document.getElementById('lib-comics').textContent = '💥 ' + d.comics; document.getElementById('cdesc-comics').textContent = d.comics + ' series'; }
+          if (Number.isFinite(Number(d.roms)))   document.getElementById('lib-roms').textContent   = '🎮 ' + d.roms;
         })
         .catch(function() {});
     })();

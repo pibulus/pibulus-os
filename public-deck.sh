@@ -15,7 +15,7 @@ colorize() {
 }
 
 signal_line() {
-  gum style --foreground 245 --align center 'signal stable // arrows move // enter opens // quit exits remote worlds'
+  gum style --foreground 245 --align center 'arrows move // enter opens // quit exits remote worlds'
 }
 
 show_banner() {
@@ -34,23 +34,7 @@ press_enter() {
 }
 
 run_local_game() {
-  timeout --foreground 2h "$@"
-}
-
-start_here() {
-  clear
-  printf 'START HERE\n' | figlet -f small | colorize
-  cat <<'EOF'
-This is a public terminal gateway to old internet worlds.
-
-Move with arrow keys. Press Enter to choose.
-Most remote worlds leave with: quit
-Most local roguelikes use: ? for help, q or save+quit to leave.
-
-If the screen gets weird, refresh the page.
-Phones work, but a real keyboard is the best way in.
-EOF
-  press_enter
+  nice -n 15 timeout --foreground 45m "$@"
 }
 
 roguelike_menu() {
@@ -62,7 +46,7 @@ roguelike_menu() {
 
     rogue_choice=$(gum choose \
       --header='Pick a dungeon.' \
-      --height=8 \
+      --height=9 \
       --cursor='▸ ' \
       --cursor.foreground 212 \
       --header.foreground 245 \
@@ -131,7 +115,7 @@ bbs_menu() {
 
     bbs_choice=$(gum choose \
       --header='Pick a board.' \
-      --height=10 \
+      --height=11 \
       --cursor='▸ ' \
       --cursor.foreground 212 \
       --header.foreground 245 \
@@ -215,7 +199,7 @@ mud_menu() {
 
     mud_choice=$(gum choose \
       --header='Pick a world.' \
-      --height=12 \
+      --height=13 \
       --cursor='▸ ' \
       --cursor.foreground 212 \
       --header.foreground 245 \
@@ -320,7 +304,7 @@ wonders_menu() {
 
     wonder_choice=$(gum choose \
       --header='Pick a weird signal.' \
-      --height=8 \
+      --height=9 \
       --cursor='▸ ' \
       --cursor.foreground 212 \
       --header.foreground 245 \
@@ -384,27 +368,23 @@ while true; do
   show_banner
   choice=$(gum choose \
     --header='Pick a portal.' \
-    --height=9 \
+    --height=8 \
     --cursor='▸ ' \
     --cursor.foreground 212 \
     --header.foreground 245 \
     --selected.foreground 51 \
-    '✨  Start Here — how this works' \
-    '⚔️  Roguelike Vault — NetHack, Crawl, Angband, Moria' \
-    '📖  Text Adventures — interactive fiction' \
-    '📟  BBS Gateway — LORD, door games, classic boards' \
-    '🐉  MUD Portal — Aardwolf, Discworld, MUME, Achaea' \
-    '🖥️  Terminal Wonders — Telehack, MapSCII, SSHTron' \
+    '⚔️  Roguelikes — NetHack, Crawl, Angband' \
+    '📖  Text adventures — interactive fiction' \
+    '📟  BBS boards — LORD, doors, retro rooms' \
+    '🐉  MUD worlds — Aardwolf, Discworld, MUME' \
+    '🖥️  Terminal wonders — Telehack, MapSCII, SSHTron' \
     '🚪  Disconnect')
 
   case "$choice" in
-    *'Start Here'*)
-      start_here
-      ;;
-    *'Roguelike Vault'*)
+    *'Roguelikes'*)
       roguelike_menu
       ;;
-    *'Text Adventures'*)
+    *'Text adventures'*)
       clear
       printf 'TEXT ADVENTURES\n' | figlet -f small | colorize
       echo
@@ -418,13 +398,13 @@ while true; do
         press_enter
       fi
       ;;
-    *'MUD Portal'*)
+    *'MUD worlds'*)
       mud_menu
       ;;
-    *'Terminal Wonders'*)
+    *'Terminal wonders'*)
       wonders_menu
       ;;
-    *'BBS Gateway'*)
+    *'BBS boards'*)
       bbs_menu
       ;;
     *'Disconnect'*|'')
