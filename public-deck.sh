@@ -34,7 +34,7 @@ press_enter() {
 }
 
 run_local_game() {
-  nice -n 15 timeout --foreground 45m "$@"
+  nice -n 15 timeout --foreground 10m "$@"
 }
 
 roguelike_menu() {
