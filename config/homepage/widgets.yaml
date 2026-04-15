@@ -1,6 +1,0 @@
-- greeting:
-    text: Welcome to the quickcat club.
-- datetime:
-    format:
-      dateStyle: long
-      timeStyle: short

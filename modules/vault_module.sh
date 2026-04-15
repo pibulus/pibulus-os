@@ -26,7 +26,7 @@ manage_vault() {
                 gum input --placeholder "Press Enter to return..."
                 ;;
             "🛡️  Run Security Audit") run_audit ;;
-            "📖 Ship Log (Session Diary)") glow ~/pibulus-os/SHIP_LOG.md 2>/dev/null || less ~/pibulus-os/SHIP_LOG.md ;;
+            "📖 Ship Log (Session Diary)") glow ~/pibulus-os/docs/SHIP_LOG.md 2>/dev/null || less ~/pibulus-os/docs/SHIP_LOG.md ;;
             "📖 Ledger (Changelog)") glow ~/pibulus-os/LEDGER.md 2>/dev/null || less ~/pibulus-os/LEDGER.md ;;
             "🤖 AI Handbook") glow ~/pibulus-os/AI_HANDBOOK.md 2>/dev/null || less ~/pibulus-os/AI_HANDBOOK.md ;;
             "📑 Glossary") glow ~/pibulus-os/GLOSSARY.md 2>/dev/null || less ~/pibulus-os/GLOSSARY.md ;;

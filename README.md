@@ -31,7 +31,7 @@ If you want the practical map instead of the manifesto, start at
 [DOCS_INDEX.md](./DOCS_INDEX.md).
 
 If you specifically want the deck/admin reverse-engineering map, start at
-[DECK_MAP.md](./DECK_MAP.md).
+[DECK_MAP.md](./docs/DECK_MAP.md).
 
 ```
   ┌─────────────────────────────────────────────────────────────────┐
