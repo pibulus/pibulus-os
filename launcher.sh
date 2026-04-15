@@ -8,7 +8,8 @@ esac
 
 command -v gum >/dev/null 2>&1 || { echo "gum not found. Install: https://github.com/charmbracelet/gum"; exit 1; }
 
-SERVICE_REGISTRY="${SERVICE_REGISTRY:-$HOME/pibulus-os/config/service-registry.json}"
+DECK_ROOT="$(cd "$(dirname "$0")" && pwd)"
+SERVICE_REGISTRY="${SERVICE_REGISTRY:-$DECK_ROOT/config/service-registry.json}"
 PASSPORT_ROOT="${PASSPORT_ROOT:-/media/pibulus/passport}"
 
 # Source modules for availability
@@ -53,19 +54,21 @@ show_section_intro() {
 }
 
 get_status() {
-  if [ "$1" = "cloudflared" ]; then
-    if systemctl is-active --quiet cloudflared 2>/dev/null; then
-      echo "🟢"
-    else
-      echo "🔴"
+  local name="$1"
+  local port="$2"
+  local active="🔴"
+  if [ "$name" = "cloudflared" ]; then
+    systemctl is-active --quiet cloudflared 2>/dev/null && active="🟢"
+  elif docker ps --format {{.Names}} | grep -qx "$name"; then
+    active="🟢"
+  fi
+  # Ghost detection: container running but port not responding
+  if [ "$active" = "🟢" ] && [ -n "$port" ]; then
+    if ! timeout 0.3 bash -c "</dev/tcp/localhost/$port" 2>/dev/null; then
+       active="💀"
     fi
-    return
   fi
-  if docker ps --format '{{.Names}}' | grep -qx "$1"; then
-    echo "🟢"
-  else
-    echo "🔴"
-  fi
+  echo "$active"
 }
 
 pause_screen() {
@@ -104,6 +107,11 @@ render_hud() {
   clear
   local temp="n/a"
   local load="$(uptime | awk -F'load average:' '{print $2}' | cut -d',' -f1 | xargs)"
+  local load_color=212
+  if command -v bc >/dev/null 2>&1; then
+    if (( $(echo "$load > 5.0" | bc -l 2>/dev/null) )); then load_color=196
+    elif (( $(echo "$load > 3.0" | bc -l 2>/dev/null) )); then load_color=226; fi
+  fi
   local mem="$(free -h | awk '/Mem:/ {print $7 " avail / " $2}')"
 
   if command -v vcgencmd >/dev/null 2>&1; then
@@ -114,7 +122,7 @@ render_hud() {
   print_statusline
   echo
   gum style --border rounded --border-foreground 212 --padding '0 1' --margin '0 0' \
-    "🌡️ $temp  |  🧠 $mem  |  🧵 load $load  |  💾 $(get_storage_bar)  |  🌐 $(get_status cloudflared) tunnel  |  📻 $(get_status azuracast) radio"
+    "🌡️ $temp  |  🧠 $mem  |  $(gum style --foreground $load_color "🧵 load $load")  |  💾 $(get_storage_bar)  |  🌐 $(get_status cloudflared) tunnel  |  📻 $(get_status azuracast) radio"
   echo
 }
 
@@ -214,7 +222,32 @@ show_tunnel_snapshot() {
 }
 
 show_live_pulse() {
-  while true; do
+  
+# ── DASHBOARD PANEL (side-by-side health + notes) ────────────────────────────
+render_dashboard_panel() {
+  local status_box
+  status_box=$(gum style --border normal --border-foreground 240 --padding "0 1" --width 35 \
+    "$(gum style --bold --foreground 212 "SERVICE HEALTH")" \
+    "" \
+    "web_host      $(get_status web_host 80)" \
+    "navidrome     $(get_status navidrome 4533)" \
+    "slskd         $(get_status slskd 5030)" \
+    "memos         $(get_status memos 5230)" \
+    "qbittorrent   $(get_status qbittorrent 8888)")
+
+  local notes_box
+  local last_note=$(tail -n 1 "$HOME/pibulus-os/logs/field-notes.log" 2>/dev/null | cut -c1-30)
+  notes_box=$(gum style --border normal --border-foreground 240 --padding "0 1" --width 35 \
+    "$(gum style --bold --foreground 212 "LAST FIELD NOTE")" \
+    "" \
+    "${last_note:-No notes yet...}" \
+    "" \
+    "$(gum style --italic --foreground 240 "$(roll_fascination)")")
+
+  gum join --horizontal "$status_box" "$notes_box"
+}
+
+while true; do
     clear
     python3 ~/pibulus-os/scripts/pulse.py
     sleep 15 || break
@@ -1943,6 +1976,7 @@ open_cheatsheets() {
 _first_run=1
 while true; do
   render_hud
+  render_dashboard_panel
   if [ "$_first_run" = "1" ]; then
     echo "$(roll_fascination)" | rainbow
     _first_run=0
