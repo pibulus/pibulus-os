@@ -44,11 +44,9 @@ services:
     depends_on:
       romm-db:
         condition: service_healthy
-      romm-redis:
-        condition: service_healthy
 
   romm-db:
-    image: mariadb:latest
+    image: mariadb:12.2.2  # pinned 2026-04-15
     container_name: romm-db
     restart: unless-stopped
     environment:
@@ -64,12 +62,3 @@ services:
       timeout: 5s
       retries: 5
 
-  romm-redis:
-    image: redis:alpine
-    container_name: romm-redis
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
