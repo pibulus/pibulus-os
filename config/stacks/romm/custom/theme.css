@@ -449,6 +449,47 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════
+   GAME DETAIL PAGE — hide technical metadata sidebar
+   The GameDetails panel (Genres, Franchises, Collections,
+   Companies, Players, Age rating, File, SHA-1, MD5, CRC)
+   is noise for casual players. RomM renders this panel
+   as a VCol with fixed flex: 0 0 270px; width: 270px.
+   ═══════════════════════════════════════════════════════ */
+
+/* Hide the 270px-wide GameDetails sidebar column */
+[style*="flex: 0 0 270px"],
+[style*="flex:0 0 270px"] {
+  display: none !important;
+}
+
+/* Hide GameDetails VTab buttons by their value attributes
+   (these are the tab labels: File, Info, Genres, etc.)
+   Scoped to avoid hiding unrelated tabs elsewhere in RomM. */
+.v-tabs .v-tab[value="file"],
+.v-tabs .v-tab[value="info"],
+.v-tabs .v-tab[value="details"],
+.v-tabs .v-tab[value="genres"],
+.v-tabs .v-tab[value="franchises"],
+.v-tabs .v-tab[value="collections"],
+.v-tabs .v-tab[value="companies"],
+.v-tabs .v-tab[value="players"],
+.v-tabs .v-tab[value="age_ratings"],
+.v-tabs .v-tab[value="manual"] {
+  display: none !important;
+}
+
+/* On mobile: hide the "Similar / DLC" expansion strip too
+   (renders as a narrower column, ~var width, but noisy) */
+@media (max-width: 960px) {
+  [style*="flex: 0 0 270px"],
+  [style*="flex:0 0 270px"],
+  [style*="flex: 0 0 240px"],
+  [style*="flex: 0 0 300px"] {
+    display: none !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
    MOBILE IMMERSIVE MODE — go full-game, ditch the chrome
    :has() supported in iOS 15.4+ Safari (mid-2022+)
    ═══════════════════════════════════════════════════════ */
