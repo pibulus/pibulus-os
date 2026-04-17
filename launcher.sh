@@ -122,7 +122,7 @@ render_hud() {
   print_statusline
   echo
   gum style --border rounded --border-foreground 212 --padding '0 1' --margin '0 0' \
-    "🌡️ $temp  |  🧠 $mem  |  $(gum style --foreground $load_color "🧵 load $load")  |  💾 $(get_storage_bar)  |  🌐 $(get_status cloudflared) tunnel  |  📻 $(get_status azuracast) radio"
+    "🌡️ $temp  |  🧠 $mem  |  $(gum style --foreground $load_color "🧵 load $load")  |  💾 $(get_storage_bar)  |  🌐 $(get_status cloudflared) tunnel  |  📻 $(get_status azuracast) radio  |  🎮 $(get_status romm 8095) romm"
   echo
 }
 

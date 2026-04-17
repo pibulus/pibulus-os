@@ -138,6 +138,7 @@ services:
       - /home/pibulus/pibulus-os/www/html:/usr/share/nginx/html
       # Binary blobs & runtime state stay on passport (overlaid on top of repo)
       - /media/pibulus/passport/www/html/arcade/games:/usr/share/nginx/html/arcade/games:ro
+      - /media/pibulus/passport/www/html/arcade/retro/games.json:/usr/share/nginx/html/arcade/retro/games.json:ro
       - /media/pibulus/passport/www/html/status.json:/usr/share/nginx/html/status.json:ro
       - /media/pibulus/passport/www/html/counts.json:/usr/share/nginx/html/counts.json:ro
       - /home/pibulus/pibulus-os/www/html/msg:/usr/share/nginx/html/msg:ro
