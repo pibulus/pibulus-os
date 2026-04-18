@@ -539,4 +539,23 @@ body {
   body:has(.ejs_parent) .ejs_parent .ejs_control_bar {
     padding-bottom: calc(8px + env(safe-area-inset-bottom)) !important;
   }
+
+  /* Mobile utility controls: keep core play buttons loud, hide the clutter. */
+  .ejs_parent .ejs_virtualGamepad_button.b_speed_rewind,
+  .ejs_parent .ejs_virtualGamepad_button.b_pause,
+  .ejs_parent .ejs_virtualGamepad_button.b_reset,
+  .ejs_parent .ejs_virtualGamepad_button.b_mode,
+  .ejs_parent .ejs_virtualGamepad_button.b_option,
+  .ejs_parent .ejs_virtualGamepad_button.b_option_1,
+  .ejs_parent .ejs_virtualGamepad_button.b_option_2 {
+    display: none !important;
+  }
+
+  .ejs_parent .ejs_virtualGamepad_button.b_select,
+  .ejs_parent .ejs_virtualGamepad_button.b_run {
+    opacity: 0.28 !important;
+    transform: scale(0.82) !important;
+    font-size: 12px !important;
+    filter: saturate(0.7) !important;
+  }
 }

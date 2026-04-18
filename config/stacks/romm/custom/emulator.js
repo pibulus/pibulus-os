@@ -4092,11 +4092,8 @@ class EmulatorJS {
             menuButton.classList.add("ejs_virtualGamepad_open");
             menuButton.style.display = "none";
             this.on("start", () => {
-                menuButton.style.display = "";
-                if (matchMedia('(pointer:fine)').matches && this.getSettingValue("menu-bar-button") !== "visible") {
-                    menuButton.style.opacity = 0;
-                    this.changeSettingOption('menu-bar-button', 'hidden', true);
-                }
+                const menuPreference = this.getSettingValue("menu-bar-button") === "visible" ? "visible" : "hidden";
+                this.changeSettingOption("menu-bar-button", menuPreference, true);
             });
             this.elements.parent.appendChild(menuButton);
             let timeout;
@@ -4177,6 +4174,16 @@ class EmulatorJS {
         return "ejs-" + identifier + "-settings";
     }
     preGetSetting(setting) {
+        const lockedDefaults = {
+            "ejs_threads": this.config.defaultOptions && this.config.defaultOptions[setting],
+            "menu-bar-button": "hidden",
+            "rewindEnabled": "disabled",
+            "fastForward": "disabled",
+            "slowMotion": "disabled"
+        };
+        if (Object.prototype.hasOwnProperty.call(lockedDefaults, setting) && lockedDefaults[setting] != null) {
+            return lockedDefaults[setting];
+        }
         if (window.localStorage && !this.config.disableLocalStorage) {
             let coreSpecific = localStorage.getItem(this.getLocalStorageKey());
             try {
@@ -4279,8 +4286,8 @@ class EmulatorJS {
         } else if (option === "virtual-gamepad") {
             this.toggleVirtualGamepad(value !== "disabled");
         } else if (option === "menu-bar-button") {
-            this.elements.menuToggle.style.display = "";
-            this.elements.menuToggle.style.opacity = value === "visible" ? 0.5 : 0;
+            this.elements.menuToggle.style.display = value === "visible" ? "" : "none";
+            this.elements.menuToggle.style.opacity = value === "visible" ? 0.35 : 0;
         } else if (option === "virtual-gamepad-left-handed-mode") {
             this.toggleVirtualGamepadLeftHanded(value !== "disabled");
         } else if (option === "ff-ratio") {
@@ -4805,13 +4812,6 @@ class EmulatorJS {
         if (core && core.length > 1) {
             addToMenu(this.localization("Core" + " (" + this.localization("Requires restart") + ")"), "retroarch_core", core, this.getCore(), home);
         }
-        if (typeof window.SharedArrayBuffer === "function" && !this.requiresThreads(this.getCore())) {
-            addToMenu(this.localization("Threads"), "ejs_threads", {
-                "enabled": this.localization("Enabled"),
-                "disabled": this.localization("Disabled")
-            }, this.config.threads ? "enabled" : "disabled", home);
-        }
-
         const graphicsOptions = createSettingParent(true, "Graphics Settings", home);
 
         if (this.config.shaders) {
@@ -4966,6 +4966,7 @@ class EmulatorJS {
         checkForEmptyMenu(screenCaptureOptions);
 
         const speedOptions = createSettingParent(true, "Speed Options", home);
+        home.lastElementChild.style.display = "none"; // hidden: advanced speed controls confuse more than they help
 
         addToMenu(this.localization("Fast Forward"), "fastForward", {
             "enabled": this.localization("Enabled"),
@@ -5048,7 +5049,7 @@ class EmulatorJS {
             addToMenu(this.localization("Menu Bar Button"), "menu-bar-button", {
                 "visible": this.localization("visible"),
                 "hidden": this.localization("hidden")
-            }, "visible", virtualGamepad, true);
+            }, "hidden", virtualGamepad, true);
             addToMenu(this.localization("Left Handed Mode"), "virtual-gamepad-left-handed-mode", {
                 "enabled": this.localization("Enabled"),
                 "disabled": this.localization("Disabled")

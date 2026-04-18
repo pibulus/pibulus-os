@@ -122,7 +122,7 @@ render_hud() {
   print_statusline
   echo
   gum style --border rounded --border-foreground 212 --padding '0 1' --margin '0 0' \
-    "🌡️ $temp  |  🧠 $mem  |  $(gum style --foreground $load_color "🧵 load $load")  |  💾 $(get_storage_bar)  |  🌐 $(get_status cloudflared) tunnel  |  📻 $(get_status azuracast) radio  |  🎮 $(get_status romm 8095) romm"
+    "🌡️ $temp  |  🧠 $mem  |  $(gum style --foreground $load_color "🧵 load $load")  |  💾 $(get_storage_bar)  |  🌐 $(get_status cloudflared) tunnel  |  📻 $(get_status azuracast) radio  |  🎮 $(get_status romm 8095) romm  |  📡 $(get_sdr_status) sdr"
   echo
 }
 
@@ -136,6 +136,59 @@ deck_note_file() {
 
 tool_exists() {
   command -v "$1" >/dev/null 2>&1
+}
+
+sdr_lab_script() {
+  echo "$HOME/pibulus-os/scripts/sdr_lab.sh"
+}
+
+get_sdr_status() {
+  if lsusb 2>/dev/null | grep -Eiq 'NESDR|Nooelec|RTL2838|RTL2832|RTL-SDR|Realtek'; then
+    echo "🟢"
+  else
+    echo "🔴"
+  fi
+}
+
+run_sdr_lab() {
+  local helper
+  helper="$(sdr_lab_script)"
+  if [ ! -x "$helper" ]; then
+    echo "Missing helper: $helper"
+    return 1
+  fi
+  "$helper" "$@"
+}
+
+show_sdr_snapshot() {
+  run_sdr_lab status
+}
+
+sdr_fm_presets_menu() {
+  local preset freq
+  preset=$(printf '%s\n' \
+    'PBS 106.7 — community radio' \
+    'Triple R 102.7 — weird Melbourne gold' \
+    'JOY 94.9 — queer radio' \
+    'SYN 90.7 — youth/community signal' \
+    'ABC Classic 105.9 — orchestral reset' \
+    'Custom frequency…' \
+    'Back' | gum choose --height 12)
+
+  case "$preset" in
+    'PBS 106.7 — community radio') freq='106.7' ;;
+    'Triple R 102.7 — weird Melbourne gold') freq='102.7' ;;
+    'JOY 94.9 — queer radio') freq='94.9' ;;
+    'SYN 90.7 — youth/community signal') freq='90.7' ;;
+    'ABC Classic 105.9 — orchestral reset') freq='105.9' ;;
+    'Custom frequency…')
+      freq=$(gum input --placeholder "FM frequency in MHz (e.g. 95.8)")
+      ;;
+    'Back'|'') return ;;
+  esac
+
+  [ -z "$freq" ] && return
+  run_sdr_lab fm "$freq"
 }
 
 radio_status() {
@@ -233,6 +286,7 @@ render_dashboard_panel() {
     "navidrome     $(get_status navidrome 4533)" \
     "slskd         $(get_status slskd 5030)" \
     "memos         $(get_status memos 5230)" \
+    "sdr dongle    $(get_sdr_status)" \
     "qbittorrent   $(get_status qbittorrent 8888)")
 
   local notes_box
@@ -1628,76 +1682,61 @@ sdr_menu() {
     render_hud
     show_section_intro \
       'sdr' \
-      'The air is full of signals. Needs an RTL-SDR v4 dongle (~£35). HackRF for TX.'
+      'Airband, community radio, pager goblins, utility chatter, and 433MHz hauntings. Audio modes play from the Pi itself, not the SSH terminal.'
     local action
     action=$(tactile_choose \
-      '✈️ Track Planes (ADS-B)' \
-      '📻 FM Radio' \
-      '🌡️ Local Sensors (433MHz)' \
-      '📟 Pager Decode (POCSAG)' \
-      '🌊 Raw Spectrum (gqrx)' \
-      '📡 APRS Packet Radio' \
+      '🧭 SDR Snapshot' \
+      '🧪 Self Test' \
+      '🌐 Remote Stream' \
+      '❓ Deck Help' \
+      '📻 FM Presets' \
+      '🎛️ Tune FM' \
+      '🛫 Airband Listen' \
+      '🚓 Utility / Public Safety Listen (Analog)' \
+      '🌡️ 433MHz Hunt' \
+      '📟 Pager Hunt' \
+      '✈️ Plane Radar (ADS-B)' \
       '📖 Cheatsheets' \
       'Back')
     case "$action" in
-      '✈️ Track Planes (ADS-B)')
-        if tool_exists dump1090; then
-          gum style --foreground 212 "  starting dump1090 — open localhost:8080 in a browser"
-          echo
-          dump1090 --interactive --net
-        else
-          gum style --foreground 196 "  not installed — sudo apt install dump1090-mutability"
-          pause_screen
-        fi ;;
-      '📻 FM Radio')
-        if tool_exists rtl_fm && tool_exists sox; then
-          local freq
-          freq=$(gum input --placeholder "FM frequency in MHz (e.g. 95.8)")
-          [ -z "$freq" ] && continue
-          gum style --foreground 212 "  tuning ${freq}MHz — Ctrl-C to stop"
-          echo
-          rtl_fm -f "${freq}M" -M wbfm -s 200000 -r 48000 - \
-            | sox -t raw -r 48k -e signed -b 16 -c 1 - -d
-        else
-          gum style --foreground 196 "  needs rtl-sdr + sox — sudo apt install rtl-sdr sox"
-          pause_screen
-        fi ;;
-      '🌡️ Local Sensors (433MHz)')
-        if tool_exists rtl_433; then
-          gum style --foreground 212 "  listening for 433MHz devices (weather stations, car fobs, sensors) — Ctrl-C to stop"
-          echo
-          rtl_433 -G
-        else
-          gum style --foreground 196 "  not installed — sudo apt install rtl-433"
-          pause_screen
-        fi ;;
-      '📟 Pager Decode (POCSAG)')
-        if tool_exists rtl_fm && tool_exists multimon-ng; then
-          gum style --foreground 212 "  decoding POCSAG pagers — Ctrl-C to stop"
-          echo
-          rtl_fm -f 152.25M -s 22050 - \
-            | multimon-ng -t raw -a POCSAG512 -a POCSAG1200 -a POCSAG2400 -
-        else
-          gum style --foreground 196 "  needs rtl-sdr + multimon-ng — sudo apt install rtl-sdr multimon-ng"
-          pause_screen
-        fi ;;
-      '🌊 Raw Spectrum (gqrx)')
-        if tool_exists gqrx; then
-          gqrx &
-        else
-          gum style --foreground 196 "  not installed — sudo apt install gqrx"
-          gum style --foreground 240 "  (heavy GUI app — needs a display)"
-          pause_screen
-        fi ;;
-      '📡 APRS Packet Radio')
-        if tool_exists direwolf; then
-          gum style --foreground 212 "  starting direwolf APRS decoder — Ctrl-C to stop"
-          echo
-          direwolf -r 24000
-        else
-          gum style --foreground 196 "  not installed — sudo apt install direwolf"
-          pause_screen
-        fi ;;
+      '🧭 SDR Snapshot')
+        show_sdr_snapshot
+        pause_screen ;;
+      '🧪 Self Test')
+        run_sdr_lab selftest
+        pause_screen ;;
+      '🌐 Remote Stream')
+        run_sdr_lab remote-status || true
+        pause_screen ;;
+      '❓ Deck Help')
+        open_local_browserish 'http://pibulus.local/deck/help.html' ;;
+      '📻 FM Presets')
+        sdr_fm_presets_menu ;;
+      '🎛️ Tune FM')
+        local freq
+        freq=$(gum input --placeholder "FM frequency in MHz (e.g. 95.8)")
+        [ -z "$freq" ] && continue
+        run_sdr_lab fm "$freq" ;;
+      '🛫 Airband Listen')
+        local freq
+        freq=$(gum input --placeholder "Airband frequency in MHz (default: 118.0)")
+        freq="${freq:-118.0}"
+        run_sdr_lab airband "$freq" ;;
+      '🚓 Utility / Public Safety Listen (Analog)')
+        local freq
+        freq=$(gum input --placeholder "Narrowband FM frequency in MHz (e.g. 460.550)")
+        [ -z "$freq" ] && continue
+        run_sdr_lab nfm "$freq" ;;
+      '🌡️ 433MHz Hunt')
+        run_sdr_lab 433 ;;
+      '📟 Pager Hunt')
+        local freq
+        freq=$(gum input --placeholder "Pager frequency in MHz (default: 152.25)")
+        freq="${freq:-152.25}"
+        run_sdr_lab pagers "$freq" ;;
+      '✈️ Plane Radar (ADS-B)')
+        run_sdr_lab planes
+        pause_screen ;;
       '📖 Cheatsheets') open_cheatsheets rtl-sdr ;;
       'Back'|'') return ;;
     esac

@@ -1,0 +1,21 @@
+[Unit]
+Description=SDR Remote Stream Control
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/pibulus/pibulus-os
+ExecStart=/usr/bin/python3 /home/pibulus/pibulus-os/scripts/sdr_remote.py
+Restart=on-failure
+RestartSec=3
+KillMode=control-group
+Nice=5
+CPUAccounting=yes
+CPUWeight=20
+MemoryAccounting=yes
+MemoryHigh=256M
+MemoryMax=384M
+TasksMax=80
+
+[Install]
+WantedBy=multi-user.target
