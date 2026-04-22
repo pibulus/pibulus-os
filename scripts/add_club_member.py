@@ -1,5 +1,14 @@
 #!/usr/bin/env python3
-import hashlib, os, uuid, base64, sqlite3, sys, json, urllib.request
+import base64
+import hashlib
+import json
+import os
+import secrets
+import sqlite3
+import string
+import sys
+import urllib.request
+import uuid
 
 if os.geteuid() != 0:
     os.execvp('sudo', ['sudo', sys.executable] + sys.argv)
@@ -15,7 +24,7 @@ email = f'{user}@quickcat.club'
 dbs = {
     'CW': '/home/pibulus/.config/calibre-web/app.db',
     'KV': '/home/pibulus/.config/kavita/kavita.db',
-    'ND': '/home/pibulus/.config/navidrome/navidrome.db'
+    'ND': '/home/pibulus/.config/navidrome/navidrome.db',
 }
 
 KV_LIBRARY_ID = 1
@@ -23,6 +32,15 @@ KV_ROLE_IDS = {
     'Pleb': 2,
     'Login': 7,
 }
+
+CW_ROLE_DOWNLOAD = 1 << 1
+CW_ROLE_PASSWD = 1 << 4
+CW_ROLE_VIEWER = 1 << 8
+CW_DEFAULT_ROLE = CW_ROLE_DOWNLOAD | CW_ROLE_PASSWD | CW_ROLE_VIEWER
+CW_DEFAULT_SHOW = 262143
+CW_DEFAULT_LANGUAGE = 'all'
+CW_DEFAULT_LOCALE = 'en'
+CW_SALT_ALPHABET = string.ascii_letters + string.digits
 
 def add_jf_api(user, pw):
     JF_KEY = '1980cdafcfec43b58b04b89c4d1f5b99'
@@ -37,11 +55,63 @@ def add_jf_api(user, pw):
     req2 = urllib.request.Request(f'http://localhost:8096/Users/{uid}/Password', data=payload2, headers=headers, method='POST')
     urllib.request.urlopen(req2)
 
+def make_cw_hash(pw):
+    salt = ''.join(secrets.choice(CW_SALT_ALPHABET) for _ in range(16))
+    hash_val = hashlib.scrypt(pw.encode(), salt=salt.encode(), n=32768, r=8, p=1, dklen=64,
+                              maxmem=256 * 1024 * 1024)
+    return f'scrypt:32768:8:1${salt}${hash_val.hex()}'
+
+def get_cw_defaults(conn):
+    row = conn.execute("""
+        SELECT
+            config_default_role,
+            config_default_show,
+            config_default_language,
+            config_default_locale
+        FROM settings
+        WHERE id = 1
+    """).fetchone()
+    role = CW_DEFAULT_ROLE
+    sidebar_view = CW_DEFAULT_SHOW
+    default_language = CW_DEFAULT_LANGUAGE
+    locale = CW_DEFAULT_LOCALE
+    if row:
+        role = row[0] or CW_DEFAULT_ROLE
+        sidebar_view = row[1] or CW_DEFAULT_SHOW
+        default_language = row[2] or CW_DEFAULT_LANGUAGE
+        locale = row[3] or CW_DEFAULT_LOCALE
+    return role, sidebar_view, default_language, locale
+
 def add_cw(conn, user, pw, email):
-    salt = b'salt_' + os.urandom(8)
-    hash_val = hashlib.scrypt(pw.encode(), salt=salt, n=32768, r=8, p=1, dklen=64, maxmem=256*1024*1024)
-    cw_hash = f'scrypt:32768:8:1${salt.decode("latin1", "ignore")}${hash_val.hex()}'
-    conn.execute("INSERT INTO user (name, email, password, role, view_settings) VALUES (?, ?, ?, 1, '{}')", (user, email, cw_hash))
+    cw_hash = make_cw_hash(pw)
+    role, sidebar_view, default_language, locale = get_cw_defaults(conn)
+    existing = conn.execute("SELECT id FROM user WHERE lower(name) = lower(?)", (user,)).fetchone()
+    payload = (email, cw_hash, role, sidebar_view, default_language, locale, '{}')
+    if existing:
+        conn.execute("""
+            UPDATE user
+            SET email = ?,
+                password = ?,
+                role = ?,
+                sidebar_view = ?,
+                default_language = ?,
+                locale = ?,
+                view_settings = ?
+            WHERE id = ?
+        """, payload + (existing[0],))
+    else:
+        conn.execute("""
+            INSERT INTO user (
+                name,
+                email,
+                password,
+                role,
+                sidebar_view,
+                default_language,
+                locale,
+                view_settings
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (user,) + payload)
 
 def add_kv(conn, user, pw, email):
     salt = os.urandom(16)
@@ -81,8 +151,22 @@ def add_kv(conn, user, pw, email):
 def add_nd(conn, user, pw, email):
     uid, salt = str(uuid.uuid4()), os.urandom(4)
     nd_hash = base64.b64encode(salt + hashlib.sha256(salt + pw.encode()).digest()).decode()
-    conn.execute("INSERT INTO user (id, user_name, name, email, password, is_admin, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
-    (uid, user, user, email, nd_hash))
+    existing = conn.execute("SELECT id FROM user WHERE lower(user_name) = lower(?)", (user,)).fetchone()
+    if existing:
+        conn.execute("""
+            UPDATE user
+            SET name = ?,
+                email = ?,
+                password = ?,
+                is_admin = 0,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        """, (user, email, nd_hash, existing[0]))
+    else:
+        conn.execute("""
+            INSERT INTO user (id, user_name, name, email, password, is_admin, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        """, (uid, user, user, email, nd_hash))
 
 def add_abs_api(user, pw, email):
     login_payload = json.dumps({'username': 'pibulus', 'password': 'meringue'}).encode()
