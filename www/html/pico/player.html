@@ -83,8 +83,6 @@
         }
         .dpad-btn {
             position: absolute;
-            width: 44px;
-            height: 44px;
             background: rgba(255,230,0,0.14);
             border: 2px solid rgba(255,230,0,0.34);
             border-radius: 10px;
@@ -101,10 +99,10 @@
             background: rgba(255,230,0,0.34);
             border-color: rgba(255,230,0,0.9);
         }
-        .dpad-up { top: 0; left: 44px; }
-        .dpad-down { bottom: 0; left: 44px; }
-        .dpad-left { top: 44px; left: 0; }
-        .dpad-right { top: 44px; right: 0; }
+        .dpad-up { top: 0; left: 34px; width: 64px; height: 50px; border-radius: 12px 12px 6px 6px; }
+        .dpad-down { bottom: 0; left: 34px; width: 64px; height: 50px; border-radius: 6px 6px 12px 12px; }
+        .dpad-left { top: 34px; left: 0; width: 50px; height: 64px; border-radius: 12px 6px 6px 12px; }
+        .dpad-right { top: 34px; right: 0; width: 50px; height: 64px; border-radius: 6px 12px 12px 6px; }
         .utility-btns {
             display: flex;
             flex-direction: column;
@@ -145,13 +143,13 @@
             flex: 0 0 auto;
         }
         .action-btn {
-            width: 62px;
-            height: 62px;
+            width: 68px;
+            height: 68px;
             border-radius: 50%;
             border: 2px solid rgba(0,255,234,0.45);
             background: rgba(0,255,234,0.12);
             color: rgba(0,255,234,0.84);
-            font-size: 22px;
+            font-size: 24px;
             box-shadow: 0 0 22px rgba(0,255,234,0.12);
         }
         .action-btn.active {
@@ -160,24 +158,29 @@
         }
         @media (orientation: landscape) and (max-height: 500px) {
             #touch-controls {
-                min-height: 108px;
-                padding-top: 6px;
-                gap: 10px;
+                min-height: 100px;
+                padding: 4px max(16px, env(safe-area-inset-right, 0)) max(4px, env(safe-area-inset-bottom, 0)) max(16px, env(safe-area-inset-left, 0));
+                gap: 16px;
             }
-            .dpad { width: 120px; height: 120px; }
-            .dpad-btn { width: 40px; height: 40px; font-size: 14px; }
-            .dpad-up { left: 40px; }
-            .dpad-down { left: 40px; }
-            .dpad-left { top: 40px; }
-            .dpad-right { top: 40px; }
-            .utility-btn { min-width: 52px; height: 44px; font-size: 10px; }
-            .action-btn { width: 48px; height: 48px; font-size: 17px; }
+            .dpad { width: 92px; height: 92px; }
+            .dpad-up { left: 24px; width: 44px; height: 36px; }
+            .dpad-down { left: 24px; width: 44px; height: 36px; }
+            .dpad-left { top: 24px; width: 36px; height: 44px; }
+            .dpad-right { top: 24px; width: 36px; height: 44px; }
+            .utility-btns { flex-direction: row; gap: 6px; }
+            .utility-btn { min-width: 48px; height: 34px; font-size: 10px; }
+            .action-btn { width: 50px; height: 50px; font-size: 18px; }
+            .action-btns { gap: 10px; }
         }
     </style>
   <script src="/emoji-favicon.js?v=1"></script>
 </head>
 <body>
     <div id="loading">loading cart...</div>
+    <div id="audio-unlock" style="display:none;position:fixed;inset:0;z-index:20;background:rgba(0,0,0,0.75);cursor:pointer;align-items:center;justify-content:center;flex-direction:column">
+        <div style="color:#ffe066;font-family:monospace;font-size:18px;text-align:center;text-transform:uppercase">tap to enable sound</div>
+        <div style="color:#666;font-family:monospace;font-size:12px;margin-top:8px">&#9654;</div>
+    </div>
     <canvas id="canvas" width="128" height="128"></canvas>
 
     <div id="touch-controls">
@@ -199,6 +202,82 @@
 
     <script src="pako.min.js?v=10d2924"></script>
     <script src="UPNG.js?v=10d2924"></script>
+
+    <script>
+        // --- Audio unlock for browser autoplay policy ---
+        // Browsers block AudioContext until a user gesture occurs inside this frame.
+        // We unlock on first interaction (touch/click/key) and also patch
+        // the AudioContext constructor so any context created by the runtime
+        // gets auto-resumed.
+        (function() {
+            var _OrigAC = window.AudioContext || window.webkitAudioContext;
+            if (!_OrigAC) return;
+
+            var _contexts = [];
+            var _unlocked = false;
+
+            // Patch constructor to track all created contexts
+            function PatchedAC() {
+                var ctx = new _OrigAC();
+                _contexts.push(ctx);
+                if (_unlocked) {
+                    try { ctx.resume(); } catch(e) {}
+                }
+                return ctx;
+            }
+            PatchedAC.prototype = _OrigAC.prototype;
+            window.AudioContext = PatchedAC;
+            if (window.webkitAudioContext) window.webkitAudioContext = PatchedAC;
+
+            function unlock() {
+                if (_unlocked) return;
+                _unlocked = true;
+                _contexts.forEach(function(ctx) {
+                    if (ctx.state === 'suspended') {
+                        try { ctx.resume(); } catch(e) {}
+                    }
+                });
+                // Also try the Emscripten SDL audio context if it exists
+                if (typeof Module !== 'undefined' && Module.SDL2 && Module.SDL2.audioContext) {
+                    try { Module.SDL2.audioContext.resume(); } catch(e) {}
+                }
+                if (typeof SDL !== 'undefined' && SDL.audioContext) {
+                    try { SDL.audioContext.resume(); } catch(e) {}
+                }
+            }
+
+            ['click', 'touchstart', 'touchend', 'keydown'].forEach(function(evt) {
+                document.addEventListener(evt, unlock, { once: false, passive: true });
+            });
+
+            // Also try to unlock when the iframe gets focus (parent clicked into us)
+            window.addEventListener('focus', unlock);
+
+            // Show "tap to enable sound" overlay if audio is likely blocked
+            // (primarily on mobile where there's no keyboard interaction)
+            var _audioOverlay = document.getElementById('audio-unlock');
+            function showOverlayIfNeeded() {
+                // Check after a short delay — give runtime time to create its context
+                setTimeout(function() {
+                    if (_unlocked) return;
+                    var blocked = _contexts.some(function(c) { return c.state === 'suspended'; });
+                    if (blocked || (!_unlocked && _contexts.length === 0 && isTouchDevice)) {
+                        _audioOverlay.style.display = 'flex';
+                    }
+                }, 800);
+            }
+            window._showAudioOverlay = showOverlayIfNeeded;
+
+            _audioOverlay.addEventListener('click', function() {
+                unlock();
+                _audioOverlay.style.display = 'none';
+            });
+            _audioOverlay.addEventListener('touchend', function() {
+                unlock();
+                _audioOverlay.style.display = 'none';
+            });
+        })();
+    </script>
 
     <script>
         var isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
@@ -338,6 +417,11 @@
                     var script = document.createElement('script');
                     script.src = 'pico8-runtime.js?v=10d2924';
                     script.async = true;
+                    script.onload = function() {
+                        if (typeof window._showAudioOverlay === 'function') {
+                            window._showAudioOverlay();
+                        }
+                    };
                     document.body.appendChild(script);
                 })
                 .catch(function(e) {

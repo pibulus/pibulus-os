@@ -194,11 +194,18 @@
       .modal-header { gap:8px; padding:0; }
       .modal-title { flex:1 1 100%; font-size:1.2rem; }
       .modal-genre { display:none; }
-      .modal-player { width:calc(100vw - 24px); height:min(calc(100vw - 24px), calc(100dvh - 210px)); }
+      .modal-player { width:calc(100vw - 24px); height:min(calc(100vw - 24px + 160px), calc(100dvh - 210px)); }
       .modal-controls { font-size:0.8rem; gap:8px; margin-top:8px; }
       .modal-controls span { display:none; }
       .modal-nav { width:100%; justify-content:center; }
       .search-row { flex-direction:column; }
+    }
+    @media (max-width:600px) and (orientation:landscape) {
+      .modal-overlay { padding:4px max(8px, env(safe-area-inset-right, 0)) max(4px, env(safe-area-inset-bottom, 0)) max(8px, env(safe-area-inset-left, 0)); }
+      .modal-header { margin-bottom:2px; }
+      .modal-title { font-size:1rem; }
+      .modal-player { width:calc(100vw - 16px); height:calc(100dvh - 90px); }
+      .modal-controls { display:none; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { transition-duration:0.01ms !important; animation-duration:0.01ms !important; }
