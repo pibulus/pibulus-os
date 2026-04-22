@@ -4,69 +4,252 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>drop zone - quickcat.club</title>
-  <meta name="description" content="Contribute to the quickcat.club library. Drop music, comics, books, roms, documentaries — anything good.">
+  <meta name="description" content="Contribute to the quickcat.club library. Drop music, comics, books, roms, documentaries - anything good.">
   <meta name="theme-color" content="#050505">
-  <!-- Open Graph -->
   <meta property="og:type" content="website">
-  <meta property="og:title" content="drop zone — quickcat.club">
-  <meta property="og:description" content="Gift the collection. Drop music, comics, books, roms, documentaries — anything you think belongs on the shelf.">
+  <meta property="og:title" content="drop zone - quickcat.club">
+  <meta property="og:description" content="Gift the collection. Drop music, comics, books, roms, documentaries - anything you think belongs on the shelf.">
   <meta property="og:url" content="https://quickcat.club/drop/">
   <meta property="og:site_name" content="QuickCat Club">
   <meta name="twitter:card" content="summary">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
   <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
   <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
       --bg: #050505;
       --cyan: #00ffea;
       --magenta: #ff00ff;
       --dim: #666;
       --dim-soft: #444;
+      --panel: rgba(255, 255, 255, 0.03);
+      --panel-border: rgba(0, 255, 234, 0.14);
       --text: #e0e0e0;
+      --ok: #00ff88;
+      --err: #ff5f5f;
     }
-    body { font-family:'VT323',monospace; background:var(--bg); color:var(--text); min-height:100vh; display:flex; justify-content:center; align-items:center; }
-    body::after { content:''; position:fixed; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.08) 2px,rgba(0,0,0,0.08) 4px); pointer-events:none; z-index:9999; }
-    .drop-zone { text-align:center; max-width:520px; padding:48px 24px; }
-    h1 { font-size:3rem; color:var(--magenta); text-shadow:0 0 20px rgba(255,0,255,0.4); margin-bottom:8px; }
-    .subtitle { color:var(--dim); font-size:1.2rem; letter-spacing:2px; margin-bottom:24px; }
+    body {
+      font-family: "VT323", monospace;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px 0;
+    }
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.08) 2px, rgba(0, 0, 0, 0.08) 4px);
+      pointer-events: none;
+      z-index: 9999;
+    }
+    .drop-zone {
+      text-align: center;
+      width: min(92vw, 620px);
+      padding: 48px 24px;
+    }
+    h1 {
+      font-size: 3rem;
+      color: var(--magenta);
+      text-shadow: 0 0 20px rgba(255, 0, 255, 0.4);
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      color: var(--dim);
+      font-size: 1.2rem;
+      letter-spacing: 2px;
+      margin-bottom: 24px;
+    }
     .what {
-      color:var(--dim-soft); font-size:0.95rem; line-height:1.6;
-      margin-bottom:32px; max-width:400px; margin-left:auto; margin-right:auto;
+      color: var(--dim-soft);
+      font-size: 0.98rem;
+      line-height: 1.6;
+      margin-bottom: 24px;
+      max-width: 460px;
+      margin-left: auto;
+      margin-right: auto;
     }
-    .what span { color:var(--cyan); }
-    .upload-area { border:2px dashed rgba(0,255,234,0.3); border-radius:4px; padding:48px 24px; cursor:pointer; transition:all 0.3s; position:relative; }
-    .upload-area:hover, .upload-area.dragover { border-color:var(--cyan); background:rgba(0,255,234,0.05); }
-    .upload-area.uploading { border-color:var(--cyan); border-style:solid; pointer-events:none; opacity:0.7; }
-    .upload-area.success { border-color:#00ff88; border-style:solid; }
-    .upload-area input { position:absolute; inset:0; opacity:0; cursor:pointer; }
-    .upload-area .icon { font-size:3rem; margin-bottom:12px; transition: transform 0.3s; }
-    .upload-area.success .icon { transform: scale(1.2); }
-    .upload-area .label { color:var(--cyan); font-size:1.3rem; letter-spacing:1px; }
-    .upload-area .hint { color:var(--dim); font-size:0.9rem; margin-top:8px; }
-
-    /* Progress bar */
-    .progress-wrap { display:none; margin-top:16px; }
-    .progress-wrap.active { display:block; }
-    .progress-bar { width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden; }
-    .progress-fill { height:100%; width:0%; background:var(--cyan); border-radius:3px; transition:width 0.2s; }
-    .progress-text { color:var(--dim); font-size:0.85rem; margin-top:6px; }
-
-    .status { margin-top:20px; min-height:40px; font-size:1.1rem; }
-    .status.ok { color:#00ff88; }
-    .status.err { color:#ff4444; }
-    .status.uploading { color:var(--cyan); }
-    .back { color:var(--dim); text-decoration:none; font-size:0.9rem; display:inline-block; margin-top:32px; }
-    .back:hover { color:var(--cyan); }
-    .rules { color:var(--dim-soft); font-size:0.85rem; margin-top:24px; line-height:1.6; }
-
-    /* Upload history */
-    .history { margin-top:16px; text-align:left; }
-    .history-item { padding:4px 0; font-size:0.9rem; color:var(--dim); border-bottom:1px solid rgba(255,255,255,0.05); }
-    .history-item .fname { color:var(--cyan); }
-    .history-item .fstatus { float:right; }
-    .history-item .fstatus.done { color:#00ff88; }
-    .history-item .fstatus.fail { color:#ff4444; }
+    .what span { color: var(--cyan); }
+    .meta-panel {
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 6px;
+      padding: 16px;
+      margin-bottom: 18px;
+      text-align: left;
+    }
+    .meta-head {
+      color: var(--cyan);
+      font-size: 1rem;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+    .meta-grid {
+      display: grid;
+      gap: 12px;
+    }
+    .field span {
+      display: block;
+      color: var(--dim);
+      font-size: 0.95rem;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+    .field select,
+    .field textarea {
+      width: 100%;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      border-radius: 4px;
+      font: inherit;
+      padding: 10px 12px;
+    }
+    .field select:disabled,
+    .field textarea:disabled {
+      opacity: 0.65;
+    }
+    .field textarea {
+      min-height: 90px;
+      resize: vertical;
+      line-height: 1.4;
+    }
+    .meta-help {
+      color: var(--dim-soft);
+      font-size: 0.88rem;
+      line-height: 1.5;
+      margin-top: 10px;
+    }
+    .upload-area {
+      border: 2px dashed rgba(0, 255, 234, 0.3);
+      border-radius: 4px;
+      padding: 42px 24px;
+      cursor: pointer;
+      transition: all 0.25s;
+      position: relative;
+    }
+    .upload-area:hover,
+    .upload-area.dragover {
+      border-color: var(--cyan);
+      background: rgba(0, 255, 234, 0.05);
+    }
+    .upload-area.uploading {
+      border-color: var(--cyan);
+      border-style: solid;
+      pointer-events: none;
+      opacity: 0.82;
+    }
+    .upload-area.success {
+      border-color: var(--ok);
+      border-style: solid;
+    }
+    .upload-area input {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+    .upload-area .icon {
+      font-size: 3rem;
+      margin-bottom: 12px;
+      transition: transform 0.3s;
+    }
+    .upload-area.success .icon { transform: scale(1.15); }
+    .upload-area .label {
+      color: var(--cyan);
+      font-size: 1.3rem;
+      letter-spacing: 1px;
+    }
+    .upload-area .hint {
+      color: var(--dim);
+      font-size: 0.92rem;
+      margin-top: 8px;
+      line-height: 1.4;
+    }
+    .progress-wrap {
+      display: none;
+      margin-top: 16px;
+      text-align: left;
+    }
+    .progress-wrap.active { display: block; }
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--cyan), var(--magenta));
+      border-radius: 4px;
+      transition: width 0.16s linear;
+    }
+    .progress-text {
+      color: var(--dim);
+      font-size: 0.9rem;
+      margin-top: 6px;
+    }
+    .queue-stats {
+      display: none;
+      margin-top: 10px;
+      color: var(--dim-soft);
+      font-size: 0.9rem;
+      text-align: left;
+    }
+    .queue-stats.active { display: block; }
+    .status {
+      margin-top: 18px;
+      min-height: 40px;
+      font-size: 1.1rem;
+      line-height: 1.35;
+    }
+    .status.ok { color: var(--ok); }
+    .status.err { color: var(--err); }
+    .status.uploading { color: var(--cyan); }
+    .history {
+      margin-top: 16px;
+      text-align: left;
+      max-height: 200px;
+      overflow: auto;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .history-item {
+      padding: 8px 0;
+      font-size: 0.92rem;
+      color: var(--dim);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      line-height: 1.35;
+    }
+    .history-item .fname { color: var(--cyan); }
+    .history-item .fstatus { float: right; }
+    .history-item .fstatus.done { color: var(--ok); }
+    .history-item .fstatus.fail { color: var(--err); }
+    .rules {
+      color: var(--dim-soft);
+      font-size: 0.87rem;
+      margin-top: 22px;
+      line-height: 1.55;
+    }
+    .back {
+      color: var(--dim);
+      text-decoration: none;
+      font-size: 0.9rem;
+      display: inline-block;
+      margin-top: 30px;
+    }
+    .back:hover { color: var(--cyan); }
+    @media (max-width: 560px) {
+      .drop-zone { padding: 36px 18px; }
+      h1 { font-size: 2.5rem; }
+      .upload-area { padding: 32px 18px; }
+    }
   </style>
   <script src="/emoji-favicon.js?v=1"></script>
 </head>
@@ -76,149 +259,313 @@
   <p class="subtitle">gift the collection</p>
 
   <div class="what">
-    got something good? <span>music</span>, <span>comics</span>, <span>books</span>, <span>roms</span>, <span>documentaries</span> &mdash; anything you think belongs on the shelf. pablo reviews everything before it goes live. think of it as a donation box at a community library.
+    got something good? <span>music</span>, <span>audiobooks</span>, <span>books</span>, <span>comics</span>, <span>roms</span>, <span>documentaries</span> - anything you think belongs on the shelf. pablo reviews everything before it goes live. this is intake, not instant publish.
+  </div>
+
+  <div class="meta-panel">
+    <div class="meta-head">intake note</div>
+    <div class="meta-grid">
+      <label class="field">
+        <span>shelf guess</span>
+        <select id="category">
+          <option value="auto">auto-sort it</option>
+          <option value="music">music</option>
+          <option value="audiobooks">audiobooks</option>
+          <option value="books">books / ebooks</option>
+          <option value="comics">comics</option>
+          <option value="video">video / docs</option>
+          <option value="roms">games / roms</option>
+          <option value="images">images</option>
+          <option value="misc">misc</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>note for later</span>
+        <textarea id="note" maxlength="800" placeholder="optional context: what this is, where it came from, weird filenames, preferred destination, anything helpful."></textarea>
+      </label>
+    </div>
+    <div class="meta-help">
+      one batch lands in one inbox folder. one small <code>drop.json</code> keeps the note and file list. uploads still run one-by-one so a bad file does not nuke the whole drop.
+    </div>
   </div>
 
   <div class="upload-area" id="drop">
     <div class="icon" id="icon">&#x1F4E6;</div>
-    <div class="label" id="label">drag &amp; drop or click to upload</div>
-    <div class="hint">any format &middot; max 500MB per file</div>
+    <div class="label" id="label">drag files here or click to queue a batch</div>
+    <div class="hint">500MB max per file - public drop lane - uploads run one-by-one</div>
     <input type="file" id="fileInput" multiple>
   </div>
 
   <div class="progress-wrap" id="progress-wrap">
     <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
     <div class="progress-text" id="progress-text"></div>
+    <div class="queue-stats" id="queue-stats"></div>
   </div>
 
   <div class="status" id="status"></div>
   <div class="history" id="history"></div>
 
   <div class="rules">
-    all uploads are moderated &middot; no account needed<br>
-    your contribution helps keep the library growing
+    moderated uploads only - no account needed<br>
+    audiobooks, ebooks, comics, roms, archives, images, video all fine if they fit the cap
   </div>
 
   <a href="/" class="back">&larr; quickcat.club</a>
 </div>
 
 <script>
-var drop = document.getElementById('drop');
-var input = document.getElementById('fileInput');
-var status = document.getElementById('status');
-var icon = document.getElementById('icon');
-var label = document.getElementById('label');
-var progressWrap = document.getElementById('progress-wrap');
-var progressFill = document.getElementById('progress-fill');
-var progressText = document.getElementById('progress-text');
-var history = document.getElementById('history');
+var MAX_FILE_SIZE = 500 * 1024 * 1024;
+var UPLOAD_TIMEOUT_MS = 20 * 60 * 1000;
+
+var drop = document.getElementById("drop");
+var input = document.getElementById("fileInput");
+var categoryInput = document.getElementById("category");
+var noteInput = document.getElementById("note");
+var status = document.getElementById("status");
+var icon = document.getElementById("icon");
+var label = document.getElementById("label");
+var progressWrap = document.getElementById("progress-wrap");
+var progressFill = document.getElementById("progress-fill");
+var progressText = document.getElementById("progress-text");
+var queueStats = document.getElementById("queue-stats");
+var history = document.getElementById("history");
 var uploading = false;
 
-['dragenter','dragover'].forEach(function(e) { drop.addEventListener(e, function(ev) { ev.preventDefault(); if (!uploading) drop.classList.add('dragover'); }); });
-['dragleave','drop'].forEach(function(e) { drop.addEventListener(e, function(ev) { ev.preventDefault(); drop.classList.remove('dragover'); }); });
+["dragenter", "dragover"].forEach(function(eventName) {
+  drop.addEventListener(eventName, function(ev) {
+    ev.preventDefault();
+    if (!uploading) drop.classList.add("dragover");
+  });
+});
 
-drop.addEventListener('drop', function(e) { handleFiles(e.dataTransfer.files); });
-input.addEventListener('change', function() { handleFiles(input.files); input.value = ''; });
+["dragleave", "drop"].forEach(function(eventName) {
+  drop.addEventListener(eventName, function(ev) {
+    ev.preventDefault();
+    drop.classList.remove("dragover");
+  });
+});
+
+drop.addEventListener("drop", function(e) {
+  handleFiles(Array.from(e.dataTransfer.files || []));
+});
+
+input.addEventListener("change", function() {
+  handleFiles(Array.from(input.files || []));
+  input.value = "";
+});
 
 function formatSize(bytes) {
-  if (bytes < 1024) return bytes + ' B';
-  if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
-  return (bytes/1024/1024).toFixed(1) + ' MB';
+  if (bytes < 1024) return bytes + " B";
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+  if (bytes < 1024 * 1024 * 1024) return (bytes / 1024 / 1024).toFixed(1) + " MB";
+  return (bytes / 1024 / 1024 / 1024).toFixed(2) + " GB";
+}
+
+function setMetaDisabled(disabled) {
+  categoryInput.disabled = disabled;
+  noteInput.disabled = disabled;
 }
 
 function addHistory(name, ok, detail) {
-  var div = document.createElement('div');
-  div.className = 'history-item';
-  div.innerHTML = '<span class="fname">' + name + '</span><span class="fstatus ' + (ok ? 'done' : 'fail') + '">' + detail + '</span>';
+  var div = document.createElement("div");
+  div.className = "history-item";
+  div.innerHTML = '<span class="fname">' + escapeHtml(name) + '</span><span class="fstatus ' + (ok ? "done" : "fail") + '">' + escapeHtml(detail) + "</span>";
   history.insertBefore(div, history.firstChild);
+}
+
+function escapeHtml(text) {
+  return String(text || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;");
 }
 
 function resetUI() {
   uploading = false;
-  drop.classList.remove('uploading');
-  progressWrap.classList.remove('active');
-  progressFill.style.width = '0%';
-  icon.innerHTML = '&#x1F4E6;';
-  label.innerHTML = 'drag &amp; drop or click to upload';
+  setMetaDisabled(false);
+  drop.classList.remove("uploading");
+  progressWrap.classList.remove("active");
+  queueStats.classList.remove("active");
+  progressFill.style.width = "0%";
+  progressText.textContent = "";
+  queueStats.textContent = "";
+  icon.innerHTML = "&#x1F4E6;";
+  label.textContent = "drag files here or click to queue a batch";
+}
+
+function setUploadState() {
+  uploading = true;
+  setMetaDisabled(true);
+  drop.classList.add("uploading");
+  drop.classList.remove("success");
+  progressWrap.classList.add("active");
+  queueStats.classList.add("active");
+  icon.innerHTML = "&#x1F4E4;";
+}
+
+function makeBatchId() {
+  return "batch_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8);
+}
+
+function slugify(text) {
+  return String(text || "")
+    .toLowerCase()
+    .replace(/\.[^.]+$/, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 40) || "drop";
+}
+
+function makeBatchToken(files, batchId) {
+  var now = new Date();
+  var stamp = String(now.getFullYear())
+    + String(now.getMonth() + 1).padStart(2, "0")
+    + String(now.getDate()).padStart(2, "0")
+    + "-"
+    + String(now.getHours()).padStart(2, "0")
+    + String(now.getMinutes()).padStart(2, "0")
+    + String(now.getSeconds()).padStart(2, "0");
+  var stem = files.length ? slugify(files[0].name) : "drop";
+  var suffix = String(batchId || "").slice(-6) || Math.random().toString(36).slice(2, 8);
+  return (stamp + "_" + stem + "_" + suffix).slice(0, 96);
 }
 
 async function handleFiles(files) {
   if (uploading || !files.length) return;
 
-  for (var i = 0; i < files.length; i++) {
-    var file = files[i];
-    if (file.size > 500 * 1024 * 1024) {
-      status.className = 'status err';
-      status.textContent = file.name + ' is too big (500MB max)';
-      addHistory(file.name, false, 'too big');
-      continue;
-    }
+  var accepted = [];
+  var skipped = 0;
 
-    uploading = true;
-    drop.classList.add('uploading');
-    drop.classList.remove('success');
-    progressWrap.classList.add('active');
-    progressFill.style.width = '0%';
-    icon.innerHTML = '&#x1F4E4;';
-    label.textContent = 'uploading ' + file.name;
-    status.className = 'status uploading';
-    status.textContent = 'sending ' + file.name + ' (' + formatSize(file.size) + ')...';
-    progressText.textContent = '0%';
+  files.forEach(function(file) {
+    if (file.size > MAX_FILE_SIZE) {
+      skipped += 1;
+      addHistory(file.name, false, "too big");
+    } else {
+      accepted.push(file);
+    }
+  });
+
+  if (!accepted.length) {
+    status.className = "status err";
+    status.textContent = files.length === 1 ? "that file is too big for the public drop lane" : "every selected file was skipped";
+    return;
+  }
+
+  var batchId = makeBatchId();
+  var batch = {
+    id: batchId,
+    token: makeBatchToken(accepted, batchId),
+    category: categoryInput.value || "auto",
+    note: (noteInput.value || "").trim().slice(0, 800),
+    totalFiles: accepted.length,
+    totalBytes: accepted.reduce(function(sum, file) { return sum + file.size; }, 0),
+    completedBytes: 0,
+    done: 0,
+    failed: 0,
+    skipped: skipped
+  };
+
+  setUploadState();
+
+  for (var i = 0; i < accepted.length; i++) {
+    var file = accepted[i];
+    var fileNumber = i + 1;
+
+    label.textContent = "uploading " + file.name;
+    status.className = "status uploading";
+    status.textContent = "sending file " + fileNumber + " of " + batch.totalFiles + " - " + file.name;
+    queueStats.textContent = "batch " + batch.id + " - folder " + batch.token + " - " + batch.done + " done, " + batch.failed + " failed";
 
     try {
-      var result = await uploadFile(file);
-      status.className = 'status ok';
-      status.textContent = file.name + ' received — thanks for the gift :)';
-      icon.innerHTML = '&#x2705;';
-      label.textContent = 'uploaded!';
-      drop.classList.add('success');
-      addHistory(file.name, true, formatSize(file.size));
+      var result = await uploadFile(file, batch, fileNumber, function(loaded) {
+        var overallLoaded = batch.completedBytes + loaded;
+        var pct = Math.max(1, Math.round(overallLoaded / batch.totalBytes * 100));
+        progressFill.style.width = pct + "%";
+        progressText.textContent = pct + "% overall - file " + fileNumber + "/" + batch.totalFiles + " - " + formatSize(loaded) + " / " + formatSize(file.size);
+      });
 
-      // Reset after a moment
-      await new Promise(function(r) { setTimeout(r, 2000); });
-      resetUI();
-    } catch(e) {
-      status.className = 'status err';
-      status.textContent = e.message || 'upload failed — try again?';
-      addHistory(file.name, false, 'failed');
-      resetUI();
+      batch.done += 1;
+      batch.completedBytes += file.size;
+      drop.classList.add("success");
+      addHistory(file.name, true, formatSize(file.size) + " - " + (result.category || batch.category || "queued"));
+    } catch (error) {
+      batch.failed += 1;
+      batch.completedBytes += file.size;
+      addHistory(file.name, false, error.message || "failed");
     }
+
+    queueStats.textContent = "batch " + batch.id + " - folder " + batch.token + " - " + batch.done + " done, " + batch.failed + " failed";
   }
+
+  progressFill.style.width = "100%";
+
+  if (batch.failed === 0) {
+    status.className = "status ok";
+    status.textContent = "queued " + batch.done + " file" + (batch.done === 1 ? "" : "s") + " into one review folder";
+  } else if (batch.done > 0) {
+    status.className = "status ok";
+    status.textContent = "queued " + batch.done + " file" + (batch.done === 1 ? "" : "s") + " into one review folder, " + batch.failed + " failed";
+  } else {
+    status.className = "status err";
+    status.textContent = "nothing made it through - check the history below";
+  }
+
+  if (batch.skipped) {
+    status.textContent += " - " + batch.skipped + " skipped for size";
+  }
+
+  label.textContent = batch.failed ? "batch finished with some casualties" : "batch received";
+  icon.innerHTML = batch.failed ? "&#x26A0;" : "&#x2705;";
+
+  await new Promise(function(resolve) { setTimeout(resolve, 2200); });
+  resetUI();
 }
 
-function uploadFile(file) {
+function uploadFile(file, batch, index, onProgress) {
   return new Promise(function(resolve, reject) {
     var xhr = new XMLHttpRequest();
     var form = new FormData();
-    form.append('file', file);
 
-    xhr.upload.addEventListener('progress', function(e) {
-      if (e.lengthComputable) {
-        var pct = Math.round(e.loaded / e.total * 100);
-        progressFill.style.width = pct + '%';
-        progressText.textContent = pct + '% — ' + formatSize(e.loaded) + ' / ' + formatSize(e.total);
-      }
+    form.append("file", file, file.name);
+    form.append("category", batch.category);
+    form.append("note", batch.note);
+    form.append("batch_id", batch.id);
+    form.append("batch_token", batch.token);
+    form.append("batch_index", String(index));
+    form.append("batch_total", String(batch.totalFiles));
+    form.append("source", "public-drop");
+    if (file.webkitRelativePath) form.append("client_relpath", file.webkitRelativePath);
+
+    xhr.upload.addEventListener("progress", function(e) {
+      if (e.lengthComputable && onProgress) onProgress(e.loaded);
     });
 
-    xhr.addEventListener('load', function() {
+    xhr.addEventListener("load", function() {
+      var payload = {};
+      try {
+        payload = JSON.parse(xhr.responseText || "{}");
+      } catch (error) {
+        payload = {};
+      }
+
       if (xhr.status >= 200 && xhr.status < 300) {
-        progressFill.style.width = '100%';
-        resolve(xhr.responseText);
+        resolve(payload);
       } else {
-        reject(new Error('upload failed: ' + (xhr.responseText || 'server error')));
+        reject(new Error((payload && payload.error) || "server error"));
       }
     });
 
-    xhr.addEventListener('error', function() {
-      reject(new Error('connection failed — try again?'));
+    xhr.addEventListener("error", function() {
+      reject(new Error("connection failed"));
     });
 
-    xhr.addEventListener('timeout', function() {
-      reject(new Error('upload timed out — try again?'));
+    xhr.addEventListener("timeout", function() {
+      reject(new Error("upload timed out"));
     });
 
-    xhr.timeout = 300000; // 5 min
-    xhr.open('POST', '/drop/upload');
+    xhr.timeout = UPLOAD_TIMEOUT_MS;
+    xhr.open("POST", "/drop/upload");
     xhr.send(form);
   });
 }

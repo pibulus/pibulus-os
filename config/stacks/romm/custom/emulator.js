@@ -4091,9 +4091,16 @@ class EmulatorJS {
             menuButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M0 96C0 78.33 14.33 64 32 64H416C433.7 64 448 78.33 448 96C448 113.7 433.7 128 416 128H32C14.33 128 0 113.7 0 96zM0 256C0 238.3 14.33 224 32 224H416C433.7 224 448 238.3 448 256C448 273.7 433.7 288 416 288H32C14.33 288 0 273.7 0 256zM416 448H32C14.33 448 0 433.7 0 416C0 398.3 14.33 384 32 384H416C433.7 384 448 398.3 448 416C448 433.7 433.7 448 416 448z"/></svg>';
             menuButton.classList.add("ejs_virtualGamepad_open");
             menuButton.style.display = "none";
+            const syncTouchMenuToggle = () => {
+                const gamepadDisabled = this.getSettingValue("virtual-gamepad") === "disabled";
+                menuButton.style.display = gamepadDisabled ? "" : "none";
+                menuButton.style.opacity = gamepadDisabled ? 0.35 : 0;
+            };
+            this.syncTouchMenuToggle = syncTouchMenuToggle;
             this.on("start", () => {
                 const menuPreference = this.getSettingValue("menu-bar-button") === "visible" ? "visible" : "hidden";
                 this.changeSettingOption("menu-bar-button", menuPreference, true);
+                syncTouchMenuToggle();
             });
             this.elements.parent.appendChild(menuButton);
             let timeout;
@@ -4285,9 +4292,14 @@ class EmulatorJS {
             this.gameManager.setCurrentDisk(value);
         } else if (option === "virtual-gamepad") {
             this.toggleVirtualGamepad(value !== "disabled");
+            if (this.syncTouchMenuToggle) this.syncTouchMenuToggle();
         } else if (option === "menu-bar-button") {
-            this.elements.menuToggle.style.display = value === "visible" ? "" : "none";
-            this.elements.menuToggle.style.opacity = value === "visible" ? 0.35 : 0;
+            if (this.syncTouchMenuToggle) {
+                this.syncTouchMenuToggle();
+            } else {
+                this.elements.menuToggle.style.display = value === "visible" ? "" : "none";
+                this.elements.menuToggle.style.opacity = value === "visible" ? 0.35 : 0;
+            }
         } else if (option === "virtual-gamepad-left-handed-mode") {
             this.toggleVirtualGamepadLeftHanded(value !== "disabled");
         } else if (option === "ff-ratio") {
@@ -5046,10 +5058,6 @@ class EmulatorJS {
                 "enabled": this.localization("Enabled"),
                 "disabled": this.localization("Disabled")
             }, this.isMobile ? "enabled" : "disabled", virtualGamepad, true);
-            addToMenu(this.localization("Menu Bar Button"), "menu-bar-button", {
-                "visible": this.localization("visible"),
-                "hidden": this.localization("hidden")
-            }, "hidden", virtualGamepad, true);
             addToMenu(this.localization("Left Handed Mode"), "virtual-gamepad-left-handed-mode", {
                 "enabled": this.localization("Enabled"),
                 "disabled": this.localization("Disabled")
