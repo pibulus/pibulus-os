@@ -387,6 +387,16 @@
     display: none !important;
 }
 
+.ejs_small_screen .ejs_menu_bar.romm_touch_menu_visible {
+    display: flex !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transform: translate(-50%, 0) !important;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
+    border-radius: 18px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+}
+
 .ejs_small_screen .ejs_menu_bar_hidden {
     opacity: 0;
     pointer-events: none;
@@ -409,6 +419,39 @@
     padding: 7px;
     position: relative;
     transition: all .3s ease;
+}
+
+.romm_touch_menu_toggle {
+    display: none;
+}
+
+.ejs_small_screen .romm_touch_menu_toggle {
+    position: absolute;
+    right: 16px;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
+    width: 48px;
+    height: 48px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.68);
+    color: #fff;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.ejs_small_screen .romm_touch_menu_toggle svg {
+    width: 18px;
+    height: 18px;
+    display: block;
+}
+
+.ejs_small_screen .romm_touch_menu_toggle:active {
+    transform: scale(0.97);
 }
 
 .ejs_small_screen .ejs_menu_button:hover {
