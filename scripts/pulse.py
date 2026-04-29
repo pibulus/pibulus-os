@@ -5,14 +5,25 @@ Called in a loop by the launcher. Ctrl-C to exit.
 """
 
 import json
+import os
 import subprocess
+import urllib.parse
 import urllib.request
 from datetime import datetime
 
+from env_utils import load_local_env, require_env
+
+load_local_env()
+
 W = 46  # panel width
-JF_TOKEN = "1980cdafcfec43b58b04b89c4d1f5b99"
-QB_USER = "admin"
-QB_PASS = "meringue"
+JF_URL = os.environ.get("JELLYFIN_URL", "http://localhost:8096")
+JF_TOKEN = require_env("JELLYFIN_API_KEY")
+QB_URL = os.environ.get("QB_WEBUI_URL", "http://localhost:8888")
+QB_USER = os.environ.get("QB_WEBUI_USERNAME", "admin")
+QB_PASS = require_env("QB_WEBUI_PASSWORD")
+ND_URL = os.environ.get("NAVIDROME_URL", "http://localhost:4533")
+ND_USER = os.environ.get("NAVIDROME_USERNAME", "pibulus")
+ND_PASS = require_env("NAVIDROME_PASSWORD")
 
 
 def hr(char="━"):
@@ -43,9 +54,9 @@ def trunc(s, n):
 
 def qb_session():
     try:
-        data = b"username=admin&password=meringue"
+        data = urllib.parse.urlencode({"username": QB_USER, "password": QB_PASS}).encode()
         req = urllib.request.Request(
-            "http://localhost:8888/api/v2/auth/login", data=data
+            f"{QB_URL}/api/v2/auth/login", data=data
         )
         req.add_header("Content-Type", "application/x-www-form-urlencoded")
         with urllib.request.urlopen(req, timeout=3) as r:
@@ -58,7 +69,7 @@ def qb_session():
 
 
 def qb_get(sid, path):
-    req = urllib.request.Request(f"http://localhost:8888{path}")
+    req = urllib.request.Request(f"{QB_URL}{path}")
     req.add_header("Cookie", sid)
     try:
         with urllib.request.urlopen(req, timeout=3) as r:
@@ -88,7 +99,7 @@ else:
 
 # ── Jellyfin ─────────────────────────────────────────
 out.append("")
-jf = fetch("http://localhost:8096/Sessions", headers={"X-Emby-Token": JF_TOKEN})
+jf = fetch(f"{JF_URL}/Sessions", headers={"X-Emby-Token": JF_TOKEN})
 if jf is not None:
     playing = [s for s in jf if s.get("NowPlayingItem")]
     dot = "●" if playing else "○"
@@ -106,8 +117,16 @@ else:
 # ── Navidrome ────────────────────────────────────────
 out.append("")
 nd = fetch(
-    "http://localhost:4533/rest/getNowPlaying"
-    "?u=pibulus&p=meringue&v=1.16.0&c=pulse&f=json"
+    f"{ND_URL}/rest/getNowPlaying?"
+    + urllib.parse.urlencode(
+        {
+            "u": ND_USER,
+            "p": ND_PASS,
+            "v": "1.16.0",
+            "c": "pulse",
+            "f": "json",
+        }
+    )
 )
 if nd:
     entries = (

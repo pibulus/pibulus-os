@@ -14,6 +14,7 @@ and queues them all to qBittorrent in one shot.
 
 import argparse
 import json
+import os
 import re
 import sys
 import time
@@ -21,9 +22,13 @@ import urllib.parse
 import urllib.request
 from http.cookiejar import CookieJar
 
-QB_URL  = "http://localhost:8888"
-QB_USER = "admin"
-QB_PASS = "meringue"
+from env_utils import load_local_env, require_env
+
+load_local_env()
+
+QB_URL  = os.environ.get("QB_WEBUI_URL", "http://localhost:8888")
+QB_USER = os.environ.get("QB_WEBUI_USERNAME", "admin")
+QB_PASS = require_env("QB_WEBUI_PASSWORD")
 QB_SAVE = "/shows/"   # inside container = /media/pibulus/passport/Shows/
 
 # Size limits (bytes)

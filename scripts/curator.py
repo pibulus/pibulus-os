@@ -35,6 +35,10 @@ from datetime import datetime
 from http.cookiejar import CookieJar
 from pathlib import Path
 
+from env_utils import load_local_env, require_env
+
+load_local_env()
+
 # ── Paths ────────────────────────────────────────────────────────────────────
 MOVIES_DIR   = Path("/media/pibulus/passport/Movies")
 SHOWS_DIR    = Path("/media/pibulus/passport/Shows")
@@ -44,9 +48,9 @@ LOG_FILE     = DATA_DIR / "curator_log.txt"
 SCRIPTS_DIR  = Path("/home/pibulus/pibulus-os/scripts")
 
 # ── qBittorrent ───────────────────────────────────────────────────────────────
-QB_URL       = "http://localhost:8888"
-QB_USER      = "admin"
-QB_PASS      = "meringue"
+QB_URL       = os.environ.get("QB_WEBUI_URL", "http://localhost:8888")
+QB_USER      = os.environ.get("QB_WEBUI_USERNAME", "admin")
+QB_PASS      = require_env("QB_WEBUI_PASSWORD")
 QB_MOVIES    = "/movies/"
 QB_SHOWS     = "/shows/"
 

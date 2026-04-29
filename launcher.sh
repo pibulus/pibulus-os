@@ -12,6 +12,10 @@ DECK_ROOT="$(cd "$(dirname "$0")" && pwd)"
 SERVICE_REGISTRY="${SERVICE_REGISTRY:-$DECK_ROOT/config/service-registry.json}"
 PASSPORT_ROOT="${PASSPORT_ROOT:-/media/pibulus/passport}"
 
+# Local-only credentials live in gitignored env files.
+# shellcheck disable=SC1091
+[ -f "$DECK_ROOT/scripts/load_pibulus_env.sh" ] && . "$DECK_ROOT/scripts/load_pibulus_env.sh"
+
 # Source modules for availability
 [ -f ~/pibulus-os/modules/pirate_grab_module.sh ] && source ~/pibulus-os/modules/pirate_grab_module.sh
 [ -f ~/pibulus-os/modules/scavenger_module.sh ] && source ~/pibulus-os/modules/scavenger_module.sh
@@ -1063,13 +1067,14 @@ drop_magnet_or_url() {
       'Shows')                savepath="/shows/" ;;
     esac
     curl -s -c /tmp/qb_cookies.txt -b /tmp/qb_cookies.txt \
-      -d "username=admin&password=meringue" \
-      http://localhost:8888/api/v2/auth/login > /dev/null
+      --data-urlencode "username=${QB_WEBUI_USERNAME:-admin}" \
+      --data-urlencode "password=${QB_WEBUI_PASSWORD:?QB_WEBUI_PASSWORD not set}" \
+      "${QB_WEBUI_URL:-http://localhost:8888}/api/v2/auth/login" > /dev/null
     local result
     result=$(curl -s -b /tmp/qb_cookies.txt \
       -F "urls=$link" \
       -F "savepath=$savepath" \
-      http://localhost:8888/api/v2/torrents/add)
+      "${QB_WEBUI_URL:-http://localhost:8888}/api/v2/torrents/add")
     echo "Magnet queued → $dest  ($result)"
 
   elif [[ "$link" == http* ]]; then

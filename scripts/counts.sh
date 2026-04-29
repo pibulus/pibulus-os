@@ -2,10 +2,21 @@
 # 📚 COUNTS — library sizes for the quickcat.club signal strip
 # Runs daily via cron (slow API calls / file walks, no need to hammer every minute)
 
-MOVIE_COUNT=$(curl -s --max-time 5 "http://localhost:8096/Items?IncludeItemTypes=Movie&Recursive=true&Limit=0&api_key=1980cdafcfec43b58b04b89c4d1f5b99" 2>/dev/null | \
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck disable=SC1091
+[ -f "$SCRIPT_DIR/load_pibulus_env.sh" ] && . "$SCRIPT_DIR/load_pibulus_env.sh"
+
+JF_URL="${JELLYFIN_URL:-http://localhost:8096}"
+JF_TOKEN="${JELLYFIN_API_KEY:?JELLYFIN_API_KEY not set}"
+
+MOVIE_COUNT=$(curl -s --max-time 5 \
+  -H "X-Emby-Token: $JF_TOKEN" \
+  "$JF_URL/Items?IncludeItemTypes=Movie&Recursive=true&Limit=0" 2>/dev/null | \
   python3 -c "import sys,json; print(json.load(sys.stdin).get('TotalRecordCount',0))" 2>/dev/null || echo "0")
 
-SHOW_COUNT=$(curl -s --max-time 5 "http://localhost:8096/Items?IncludeItemTypes=Series&Recursive=true&Limit=0&api_key=1980cdafcfec43b58b04b89c4d1f5b99" 2>/dev/null | \
+SHOW_COUNT=$(curl -s --max-time 5 \
+  -H "X-Emby-Token: $JF_TOKEN" \
+  "$JF_URL/Items?IncludeItemTypes=Series&Recursive=true&Limit=0" 2>/dev/null | \
   python3 -c "import sys,json; print(json.load(sys.stdin).get('TotalRecordCount',0))" 2>/dev/null || echo "0")
 
 MOVIE_FS_COUNT=$(find /media/pibulus/passport/Movies -mindepth 1 -maxdepth 1 ! -name '.*' 2>/dev/null | wc -l | tr -d ' ')

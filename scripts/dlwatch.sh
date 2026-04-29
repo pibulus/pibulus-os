@@ -2,7 +2,12 @@
 # dlwatch — live download progress viewer
 # Usage: dlwatch [filter]
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck disable=SC1091
+[ -f "$SCRIPT_DIR/load_pibulus_env.sh" ] && . "$SCRIPT_DIR/load_pibulus_env.sh"
+
 FILTER="${1:-}"
+QB_URL="${QB_WEBUI_URL:-http://localhost:8888}"
 
 while true; do
   clear
@@ -10,11 +15,12 @@ while true; do
   echo "  ─────────────────────────────────────────────────────────────────────"
 
   curl -s --max-time 3 -c /tmp/qb-watch.txt \
-    -d "username=admin&password=meringue" \
-    "http://localhost:8888/api/v2/auth/login" > /dev/null 2>&1
+    --data-urlencode "username=${QB_WEBUI_USERNAME:-admin}" \
+    --data-urlencode "password=${QB_WEBUI_PASSWORD:?QB_WEBUI_PASSWORD not set}" \
+    "$QB_URL/api/v2/auth/login" > /dev/null 2>&1
 
   curl -s --max-time 5 -b /tmp/qb-watch.txt \
-    "http://localhost:8888/api/v2/torrents/info" 2>/dev/null > /tmp/qb-info.json
+    "$QB_URL/api/v2/torrents/info" 2>/dev/null > /tmp/qb-info.json
 
   python3 - "$FILTER" << 'EOF'
 import json, sys, os

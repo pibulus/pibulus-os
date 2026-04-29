@@ -10,6 +10,10 @@ import sys
 import urllib.request
 import uuid
 
+from env_utils import load_local_env, require_env
+
+load_local_env()
+
 if os.geteuid() != 0:
     os.execvp('sudo', ['sudo', sys.executable] + sys.argv)
 
@@ -41,18 +45,25 @@ CW_DEFAULT_SHOW = 262143
 CW_DEFAULT_LANGUAGE = 'all'
 CW_DEFAULT_LOCALE = 'en'
 CW_SALT_ALPHABET = string.ascii_letters + string.digits
+JELLYFIN_URL = os.environ.get("JELLYFIN_URL", "http://localhost:8096")
+JELLYFIN_API_KEY = require_env("JELLYFIN_API_KEY")
+ABS_URL = os.environ.get("ABS_URL", "http://localhost:13378")
+ABS_ADMIN_USERNAME = os.environ.get("ABS_ADMIN_USERNAME", "pibulus")
+ABS_ADMIN_PASSWORD = require_env("ABS_ADMIN_PASSWORD")
+ROMM_URL = os.environ.get("ROMM_URL", "http://localhost:8095")
+ROMM_AUTH_USERNAME = os.environ.get("ROMM_AUTH_USERNAME", "pibulus")
+ROMM_AUTH_PASSWORD = require_env("ROMM_AUTH_PASSWORD")
 
 def add_jf_api(user, pw):
-    JF_KEY = '1980cdafcfec43b58b04b89c4d1f5b99'
-    headers = {'Content-Type': 'application/json', 'X-Emby-Token': JF_KEY}
+    headers = {'Content-Type': 'application/json', 'X-Emby-Token': JELLYFIN_API_KEY}
     # Create user
     payload = json.dumps({'Name': user}).encode()
-    req = urllib.request.Request('http://localhost:8096/Users/New', data=payload, headers=headers, method='POST')
+    req = urllib.request.Request(f'{JELLYFIN_URL}/Users/New', data=payload, headers=headers, method='POST')
     d = json.loads(urllib.request.urlopen(req).read())
     uid = d['Id']
     # Set password
     payload2 = json.dumps({'NewPw': pw}).encode()
-    req2 = urllib.request.Request(f'http://localhost:8096/Users/{uid}/Password', data=payload2, headers=headers, method='POST')
+    req2 = urllib.request.Request(f'{JELLYFIN_URL}/Users/{uid}/Password', data=payload2, headers=headers, method='POST')
     urllib.request.urlopen(req2)
 
 def make_cw_hash(pw):
@@ -169,8 +180,8 @@ def add_nd(conn, user, pw, email):
         """, (uid, user, user, email, nd_hash))
 
 def add_abs_api(user, pw, email):
-    login_payload = json.dumps({'username': 'pibulus', 'password': 'meringue'}).encode()
-    login_req = urllib.request.Request('http://localhost:13378/login', data=login_payload, headers={'Content-Type': 'application/json'}, method='POST')
+    login_payload = json.dumps({'username': ABS_ADMIN_USERNAME, 'password': ABS_ADMIN_PASSWORD}).encode()
+    login_req = urllib.request.Request(f'{ABS_URL}/login', data=login_payload, headers={'Content-Type': 'application/json'}, method='POST')
     login = json.loads(urllib.request.urlopen(login_req).read())
     token = login['user']['accessToken']
     headers = {'Content-Type': 'application/json', 'Authorization': f'Bearer {token}'}
@@ -180,7 +191,7 @@ def add_abs_api(user, pw, email):
         'selectedTagsNotAccessible': False, 'librariesAccessible': [], 'itemTagsSelected': []
     }
     payload = json.dumps({'username': user, 'password': pw, 'email': email, 'type': 'user', 'isActive': True, 'permissions': permissions}).encode()
-    req = urllib.request.Request('http://localhost:13378/api/users', data=payload, headers=headers, method='POST')
+    req = urllib.request.Request(f'{ABS_URL}/api/users', data=payload, headers=headers, method='POST')
     urllib.request.urlopen(req)
 
 # Jellyfin via API (direct DB writes cause EF Core UUID/RowVersion issues)
@@ -208,10 +219,10 @@ except Exception as e: print(f'❌ ABS: {e}')
 
 # RomM (API-based, not SQLite)
 try:
-    auth_str = base64.b64encode(b'pibulus:meringue').decode()
+    auth_str = base64.b64encode(f'{ROMM_AUTH_USERNAME}:{ROMM_AUTH_PASSWORD}'.encode()).decode()
     romm_headers = {'Authorization': f'Basic {auth_str}', 'Content-Type': 'application/json'}
     payload = json.dumps({'username': user, 'password': pw, 'email': email, 'role': 'viewer'}).encode()
-    req = urllib.request.Request('http://localhost:8095/api/users', headers=romm_headers, method='POST', data=payload)
+    req = urllib.request.Request(f'{ROMM_URL}/api/users', headers=romm_headers, method='POST', data=payload)
     urllib.request.urlopen(req)
     print(f'✅ RM: {user} added.')
 except Exception as e: print(f'❌ RM: {e}')
@@ -240,13 +251,13 @@ try:
     img_b64 = base64.b64encode(img)
     # look up the new user's JF id
     jf_users = json.loads(urllib.request.urlopen(
-        urllib.request.Request('http://localhost:8096/Users',
-        headers={'X-Emby-Token': '1980cdafcfec43b58b04b89c4d1f5b99'})).read())
+        urllib.request.Request(f'{JELLYFIN_URL}/Users',
+        headers={'X-Emby-Token': JELLYFIN_API_KEY})).read())
     jf_uid = next((u['Id'] for u in jf_users if u['Name'].lower() == user), None)
     if jf_uid:
         urllib.request.urlopen(urllib.request.Request(
-            f'http://localhost:8096/Users/{jf_uid}/Images/Primary', data=img_b64,
-            headers={'X-Emby-Token': '1980cdafcfec43b58b04b89c4d1f5b99', 'Content-Type': 'image/png'},
+            f'{JELLYFIN_URL}/Users/{jf_uid}/Images/Primary', data=img_b64,
+            headers={'X-Emby-Token': JELLYFIN_API_KEY, 'Content-Type': 'image/png'},
             method='POST'))
     print(f'✅ AV: {user} avatar set.')
 except Exception as e: print(f'❌ AV: {e}')

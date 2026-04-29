@@ -3,10 +3,10 @@
 ### 🚪 ACCESS TIERS
 | User | Method | Password | Target |
 |------|--------|----------|--------|
-| **pibulus** | SSH | meringue | Full Admin Shell |
-| **deck** | SSH | meringue | Cyberdeck TUI |
-| **guest** | Web | quickcat | Library Access |
-| **deck.quickcat.club** | Basic Auth | .htpasswd | Admin Dashboard |
+| **pibulus** | SSH | local secret | Full Admin Shell |
+| **deck** | SSH | local secret | Cyberdeck TUI |
+| **guest** | Web | local secret | Library Access |
+| **deck.quickcat.club** | Basic Auth | host-local secret | Admin Dashboard |
 
 ### 📟 COMMANDS
 - `deck` — Launches the main Cyberdeck menu

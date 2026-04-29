@@ -99,6 +99,8 @@ services:
   slskd:
     image: slskd/slskd:0.24.5  # pinned 2026-04-15
     container_name: slskd
+    env_file:
+      - .env
     ports:
       - "5030:5030"
       - "50300:50300"
@@ -109,7 +111,6 @@ services:
     environment:
       - SLSKD_REMOTE_CONFIGURATION=true
       - SLSKD_SLSK_USERNAME=pibulus
-      - SLSKD_SLSK_PASSWORD=meringue
       - SLSKD_SLSK_LISTEN_PORT=50300
     volumes:
       - /opt/slskd:/app/config

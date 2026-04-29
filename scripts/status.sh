@@ -1,6 +1,13 @@
 #!/bin/bash
 # 📊 PIBULUS STATUS v2 — feeds the deck dashboard
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck disable=SC1091
+[ -f "$SCRIPT_DIR/load_pibulus_env.sh" ] && . "$SCRIPT_DIR/load_pibulus_env.sh"
+
+JF_URL="${JELLYFIN_URL:-http://localhost:8096}"
+JF_TOKEN="${JELLYFIN_API_KEY:?JELLYFIN_API_KEY not set}"
+
 TEMP=$(vcgencmd measure_temp | grep -oP '[0-9.]+')
 UPTIME=$(uptime -p | sed 's/up //; s/ days\?/d/g; s/ hours\?/h/g; s/ minutes\?/m/g; s/,//g')
 
@@ -34,7 +41,7 @@ NP_LISTENERS_UNIQUE=$(echo "$NP_JSON" | python3 -c "import sys,json; print(json.
 NP_LISTENERS_TOTAL=$(echo "$NP_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin).get('listeners',{}).get('total',0))" 2>/dev/null || echo "0")
 
 # Active Jellyfin streams (watching now)
-WATCHING=$(curl -s --max-time 3 "http://localhost:8096/Sessions?api_key=1980cdafcfec43b58b04b89c4d1f5b99" 2>/dev/null | \
+WATCHING=$(curl -s --max-time 3 -H "X-Emby-Token: $JF_TOKEN" "$JF_URL/Sessions" 2>/dev/null | \
   python3 -c "import sys,json; s=json.load(sys.stdin); print(len([x for x in s if x.get('NowPlayingItem')]))" 2>/dev/null || echo "0")
 
 # Load average

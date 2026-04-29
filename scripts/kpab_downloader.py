@@ -11,7 +11,7 @@ Usage:
 
 For new Claude sessions: read this file, add a new batch dict entry, run it.
 slskd API: http://localhost:5030/api/v0 | auth: slskd/slskd
-Navidrome: http://localhost:4533 | auth: pibulus/meringue
+Navidrome: http://localhost:4533 | auth: local env / service config
 """
 import json, urllib.request, urllib.error, time, sys, argparse
 

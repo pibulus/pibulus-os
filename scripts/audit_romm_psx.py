@@ -2,16 +2,20 @@
 """
 Quick PSX audit for RomM without extra Python deps.
 
-Defaults assume the current Pi setup:
-  docker exec romm-db mariadb -uromm -prommpass2026 romm
+Defaults assume the current Pi setup and read the password from local env.
 """
 
 from __future__ import annotations
 
 import argparse
+import os
 import subprocess
 import sys
 from textwrap import dedent
+
+from env_utils import load_local_env
+
+load_local_env()
 
 
 def run_sql(container: str, user: str, password: str, database: str, query: str) -> str:
@@ -41,10 +45,12 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Audit RomM PSX metadata state")
     parser.add_argument("--container", default="romm-db")
     parser.add_argument("--user", default="romm")
-    parser.add_argument("--password", default="rommpass2026")
+    parser.add_argument("--password", default=os.environ.get("MARIADB_PASSWORD", ""))
     parser.add_argument("--database", default="romm")
     parser.add_argument("--limit", type=int, default=25)
     args = parser.parse_args()
+    if not args.password:
+        parser.error("--password is required or set MARIADB_PASSWORD in config/stacks/.env")
 
     try:
         summary = run_sql(

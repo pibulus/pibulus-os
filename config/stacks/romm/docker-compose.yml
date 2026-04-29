@@ -3,23 +3,20 @@ services:
     image: rommapp/romm:4.8.1
     container_name: romm
     restart: unless-stopped
+    env_file:
+      - ../.env
     environment:
       - DB_HOST=romm-db
       - DB_NAME=romm
       - DB_USER=romm
-      - DB_PASSWD=rommpass2026
-      - ROMM_AUTH_SECRET_KEY=a7dc774797532563849b736110fb571c0fcb5ddbd913748172c8f0d270f7ad7f
       - ROMM_AUTH_ENABLED=true
       - ROMM_AUTH_USERNAME=pibulus
-      - ROMM_AUTH_PASSWORD=meringue
       - ENABLE_SCHEDULED_RESCAN=true
       - SCHEDULED_RESCAN_CRON=0 3 * * *
       - ENABLE_SCHEDULED_UPDATE_MAME_XML=false
       - HASHEOUS_API_ENABLED=true
       - SCREENSCRAPER_API_ENABLED=true
       - LAUNCHBOX_API_ENABLED=false
-      - IGDB_CLIENT_ID=az5iio95r5bs2muxpicmk7bxwicq39
-      - IGDB_CLIENT_SECRET=1bbbrm5zkhpoajeu6hns0xnbathccf
     volumes:
       - /media/pibulus/passport/app-data/romm/assets:/romm/assets
       - /media/pibulus/passport/app-data/romm/config:/romm/config
@@ -49,11 +46,11 @@ services:
     image: mariadb:12.2.2  # pinned 2026-04-15
     container_name: romm-db
     restart: unless-stopped
+    env_file:
+      - ../.env
     environment:
-      - MARIADB_ROOT_PASSWORD=rommroot2026
       - MARIADB_DATABASE=romm
       - MARIADB_USER=romm
-      - MARIADB_PASSWORD=rommpass2026
     volumes:
       - /home/pibulus/romm-db:/var/lib/mysql
     healthcheck:

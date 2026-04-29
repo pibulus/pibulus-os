@@ -6,10 +6,17 @@ QB_URL="http://localhost:8888"
 COOKIE_JAR="/tmp/qb_unstick_cookies.txt"
 STALL_LIMIT=600  # seconds — pause if stuck longer than this
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck disable=SC1091
+[ -f "$SCRIPT_DIR/load_pibulus_env.sh" ] && . "$SCRIPT_DIR/load_pibulus_env.sh"
+
+QB_URL="${QB_WEBUI_URL:-$QB_URL}"
+
 # Login
 curl -s -c "$COOKIE_JAR" \
   -X POST "$QB_URL/api/v2/auth/login" \
-  -d "username=admin&password=meringue" \
+  --data-urlencode "username=${QB_WEBUI_USERNAME:-admin}" \
+  --data-urlencode "password=${QB_WEBUI_PASSWORD:?QB_WEBUI_PASSWORD not set}" \
   -H "Referer: $QB_URL" > /dev/null
 
 # Find torrents stuck in metaDL or stalledDL beyond the time limit
