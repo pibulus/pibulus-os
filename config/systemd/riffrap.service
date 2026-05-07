@@ -1,0 +1,18 @@
+[Unit]
+Description=RiffRap SvelteKit App
+After=network.target
+
+[Service]
+Type=simple
+User=pibulus
+WorkingDirectory=/home/pibulus/apps/riffrap
+ExecStart=/usr/bin/node index.js
+EnvironmentFile=/home/pibulus/apps/riffrap/.env
+Environment=PORT=9004
+Environment=HOST=0.0.0.0
+Environment=ORIGIN=https://riffrap.app
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
