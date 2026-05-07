@@ -1,0 +1,17 @@
+[Unit]
+Description=Stargram Fresh App
+After=network.target
+
+[Service]
+Type=simple
+User=pibulus
+WorkingDirectory=/home/pibulus/apps/stargram
+ExecStart=/home/pibulus/.deno/bin/deno run -A main.ts
+Environment=PORT=9012
+Environment=HOST=0.0.0.0
+Environment=SITE_URL=https://stargram.app
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
