@@ -428,7 +428,7 @@
 .ejs_small_screen .romm_touch_menu_toggle {
     position: absolute;
     right: 16px;
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
+    top: calc(env(safe-area-inset-top, 0px) + 14px);
     width: 48px;
     height: 48px;
     align-items: center;

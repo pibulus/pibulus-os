@@ -34,6 +34,7 @@ dbs = {
 KV_LIBRARY_ID = 1
 KV_ROLE_IDS = {
     'Pleb': 2,
+    'Download': 3,
     'Login': 7,
 }
 
@@ -41,7 +42,7 @@ CW_ROLE_DOWNLOAD = 1 << 1
 CW_ROLE_PASSWD = 1 << 4
 CW_ROLE_VIEWER = 1 << 8
 CW_DEFAULT_ROLE = CW_ROLE_DOWNLOAD | CW_ROLE_PASSWD | CW_ROLE_VIEWER
-CW_DEFAULT_SHOW = 262143
+CW_DEFAULT_SHOW = 16384
 CW_DEFAULT_LANGUAGE = 'all'
 CW_DEFAULT_LOCALE = 'en'
 CW_SALT_ALPHABET = string.ascii_letters + string.digits
@@ -130,7 +131,7 @@ def add_kv(conn, user, pw, email):
     # ASP.NET Identity V3: format marker + PRF(HMACSHA256=1) + iterations + salt length + salt + subkey
     kv_hash = base64.b64encode(b'\x01\x00\x00\x00\x01\x00\x01\x86\xa0\x00\x00\x00\x10' + salt + hash_val).decode()
     conn.execute("""INSERT INTO AspNetUsers (UserName, NormalizedUserName, Email, NormalizedEmail, PasswordHash, SecurityStamp, ConcurrencyStamp, Created, CreatedUtc, LastActive, LastActiveUtc, EmailConfirmed, PhoneNumberConfirmed, TwoFactorEnabled, LockoutEnabled, AccessFailedCount, RowVersion, AgeRestriction, AgeRestrictionIncludeUnknowns) 
-    VALUES (?, ?, ?, ?, ?, ?, ?, '2026-03-30 00:00:00', '2026-03-30 00:00:00', '2026-03-30 00:00:00', '2026-03-30 00:00:00', 1, 0, 0, 1, 0, 1, 0, 0)""",
+    VALUES (?, ?, ?, ?, ?, ?, ?, '2026-03-30 00:00:00', '2026-03-30 00:00:00', '2026-03-30 00:00:00', '2026-03-30 00:00:00', 1, 0, 0, 1, 0, 1, -1, 0)""",
     (user, user.upper(), email, email.upper(), kv_hash, str(uuid.uuid4()), str(uuid.uuid4())))
     user_id = conn.execute("SELECT Id FROM AspNetUsers WHERE UserName = ?", (user,)).fetchone()[0]
     template = conn.execute("SELECT * FROM AppUserPreferences WHERE AppUserId = 1").fetchone()
@@ -158,6 +159,33 @@ def add_kv(conn, user, pw, email):
     for role_id in KV_ROLE_IDS.values():
         conn.execute("INSERT INTO AspNetUserRoles (UserId, RoleId) VALUES (?, ?)", (user_id, role_id))
     conn.execute("INSERT INTO AppUserLibrary (AppUsersId, LibrariesId) VALUES (?, ?)", (user_id, KV_LIBRARY_ID))
+    # Sidebar nav streams (must match what Kavita UI creates for new users)
+    sidebar_streams = [
+        ('want-to-read',   1, 1, None, 8),
+        ('collections',    1, 2, None, 1),
+        ('reading-lists',  1, 3, None, 2),
+        ('bookmarks',      1, 4, None, 3),
+        ('all-series',     1, 5, None, 7),
+        ('browse-authors', 1, 6, None, 9),
+        ('Comics',         0, 7, KV_LIBRARY_ID, 4),
+    ]
+    for name, provided, order, lib_id, stream_type in sidebar_streams:
+        conn.execute("""INSERT INTO AppUserSideNavStream
+            (Name, IsProvided, "Order", LibraryId, StreamType, Visible, AppUserId)
+            VALUES (?, ?, ?, ?, ?, 1, ?)""",
+            (name, provided, order, lib_id, stream_type, user_id))
+    # Default reading profile
+    conn.execute("""INSERT INTO AppUserReadingProfiles (
+            AllowAutomaticWebtoonReaderDetection, AppUserId, AutoCloseMenu, BackgroundColor,
+            BookReaderFontFamily, BookReaderFontSize, BookReaderImmersiveMode, BookReaderLayoutMode,
+            BookReaderLineSpacing, BookReaderMargin, BookReaderReadingDirection, BookReaderTapToPaginate,
+            BookReaderWritingStyle, BookThemeName, DeviceIds, DisableWidthOverride, EmulateBook,
+            Kind, LayoutMode, LibraryIds, Name, NormalizedName, PageSplitOption,
+            PdfScrollMode, PdfSpreadMode, PdfTheme, ReaderMode, ReadingDirection,
+            ScalingOption, SeriesIds, ShowScreenHints, SwipeToPaginate)
+        VALUES (0, ?, 1, '#000000', 'Default', 100, 0, 0, 100, 15, 0, 0, 0, 'Dark', '[]', 0, 0,
+                0, 1, '[]', 'Default Profile', 'defaultprofile', 3, 0, 0, 0, 0, 1, 3, '[]', 1, 1)""",
+        (user_id,))
 
 def add_nd(conn, user, pw, email):
     uid, salt = str(uuid.uuid4()), os.urandom(4)

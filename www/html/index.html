@@ -605,10 +605,11 @@
       });
     }
 
-    // ─── DRAG-DROP CONTRIBUTE ───
-    const contributeCard = document.querySelector('a[href="/drop/"]');
-    if (contributeCard) {
-      var origDesc = contributeCard.querySelector('.card-desc').textContent;
+	    // ─── DRAG-DROP CONTRIBUTE ───
+	    const contributeCard = document.querySelector('a[href="/drop/"]');
+	    if (contributeCard) {
+	      const homeDirectUploadLimit = 24 * 1024 * 1024;
+	      var origDesc = contributeCard.querySelector('.card-desc').textContent;
       contributeCard.addEventListener('dragover', function(e) {
         e.preventDefault(); contributeCard.classList.add('drag-over');
         contributeCard.querySelector('.card-desc').textContent = 'drop to upload';
@@ -617,12 +618,18 @@
         contributeCard.classList.remove('drag-over');
         contributeCard.querySelector('.card-desc').textContent = origDesc;
       });
-      contributeCard.addEventListener('drop', function(e) {
-        e.preventDefault(); contributeCard.classList.remove('drag-over');
-        var file = e.dataTransfer.files[0];
-        if (!file) return;
-        contributeCard.querySelector('.card-desc').textContent = 'uploading...';
-        var fd = new FormData(); fd.append('file', file);
+	      contributeCard.addEventListener('drop', function(e) {
+	        e.preventDefault(); contributeCard.classList.remove('drag-over');
+	        var files = Array.from(e.dataTransfer.files || []);
+	        var file = files[0];
+	        if (!file) return;
+	        if (files.length > 1 || file.size > homeDirectUploadLimit) {
+	          contributeCard.querySelector('.card-desc').textContent = 'open uploader, drop again';
+	          setTimeout(function() { window.location.href = '/drop/'; }, 900);
+	          return;
+	        }
+	        contributeCard.querySelector('.card-desc').textContent = 'uploading...';
+	        var fd = new FormData(); fd.append('file', file); fd.append('source', 'home-card');
         fetch('/drop/upload', { method: 'POST', body: fd })
           .then(function(r) {
             contributeCard.classList.add(r.ok ? 'drop-ok' : 'drop-err');

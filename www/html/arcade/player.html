@@ -193,20 +193,34 @@
     }
 
     // Per-core RetroArch options for better performance
-    EJS_defaultOptions = {};
+    const commonDefaultOptions = {
+      'save-state-location': 'browser',
+      'rewindEnabled': 'enabled',
+      'fps': 'hide',
+      'vsync': 'disabled',
+      'virtual-gamepad': 'enabled',
+    };
+
+    EJS_defaultOptions = { ...commonDefaultOptions };
     if (system === 'psx') {
       EJS_defaultOptions = {
+        ...commonDefaultOptions,
+        'shader': 'disabled',
         'pcsx_rearmed_frameskip_type': 'auto',
         'pcsx_rearmed_frameskip': '1',
         'pcsx_rearmed_drc': 'enabled',
       };
     } else if (system === 'n64') {
       EJS_defaultOptions = {
+        ...commonDefaultOptions,
+        'shader': 'disabled',
         'mupen64plus-cpucore': 'dynamic_recompiler',
         'mupen64plus-43screensize': '640x480',
       };
     } else if (system === 'nds') {
       EJS_defaultOptions = {
+        ...commonDefaultOptions,
+        'shader': 'disabled',
         'melonds_screen_layout': 'top/bottom',
         'melonds_touch_mode': 'touch',
       };

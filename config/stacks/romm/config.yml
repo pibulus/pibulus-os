@@ -12,41 +12,43 @@ emulatorjs:
       fps: hide
       shader: crt-easymode.glslp
       vsync: disabled
-      threads: enabled          # SharedArrayBuffer threading; COOP/COEP headers are set
-      virtual_gamepad: enabled  # show touch controls on mobile/tablet
-      autosave: enabled         # auto save state on exit, auto load on launch
+      ejs_threads: enabled          # SharedArrayBuffer threading; COOP/COEP headers are set
+      virtual-gamepad: enabled      # show touch controls on mobile/tablet
+      menu-bar-button: visible      # keep a reliable escape hatch on touch devices
+      save-state-location: browser  # keep states local unless RomM sync explicitly uploads
+      save-save-interval: "60"      # periodic SRAM flush for games with battery saves
     # RomM merges settings by actual EmulatorJS core name, so keep both
     # broad labels and concrete core names for heavy systems.
     n64:
-      threads: enabled
-      shader: none              # CRT shader tanks N64 framerate, disable it
+      ejs_threads: enabled
+      shader: disabled          # CRT shader tanks N64 framerate, disable it
     mupen64plus_next:
-      threads: enabled
-      shader: none
+      ejs_threads: enabled
+      shader: disabled
     parallel_n64:
-      threads: enabled
-      shader: none
+      ejs_threads: enabled
+      shader: disabled
     psx:
-      threads: enabled
-      shader: none
+      ejs_threads: enabled
+      shader: disabled
     pcsx_rearmed:
-      threads: enabled
-      shader: none
+      ejs_threads: enabled
+      shader: disabled
     mednafen_psx_hw:
-      threads: enabled
-      shader: none
+      ejs_threads: enabled
+      shader: disabled
     nds:
-      threads: enabled
-      shader: none
+      ejs_threads: enabled
+      shader: disabled
     melonds:
-      threads: enabled
-      shader: none
+      ejs_threads: enabled
+      shader: disabled
     desmume:
-      threads: enabled
-      shader: none
+      ejs_threads: enabled
+      shader: disabled
     desmume2015:
-      threads: enabled
-      shader: none
+      ejs_threads: enabled
+      shader: disabled
 exclude:
   platforms:
   - $RECYCLE.BIN

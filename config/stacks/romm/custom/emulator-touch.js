@@ -103,9 +103,7 @@
         var button = ensureMenuButton(emulator);
         if (!button) return;
 
-        var gamepadDisabled = typeof emulator.getSettingValue === "function" &&
-            emulator.getSettingValue("virtual-gamepad") === "disabled";
-        var showButton = isSmallScreen() && gamepadDisabled;
+        var showButton = isSmallScreen();
 
         button.style.display = showButton ? "flex" : "none";
         button.setAttribute("aria-hidden", showButton ? "false" : "true");
