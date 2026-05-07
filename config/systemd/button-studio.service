@@ -1,0 +1,17 @@
+[Unit]
+Description=Button Studio Fresh App
+After=network.target
+
+[Service]
+Type=simple
+User=pibulus
+WorkingDirectory=/home/pibulus/apps/button-studio
+ExecStart=/home/pibulus/.deno/bin/deno run -A main.ts
+Environment=PORT=9006
+Environment=HOST=0.0.0.0
+Environment=SITE_URL=https://buttonspa.app
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
