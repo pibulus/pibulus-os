@@ -6,6 +6,7 @@ After=network.target
 Type=simple
 User=pibulus
 WorkingDirectory=/home/pibulus/apps/project_mapper
+EnvironmentFile=/home/pibulus/apps/project_mapper/.env
 ExecStart=/usr/bin/node build/index.js
 Environment=PORT=9005
 Environment=HOST=0.0.0.0
