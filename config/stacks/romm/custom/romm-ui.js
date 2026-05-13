@@ -3,8 +3,8 @@
     window.__rommUiCleanup = true;
 
     window.EJS_paths = Object.assign({}, window.EJS_paths || {}, {
-        "emulator.min.css": "/assets/emulatorjs/data/emulator.css?rev=20260505a",
-        "emulator.css": "/assets/emulatorjs/data/emulator.css?rev=20260505a"
+        "emulator.min.css": "/assets/emulatorjs/data/emulator.css?rev=20260509a",
+        "emulator.css": "/assets/emulatorjs/data/emulator.css?rev=20260509a"
     });
 
     function patchViewportFit() {
@@ -67,6 +67,15 @@
         return href === prefix || href.indexOf(prefix + "/") === 0;
     }
 
+    function seedEmulatorDefaults() {
+        try {
+            var arcadeCore = localStorage.getItem("player:arcade:core");
+            if (!arcadeCore || arcadeCore === "mame2003" || arcadeCore === "mame2003_plus") {
+                localStorage.setItem("player:arcade:core", "fbneo");
+            }
+        } catch (error) {}
+    }
+
     function hideNdsCards() {
         if (window.innerWidth > 960) return;
 
@@ -113,10 +122,13 @@
     }
 
     function run() {
+        seedEmulatorDefaults();
         patchViewportFit();
         hideNdsCards();
         hideRommNoise();
     }
+
+    seedEmulatorDefaults();
 
     document.addEventListener("DOMContentLoaded", function() {
         run();

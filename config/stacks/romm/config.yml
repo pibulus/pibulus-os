@@ -1,6 +1,75 @@
 emulatorjs:
   cache_limit: null
-  controls: {}
+  controls:
+    # N64 keyboard layout: stick=WASD, C-buttons=arrows, D-pad=IJKL,
+    # A=Space, B=Shift, Start=Enter, shoulders=Q/E, Z-trigger=Z.
+    n64: &n64_keyboard_controls
+      0:
+        0:
+          value: space
+          value2: BUTTON_2
+        1:
+          value: shift
+          value2: BUTTON_4
+        3:
+          value: enter
+          value2: START
+        4:
+          value: i
+          value2: DPAD_UP
+        5:
+          value: k
+          value2: DPAD_DOWN
+        6:
+          value: j
+          value2: DPAD_LEFT
+        7:
+          value: l
+          value2: DPAD_RIGHT
+        10:
+          value: q
+          value2: LEFT_TOP_SHOULDER
+        11:
+          value: e
+          value2: RIGHT_TOP_SHOULDER
+        12:
+          value: z
+          value2: LEFT_BOTTOM_SHOULDER
+        16:
+          value: d
+          value2: LEFT_STICK_X:+1
+        17:
+          value: a
+          value2: LEFT_STICK_X:-1
+        18:
+          value: s
+          value2: LEFT_STICK_Y:+1
+        19:
+          value: w
+          value2: LEFT_STICK_Y:-1
+        20:
+          value: right arrow
+          value2: RIGHT_STICK_X:+1
+        21:
+          value: left arrow
+          value2: RIGHT_STICK_X:-1
+        22:
+          value: down arrow
+          value2: RIGHT_STICK_Y:+1
+        23:
+          value: up arrow
+          value2: RIGHT_STICK_Y:-1
+        24:
+          value: "1"
+        25:
+          value: "2"
+        26:
+          value: "3"
+      1: {}
+      2: {}
+      3: {}
+    mupen64plus_next: *n64_keyboard_controls
+    parallel_n64: *n64_keyboard_controls
   debug: false
   disable_auto_unload: false
   disable_batch_bootup: true   # load cores on demand, not all at startup
@@ -21,22 +90,22 @@ emulatorjs:
     # broad labels and concrete core names for heavy systems.
     n64:
       ejs_threads: enabled
-      shader: disabled          # CRT shader tanks N64 framerate, disable it
+      shader: crt-easymode.glslp
     mupen64plus_next:
       ejs_threads: enabled
-      shader: disabled
+      shader: crt-easymode.glslp
     parallel_n64:
       ejs_threads: enabled
-      shader: disabled
+      shader: crt-easymode.glslp
     psx:
       ejs_threads: enabled
-      shader: disabled
+      shader: crt-easymode.glslp
     pcsx_rearmed:
       ejs_threads: enabled
-      shader: disabled
+      shader: crt-easymode.glslp
     mednafen_psx_hw:
       ejs_threads: enabled
-      shader: disabled
+      shader: crt-easymode.glslp
     nds:
       ejs_threads: enabled
       shader: disabled
