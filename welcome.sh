@@ -3,7 +3,12 @@
 
 clear
 # Main Banner
-figlet -f slant "PIBULUS" | lolcat
+banner=$(figlet -f slant "PIBULUS" 2>/dev/null || printf "PIBULUS\n")
+if [ -f "$HOME/.config/pibulus/disable-lolcat" ] || ! command -v lolcat >/dev/null 2>&1; then
+    printf "%s\n" "$banner"
+else
+    printf "%s\n" "$banner" | lolcat 2>/dev/null || printf "%s\n" "$banner"
+fi
 echo -e "$(gum style --foreground 212 "[ SYNTHETIC OPERATIVE BISHOP ACTIVE ]")"
 echo ""
 
