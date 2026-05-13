@@ -12,16 +12,18 @@
 
 BACKUP_DIR="/media/pibulus/passport/Backups/pi-system"
 DATE=$(date +%Y-%m-%d)
-LOG="/tmp/nightly-backup.log"
+LOG="$BACKUP_DIR/logs/nightly-backup.log"
+FALLBACK_LOG="/tmp/nightly-backup.log"
 
 log() { echo "[$(date '+%H:%M:%S')] $*" | tee -a "$LOG"; }
 
 # Check Passport is mounted
 if ! mountpoint -q /media/pibulus/passport; then
-    echo "[ERROR] Passport not mounted, aborting" >> "$LOG"
+    echo "[ERROR] Passport not mounted, aborting" >> "$FALLBACK_LOG"
     exit 1
 fi
 
+mkdir -p "$BACKUP_DIR/logs"
 echo "=== Nightly backup $(date) ===" > "$LOG"
 
 mkdir -p "$BACKUP_DIR/configs"

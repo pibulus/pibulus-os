@@ -100,7 +100,8 @@ sleep 8
 start_containers romm
 sleep 8
 wait_for_calm 4 60
-start_containers slskd qbittorrent
+log "  slskd: SKIP manual-only after overload/corruption incidents"
+start_containers qbittorrent
 
 log "=== Startup pass complete ==="
 log "Load: $(cat /proc/loadavg)"
@@ -113,5 +114,6 @@ else
 fi
 log ""
 log "Skipped (start manually if needed):"
+log "  docker start slskd"
 log "  docker start immich_server immich_postgres immich_redis"
 log "  docker start scummvm"

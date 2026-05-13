@@ -106,8 +106,10 @@ services:
       - "50300:50300"
     cpus: "0.50"
     mem_limit: 512m
+    memswap_limit: 768m
     mem_reservation: 128m
     cpu_shares: 256
+    pids_limit: 256
     environment:
       - SLSKD_REMOTE_CONFIGURATION=true
       - SLSKD_SLSK_USERNAME=pibulus
@@ -115,7 +117,7 @@ services:
     volumes:
       - /opt/slskd:/app/config
       - /media/pibulus/passport/Soulseek:/app/downloads
-    restart: unless-stopped
+    restart: "no"
 
   # --- THE UTILITIES ---
   filebrowser:
