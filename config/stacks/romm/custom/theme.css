@@ -130,26 +130,24 @@ body {
   border-top: 1px solid rgba(255, 255, 255, 0.04) !important;
 }
 
-/* ── Reorder homepage: Platforms first ── */
-/* The main content area needs flex column for ordering to work */
-.v-main .v-container,
-.v-main__wrap > div,
-.v-main > div > div {
-  display: flex !important;
-  flex-direction: column !important;
+/* ── Homepage platform strip — keep consoles near the top and close gaps ── */
+[data-quickcat-platforms-section="true"] {
+  scroll-margin-top: 16px !important;
 }
 
-/* Stats bar stays at top */
-.v-main .v-container > :first-child,
-.v-main__wrap > div > :first-child,
-.v-main > div > div > :first-child {
-  order: -10 !important;
+[data-quickcat-platforms-section="true"] .v-slide-group__content,
+[data-quickcat-platforms-section="true"] [class*="v-slide-group__content"] {
+  gap: 8px !important;
+  align-items: stretch !important;
 }
 
-/* Target the Platforms section — it has platform card grid */
-.v-main .v-container > div:has(.v-card [class*='platform']),
-.v-main__wrap > div > div:has(.v-card [class*='platform']) {
-  order: -5 !important;
+[data-quickcat-platforms-section="true"] .v-slide-group-item,
+[data-quickcat-platforms-section="true"] [class*="v-slide-group-item"] {
+  margin-right: 0 !important;
+}
+
+[data-quickcat-hidden="nds"] {
+  display: none !important;
 }
 
 /* ═══════════════════════════════════════════════════════
