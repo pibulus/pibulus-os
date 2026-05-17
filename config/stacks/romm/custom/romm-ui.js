@@ -189,6 +189,17 @@
         });
     }
 
+    function hideUpdateNag() {
+        var candidates = Array.from(document.querySelectorAll(".v-snackbar,.v-overlay,.v-card,.v-sheet")).filter(function(element) {
+            var text = elementText(element);
+            return text.indexOf("new version available:") >= 0 && text.indexOf("see what's new") >= 0;
+        });
+        candidates.sort(function(a, b) {
+            return elementText(a).length - elementText(b).length;
+        });
+        hideNode(candidates[0], "update-nag");
+    }
+
     function promotePlatformsSection() {
         var path = location.pathname.replace(/\/+$/, "") || "/";
         if (path !== "/") return;
@@ -204,6 +215,8 @@
         topSection.setAttribute("data-quickcat-platforms-section", "true");
 
         var statsStrip = findStatsStrip(root, topSection);
+        if (statsStrip) statsStrip.setAttribute("data-quickcat-stats-strip", "true");
+
         var target = statsStrip ? statsStrip.nextSibling : root.firstChild;
         if (target && target !== topSection && topSection.previousSibling !== statsStrip) {
             root.insertBefore(topSection, target);
@@ -243,6 +256,7 @@
         patchViewportFit();
         promotePlatformsSection();
         hideNdsCards();
+        hideUpdateNag();
         hideRommNoise();
     }
 

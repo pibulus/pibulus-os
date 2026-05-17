@@ -172,10 +172,47 @@ body {
   [data-quickcat-hidden="nds"] {
     display: none !important;
   }
+
+  [data-quickcat-stats-strip="true"] {
+    overflow: hidden !important;
+  }
+
+  [data-quickcat-stats-strip="true"] .v-card-text > .v-row {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0 !important;
+    overflow: hidden !important;
+  }
+
+  [data-quickcat-stats-strip="true"] .v-card-text > .v-row > .v-col:nth-child(n+3) {
+    display: none !important;
+  }
+
+  [data-quickcat-stats-strip="true"] .v-card-text > .v-row > .v-col {
+    min-width: 0 !important;
+  }
+
+  [data-quickcat-stats-strip="true"] * {
+    white-space: nowrap !important;
+  }
+
+  button[aria-label^="Toggle"][aria-label*="grid view"] {
+    display: none !important;
+  }
 }
 
 [data-quickcat-platforms-section="true"] .v-card {
   background: rgba(22, 26, 35, 0.82) !important;
+}
+
+[data-quickcat-hidden="update-nag"] {
+  display: none !important;
+}
+
+.game-card .v-chip[title^="Regions"],
+.game-card .v-chip[title*="Verified"],
+.game-card .v-chip[title*="sibling"] {
+  display: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
