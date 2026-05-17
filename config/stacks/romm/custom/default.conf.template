@@ -25,7 +25,7 @@ server {
 
     # Inject small stable hooks; keep the actual UI logic in mounted files so
     # nginx config stays readable and RomM's stock EmulatorJS runtime survives.
-    sub_filter '</head>' '<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><script src="/custom/romm-ui.js?rev=20260517e"></script><script src="/custom/emulator-touch.js?rev=20260509a"></script><link rel="stylesheet" href="/custom/theme.css?rev=20260517e" /></head>';
+    sub_filter '</head>' '<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><script src="/custom/romm-ui.js?rev=20260518c"></script><script src="/custom/emulator-touch.js?rev=20260518c"></script><link rel="stylesheet" href="/custom/theme.css?rev=20260518c" /></head>';
     sub_filter_once on;
 
     # Custom theme CSS

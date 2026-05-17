@@ -96,6 +96,23 @@
         return href === prefix || href.indexOf(prefix + "/") === 0;
     }
 
+    function isEjsLaunchPage() {
+        return /^\/rom\/[^/]+\/ejs\/?$/.test(location.pathname);
+    }
+
+    function isPhoneWidth() {
+        return window.innerWidth <= 700;
+    }
+
+    function mergeWindowObject(name, defaults) {
+        var current = window[name];
+        if (!current || typeof current !== "object" || Array.isArray(current)) current = {};
+        Object.keys(defaults).forEach(function(key) {
+            if (current[key] == null) current[key] = defaults[key];
+        });
+        window[name] = current;
+    }
+
     function seedEmulatorDefaults() {
         try {
             var arcadeCore = localStorage.getItem("player:arcade:core");
@@ -103,6 +120,62 @@
                 localStorage.setItem("player:arcade:core", "fbneo");
             }
         } catch (error) {}
+
+        mergeWindowObject("EJS_Buttons", {
+            screenshot: false,
+            screenRecord: false,
+            cheat: false,
+            cacheManager: false,
+            netplay: false,
+            saveSavFiles: false,
+            loadSavFiles: false,
+            exitEmulation: false
+        });
+
+        mergeWindowObject("EJS_defaultOptions", {
+            "save-state-slot": "1",
+            "save-state-location": "browser",
+            "save-save-interval": "60",
+            fastForward: "disabled",
+            slowMotion: "disabled",
+            rewindEnabled: "disabled",
+            fps: "disabled",
+            vsync: "enabled",
+            "menu-bar-button": "hidden"
+        });
+
+        if (window.matchMedia && window.matchMedia("(max-width: 960px)").matches) {
+            window.EJS_defaultOptions["virtual-gamepad"] = window.EJS_defaultOptions["virtual-gamepad"] || "enabled";
+        }
+
+        var hiddenSettings = [
+            "webgl2Enabled",
+            "fps",
+            "vsync",
+            "videoRotation",
+            "screenshotSource",
+            "screenshotFormat",
+            "screenshotUpscale",
+            "screenRecordFPS",
+            "screenRecordFormat",
+            "screenRecordUpscale",
+            "screenRecordVideoBitrate",
+            "screenRecordAudioBitrate",
+            "fastForward",
+            "ff-ratio",
+            "slowMotion",
+            "sm-ratio",
+            "rewindEnabled",
+            "rewind-granularity",
+            "menubarBehavior",
+            "altKeyboardInput",
+            "lockMouse",
+            "menu-bar-button"
+        ];
+        if (!Array.isArray(window.EJS_hideSettings)) window.EJS_hideSettings = [];
+        hiddenSettings.forEach(function(setting) {
+            if (window.EJS_hideSettings.indexOf(setting) < 0) window.EJS_hideSettings.push(setting);
+        });
     }
 
     function hideNdsCards() {
@@ -251,6 +324,44 @@
         }
     }
 
+    function simplifyEjsLaunchPage() {
+        if (!isEjsLaunchPage()) {
+            document.body.classList.remove("quickcat-ejs-launch");
+            return;
+        }
+
+        document.body.classList.add("quickcat-ejs-launch");
+        if (!isPhoneWidth()) return;
+
+        var emptySavePanel = Array.from(document.querySelectorAll(".v-col,.v-card")).filter(function(element) {
+            var text = elementText(element);
+            return text.indexOf("saves") >= 0 &&
+                text.indexOf("states") >= 0 &&
+                text.indexOf("no save selected") >= 0 &&
+                text.indexOf("no saves available") >= 0;
+        }).sort(function(a, b) {
+            return elementText(a).length - elementText(b).length;
+        })[0];
+
+        if (emptySavePanel) {
+            hideNode(emptySavePanel.closest(".v-col") || emptySavePanel, "empty-ejs-saves");
+        }
+
+        Array.from(document.querySelectorAll("button,.v-btn")).forEach(function(element) {
+            if (normalize(element.textContent) === "full screen") {
+                hideNode(element.closest("button,.v-btn") || element, "ejs-fullscreen-toggle");
+            }
+        });
+
+        Array.from(document.querySelectorAll("button,a,.v-btn,p,span,div")).forEach(function(element) {
+            if (element.childElementCount > 1) return;
+            var label = normalize(element.textContent);
+            if (label === "clear emulatorjs cache" || label === "powered by emulatorjs") {
+                hideNode(element.closest("button,a,.v-btn") || element, "ejs-launch-noise");
+            }
+        });
+    }
+
     function run() {
         seedEmulatorDefaults();
         patchViewportFit();
@@ -258,6 +369,7 @@
         hideNdsCards();
         hideUpdateNag();
         hideRommNoise();
+        simplifyEjsLaunchPage();
     }
 
     var runPending = false;

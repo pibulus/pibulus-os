@@ -5,9 +5,20 @@
     var buttonClass = "romm_touch_menu_toggle";
     var menuVisibleClass = "romm_touch_menu_visible";
     var mobileMaxWidth = 960;
+    var hiddenMenuLabels = {
+        "cheats": 1,
+        "cache manager": 1,
+        "context menu": 1,
+        "export save file": 1,
+        "import save file": 1
+    };
 
     function isSmallScreen() {
         return window.innerWidth <= mobileMaxWidth;
+    }
+
+    function normalize(text) {
+        return (text || "").replace(/\s+/g, " ").trim().toLowerCase();
     }
 
     function wrapHook(fn, extension, name) {
@@ -62,6 +73,48 @@
         emulator.elements.menu.classList.remove(menuVisibleClass);
     }
 
+    function simplifyEmulatorChrome(emulator) {
+        if (!emulator || !emulator.elements || !emulator.elements.parent) return;
+
+        var parent = emulator.elements.parent;
+        var loading = parent.querySelector(".ejs_loading_text");
+        if (loading) {
+            var text = loading.textContent || "";
+            var polished = text
+                .replace(/^Download Game Data/i, "Loading game data")
+                .replace(/^Decompress Game Core/i, "Preparing emulator");
+            if (polished !== text) loading.textContent = polished;
+            loading.setAttribute("aria-live", "polite");
+            loading.setAttribute("data-quickcat-ejs-loading", "true");
+        }
+
+        if (!emulator.elements.menu) return;
+        Array.from(emulator.elements.menu.querySelectorAll(".ejs_menu_button")).forEach(function(button) {
+            var label = normalize(button.textContent);
+            if (label === "disks") {
+                var hasMultipleDisks = false;
+                try {
+                    hasMultipleDisks = emulator.gameManager &&
+                        typeof emulator.gameManager.getDiskCount === "function" &&
+                        emulator.gameManager.getDiskCount() > 1;
+                } catch (error) {}
+                if (!hasMultipleDisks) {
+                    button.style.setProperty("display", "none", "important");
+                    button.setAttribute("data-quickcat-ejs-hidden", "menu-noise");
+                } else {
+                    button.style.removeProperty("display");
+                    button.removeAttribute("data-quickcat-ejs-hidden");
+                }
+                return;
+            }
+
+            if (hiddenMenuLabels[label]) {
+                button.style.setProperty("display", "none", "important");
+                button.setAttribute("data-quickcat-ejs-hidden", "menu-noise");
+            }
+        });
+    }
+
     function ensureMenuButton(emulator) {
         if (!emulator || !emulator.elements || !emulator.elements.parent || !emulator.elements.menu) return null;
 
@@ -108,12 +161,22 @@
         button.style.display = showButton ? "flex" : "none";
         button.setAttribute("aria-hidden", showButton ? "false" : "true");
         if (!showButton) closeMenu(emulator);
+        simplifyEmulatorChrome(emulator);
     }
 
     function patchEmulator(emulator) {
         if (!emulator) return;
         if (!emulator.__rommTouchMenuPatched) {
             emulator.__rommTouchMenuPatched = true;
+            var simplifyPending = false;
+            var scheduleSimplify = function() {
+                if (simplifyPending) return;
+                simplifyPending = true;
+                requestAnimationFrame(function() {
+                    simplifyPending = false;
+                    simplifyEmulatorChrome(emulator);
+                });
+            };
 
             if (typeof emulator.changeSettingOption === "function") {
                 var originalChangeSettingOption = emulator.changeSettingOption.bind(emulator);
@@ -129,6 +192,14 @@
             window.addEventListener("resize", function() {
                 syncTouchMenu(emulator);
             }, { passive: true });
+
+            if (emulator.elements && emulator.elements.parent) {
+                new MutationObserver(scheduleSimplify).observe(emulator.elements.parent, {
+                    childList: true,
+                    subtree: true,
+                    characterData: true
+                });
+            }
         }
 
         syncTouchMenu(emulator);

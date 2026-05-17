@@ -294,8 +294,26 @@ body {
 
 /* Loading screen - cleaner */
 .ejs_parent .ejs_loading_text {
-  color: rgba(160, 140, 220, 0.9) !important;
-  font-size: 18px !important;
+  color: rgba(190, 174, 245, 0.95) !important;
+  font-size: 15px !important;
+  line-height: 1.35 !important;
+  letter-spacing: 0 !important;
+  text-shadow: none !important;
+  background: rgba(4, 6, 10, 0.72) !important;
+  border: 1px solid rgba(180, 155, 240, 0.18) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28) !important;
+  padding: 8px 12px !important;
+  min-width: 0 !important;
+}
+
+.ejs_parent .ejs_loading_text_glow {
+  filter: none !important;
+}
+
+.ejs_parent .ejs_error_text {
+  color: rgba(255, 142, 142, 0.96) !important;
+  border-color: rgba(255, 142, 142, 0.24) !important;
 }
 
 /* FPS counter — hidden by default (enabled per-game via settings if needed) */
@@ -374,6 +392,25 @@ body {
   }
 }
 
+@media (max-width: 700px) {
+  body.quickcat-ejs-launch [data-quickcat-hidden="empty-ejs-saves"],
+  body.quickcat-ejs-launch [data-quickcat-hidden="ejs-fullscreen-toggle"],
+  body.quickcat-ejs-launch [data-quickcat-hidden="ejs-launch-noise"] {
+    display: none !important;
+  }
+
+  body.quickcat-ejs-launch .play-button {
+    min-height: 52px !important;
+    border-radius: 7px !important;
+  }
+
+  body.quickcat-ejs-launch .play-button .text-h6 {
+    font-size: 20px !important;
+    line-height: 1.2 !important;
+    letter-spacing: 0 !important;
+  }
+}
+
 /* ═══════════════════════════════════════════════════════
    CONTROL BAR — simplified, chonky, essentials only
    ═══════════════════════════════════════════════════════ */
@@ -385,6 +422,10 @@ body {
 
 .ejs_parent .ejs_cachemanager_btn,
 .ejs_parent .ejs_record_btn {
+  display: none !important;
+}
+
+.ejs_parent [data-quickcat-ejs-hidden="menu-noise"] {
   display: none !important;
 }
 
