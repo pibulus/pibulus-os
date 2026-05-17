@@ -15,6 +15,7 @@
 /* ── Global feel ── */
 body {
   background: #0a0c10 !important;
+  text-rendering: optimizeLegibility;
 }
 
 /* ── Cleaner cards — subtle borders, no heavy shadows ── */
@@ -22,17 +23,37 @@ body {
   border-radius: 8px !important;
   box-shadow: none !important;
   border: 1px solid rgba(255, 255, 255, 0.06) !important;
-  transition: border-color 0.2s ease, transform 0.15s ease !important;
+  transition: border-color 0.16s ease, background-color 0.16s ease, transform 0.12s ease !important;
 }
 
-.v-card:hover {
+.v-card:focus-within {
   border-color: rgba(160, 140, 220, 0.3) !important;
-  transform: translateY(-2px) !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .v-card:hover {
+    border-color: rgba(190, 175, 245, 0.38) !important;
+    transform: translateY(-2px) !important;
+  }
 }
 
 /* ── ROM grid cards — let cover art be the star ── */
 .v-card .v-img {
   border-radius: 6px 6px 0 0 !important;
+  overflow: hidden !important;
+}
+
+.v-card .v-img img,
+.v-card .v-img .v-img__img {
+  transition: transform 0.18s ease, filter 0.18s ease !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .v-card:hover .v-img img,
+  .v-card:hover .v-img .v-img__img {
+    filter: saturate(1.04) contrast(1.02);
+    transform: scale(1.025);
+  }
 }
 
 /* ── Sidebar / navigation — slim and quiet ── */
@@ -132,6 +153,7 @@ body {
 
 /* ── Homepage platform strip — keep consoles near the top and close gaps ── */
 [data-quickcat-platforms-section="true"] {
+  margin-bottom: 8px !important;
   scroll-margin-top: 16px !important;
 }
 
@@ -146,8 +168,25 @@ body {
   margin-right: 0 !important;
 }
 
-[data-quickcat-hidden="nds"] {
-  display: none !important;
+@media (max-width: 700px) {
+  [data-quickcat-hidden="nds"] {
+    display: none !important;
+  }
+}
+
+[data-quickcat-platforms-section="true"] .v-card {
+  background: rgba(22, 26, 35, 0.82) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════

@@ -25,7 +25,7 @@ server {
 
     # Inject small stable hooks; keep the actual UI logic in mounted files so
     # nginx config stays readable and RomM's stock EmulatorJS runtime survives.
-    sub_filter '</head>' '<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><script src="/custom/romm-ui.js?rev=20260517a"></script><script src="/custom/emulator-touch.js?rev=20260509a"></script><link rel="stylesheet" href="/custom/theme.css?rev=20260517a" /></head>';
+    sub_filter '</head>' '<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><script src="/custom/romm-ui.js?rev=20260517b"></script><script src="/custom/emulator-touch.js?rev=20260509a"></script><link rel="stylesheet" href="/custom/theme.css?rev=20260517b" /></head>';
     sub_filter_once on;
 
     # Custom theme CSS
@@ -33,6 +33,18 @@ server {
         alias /romm/custom/;
         expires 1h;
         add_header Cache-Control "public, no-transform";
+    }
+
+    # RomM names this platform megadrive, but the bundled platform icon is
+    # genesis. Serve the existing asset so the homepage avoids avoidable 404s.
+    location = /assets/platforms/megadrive.svg {
+        rewrite ^ /assets/platforms/genesis.svg last;
+    }
+    location = /assets/platforms/megadrive.ico {
+        rewrite ^ /assets/platforms/genesis.ico last;
+    }
+    location = /assets/platforms/scummvm.svg {
+        rewrite ^ /assets/platforms/scummvm.ico last;
     }
 
     location / {

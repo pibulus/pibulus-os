@@ -79,6 +79,12 @@
         if (reason) node.setAttribute("data-quickcat-hidden", reason);
     }
 
+    function markNode(node, reason) {
+        if (!node || !reason) return;
+        node.setAttribute("data-quickcat-hidden", reason);
+        node.style.removeProperty("display");
+    }
+
     function platformCardShell(node) {
         if (!node) return null;
         return node.closest(".v-slide-group-item,[class*='v-slide-group-item'],.v-col,[class*='v-col'],li") ||
@@ -100,18 +106,16 @@
     }
 
     function hideNdsCards() {
-        if (window.innerWidth > 960) return;
-
         document.querySelectorAll("a").forEach(function(anchor) {
             var href = anchor.getAttribute("href") || "";
             if (isHiddenHref(href, "/p/15") || isHiddenHref(href, "/platform/nds")) {
-                hideNode(platformCardShell(anchor), "nds");
+                markNode(platformCardShell(anchor), "nds");
             }
         });
 
         document.querySelectorAll("span,div,h6,p").forEach(function(element) {
             if (element.childElementCount === 0 && element.textContent.trim() === "Nintendo DS") {
-                hideNode(platformCardShell(element), "nds");
+                markNode(platformCardShell(element), "nds");
             }
         });
     }
@@ -242,10 +246,21 @@
         hideRommNoise();
     }
 
+    var runPending = false;
+    function scheduleRun() {
+        if (runPending) return;
+        runPending = true;
+        requestAnimationFrame(function() {
+            runPending = false;
+            run();
+        });
+    }
+
     seedEmulatorDefaults();
 
     document.addEventListener("DOMContentLoaded", function() {
         run();
-        new MutationObserver(run).observe(document.body, { childList: true, subtree: true });
+        new MutationObserver(scheduleRun).observe(document.body, { childList: true, subtree: true });
+        window.addEventListener("resize", scheduleRun, { passive: true });
     });
 })();
