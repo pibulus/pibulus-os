@@ -17,6 +17,7 @@ import uuid
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from urllib.parse import parse_qs, urlparse
 
 ROOT_DROP_DIR = Path("/media/pibulus/passport/Drops")
 INBOX_DIR = ROOT_DROP_DIR / "inbox"
@@ -32,11 +33,11 @@ CHUNK_SIZE = 1024 * 1024
 UPLOAD_PATH = "/drop/upload"
 
 ALLOWED_SUFFIXES = (
-    ".mp3", ".flac", ".ogg", ".opus", ".wav", ".aac", ".m4a", ".m4b",
-    ".cbz", ".cbr", ".cb7", ".pdf", ".epub", ".mobi", ".azw3", ".djvu",
+    ".mp3", ".flac", ".ogg", ".opus", ".wav", ".aac", ".m4a", ".m4b", ".aif", ".aiff", ".alac", ".wma",
+    ".cbz", ".cbr", ".cb7", ".pdf", ".epub", ".mobi", ".azw3", ".djvu", ".txt", ".md", ".markdown", ".rtf", ".doc", ".docx", ".odt", ".pages", ".csv",
     ".zip", ".7z", ".rar", ".tar", ".tar.gz",
-    ".rom", ".bin", ".smc", ".sfc", ".nes", ".gba", ".gb", ".gbc", ".n64", ".z64", ".md", ".gen",
-    ".jpg", ".jpeg", ".png", ".gif", ".webp",
+    ".rom", ".bin", ".smc", ".sfc", ".nes", ".gba", ".gb", ".gbc", ".n64", ".z64", ".md", ".gen", ".pce", ".sms", ".gg", ".32x", ".chd", ".iso", ".cue", ".gdi",
+    ".jpg", ".jpeg", ".png", ".gif", ".webp", ".heic", ".heif", ".avif", ".tif", ".tiff", ".bmp",
     ".mp4", ".mkv", ".webm", ".mov", ".avi", ".m4v", ".mpeg", ".mpg", ".m2ts", ".ts", ".wmv", ".flv",
 )
 
@@ -147,19 +148,19 @@ def guess_category(category: str, suffix: str | None) -> str:
         return category
 
     suffix = suffix or ""
-    if suffix in {".mp3", ".flac", ".ogg", ".opus", ".wav", ".aac", ".m4a"}:
+    if suffix in {".mp3", ".flac", ".ogg", ".opus", ".wav", ".aac", ".m4a", ".aif", ".aiff", ".alac", ".wma"}:
         return "music"
     if suffix in {".m4b"}:
         return "audiobooks"
     if suffix in {".cbz", ".cbr", ".cb7"}:
         return "comics"
-    if suffix in {".pdf", ".epub", ".mobi", ".azw3", ".djvu"}:
+    if suffix in {".pdf", ".epub", ".mobi", ".azw3", ".djvu", ".txt", ".md", ".markdown", ".rtf", ".doc", ".docx", ".odt", ".pages", ".csv"}:
         return "books"
     if suffix in {".mp4", ".mkv", ".webm", ".mov", ".avi", ".m4v", ".mpeg", ".mpg", ".m2ts", ".ts", ".wmv", ".flv"}:
         return "video"
-    if suffix in {".jpg", ".jpeg", ".png", ".gif", ".webp"}:
+    if suffix in {".jpg", ".jpeg", ".png", ".gif", ".webp", ".heic", ".heif", ".avif", ".tif", ".tiff", ".bmp"}:
         return "images"
-    if suffix in {".zip", ".7z", ".rar", ".tar", ".tar.gz", ".rom", ".bin", ".smc", ".sfc", ".nes", ".gba", ".gb", ".gbc", ".n64", ".z64", ".md", ".gen"}:
+    if suffix in {".zip", ".7z", ".rar", ".tar", ".tar.gz", ".rom", ".bin", ".smc", ".sfc", ".nes", ".gba", ".gb", ".gbc", ".n64", ".z64", ".md", ".gen", ".pce", ".sms", ".gg", ".32x", ".chd", ".iso", ".cue", ".gdi"}:
         return "roms"
     return "misc"
 
@@ -251,6 +252,16 @@ def chunk_dir_size(directory: Path) -> int:
     return total
 
 
+def list_uploaded_chunks(chunk_dir: Path) -> list[int]:
+    uploaded: list[int] = []
+    if not chunk_dir.exists():
+        return uploaded
+    for part in chunk_dir.glob("*.part"):
+        if re.fullmatch(r"\d{5}", part.stem):
+            uploaded.append(int(part.stem))
+    return sorted(uploaded)
+
+
 def resolve_batch(fields: dict[str, str], original_name: str, stamp: str, upload_id: str) -> tuple[str, int, int, str]:
     batch_id = safe_text(fields.get("batch_id"), 48) or f"single_{upload_id}"
     batch_index = parse_int(fields.get("batch_index"), 1, 1, 9999)
@@ -258,7 +269,8 @@ def resolve_batch(fields: dict[str, str], original_name: str, stamp: str, upload
     batch_token = safe_dirname(fields.get("batch_token"), fallback="")
     if not batch_token:
         safe_stem = safe_dirname(Path(original_name).stem[:48], fallback="drop")
-        batch_token = safe_dirname(f"{stamp}_{safe_stem}_{batch_id[:8]}", fallback=f"{stamp}_drop")
+        token_seed = upload_id.rsplit("_", 1)[-1] if batch_id.startswith("single_") else batch_id[:8]
+        batch_token = safe_dirname(f"{stamp}_{safe_stem}_{token_seed}", fallback=f"{stamp}_drop")
     return batch_id, batch_index, batch_total, batch_token
 
 
@@ -412,10 +424,67 @@ class UploadHandler(BaseHTTPRequestHandler):
         self.send_json(code, {"ok": False, "error": message})
 
     def do_GET(self) -> None:
-        if self.path == "/drop/health":
+        parsed = urlparse(self.path)
+        if parsed.path == "/drop/health":
             self.send_json(200, {"ok": True, "status": "alive", "received_at": now_iso()})
             return
+        if parsed.path == UPLOAD_PATH:
+            query = parse_qs(parsed.query)
+            if (query.get("status") or [""])[0] == "1":
+                self._handle_chunk_status(query)
+                return
         self.send_error(405, "POST only")
+
+    def _handle_chunk_status(self, query: dict[str, list[str]]) -> None:
+        try:
+            cleanup_stale_chunks()
+        except Exception as exc:
+            log_event("chunk_cleanup_failed", error=str(exc))
+
+        def query_value(name: str, max_len: int = 220) -> str:
+            return safe_text((query.get(name) or [""])[0], max_len)
+
+        batch_token = safe_dirname(query_value("batch_token", 96), fallback="")
+        file_token = safe_dirname(query_value("file_token", 96), fallback="")
+        original_name = safe_filename(query_value("file_name", 220) or "upload.bin")
+        suffix = suffix_for(original_name)
+
+        if not batch_token or not file_token:
+            self.send_error_json(400, "missing resume token")
+            return
+        if not suffix:
+            self.send_error_json(400, f"file type not allowed: {original_name}")
+            return
+
+        chunk_total = parse_int(query_value("chunk_total", 12), 0, 0, MAX_CHUNKS_PER_FILE)
+        chunk_dir = CHUNK_WORK_DIR / batch_token / file_token
+        complete_path = chunk_dir / "complete.json"
+
+        if complete_path.exists():
+            try:
+                completed_payload = json.loads(complete_path.read_text(encoding="utf-8"))
+            except Exception:
+                completed_payload = None
+            if completed_payload:
+                self.send_json(200, {
+                    "ok": True,
+                    "chunked": True,
+                    "assembled": True,
+                    "uploaded_chunks": [],
+                    "chunk_total": chunk_total,
+                    "completed": completed_payload,
+                    "chunk_ttl_seconds": CHUNK_TTL_SECONDS,
+                })
+                return
+
+        self.send_json(200, {
+            "ok": True,
+            "chunked": True,
+            "assembled": False,
+            "uploaded_chunks": list_uploaded_chunks(chunk_dir),
+            "chunk_total": chunk_total,
+            "chunk_ttl_seconds": CHUNK_TTL_SECONDS,
+        })
 
     def do_POST(self) -> None:
         if self.path != UPLOAD_PATH:

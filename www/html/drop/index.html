@@ -207,9 +207,9 @@
     .progress-wrap.active { display: block; }
     .progress-bar {
       width: 100%;
-      height: 8px;
+      height: 10px;
       background: rgba(255, 255, 255, 0.08);
-      border-radius: 4px;
+      border-radius: 999px;
       overflow: hidden;
     }
     .progress-fill {
@@ -220,16 +220,20 @@
       transition: width 0.16s linear;
     }
     .progress-text {
-      color: var(--dim);
-      font-size: 0.9rem;
-      margin-top: 6px;
+      color: rgba(224, 224, 224, 0.82);
+      font-size: 0.96rem;
+      line-height: 1.35;
+      margin-top: 8px;
+      overflow-wrap: anywhere;
     }
     .queue-stats {
       display: none;
-      margin-top: 10px;
-      color: var(--dim-soft);
-      font-size: 0.9rem;
+      margin-top: 8px;
+      color: var(--dim);
+      font-size: 0.92rem;
+      line-height: 1.35;
       text-align: left;
+      overflow-wrap: anywhere;
     }
     .queue-stats.active { display: block; }
     .status {
@@ -237,6 +241,7 @@
       min-height: 40px;
       font-size: 1.1rem;
       line-height: 1.35;
+      overflow-wrap: anywhere;
     }
     .status.ok { color: var(--ok); }
     .status.err { color: var(--err); }
@@ -254,11 +259,16 @@
       color: var(--dim);
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
       line-height: 1.35;
+      display: grid;
+      gap: 8px;
+      grid-template-columns: minmax(0, 1fr) auto;
     }
-	    .history-item .fname { color: var(--cyan); }
+	    .history-item .fname {
+	      color: var(--cyan);
+	      overflow-wrap: anywhere;
+	    }
 	    .history-item .fstatus {
-	      float: right;
-	      margin-left: 12px;
+	      white-space: nowrap;
 	    }
     .history-item .fstatus.done { color: var(--ok); }
     .history-item .fstatus.fail { color: var(--err); }
@@ -283,6 +293,11 @@
 	      .upload-area { padding: 16px; border-radius: 22px; }
 	      .drop-target { min-height: 260px; }
 	      .pick-button { width: 100%; }
+	      .progress-wrap { margin-top: 12px; }
+	      .progress-text,
+	      .queue-stats { font-size: 1rem; }
+	      .history-item { grid-template-columns: 1fr; }
+	      .history-item .fstatus { white-space: normal; }
 	    }
 	    @media (prefers-reduced-motion: reduce) {
 	      *, *::before, *::after {
@@ -300,14 +315,14 @@
   <p class="subtitle">throw files in</p>
 
   <div class="what">
-    got something good? books, music, comics, games, movies, weird archives. drop it here; pablo vets it before anything goes live.
+    got something good? books, docs, music, comics, games, movies, images, weird archives. drop it here; pablo vets it before anything goes live.
   </div>
 
   <div class="upload-area" id="drop">
     <div class="drop-target" id="dropTarget">
       <div class="icon" id="icon">&#x1F4E6;</div>
-      <div class="label" id="label">drop anything</div>
-	      <div class="hint">drag files here or click to choose. up to 2GB each, chunked automatically.</div>
+      <div class="label" id="label">drop files here</div>
+	      <div class="hint">drag files here or click to choose. docs, media, archives, ROMs, and iPhone photos welcome. up to 2GB each, chunked automatically.</div>
 	      <input type="file" id="fileInput" multiple>
 	      <input type="file" id="folderInput" multiple webkitdirectory directory>
 	    </div>
@@ -321,13 +336,13 @@
   </div>
 
   <div class="progress-wrap" id="progress-wrap">
-    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="progress-bar" id="progress-bar" role="progressbar" aria-label="upload progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress-fill" id="progress-fill"></div></div>
     <div class="progress-text" id="progress-text"></div>
     <div class="queue-stats" id="queue-stats"></div>
   </div>
 
-  <div class="status" id="status"></div>
-  <div class="history" id="history"></div>
+  <div class="status" id="status" aria-live="polite"></div>
+  <div class="history" id="history" aria-live="polite"></div>
 
   <div class="rules">
     moderated uploads only - no account needed<br>
@@ -342,20 +357,23 @@ var MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024;
 var CHUNK_UPLOAD_SIZE = 24 * 1024 * 1024;
 var UPLOAD_TIMEOUT_MS = 20 * 60 * 1000;
 var UPLOAD_RETRIES = 2;
+var RESUME_STORAGE_KEY = "quickcat-drop-resume-v1";
+var RESUME_TTL_MS = 24 * 60 * 60 * 1000;
 
 var drop = document.getElementById("drop");
 var input = document.getElementById("fileInput");
 var folderInput = document.getElementById("folderInput");
 var folderButton = document.getElementById("folderButton");
 var noteInput = document.getElementById("note");
-var status = document.getElementById("status");
+var statusEl = document.getElementById("status");
 var icon = document.getElementById("icon");
 var label = document.getElementById("label");
 var progressWrap = document.getElementById("progress-wrap");
+var progressBar = document.getElementById("progress-bar");
 var progressFill = document.getElementById("progress-fill");
 var progressText = document.getElementById("progress-text");
 var queueStats = document.getElementById("queue-stats");
-var history = document.getElementById("history");
+var historyEl = document.getElementById("history");
 var uploading = false;
 
 ["dragenter", "dragover"].forEach(function(eventName) {
@@ -402,11 +420,101 @@ function setMetaDisabled(disabled) {
   noteInput.disabled = disabled;
 }
 
+function setProgress(pct, text) {
+  var bounded = Math.max(0, Math.min(100, Math.round(pct || 0)));
+  progressFill.style.width = bounded + "%";
+  progressBar.setAttribute("aria-valuenow", String(bounded));
+  if (typeof text === "string") progressText.textContent = text;
+}
+
+function queueSummary(batch) {
+  var waiting = Math.max(0, batch.totalFiles - batch.done - batch.failed);
+  return batch.done + " received • " + batch.failed + " failed • " + waiting + " waiting";
+}
+
+function storageAvailable() {
+  try {
+    var key = "__quickcat_storage_test__";
+    window.localStorage.setItem(key, "1");
+    window.localStorage.removeItem(key);
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+var canStoreResume = storageAvailable();
+
+function resumeKeyForFile(file) {
+  return [file.name, file.size, file.lastModified || 0].join("|");
+}
+
+function readResumeState() {
+  if (!canStoreResume) return {};
+  try {
+    var raw = window.localStorage.getItem(RESUME_STORAGE_KEY);
+    var parsed = raw ? JSON.parse(raw) : {};
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch (error) {
+    return {};
+  }
+}
+
+function writeResumeState(state) {
+  if (!canStoreResume) return;
+  try {
+    window.localStorage.setItem(RESUME_STORAGE_KEY, JSON.stringify(state));
+  } catch (error) {
+    // Resume is best-effort. Uploads still work if storage is full or blocked.
+  }
+}
+
+function getResumeEntry(file) {
+  var state = readResumeState();
+  var key = resumeKeyForFile(file);
+  var entry = state[key];
+  if (!entry) return null;
+  if (!entry.updatedAt || Date.now() - entry.updatedAt > RESUME_TTL_MS) {
+    delete state[key];
+    writeResumeState(state);
+    return null;
+  }
+  return entry;
+}
+
+function saveResumeEntry(file, entry) {
+  var state = readResumeState();
+  state[resumeKeyForFile(file)] = Object.assign({}, entry, {
+    name: file.name,
+    size: file.size,
+    lastModified: file.lastModified || 0,
+    updatedAt: Date.now()
+  });
+  writeResumeState(state);
+}
+
+function clearResumeEntry(file) {
+  var state = readResumeState();
+  var key = resumeKeyForFile(file);
+  if (state[key]) {
+    delete state[key];
+    writeResumeState(state);
+  }
+}
+
+function matchingResumeEntry(files) {
+  for (var i = 0; i < files.length; i++) {
+    var entry = getResumeEntry(files[i]);
+    if (entry && entry.batchId && entry.batchToken) return entry;
+  }
+  return null;
+}
+
 function addHistory(name, ok, detail) {
   var div = document.createElement("div");
   div.className = "history-item";
   div.innerHTML = '<span class="fname">' + escapeHtml(name) + '</span><span class="fstatus ' + (ok ? "done" : "fail") + '">' + escapeHtml(detail) + "</span>";
-  history.insertBefore(div, history.firstChild);
+  historyEl.insertBefore(div, historyEl.firstChild);
 }
 
 function escapeHtml(text) {
@@ -423,14 +531,13 @@ function resetUI() {
   drop.classList.remove("uploading", "success");
   progressWrap.classList.remove("active");
   queueStats.classList.remove("active");
-  progressFill.style.width = "0%";
-  progressText.textContent = "";
+  setProgress(0, "");
   queueStats.textContent = "";
   icon.innerHTML = "&#x1F4E6;";
-  label.textContent = "drop anything";
+  label.textContent = "drop files here";
 }
 
-function setUploadState() {
+function setUploadState(batch) {
   uploading = true;
   setMetaDisabled(true);
   drop.classList.add("uploading");
@@ -438,6 +545,11 @@ function setUploadState() {
   progressWrap.classList.add("active");
   queueStats.classList.add("active");
   icon.innerHTML = "&#x1F4E4;";
+  label.textContent = "preparing upload";
+  statusEl.className = "status uploading";
+  statusEl.textContent = "getting the batch ready";
+  setProgress(0, "0% overall • 0 / " + formatSize(batch.totalBytes));
+  queueStats.textContent = queueSummary(batch);
 }
 
 function makeBatchId() {
@@ -483,15 +595,16 @@ async function handleFiles(files) {
   });
 
   if (!accepted.length) {
-    status.className = "status err";
-    status.textContent = files.length === 1 ? "that file is over the 2GB drop limit" : "every selected file was skipped";
+    statusEl.className = "status err";
+    statusEl.textContent = files.length === 1 ? "that file is over the 2GB drop limit" : "every selected file was skipped";
     return;
   }
 
-  var batchId = makeBatchId();
+  var resumeEntry = matchingResumeEntry(accepted);
+  var batchId = resumeEntry ? resumeEntry.batchId : makeBatchId();
   var batch = {
     id: batchId,
-    token: makeBatchToken(accepted, batchId),
+    token: resumeEntry ? resumeEntry.batchToken : makeBatchToken(accepted, batchId),
     category: "auto",
     note: (noteInput.value || "").trim().slice(0, 800),
     totalFiles: accepted.length,
@@ -499,26 +612,26 @@ async function handleFiles(files) {
     completedBytes: 0,
     done: 0,
     failed: 0,
-    skipped: skipped
+    skipped: skipped,
+    resuming: Boolean(resumeEntry)
   };
 
-  setUploadState();
+  setUploadState(batch);
 
   for (var i = 0; i < accepted.length; i++) {
     var file = accepted[i];
     var fileNumber = i + 1;
 
-    label.textContent = "uploading " + file.name;
-    status.className = "status uploading";
-    status.textContent = "sending file " + fileNumber + " of " + batch.totalFiles + " - " + file.name;
-    queueStats.textContent = "batch " + batch.id + " - folder " + batch.token + " - " + batch.done + " done, " + batch.failed + " failed";
+    label.textContent = "uploading " + fileNumber + " of " + batch.totalFiles;
+    statusEl.className = "status uploading";
+    statusEl.textContent = "sending " + file.name;
+    queueStats.textContent = queueSummary(batch);
 
     try {
       var result = await uploadFile(file, batch, fileNumber, function(loaded) {
         var overallLoaded = batch.completedBytes + loaded;
         var pct = Math.max(1, Math.round(overallLoaded / batch.totalBytes * 100));
-        progressFill.style.width = pct + "%";
-        progressText.textContent = pct + "% overall - file " + fileNumber + "/" + batch.totalFiles + " - " + formatSize(loaded) + " / " + formatSize(file.size);
+        setProgress(pct, pct + "% overall • file " + fileNumber + "/" + batch.totalFiles + " • " + formatSize(loaded) + " / " + formatSize(file.size));
       });
 
       batch.done += 1;
@@ -531,24 +644,24 @@ async function handleFiles(files) {
       addHistory(file.name, false, error.message || "failed");
     }
 
-    queueStats.textContent = "batch " + batch.id + " - folder " + batch.token + " - " + batch.done + " done, " + batch.failed + " failed";
+    queueStats.textContent = queueSummary(batch);
   }
 
-  progressFill.style.width = "100%";
+  setProgress(100, "100% overall • " + batch.done + " received • " + batch.failed + " failed");
 
   if (batch.failed === 0) {
-    status.className = "status ok";
-    status.textContent = "queued " + batch.done + " file" + (batch.done === 1 ? "" : "s") + " into one review folder";
+    statusEl.className = "status ok";
+    statusEl.textContent = "queued " + batch.done + " file" + (batch.done === 1 ? "" : "s") + " into one review folder";
   } else if (batch.done > 0) {
-    status.className = "status ok";
-    status.textContent = "queued " + batch.done + " file" + (batch.done === 1 ? "" : "s") + " into one review folder, " + batch.failed + " failed";
+    statusEl.className = "status ok";
+    statusEl.textContent = "queued " + batch.done + " file" + (batch.done === 1 ? "" : "s") + " into one review folder, " + batch.failed + " failed";
   } else {
-    status.className = "status err";
-    status.textContent = "nothing made it through - check the history below";
+    statusEl.className = "status err";
+    statusEl.textContent = "nothing made it through - check the history below";
   }
 
   if (batch.skipped) {
-    status.textContent += " - " + batch.skipped + " skipped for size";
+    statusEl.textContent += " - " + batch.skipped + " skipped for size";
   }
 
   label.textContent = batch.failed ? "batch finished with some casualties" : "batch received";
@@ -580,6 +693,8 @@ function sendUploadRequest(form, onProgress, attempt) {
 
     function rejectOrRetry(error, retryable) {
       if (retryable && attempt < UPLOAD_RETRIES) {
+        statusEl.className = "status uploading";
+        statusEl.textContent = "connection hiccup - retrying upload";
         window.setTimeout(function() {
           sendUploadRequest(form, onProgress, attempt + 1).then(resolve, reject);
         }, 900 * (attempt + 1));
@@ -631,19 +746,83 @@ function uploadFile(file, batch, index, onProgress) {
 }
 
 function uploadFileSingle(file, batch, index, onProgress) {
+  clearResumeEntry(file);
   var form = new FormData();
   form.append("file", file, file.name);
   appendCommonFields(form, file, batch, index);
   return sendUploadRequest(form, onProgress);
 }
 
+function chunkSizeForIndex(file, chunkIndex) {
+  var start = (chunkIndex - 1) * CHUNK_UPLOAD_SIZE;
+  var end = Math.min(file.size, start + CHUNK_UPLOAD_SIZE);
+  return Math.max(0, end - start);
+}
+
+async function fetchChunkStatus(batch, file, fileToken, chunkTotal) {
+  var url = "/drop/upload?status=1"
+    + "&batch_token=" + encodeURIComponent(batch.token)
+    + "&file_token=" + encodeURIComponent(fileToken)
+    + "&file_name=" + encodeURIComponent(file.name)
+    + "&file_size=" + encodeURIComponent(String(file.size))
+    + "&chunk_total=" + encodeURIComponent(String(chunkTotal));
+  var response = await fetch(url, {
+    method: "GET",
+    headers: { "Accept": "application/json" },
+    cache: "no-store"
+  });
+  if (!response.ok) throw new Error("resume check failed");
+  return response.json();
+}
+
 async function uploadFileChunked(file, batch, index, onProgress) {
-  var fileToken = makeFileToken(file, index);
   var chunkTotal = Math.ceil(file.size / CHUNK_UPLOAD_SIZE);
-  var sentBytes = 0;
+  var resumeEntry = getResumeEntry(file);
+  var fileToken = resumeEntry && resumeEntry.fileToken ? resumeEntry.fileToken : makeFileToken(file, index);
+  saveResumeEntry(file, {
+    batchId: batch.id,
+    batchToken: batch.token,
+    fileToken: fileToken,
+    chunkTotal: chunkTotal
+  });
+
+  var uploadedChunks = new Set();
+  try {
+    var statusPayload = await fetchChunkStatus(batch, file, fileToken, chunkTotal);
+    if (statusPayload.assembled && statusPayload.completed) {
+      clearResumeEntry(file);
+      if (onProgress) onProgress(file.size);
+      return statusPayload.completed;
+    }
+    (statusPayload.uploaded_chunks || []).forEach(function(chunkIndex) {
+      uploadedChunks.add(Number(chunkIndex));
+    });
+  } catch (error) {
+    statusEl.className = "status uploading";
+    statusEl.textContent = "resume check missed - sending from the start";
+    uploadedChunks = new Set();
+  }
+
+  var uploadedBytes = 0;
+  if (uploadedChunks.size) {
+    uploadedChunks.forEach(function(chunkIndex) {
+      uploadedBytes += chunkSizeForIndex(file, chunkIndex);
+    });
+    if (uploadedChunks.size === chunkTotal) {
+      uploadedChunks.delete(chunkTotal);
+      uploadedBytes -= chunkSizeForIndex(file, chunkTotal);
+    }
+    if (uploadedBytes > 0 && onProgress) onProgress(uploadedBytes);
+    statusEl.className = "status uploading";
+    statusEl.textContent = "resuming " + file.name + " - " + uploadedChunks.size + " chunk" + (uploadedChunks.size === 1 ? "" : "s") + " already there";
+  }
+
+  var sentBytes = uploadedBytes;
   var finalPayload = null;
 
   for (var chunkIndex = 1; chunkIndex <= chunkTotal; chunkIndex++) {
+    if (uploadedChunks.has(chunkIndex)) continue;
+
     var start = (chunkIndex - 1) * CHUNK_UPLOAD_SIZE;
     var end = Math.min(file.size, start + CHUNK_UPLOAD_SIZE);
     var chunk = file.slice(start, end);
@@ -658,16 +837,24 @@ async function uploadFileChunked(file, batch, index, onProgress) {
     form.append("chunk_index", String(chunkIndex));
     form.append("chunk_total", String(chunkTotal));
 
+    var sentBeforeChunk = sentBytes;
     finalPayload = await sendUploadRequest(form, function(loaded) {
-      if (onProgress) onProgress(sentBytes + loaded);
+      if (onProgress) onProgress(sentBeforeChunk + loaded);
     });
-    sentBytes = end;
+    sentBytes += chunk.size;
+    saveResumeEntry(file, {
+      batchId: batch.id,
+      batchToken: batch.token,
+      fileToken: fileToken,
+      chunkTotal: chunkTotal
+    });
     if (onProgress) onProgress(sentBytes);
   }
 
   if (!finalPayload || finalPayload.assembled === false) {
     throw new Error("server did not finish assembling the file");
   }
+  clearResumeEntry(file);
   return finalPayload;
 }
 </script>
