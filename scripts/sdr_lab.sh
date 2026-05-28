@@ -46,7 +46,7 @@ RTL_MODULES=(
   dvb_usb_v2
 )
 RTL_RESTORE_NEEDED=0
-SDR_REMOTE_BASE="${SDR_REMOTE_BASE:-http://127.0.0.1:8097}"
+SDR_REMOTE_BASE="${SDR_REMOTE_BASE:-http://172.17.0.1:8097}"
 
 find_dongle() {
   lsusb 2>/dev/null | grep -Ei "$RTL_HINT_PATTERN" || true
@@ -102,14 +102,47 @@ print(json.dumps({"mode": mode, "freq": freq}))
 PY
 }
 
+validate_frequency() {
+  local mode="$1"
+  local raw="$2"
+  python3 - "$mode" "$raw" <<'PY'
+import math
+import sys
+
+mode = sys.argv[1].strip().lower()
+raw = sys.argv[2].strip()
+ranges = {
+    "fm": (64.0, 108.5, "FM frequency should be between 64.0 and 108.5 MHz"),
+    "airband": (108.0, 137.0, "airband frequency should be between 108.0 and 137.0 MHz"),
+    "nfm": (30.0, 960.0, "analog NFM frequency should be between 30.0 and 960.0 MHz"),
+}
+if mode not in ranges:
+    print("mode must be one of: fm, airband, nfm", file=sys.stderr)
+    raise SystemExit(1)
+try:
+    freq = float(raw)
+except ValueError:
+    print("frequency must be numeric", file=sys.stderr)
+    raise SystemExit(1)
+if not math.isfinite(freq):
+    print("frequency must be finite", file=sys.stderr)
+    raise SystemExit(1)
+low, high, message = ranges[mode]
+if not low <= freq <= high:
+    print(message, file=sys.stderr)
+    raise SystemExit(1)
+print(f"{freq:.3f}".rstrip("0").rstrip("."))
+PY
+}
+
 remote_request() {
   local method="$1"
   local path="$2"
   local body="${3:-}"
   if [ -n "$body" ]; then
-    curl -fsS -X "$method" -H 'Content-Type: application/json' -d "$body" "${SDR_REMOTE_BASE}${path}"
+    curl -fsS --connect-timeout 4 --max-time 12 -X "$method" -H 'Content-Type: application/json' -d "$body" "${SDR_REMOTE_BASE}${path}"
   else
-    curl -fsS -X "$method" "${SDR_REMOTE_BASE}${path}"
+    curl -fsS --connect-timeout 4 --max-time 12 -X "$method" "${SDR_REMOTE_BASE}${path}"
   fi
 }
 
@@ -272,6 +305,7 @@ run_fm() {
     echo "Usage: $0 fm <freq-mhz>"
     exit 1
   fi
+  freq=$(validate_frequency fm "$freq")
 
   need_bin rtl_fm "Install with: sudo apt install rtl-sdr"
   if ! have sox && ! have ffplay; then
@@ -291,6 +325,7 @@ run_fm() {
 
 run_airband() {
   local freq="${1:-118.0}"
+  freq=$(validate_frequency airband "$freq")
   need_bin rtl_fm "Install with: sudo apt install rtl-sdr"
   if ! have sox && ! have ffplay; then
     echo "Need an audio sink: sox or ffplay."
@@ -313,6 +348,7 @@ run_nfm() {
     echo "Usage: $0 nfm <freq-mhz>"
     exit 1
   fi
+  freq=$(validate_frequency nfm "$freq")
 
   need_bin rtl_fm "Install with: sudo apt install rtl-sdr"
   if ! have sox && ! have ffplay; then
@@ -338,6 +374,7 @@ run_433() {
 
 run_pagers() {
   local freq="${1:-152.25}"
+  freq=$(validate_frequency nfm "$freq")
   need_bin rtl_fm "Install with: sudo apt install rtl-sdr"
   need_bin multimon-ng "Install with: sudo apt install multimon-ng"
   echo "Decoding pagers around ${freq} MHz. Ctrl-C to stop."
@@ -363,6 +400,8 @@ run_remote_start() {
     echo "Usage: $0 remote-start <fm|airband|nfm> <freq-mhz>"
     exit 1
   fi
+  mode="${mode,,}"
+  freq=$(validate_frequency "$mode" "$freq")
 
   remote_request POST /start "$(remote_payload "$mode" "$freq")"
   echo

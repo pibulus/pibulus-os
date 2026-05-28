@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import atexit
 import json
+import math
 import os
 import queue
 import signal
@@ -13,13 +14,45 @@ import threading
 import time
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from urllib.parse import urlparse
 
 
-LISTEN_HOST = "0.0.0.0"
-LISTEN_PORT = 8097
-STREAM_IDLE_TIMEOUT = 180
+def env_int(name: str, default: int, minimum: int, maximum: int) -> int:
+    raw = os.environ.get(name)
+    if raw is None:
+        return default
+    try:
+        value = int(raw)
+    except ValueError:
+        return default
+    return max(minimum, min(maximum, value))
+
+
+LISTEN_HOST = os.environ.get("SDR_LISTEN_HOST", "172.17.0.1")
+LISTEN_PORT = env_int("SDR_LISTEN_PORT", 8097, 1024, 65535)
+STREAM_IDLE_TIMEOUT = env_int("SDR_IDLE_TIMEOUT", 180, 30, 1800)
+MAX_LISTENERS = env_int("SDR_MAX_LISTENERS", 3, 1, 8)
+MAX_POST_BYTES = env_int("SDR_MAX_POST_BYTES", 2048, 128, 16384)
+START_COOLDOWN_SECONDS = 1.5
 CHUNK_SIZE = 8192
 httpd: ThreadingHTTPServer | None = None
+ALLOWED_MODES = {"fm", "airband", "nfm"}
+SECURITY_HEADERS = {
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "SAMEORIGIN",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+    "Content-Security-Policy": (
+        "default-src 'self'; "
+        "base-uri 'none'; "
+        "frame-ancestors 'self'; "
+        "connect-src 'self'; "
+        "media-src 'self'; "
+        "img-src 'self' data:; "
+        "script-src 'unsafe-inline'; "
+        "style-src 'unsafe-inline'"
+    ),
+}
 
 RTL_MODULES = [
     "rtl2832_sdr",
@@ -38,98 +71,158 @@ UI_HTML = """<!doctype html>
   <style>
     :root {
       color-scheme: dark;
-      --bg: #07110a;
-      --panel: #0f1f15;
-      --line: #214c31;
-      --ink: #daf6dd;
-      --muted: #7ec69a;
-      --hot: #ffb000;
-      --warn: #ff6d4d;
-      --good: #39d98a;
+      --bg: #101113;
+      --panel: #171b18;
+      --panel-2: #0d120f;
+      --line: rgba(121, 205, 159, 0.24);
+      --ink: #f1f4e8;
+      --muted: #a8baa8;
+      --hot: #d8b85e;
+      --warn: #ef7b63;
+      --good: #74d99f;
+      --cyan: #77d7d9;
+      --berry: #dd7a9d;
     }
     * { box-sizing: border-box; }
+    html { overflow-x: hidden; }
     body {
       margin: 0;
       min-height: 100vh;
-      font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background:
-        radial-gradient(circle at top right, rgba(57,217,138,0.12), transparent 30%),
-        linear-gradient(180deg, #040904 0%, var(--bg) 100%);
+        linear-gradient(180deg, rgba(14, 25, 18, 0.92), rgba(16, 17, 19, 1) 42rem),
+        var(--bg);
       color: var(--ink);
+      overflow-x: hidden;
     }
     .wrap {
-      max-width: 920px;
+      width: 100%;
+      max-width: 960px;
       margin: 0 auto;
-      padding: 28px 18px 48px;
+      padding: 18px 16px 42px;
     }
     .hero, .panel {
       border: 1px solid var(--line);
-      background: rgba(15,31,21,0.92);
-      box-shadow: 0 0 0 1px rgba(57,217,138,0.08) inset, 0 18px 48px rgba(0,0,0,0.28);
-      border-radius: 18px;
+      background: rgba(23, 27, 24, 0.96);
+      box-shadow: 0 16px 38px rgba(0,0,0,0.24);
+      border-radius: 8px;
+      overflow: hidden;
     }
-    .hero { padding: 20px; }
+    .hero { padding: 18px; }
+    .hero-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: start;
+    }
+    .hero-head > div {
+      min-width: 0;
+    }
+    .transport-actions {
+      display: flex;
+      flex: 0 0 auto;
+      gap: 8px;
+      align-items: center;
+    }
     h1 {
-      margin: 0 0 10px;
-      font-size: clamp(1.6rem, 3vw, 2.4rem);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
+      margin: 0;
+      font-size: 2.1rem;
+      line-height: 1.05;
+      letter-spacing: 0;
     }
-    p { color: var(--muted); line-height: 1.5; }
+    p { color: var(--muted); line-height: 1.48; }
+    .lede {
+      max-width: 42rem;
+      margin: 8px 0 0;
+      font-size: 1rem;
+    }
     .statusbar {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 12px;
-      margin-top: 18px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 16px;
     }
     .stat {
-      padding: 12px;
-      border-radius: 14px;
-      background: rgba(3,10,6,0.55);
-      border: 1px solid rgba(57,217,138,0.14);
+      padding: 11px 12px;
+      min-width: 0;
+      border-radius: 8px;
+      background: rgba(7, 11, 9, 0.76);
+      border: 1px solid rgba(121, 205, 159, 0.16);
     }
     .label {
       display: block;
       font-size: 0.72rem;
-      letter-spacing: 0.1em;
+      letter-spacing: 0;
+      overflow-wrap: anywhere;
       color: var(--muted);
       text-transform: uppercase;
       margin-bottom: 6px;
+      font-weight: 700;
     }
     .value {
-      font-size: 1.05rem;
+      font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+      font-size: 1rem;
       color: var(--ink);
+      overflow-wrap: anywhere;
     }
     .panel {
-      padding: 18px;
-      margin-top: 18px;
+      padding: 16px;
+      margin-top: 14px;
+    }
+    .panel.compact {
+      padding: 14px 16px;
     }
     .grid {
       display: grid;
-      gap: 12px;
+      gap: 10px;
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     }
     button, input, select {
       font: inherit;
       color: var(--ink);
-      border-radius: 12px;
+      min-height: 44px;
+      border-radius: 8px;
       border: 1px solid var(--line);
-      background: #0b180f;
+      background: #0d120f;
     }
     button {
       width: 100%;
       padding: 12px 14px;
       cursor: pointer;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
+      letter-spacing: 0;
+      font-weight: 750;
     }
-    button:hover { border-color: var(--good); }
-    button.hot { border-color: rgba(255,176,0,0.35); color: var(--hot); }
-    button.stop { border-color: rgba(255,109,77,0.35); color: var(--warn); }
-    button.mini {
+    button:hover,
+    button:focus-visible {
+      border-color: var(--good);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(116, 217, 159, 0.14);
+    }
+    button[disabled] {
+      opacity: 0.55;
+      cursor: wait;
+    }
+    button.hot {
+      border-color: rgba(216,184,94,0.42);
+      color: var(--hot);
+      background: rgba(216,184,94,0.08);
+    }
+    button.primary {
+      border-color: rgba(119, 215, 217, 0.45);
+      color: #0b1012;
+      background: var(--cyan);
+    }
+    button.stop {
+      border-color: rgba(239,123,99,0.38);
+      color: var(--warn);
+      background: rgba(239,123,99,0.08);
+    }
+    button.mini,
+    button.compact {
       width: auto;
+      min-width: 5rem;
       padding: 10px 12px;
-      font-size: 0.82rem;
+      font-size: 0.9rem;
     }
     .controls {
       display: grid;
@@ -139,42 +232,68 @@ UI_HTML = """<!doctype html>
     .custom {
       display: grid;
       gap: 10px;
-      grid-template-columns: 1.2fr 1fr auto;
+      grid-template-columns: minmax(0, 1.15fr) minmax(11rem, 0.8fr) minmax(7rem, auto);
       margin-top: 12px;
     }
-    input, select { padding: 12px 14px; width: 100%; }
+    input, select {
+      padding: 12px 14px;
+      width: 100%;
+    }
+    input:focus,
+    select:focus {
+      border-color: var(--cyan);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(119, 215, 217, 0.12);
+    }
     audio {
       width: 100%;
-      margin-top: 14px;
-      filter: hue-rotate(12deg) saturate(1.15);
+      margin-top: 12px;
+      min-width: 0;
+      filter: hue-rotate(12deg) saturate(1.1);
+    }
+    body:not([data-stream="live"]) audio {
+      display: none;
     }
     .hint { font-size: 0.92rem; }
+    .status-message {
+      min-height: 1.35rem;
+      margin-top: 10px;
+      color: var(--cyan);
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
     .links {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      margin-top: 14px;
+      margin-top: 10px;
+      min-width: 0;
     }
-    .links code {
+    .links code,
+    .utility-row code {
       display: inline-block;
+      max-width: 100%;
       padding: 8px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(57,217,138,0.18);
-      background: rgba(3,10,6,0.45);
+      border-radius: 8px;
+      border: 1px solid rgba(119, 215, 217, 0.18);
+      background: rgba(7, 11, 9, 0.68);
       color: var(--ink);
+      overflow-wrap: anywhere;
+      white-space: normal;
+      font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
     }
     .visual-wrap {
       margin-top: 12px;
-      border-radius: 14px;
+      border-radius: 8px;
       overflow: hidden;
-      border: 1px solid rgba(57,217,138,0.18);
+      border: 1px solid rgba(121, 205, 159, 0.18);
       background:
-        linear-gradient(180deg, rgba(1,6,3,0.95), rgba(9,22,14,0.95)),
-        repeating-linear-gradient(90deg, rgba(57,217,138,0.05) 0, rgba(57,217,138,0.05) 1px, transparent 1px, transparent 24px);
+        linear-gradient(180deg, rgba(7,11,9,0.95), rgba(15,22,17,0.95)),
+        repeating-linear-gradient(90deg, rgba(116,217,159,0.05) 0, rgba(116,217,159,0.05) 1px, transparent 1px, transparent 24px);
     }
     #viz {
       width: 100%;
-      height: 180px;
+      height: 160px;
       display: block;
     }
     .favorite-tools {
@@ -197,7 +316,7 @@ UI_HTML = """<!doctype html>
     .favorite-item button:first-child {
       text-align: left;
       text-transform: none;
-      letter-spacing: 0.02em;
+      letter-spacing: 0;
     }
     .favorite-meta {
       display: block;
@@ -214,26 +333,72 @@ UI_HTML = """<!doctype html>
     .note {
       margin-top: 12px;
       padding: 12px 14px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,176,0,0.18);
-      background: rgba(255,176,0,0.06);
-      color: #f6ddb0;
-      line-height: 1.45;
+      border-radius: 8px;
+      border: 1px solid rgba(216,184,94,0.22);
+      background: rgba(216,184,94,0.07);
+      color: #f2ddb0;
+      line-height: 1.42;
     }
     .note strong { color: var(--hot); }
-    @media (max-width: 640px) {
+    .utility-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+    .utility-row a {
+      color: var(--cyan);
+      font-weight: 700;
+    }
+    @media (max-width: 720px) {
+      .wrap {
+        padding: 10px 8px 28px;
+      }
+      .hero,
+      .panel {
+        padding: 14px;
+      }
+      .hero-head {
+        align-items: start;
+      }
+      .transport-actions {
+        flex-direction: column;
+      }
+      h1 {
+        font-size: 1.55rem;
+        line-height: 1.1;
+      }
+      .lede {
+        font-size: 0.95rem;
+      }
+      .statusbar {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .controls {
+        grid-template-columns: 1fr;
+      }
       .custom { grid-template-columns: 1fr; }
       .favorite-tools { grid-template-columns: 1fr; }
       .favorite-item { grid-template-columns: 1fr; }
-      button.mini { width: 100%; }
+      button.mini,
+      button.compact { width: 5rem; }
+      #viz { height: 140px; }
     }
   </style>
 </head>
 <body>
   <div class="wrap">
     <section class="hero">
-      <h1>SDR Remote</h1>
-      <p>On-demand tuner for the dongle. Nothing chews CPU until you start a stream, and it auto-sleeps after a few quiet minutes with no listeners.</p>
+      <div class="hero-head">
+        <div>
+          <h1>SDR Remote</h1>
+          <p class="lede">Tune the Pi dongle and listen from this browser.</p>
+        </div>
+        <div class="transport-actions">
+          <button class="compact primary" id="playBtn" type="button">Play</button>
+          <button class="compact stop" data-stop type="button">Stop</button>
+        </div>
+      </div>
       <div class="statusbar">
         <div class="stat"><span class="label">State</span><span class="value" id="state">idle</span></div>
         <div class="stat"><span class="label">Mode</span><span class="value" id="mode">--</span></div>
@@ -241,50 +406,52 @@ UI_HTML = """<!doctype html>
         <div class="stat"><span class="label">Listeners</span><span class="value" id="listeners">0</span></div>
       </div>
       <audio id="player" controls preload="none"></audio>
-      <div class="links">
-        <code id="pageUrl"></code>
-        <code id="streamUrl"></code>
-      </div>
+      <div class="status-message" id="statusMsg" role="status" aria-live="polite">Ready.</div>
       <div class="note">
         <strong>Analog only.</strong> FM, airband, marine, ham, and old-school utility chatter are fair game here.
-        Modern police / emergency traffic is often digital, trunked, or encrypted, so this page is a starter deck, not a magic surveillance portal.
+        Modern emergency traffic is often digital, trunked, or encrypted.
       </div>
     </section>
 
-    <section class="panel">
-      <span class="label">Quickstart</span>
-      <p class="hint">1. Hit a preset or enter a frequency and press Start. 2. Audio plays on this device, not the Pi. 3. Save anything good to Favorites. 4. Hit Stop when done, or let it auto-sleep after 3 minutes with no listeners.</p>
-      <p class="hint">If it feels weird: check <code>~/pibulus-os/scripts/sdr_lab.sh remote-status</code> in the deck terminal, or open <a href="/deck/help.html" style="color:#daf6dd;">Deck Help</a>.</p>
-    </section>
-
-    <section class="panel">
-      <span class="label">Quick FM Presets</span>
+    <section class="panel compact">
+      <span class="label">FM Presets</span>
       <div class="controls">
-        <button class="hot" data-mode="fm" data-freq="106.7" data-label="PBS 106.7">PBS 106.7</button>
-        <button class="hot" data-mode="fm" data-freq="102.7" data-label="Triple R 102.7">Triple R 102.7</button>
-        <button class="hot" data-mode="fm" data-freq="94.9" data-label="JOY 94.9">JOY 94.9</button>
-        <button class="hot" data-mode="fm" data-freq="90.7" data-label="SYN 90.7">SYN 90.7</button>
-        <button class="hot" data-mode="fm" data-freq="105.9" data-label="ABC Classic 105.9">ABC Classic 105.9</button>
+        <button class="hot" data-mode="fm" data-freq="106.7" data-label="PBS 106.7" type="button">PBS 106.7</button>
+        <button class="hot" data-mode="fm" data-freq="102.7" data-label="Triple R 102.7" type="button">Triple R 102.7</button>
+        <button class="hot" data-mode="fm" data-freq="94.9" data-label="JOY 94.9" type="button">JOY 94.9</button>
+        <button class="hot" data-mode="fm" data-freq="90.7" data-label="SYN 90.7" type="button">SYN 90.7</button>
+        <button class="hot" data-mode="fm" data-freq="105.9" data-label="ABC Classic 105.9" type="button">ABC Classic 105.9</button>
       </div>
     </section>
 
-    <section class="panel">
+    <section class="panel compact">
+      <span class="label">Custom Tune</span>
+      <div class="custom">
+        <input id="freqInput" type="text" inputmode="decimal" placeholder="Frequency MHz e.g. 118.0 or 460.550">
+        <select id="modeInput">
+          <option value="fm">FM</option>
+          <option value="airband">Airband AM</option>
+          <option value="nfm">Analog NFM</option>
+        </select>
+        <button id="startCustom" type="button">Start</button>
+      </div>
+    </section>
+
+    <section class="panel compact">
       <span class="label">Airband Starters</span>
-      <p class="hint">AM voice. Good for airport chatter, guard, and general aviation mischief.</p>
       <div class="controls">
-        <button data-mode="airband" data-freq="118.0" data-label="Band Edge 118.0">Band Edge 118.0</button>
-        <button data-mode="airband" data-freq="121.5" data-label="Guard 121.5">Guard 121.5</button>
-        <button data-mode="airband" data-freq="123.45" data-label="Air-to-Air 123.45">Air-to-Air 123.45</button>
+        <button data-mode="airband" data-freq="118.0" data-label="Band Edge 118.0" type="button">Band Edge 118.0</button>
+        <button data-mode="airband" data-freq="121.5" data-label="Guard 121.5" type="button">Guard 121.5</button>
+        <button data-mode="airband" data-freq="123.45" data-label="Air-to-Air 123.45" type="button">Air-to-Air 123.45</button>
       </div>
     </section>
 
-    <section class="panel">
+    <section class="panel compact">
       <span class="label">Analog Utility Starters</span>
-      <p class="hint">Narrowband FM. These are starter bookmarks for analog listening, not guaranteed active channels.</p>
       <div class="controls">
-        <button data-mode="nfm" data-freq="146.5" data-label="2m Ham 146.5">2m Ham 146.5</button>
-        <button data-mode="nfm" data-freq="156.8" data-label="Marine 16 156.8">Marine 16 156.8</button>
-        <button data-mode="nfm" data-freq="460.550" data-label="Utility 460.550">Utility 460.550</button>
+        <button data-mode="nfm" data-freq="146.5" data-label="2m Ham 146.5" type="button">2m Ham 146.5</button>
+        <button data-mode="nfm" data-freq="156.8" data-label="Marine 16 156.8" type="button">Marine 16 156.8</button>
+        <button data-mode="nfm" data-freq="460.550" data-label="Utility 460.550" type="button">Utility 460.550</button>
       </div>
     </section>
 
@@ -298,32 +465,24 @@ UI_HTML = """<!doctype html>
 
     <section class="panel">
       <span class="label">Favorites</span>
-      <p class="hint">Saved in this browser. Good for your own weird little channel map.</p>
       <div class="favorite-tools">
         <input id="favoriteName" type="text" placeholder="Optional label for current tune">
-        <button id="saveFavorite">Save Current</button>
-        <button class="mini stop" id="clearFavorites">Clear All</button>
+        <button id="saveFavorite" type="button">Save Current</button>
+        <button class="mini stop" id="clearFavorites" type="button">Clear All</button>
       </div>
       <div class="msgline" id="favoriteMsg"></div>
       <div class="favorites-list" id="favoritesList"></div>
     </section>
 
-    <section class="panel">
-      <span class="label">Custom Tune</span>
-      <p class="hint">FM is best for music. Airband is AM voice. Analog utility/public-safety-style listening is narrowband FM only.</p>
-      <div class="custom">
-        <input id="freqInput" type="text" inputmode="decimal" placeholder="Frequency MHz e.g. 118.0 or 460.550">
-        <select id="modeInput">
-          <option value="fm">FM</option>
-          <option value="airband">Airband AM</option>
-          <option value="nfm">Analog Utility / NFM</option>
-        </select>
-        <button id="startCustom">Start</button>
+    <section class="panel compact">
+      <span class="label">Diagnostics</span>
+      <div class="utility-row">
+        <code>~/pibulus-os/scripts/sdr_lab.sh remote-status</code>
+        <a href="/deck/help.html">Deck Help</a>
       </div>
-      <div class="controls" style="margin-top:12px;">
-        <button data-mode="airband" data-freq="118.0">Airband 118.0</button>
-        <button data-mode="nfm" data-freq="460.550">Analog 460.550</button>
-        <button class="stop" id="stopBtn">Stop Stream</button>
+      <div class="links">
+        <code id="pageUrl"></code>
+        <code id="streamUrl"></code>
       </div>
     </section>
   </div>
@@ -340,10 +499,18 @@ UI_HTML = """<!doctype html>
     const favoritesList = document.getElementById('favoritesList');
     const freqInput = document.getElementById('freqInput');
     const modeInput = document.getElementById('modeInput');
+    const statusMsg = document.getElementById('statusMsg');
+    const playBtn = document.getElementById('playBtn');
+    const RETUNE_COOLDOWN_MS = 1700;
     pageUrl.textContent = window.location.href;
     streamUrl.textContent = new URL('./stream.mp3', window.location.href).href;
     let currentStatus = { active: false, mode: null, frequency_mhz: null, listeners: 0 };
     let messageTimer = null;
+    let statusMessageTimer = null;
+    let streamToken = 0;
+    let lastTune = { mode: 'fm', freq: '106.7' };
+    let lastStartAt = 0;
+    let busyTimer = null;
     let audioCtx = null;
     let analyser = null;
     let sourceNode = null;
@@ -365,6 +532,34 @@ UI_HTML = """<!doctype html>
       messageTimer = window.setTimeout(function() {
         favoriteMsg.textContent = '';
       }, 2600);
+    }
+
+    function setStatusMessage(text, timeout) {
+      statusMsg.textContent = text || '';
+      if (statusMessageTimer) window.clearTimeout(statusMessageTimer);
+      if (timeout) {
+        statusMessageTimer = window.setTimeout(function() {
+          statusMsg.textContent = currentStatus.active ? 'Stream live.' : 'Ready.';
+        }, timeout);
+      }
+    }
+
+    function setControlsBusy(busy) {
+      if (busyTimer) {
+        window.clearTimeout(busyTimer);
+        busyTimer = null;
+      }
+      document.querySelectorAll('button[data-mode], #startCustom').forEach(function(button) {
+        button.disabled = busy;
+      });
+      document.body.dataset.busy = busy ? 'true' : 'false';
+    }
+
+    function releaseControlsAfterCooldown() {
+      const remaining = Math.max(0, RETUNE_COOLDOWN_MS - (Date.now() - lastStartAt));
+      busyTimer = window.setTimeout(function() {
+        setControlsBusy(false);
+      }, remaining);
     }
 
     function loadFavorites() {
@@ -526,6 +721,8 @@ UI_HTML = """<!doctype html>
       document.getElementById('mode').textContent = data.mode || '--';
       document.getElementById('freq').textContent = data.frequency_mhz ? data.frequency_mhz + ' MHz' : '--';
       document.getElementById('listeners').textContent = String(data.listeners || 0);
+      document.body.dataset.stream = data.active ? 'live' : 'idle';
+      playBtn.textContent = data.active ? 'Play' : 'Play';
     }
 
     function refreshStatus() {
@@ -535,16 +732,41 @@ UI_HTML = """<!doctype html>
         .catch(() => {});
     }
 
-    function attachAudio() {
+    function attachAudio(token) {
       ensureAudioGraph();
       if (audioCtx && audioCtx.state === 'suspended') {
         audioCtx.resume().catch(function(){});
       }
       player.src = './stream.mp3?ts=' + Date.now();
-      player.play().catch(() => {});
+      player.load();
+      const playAttempt = player.play();
+      if (playAttempt && typeof playAttempt.catch === 'function') {
+        playAttempt
+          .then(function() {
+            if (token === streamToken && currentStatus.active) {
+              setStatusMessage('Playing on this device.');
+            }
+          })
+          .catch(function() {
+            if (token === streamToken && currentStatus.active) {
+              setStatusMessage('Stream is live. Press Play again or use the audio bar.');
+            }
+          });
+      }
     }
 
     function start(mode, freq) {
+      const now = Date.now();
+      const remaining = RETUNE_COOLDOWN_MS - (now - lastStartAt);
+      if (remaining > 0) {
+        setStatusMessage('Give the dongle a second before retuning.', remaining);
+        return;
+      }
+      lastStartAt = now;
+      lastTune = { mode: mode, freq: String(freq) };
+      const token = ++streamToken;
+      setControlsBusy(true);
+      setStatusMessage('Tuning ' + modeLabel(mode) + ' ' + freq + ' MHz...');
       fetch('./start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -562,11 +784,27 @@ UI_HTML = """<!doctype html>
         setStatus(data);
         freqInput.value = String(freq);
         modeInput.value = mode;
-        attachAudio();
+        attachAudio(token);
       })
       .catch(function(err) {
-        flashMessage(err.message || 'Start failed.');
+        if (token === streamToken) {
+          setStatusMessage(err.message || 'Start failed.');
+        }
+      })
+      .finally(function() {
+        releaseControlsAfterCooldown();
       });
+    }
+
+    function playCurrent() {
+      if (currentStatus.active) {
+        setStatusMessage('Connecting audio...');
+        attachAudio(streamToken);
+        return;
+      }
+      const mode = lastTune.mode || modeInput.value || 'fm';
+      const freq = lastTune.freq || freqInput.value.trim() || '106.7';
+      start(mode, freq);
     }
 
     document.querySelectorAll('button[data-mode]').forEach(btn => {
@@ -580,6 +818,7 @@ UI_HTML = """<!doctype html>
       if (!freq) return;
       start(mode, freq);
     });
+    playBtn.addEventListener('click', playCurrent);
 
     document.getElementById('saveFavorite').addEventListener('click', saveCurrentFavorite);
     document.getElementById('clearFavorites').addEventListener('click', function() {
@@ -595,7 +834,9 @@ UI_HTML = """<!doctype html>
       if (ev.key === 'Enter') saveCurrentFavorite();
     });
 
-    document.getElementById('stopBtn').addEventListener('click', () => {
+    function stopStream() {
+      streamToken += 1;
+      setStatusMessage('Stopping stream...');
       fetch('./stop', { method: 'POST' })
         .then(function(r) {
           return r.json().then(function(data) {
@@ -610,16 +851,36 @@ UI_HTML = """<!doctype html>
           player.pause();
           player.removeAttribute('src');
           player.load();
+          setStatusMessage('Stopped.', 1800);
         })
         .catch(function(err) {
-          flashMessage(err.message || 'Stop failed.');
+          setStatusMessage(err.message || 'Stop failed.');
         });
+    }
+
+    document.querySelectorAll('[data-stop]').forEach(function(button) {
+      button.addEventListener('click', stopStream);
     });
 
     player.addEventListener('play', function() {
       ensureAudioGraph();
       if (audioCtx && audioCtx.state === 'suspended') {
         audioCtx.resume().catch(function(){});
+      }
+    });
+    player.addEventListener('playing', function() {
+      if (currentStatus.active && player.src) {
+        setStatusMessage('Playing on this device.');
+      }
+    });
+    player.addEventListener('waiting', function() {
+      if (currentStatus.active && player.src) {
+        setStatusMessage('Buffering stream...');
+      }
+    });
+    player.addEventListener('error', function() {
+      if (currentStatus.active && player.src) {
+        setStatusMessage('Stream is live, but the browser audio element hit an error. Try Start again.');
       }
     });
 
@@ -652,6 +913,7 @@ class StreamManager:
         self.started_at = 0.0
         self.last_activity = 0.0
         self.last_error = ""
+        self.last_start_request = 0.0
         self.stopping = False
         self.watchdog_thread.start()
 
@@ -663,6 +925,7 @@ class StreamManager:
                 "mode": self.mode,
                 "frequency_mhz": self.frequency_mhz,
                 "listeners": len(self.listeners),
+                "max_listeners": MAX_LISTENERS,
                 "uptime_seconds": round(time.time() - self.started_at, 1) if active else 0,
                 "idle_timeout_seconds": STREAM_IDLE_TIMEOUT,
                 "last_error": self.last_error,
@@ -709,10 +972,14 @@ class StreamManager:
         return rtl_cmd, ffmpeg_cmd
 
     def _valid_frequency(self, mode: str, raw: str) -> float:
+        if mode not in ALLOWED_MODES:
+            raise ValueError("mode must be one of: fm, airband, nfm")
         try:
             freq = float(raw)
         except ValueError as exc:
             raise ValueError("frequency must be numeric") from exc
+        if not math.isfinite(freq):
+            raise ValueError("frequency must be finite")
 
         if mode == "fm" and not (64.0 <= freq <= 108.5):
             raise ValueError("FM frequency should be between 64.0 and 108.5 MHz")
@@ -723,32 +990,41 @@ class StreamManager:
         return freq
 
     def start(self, mode: str, raw_freq: str) -> dict:
+        mode = mode.strip().lower()
         freq = self._valid_frequency(mode, raw_freq)
         freq_text = f"{freq:.3f}".rstrip("0").rstrip(".")
+        rtl_cmd, ffmpeg_cmd = self._build_commands(mode, freq_text)
 
         with self.lock:
+            now = time.time()
+            if now - self.last_start_request < START_COOLDOWN_SECONDS:
+                raise ValueError("tuning too quickly; wait a second")
+            self.last_start_request = now
             self._stop_locked(restore_modules=True)
             self.last_error = ""
             self.listeners.clear()
             self._release_kernel_modules()
-            rtl_cmd, ffmpeg_cmd = self._build_commands(mode, freq_text)
-            self.rtl_proc = subprocess.Popen(
-                rtl_cmd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.DEVNULL,
-                preexec_fn=os.setsid,
-                bufsize=0,
-            )
-            assert self.rtl_proc.stdout is not None
-            self.ffmpeg_proc = subprocess.Popen(
-                ffmpeg_cmd,
-                stdin=self.rtl_proc.stdout,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.DEVNULL,
-                preexec_fn=os.setsid,
-                bufsize=0,
-            )
-            self.rtl_proc.stdout.close()
+            try:
+                self.rtl_proc = subprocess.Popen(
+                    rtl_cmd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.DEVNULL,
+                    preexec_fn=os.setsid,
+                    bufsize=0,
+                )
+                assert self.rtl_proc.stdout is not None
+                self.ffmpeg_proc = subprocess.Popen(
+                    ffmpeg_cmd,
+                    stdin=self.rtl_proc.stdout,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.DEVNULL,
+                    preexec_fn=os.setsid,
+                    bufsize=0,
+                )
+                self.rtl_proc.stdout.close()
+            except Exception:
+                self._stop_locked(restore_modules=True)
+                raise
             self.mode = mode
             self.frequency_mhz = freq_text
             self.started_at = time.time()
@@ -849,6 +1125,8 @@ class StreamManager:
             active = self.ffmpeg_proc is not None and self.ffmpeg_proc.poll() is None
             if not active:
                 return None, None
+            if len(self.listeners) >= MAX_LISTENERS:
+                return None, None
             listener_id = self.next_listener_id
             self.next_listener_id += 1
             listener_queue: queue.Queue[bytes] = queue.Queue(maxsize=48)
@@ -867,6 +1145,10 @@ class StreamManager:
 manager = StreamManager()
 
 
+class SDRHTTPServer(ThreadingHTTPServer):
+    allow_reuse_address = True
+
+
 class Handler(BaseHTTPRequestHandler):
     server_version = "sdr-remote/1.0"
 
@@ -874,11 +1156,16 @@ class Handler(BaseHTTPRequestHandler):
         syslog = f"{self.address_string()} - {fmt % args}"
         print(syslog, flush=True)
 
+    def _send_common_headers(self, content_type: str | None = None) -> None:
+        if content_type:
+            self.send_header("Content-Type", content_type)
+        self.send_header("Cache-Control", "no-store")
+        for header, value in SECURITY_HEADERS.items():
+            self.send_header(header, value)
+
     def _send_bytes(self, status: int, payload: bytes, content_type: str) -> None:
         self.send_response(status)
-        self.send_header("Content-Type", content_type)
-        self.send_header("Cache-Control", "no-store")
-        self.send_header("Access-Control-Allow-Origin", "*")
+        self._send_common_headers(content_type)
         self.send_header("Content-Length", str(len(payload)))
         self.end_headers()
         self.wfile.write(payload)
@@ -886,29 +1173,60 @@ class Handler(BaseHTTPRequestHandler):
     def _send_json(self, status: int, payload: dict) -> None:
         self._send_bytes(status, json_bytes(payload), "application/json")
 
+    def _send_head(self, status: int, content_type: str) -> None:
+        self.send_response(status)
+        self._send_common_headers(content_type)
+        self.end_headers()
+
     def _read_json(self) -> dict:
-        length = int(self.headers.get("Content-Length", "0") or 0)
+        try:
+            length = int(self.headers.get("Content-Length", "0") or 0)
+        except ValueError as exc:
+            raise ValueError("invalid Content-Length") from exc
+        if length > MAX_POST_BYTES:
+            raise ValueError("request body too large")
         if length <= 0:
             return {}
         raw = self.rfile.read(length)
-        return json.loads(raw.decode("utf-8"))
+        try:
+            payload = json.loads(raw.decode("utf-8"))
+        except json.JSONDecodeError as exc:
+            raise ValueError("invalid JSON body") from exc
+        if not isinstance(payload, dict):
+            raise ValueError("JSON body must be an object")
+        return payload
+
+    def do_HEAD(self) -> None:
+        path = urlparse(self.path).path
+        if path in ["/", ""]:
+            self._send_head(HTTPStatus.OK, "text/html; charset=utf-8")
+            return
+        if path == "/status":
+            self._send_head(HTTPStatus.OK, "application/json")
+            return
+        if path == "/stream.mp3":
+            status = manager.status()
+            self._send_head(HTTPStatus.OK if status["active"] else HTTPStatus.CONFLICT, "audio/mpeg")
+            return
+        self._send_head(HTTPStatus.NOT_FOUND, "application/json")
 
     def do_GET(self) -> None:
-        if self.path in ["/", ""]:
+        path = urlparse(self.path).path
+        if path in ["/", ""]:
             self._send_bytes(HTTPStatus.OK, UI_HTML.encode("utf-8"), "text/html; charset=utf-8")
             return
-        if self.path == "/status":
+        if path == "/status":
             self._send_json(HTTPStatus.OK, manager.status())
             return
-        if self.path.startswith("/stream.mp3"):
+        if path == "/stream.mp3":
             listener_id, listener_queue = manager.register()
             if listener_id is None or listener_queue is None:
-                self._send_json(HTTPStatus.CONFLICT, {"error": "stream is idle"})
+                status = manager.status()
+                error = "listener limit reached" if status["active"] else "stream is idle"
+                self._send_json(HTTPStatus.CONFLICT, {"error": error})
                 return
             self.send_response(HTTPStatus.OK)
-            self.send_header("Content-Type", "audio/mpeg")
-            self.send_header("Cache-Control", "no-store")
-            self.send_header("Access-Control-Allow-Origin", "*")
+            self._send_common_headers("audio/mpeg")
             self.send_header("X-Accel-Buffering", "no")
             self.end_headers()
             try:
@@ -930,13 +1248,14 @@ class Handler(BaseHTTPRequestHandler):
         self._send_json(HTTPStatus.NOT_FOUND, {"error": "not found"})
 
     def do_POST(self) -> None:
+        path = urlparse(self.path).path
         try:
-            if self.path == "/start":
+            if path == "/start":
                 body = self._read_json()
                 status = manager.start(str(body.get("mode", "")).strip(), str(body.get("freq", "")).strip())
                 self._send_json(HTTPStatus.OK, status)
                 return
-            if self.path == "/stop":
+            if path == "/stop":
                 self._send_json(HTTPStatus.OK, manager.stop())
                 return
         except ValueError as exc:
@@ -961,7 +1280,7 @@ def main() -> None:
     atexit.register(shutdown)
     signal.signal(signal.SIGTERM, shutdown)
     signal.signal(signal.SIGINT, shutdown)
-    httpd = ThreadingHTTPServer((LISTEN_HOST, LISTEN_PORT), Handler)
+    httpd = SDRHTTPServer((LISTEN_HOST, LISTEN_PORT), Handler)
     httpd.daemon_threads = True
     print(f"sdr_remote listening on {LISTEN_HOST}:{LISTEN_PORT}", flush=True)
     try:

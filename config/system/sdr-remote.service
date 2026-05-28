@@ -5,11 +5,27 @@ After=network.target
 [Service]
 Type=simple
 WorkingDirectory=/home/pibulus/pibulus-os
+Environment=SDR_LISTEN_HOST=172.17.0.1
+Environment=SDR_LISTEN_PORT=8097
+Environment=SDR_MAX_LISTENERS=3
+Environment=SDR_IDLE_TIMEOUT=180
+Environment=PYTHONDONTWRITEBYTECODE=1
 ExecStart=/usr/bin/python3 /home/pibulus/pibulus-os/scripts/sdr_remote.py
 Restart=on-failure
 RestartSec=3
 KillMode=control-group
 Nice=5
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=full
+ProtectHome=read-only
+ProtectControlGroups=yes
+ProtectKernelLogs=yes
+RestrictSUIDSGID=yes
+RestrictNamespaces=yes
+SystemCallArchitectures=native
+LockPersonality=yes
+UMask=077
 CPUAccounting=yes
 CPUWeight=20
 MemoryAccounting=yes
