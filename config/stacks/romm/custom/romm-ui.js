@@ -67,6 +67,19 @@
         "turbografx"
     ];
 
+    var playablePlatformHints = [
+        "arcade",
+        "game boy",
+        "game boy advance",
+        "nintendo 64",
+        "nintendo entertainment",
+        "playstation",
+        "sega mega",
+        "sega genesis",
+        "super nintendo",
+        "turbografx"
+    ];
+
     function normalize(text) {
         text = (text || "").replace(/\s+/g, " ").trim().toLowerCase();
         if (text.slice(-1) === ":") text = text.slice(0, -1);
@@ -85,6 +98,14 @@
         node.style.removeProperty("display");
     }
 
+    function safely(fn) {
+        try {
+            fn();
+        } catch (error) {
+            if (window.console && console.warn) console.warn("[quickcat-romm-ui]", error);
+        }
+    }
+
     function platformCardShell(node) {
         if (!node) return null;
         return node.closest(".v-slide-group-item,[class*='v-slide-group-item'],.v-col,[class*='v-col'],li") ||
@@ -98,6 +119,26 @@
 
     function isEjsLaunchPage() {
         return /^\/rom\/[^/]+\/ejs\/?$/.test(location.pathname);
+    }
+
+    function quickcatAutoplayRequested() {
+        if (!isEjsLaunchPage()) return false;
+        return new URLSearchParams(location.search).get("quickcat_autoplay") === "1";
+    }
+
+    function isRomDetailPage() {
+        return /^\/rom\/[^/]+\/?$/.test(location.pathname);
+    }
+
+    function currentRomId() {
+        var match = location.pathname.match(/^\/rom\/([^/]+)\/?$/);
+        return match && match[1];
+    }
+
+    function addQueryParam(href, key, value) {
+        var url = new URL(href, window.location.origin);
+        url.searchParams.set(key, value);
+        return url.pathname + url.search + url.hash;
     }
 
     function isPhoneWidth() {
@@ -324,9 +365,114 @@
         }
     }
 
+    function playablePlatformOnPage() {
+        var text = normalize(document.title + " " + document.body.textContent.slice(0, 5000));
+        return playablePlatformHints.some(function(hint) {
+            return text.indexOf(hint) >= 0;
+        });
+    }
+
+    function findArtworkActionHost(artwork) {
+        if (!artwork) return null;
+        var group = artwork.querySelector(".v-btn-group,[class*='v-btn-group']");
+        return group && group.parentElement;
+    }
+
+    function gameTitle() {
+        return ((document.title || "this game").split("|")[0] || "this game").trim();
+    }
+
+    function removePlayCtas() {
+        ["quickcat-primary-play", "quickcat-play-fallback"].forEach(function(id) {
+            var node = document.getElementById(id);
+            if (node) node.remove();
+        });
+    }
+
+    function ensurePlayFallback() {
+        var existing = document.getElementById("quickcat-primary-play");
+        var oldFallback = document.getElementById("quickcat-play-fallback");
+        var hiddenAction = document.querySelector('[data-quickcat-hidden="rom-action-noise"]');
+        document.body.classList.toggle("quickcat-rom-detail", isRomDetailPage());
+
+        if (!isRomDetailPage()) {
+            removePlayCtas();
+            if (hiddenAction) hiddenAction.style.removeProperty("display");
+            return;
+        }
+
+        var artwork = document.getElementById("artwork-container");
+        if (!artwork) return;
+
+        var nativePlay = document.querySelector('[aria-label^="Play "]');
+        if (!nativePlay && !playablePlatformOnPage()) {
+            removePlayCtas();
+            if (hiddenAction) hiddenAction.style.removeProperty("display");
+            return;
+        }
+
+        var romId = currentRomId();
+        if (!romId) return;
+
+        var actionHost = findArtworkActionHost(artwork);
+        if (nativePlay && hiddenAction) hiddenAction.style.removeProperty("display");
+        if (!nativePlay && actionHost) hideNode(actionHost, "rom-action-noise");
+        if (oldFallback) oldFallback.remove();
+
+        if (!existing) {
+            existing = document.createElement("a");
+            existing.id = "quickcat-primary-play";
+            existing.className = "quickcat-primary-play";
+            document.body.appendChild(existing);
+        }
+
+        existing.href = addQueryParam(nativePlay && nativePlay.getAttribute("href") ? nativePlay.getAttribute("href") : "/rom/" + romId + "/ejs", "quickcat_autoplay", "1");
+        existing.setAttribute("aria-label", "Play " + gameTitle());
+        existing.textContent = "Play this game";
+    }
+
+    function findLaunchPlayButton() {
+        var preferred = document.querySelector(".play-button");
+        if (preferred) return preferred.closest("button,a,.v-btn") || preferred;
+
+        return Array.from(document.querySelectorAll("button,a,.v-btn")).find(function(element) {
+            var label = normalize(element.textContent);
+            return label === "play" || label === "start now" || label === "start game";
+        });
+    }
+
+    function maybeAutoplayLaunch() {
+        if (!quickcatAutoplayRequested()) {
+            document.body.classList.remove("quickcat-ejs-autoplay");
+            return;
+        }
+
+        if (document.querySelector(".ejs_parent")) {
+            document.body.classList.remove("quickcat-ejs-autoplay");
+            return;
+        }
+
+        document.body.classList.add("quickcat-ejs-autoplay");
+
+        var playButton = findLaunchPlayButton();
+        if (!playButton || playButton.disabled || playButton.getAttribute("aria-disabled") === "true") return;
+
+        var key = location.pathname + location.search;
+        if (window.__quickcatAutoplayKey === key) return;
+        window.__quickcatAutoplayKey = key;
+        playButton.setAttribute("data-quickcat-autoplay-target", "true");
+
+        setTimeout(function() {
+            if (!quickcatAutoplayRequested() || !playButton.isConnected) return;
+            document.body.classList.remove("quickcat-ejs-autoplay");
+            playButton.click();
+        }, 450);
+    }
+
     function simplifyEjsLaunchPage() {
         if (!isEjsLaunchPage()) {
             document.body.classList.remove("quickcat-ejs-launch");
+            document.body.classList.remove("quickcat-ejs-autoplay");
             return;
         }
 
@@ -363,13 +509,15 @@
     }
 
     function run() {
-        seedEmulatorDefaults();
-        patchViewportFit();
-        promotePlatformsSection();
-        hideNdsCards();
-        hideUpdateNag();
-        hideRommNoise();
-        simplifyEjsLaunchPage();
+        safely(seedEmulatorDefaults);
+        safely(patchViewportFit);
+        safely(ensurePlayFallback);
+        safely(maybeAutoplayLaunch);
+        safely(promotePlatformsSection);
+        safely(hideNdsCards);
+        safely(hideUpdateNag);
+        safely(hideRommNoise);
+        safely(simplifyEjsLaunchPage);
     }
 
     var runPending = false;
@@ -384,9 +532,22 @@
 
     seedEmulatorDefaults();
 
-    document.addEventListener("DOMContentLoaded", function() {
+    function startCleanup() {
         run();
         new MutationObserver(scheduleRun).observe(document.body, { childList: true, subtree: true });
         window.addEventListener("resize", scheduleRun, { passive: true });
-    });
+
+        var attempts = 0;
+        var startupPoll = setInterval(function() {
+            attempts += 1;
+            run();
+            if (attempts >= 24) clearInterval(startupPoll);
+        }, 500);
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", startCleanup);
+    } else {
+        startCleanup();
+    }
 })();

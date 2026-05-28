@@ -2,7 +2,7 @@ services:
   romm:
     image: rommapp/romm:4.8.0
     container_name: romm
-    restart: unless-stopped
+    restart: "no"
     env_file:
       - ../.env
     environment:
@@ -11,7 +11,7 @@ services:
       - DB_USER=romm
       - ROMM_AUTH_ENABLED=true
       - ROMM_AUTH_USERNAME=pibulus
-      - ENABLE_SCHEDULED_RESCAN=true
+      - ENABLE_SCHEDULED_RESCAN=false
       - SCHEDULED_RESCAN_CRON=0 3 * * *
       - ENABLE_SCHEDULED_UPDATE_MAME_XML=false
       - HASHEOUS_API_ENABLED=true
@@ -39,6 +39,12 @@ services:
       - ./custom/emulator-touch.js:/romm/custom/emulator-touch.js:ro
     ports:
       - "8095:8080"
+    cpus: "1.0"
+    mem_limit: 768m
+    memswap_limit: 1024m
+    mem_reservation: 256m
+    cpu_shares: 768
+    pids_limit: 192
     depends_on:
       romm-db:
         condition: service_healthy
@@ -46,7 +52,7 @@ services:
   romm-db:
     image: mariadb:12.2.2  # pinned 2026-04-15
     container_name: romm-db
-    restart: unless-stopped
+    restart: "no"
     env_file:
       - ../.env
     environment:
@@ -54,6 +60,12 @@ services:
       - MARIADB_USER=romm
     volumes:
       - /home/pibulus/romm-db:/var/lib/mysql
+    cpus: "0.5"
+    mem_limit: 512m
+    memswap_limit: 768m
+    mem_reservation: 128m
+    cpu_shares: 512
+    pids_limit: 128
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 10s
