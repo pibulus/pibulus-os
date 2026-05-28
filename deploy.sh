@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# DEPRECATED for current live systemd apps.
+# For TalkType, ZipList, Stargram, and other live apps under /home/pibulus/apps,
+# read /home/pibulus/pibulus-os/APP_DEPLOYMENT_MAP.md first.
+# This script describes an older static/PM2 deployment model.
+
 # USAGE: ./deploy.sh <GITHUB_URL> <APP_NAME> [PORT]
 # Example (Static): ./deploy.sh https://github.com/pibulus/ziplist ziplist
 # Example (Deno):   ./deploy.sh https://github.com/pibulus/stargram stargram 8001

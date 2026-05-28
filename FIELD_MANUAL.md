@@ -14,6 +14,7 @@
 - `dust` — Visual disk usage
 - `docker ps` — Running containers
 - `docker restart web_host` — Fix nginx issues
+- App deploys: read `~/pibulus-os/APP_DEPLOYMENT_MAP.md` first; live custom apps are systemd services under `~/apps`
 
 ### 🌐 NETWORK PORTS (internal)
 | Port | Service | Notes |

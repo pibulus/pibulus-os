@@ -15,6 +15,9 @@ This is the sane starting map for both humans and AI agents.
 
 ## Operational Truth
 
+- [APP_DEPLOYMENT_MAP.md](./APP_DEPLOYMENT_MAP.md)
+  Live custom app map: app dirs, domains, ports, systemd services, and deploy shape.
+
 - [docs/INGRESS_METRICS_MAP.md](./docs/INGRESS_METRICS_MAP.md)
   Public routing, nginx coverage, and what the live counters really mean.
 

@@ -44,6 +44,7 @@ Raspberry Pi 5 (4GB RAM) running the Quick Cat Club cyberdeck. Start at `~/pibul
 
 ## Key Paths
 - Project root: `~/pibulus-os/`
+- App deployment map: `~/pibulus-os/APP_DEPLOYMENT_MAP.md` (read this first for TalkType, ZipList, Stargram, and other systemd app deploys)
 - Docker stacks: `~/pibulus-os/config/stacks/` (`pirate.yml`, `admin.yml`, `social.yml`, `utilities.yml`, `immich.yml`, `scummvm.yml`)
 - AzuraCast LIVE: `~/azuracast/` (separate compose, NOT in stacks)
 - AzuraCast GIT: `~/pibulus-os/azuracast/` (reference only — DO NOT RUN)
