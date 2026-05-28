@@ -10,7 +10,13 @@ import sys
 import urllib.request
 import uuid
 
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+
 from env_utils import load_local_env, require_env
+
+# Navidrome stores plaintext passwords encrypted with AES-GCM for Subsonic API
+# compatibility. The password column is not a one-way hash; writing SHA256
+# blobs directly causes "cipher: message authentication failed" at login.
 
 load_local_env()
 
@@ -42,10 +48,13 @@ CW_ROLE_DOWNLOAD = 1 << 1
 CW_ROLE_PASSWD = 1 << 4
 CW_ROLE_VIEWER = 1 << 8
 CW_DEFAULT_ROLE = CW_ROLE_DOWNLOAD | CW_ROLE_PASSWD | CW_ROLE_VIEWER
-CW_DEFAULT_SHOW = 16384
+# Curated Calibre-Web sidebar: recent books plus light browse/organize views.
+CW_DEFAULT_SHOW = 9069
 CW_DEFAULT_LANGUAGE = 'all'
 CW_DEFAULT_LOCALE = 'en'
 CW_SALT_ALPHABET = string.ascii_letters + string.digits
+ND_CONFIG = '/home/pibulus/.config/navidrome/navidrome.toml'
+ND_DEFAULT_ENCRYPTION_KEY = 'just for obfuscation'
 JELLYFIN_URL = os.environ.get("JELLYFIN_URL", "http://localhost:8096")
 JELLYFIN_API_KEY = require_env("JELLYFIN_API_KEY")
 ABS_URL = os.environ.get("ABS_URL", "http://localhost:13378")
@@ -187,11 +196,47 @@ def add_kv(conn, user, pw, email):
                 0, 1, '[]', 'Default Profile', 'defaultprofile', 3, 0, 0, 0, 0, 1, 3, '[]', 1, 1)""",
         (user_id,))
 
+def get_nd_config_password_key():
+    raw_key = os.environ.get('ND_PASSWORDENCRYPTIONKEY', '').strip()
+    if raw_key:
+        return raw_key
+
+    try:
+        import tomllib
+        with open(ND_CONFIG, 'rb') as config_file:
+            config = tomllib.load(config_file)
+        raw_key = str(config.get('PasswordEncryptionKey', '')).strip()
+        if raw_key:
+            return raw_key
+    except (FileNotFoundError, ModuleNotFoundError, OSError, ValueError):
+        pass
+
+    try:
+        with open(ND_CONFIG, encoding='utf-8') as config_file:
+            for raw_line in config_file:
+                line = raw_line.strip()
+                if not line or line.startswith('#') or '=' not in line:
+                    continue
+                key, value = line.split('=', 1)
+                if key.strip().lower() == 'passwordencryptionkey':
+                    return value.strip().strip('"\'')
+    except OSError:
+        pass
+
+    return ND_DEFAULT_ENCRYPTION_KEY
+
+def make_nd_password(pw):
+    key = hashlib.sha256(get_nd_config_password_key().encode()).digest()
+    nonce = os.urandom(12)
+    ciphertext = AESGCM(key).encrypt(nonce, pw.encode(), None)
+    return base64.b64encode(nonce + ciphertext).decode()
+
 def add_nd(conn, user, pw, email):
-    uid, salt = str(uuid.uuid4()), os.urandom(4)
-    nd_hash = base64.b64encode(salt + hashlib.sha256(salt + pw.encode()).digest()).decode()
+    uid = str(uuid.uuid4())
+    nd_hash = make_nd_password(pw)
     existing = conn.execute("SELECT id FROM user WHERE lower(user_name) = lower(?)", (user,)).fetchone()
     if existing:
+        user_id = existing[0]
         conn.execute("""
             UPDATE user
             SET name = ?,
@@ -200,12 +245,18 @@ def add_nd(conn, user, pw, email):
                 is_admin = 0,
                 updated_at = CURRENT_TIMESTAMP
             WHERE id = ?
-        """, (user, email, nd_hash, existing[0]))
+        """, (user, email, nd_hash, user_id))
     else:
+        user_id = uid
         conn.execute("""
             INSERT INTO user (id, user_name, name, email, password, is_admin, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
         """, (uid, user, user, email, nd_hash))
+
+    # Ensure user has access to Music Library
+    existing_lib = conn.execute("SELECT user_id FROM user_library WHERE user_id = ? AND library_id = 1", (user_id,)).fetchone()
+    if not existing_lib:
+        conn.execute("INSERT INTO user_library (user_id, library_id) VALUES (?, 1)", (user_id,))
 
 def add_abs_api(user, pw, email):
     login_payload = json.dumps({'username': ABS_ADMIN_USERNAME, 'password': ABS_ADMIN_PASSWORD}).encode()
