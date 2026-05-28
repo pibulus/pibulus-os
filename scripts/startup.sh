@@ -89,13 +89,13 @@ log "[Tier 3] Secondary services"
 wait_for_calm 5 45
 start_containers calibre-web kavita
 sleep 8
-start_containers memos filebrowser kiwix
+start_containers memos filebrowser kiwix audiobookshelf
 sleep 5
 
 # Tier 4: Heavy/optional
 log "[Tier 4] Heavy services"
 wait_for_calm 4 60
-start_containers romm-db romm-redis
+start_containers romm-db
 sleep 8
 start_containers romm
 sleep 8

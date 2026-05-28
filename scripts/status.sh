@@ -82,3 +82,18 @@ cat > /media/pibulus/passport/www/html/status.json <<JSON
   "date": "$(date '+%Y-%m-%d')"
 }
 JSON
+
+HEALTH_LOG="/media/pibulus/passport/Backups/pi-system/logs/health-heartbeat.log"
+mkdir -p "$(dirname "$HEALTH_LOG")"
+printf '%s temp=%s power=%s load=%s ram=%s/%s ram_pct=%s disk_pct=%s root_pct=%s containers=%s uptime="%s"\n' \
+  "$(date --iso-8601=seconds)" \
+  "${TEMP:-?}" \
+  "${POWER_STATUS:-?}" \
+  "${LOAD:-?}" \
+  "${RAM_USED:-0}" \
+  "${RAM_TOTAL:-0}" \
+  "${RAM_PCT:-0}" \
+  "${DISK_PCT:-0}" \
+  "${ROOT_PCT:-0}" \
+  "${CONTAINERS:-0}" \
+  "$UPTIME" >> "$HEALTH_LOG"

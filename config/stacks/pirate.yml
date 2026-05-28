@@ -24,23 +24,31 @@ services:
     group_add:
       - "44"
       - "992"
-    restart: unless-stopped
+    cpus: "1.5"
+    mem_limit: 1280m
+    memswap_limit: 1792m
+    mem_reservation: 512m
+    cpu_shares: 768
+    pids_limit: 256
+    restart: "no"
 
   kavita:
-    image: jvmilazz0/kavita:latest@sha256:1f2acae7466d022f037ea09f7989eb7c487f916b881174c7a6de33dbfa8acb39  # pinned 2026-04-15
+    image: jvmilazz0/kavita:0.9.0.2  # stable, bumped 2026-05-18 after old pinned digest crash-looped on arm64
     container_name: kavita
     ports:
       - "5000:5000"
     cpus: "1.0"
     mem_limit: 1024m
+    memswap_limit: 1280m
     mem_reservation: 512m
     cpu_shares: 1024
+    pids_limit: 160
     volumes:
       - /home/pibulus/.config/kavita:/kavita/config
       - /media/pibulus/passport/Comics:/comics
-    restart: unless-stopped
+    restart: "no"
     healthcheck:
-      test: ['CMD-SHELL', 'wget -q --spider http://127.0.0.1:5000/ || exit 1']
+      test: ['CMD-SHELL', 'curl -fsS http://127.0.0.1:5000/ >/dev/null || exit 1']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -61,7 +69,13 @@ services:
       - /media/pibulus/passport/Audiobooks:/audiobooks
       - /home/pibulus/pibulus-os/config/audiobookshelf/pibulus-polish.sh:/pibulus-polish.sh:ro
     command: sh -lc "/pibulus-polish.sh || true; exec node index.js"
-    restart: unless-stopped
+    cpus: "0.5"
+    mem_limit: 512m
+    memswap_limit: 768m
+    mem_reservation: 128m
+    cpu_shares: 384
+    pids_limit: 128
+    restart: "no"
   calibre-web:
     image: lscr.io/linuxserver/calibre-web:0.6.26-ls378  # pinned 2026-04-15
     container_name: calibre-web
@@ -74,7 +88,13 @@ services:
     volumes:
       - /home/pibulus/.config/calibre-web:/config
       - /media/pibulus/passport/Ebooks/Calibre-Library:/books
-    restart: unless-stopped
+    cpus: "0.75"
+    mem_limit: 512m
+    memswap_limit: 768m
+    mem_reservation: 128m
+    cpu_shares: 512
+    pids_limit: 128
+    restart: "no"
 
   # --- THE MUSIC NETWORK ---
   navidrome:
@@ -84,7 +104,7 @@ services:
     ports:
       - "4533:4533"
     environment:
-      - ND_SCANSCHEDULE=1h
+      - ND_SCANSCHEDULE=24h
       - ND_LOGLEVEL=info
       - ND_MUSICFOLDER=/music
       - ND_PUID=1000
@@ -93,7 +113,13 @@ services:
       - /home/pibulus/.config/navidrome:/data
       - "/media/pibulus/passport/Music/MusicBee/Music:/music/Library"
       - /media/pibulus/passport/Soulseek:/music/Soulseek
-    restart: unless-stopped
+    cpus: "0.5"
+    mem_limit: 384m
+    memswap_limit: 512m
+    mem_reservation: 128m
+    cpu_shares: 384
+    pids_limit: 128
+    restart: "no"
 
 
   slskd:
@@ -129,7 +155,13 @@ services:
       - /media/pibulus/passport:/srv
       - /opt/filebrowser/database.db:/database.db
       - /opt/filebrowser/filebrowser.json:/.filebrowser.json
-    restart: always
+    cpus: "0.35"
+    mem_limit: 192m
+    memswap_limit: 256m
+    mem_reservation: 64m
+    cpu_shares: 256
+    pids_limit: 96
+    restart: "no"
 
   web_host:
     image: nginx:1.27.5-bookworm
@@ -160,7 +192,13 @@ services:
       - /media/pibulus/passport/Ebooks/Music Theory - eBook Collection:/usr/share/nginx/crates/Music Theory:ro
       - /media/pibulus/passport/Resources/Loops:/usr/share/nginx/loops:ro
       - /home/pibulus/pibulus-os/config/nginx/.htpasswd:/etc/nginx/.htpasswd:ro
-    restart: always
+    cpus: "0.5"
+    mem_limit: 192m
+    memswap_limit: 256m
+    mem_reservation: 64m
+    cpu_shares: 512
+    pids_limit: 80
+    restart: "no"
 
   # --- THE TORRENT ENGINE ---
   qbittorrent:
@@ -180,7 +218,13 @@ services:
       - /media/pibulus/passport/The_Bucket:/downloads
       - /media/pibulus/passport/Shows:/shows
       - /media/pibulus/passport/Movies:/movies
-    restart: unless-stopped
+    cpus: "0.5"
+    mem_limit: 384m
+    memswap_limit: 512m
+    mem_reservation: 128m
+    cpu_shares: 256
+    pids_limit: 160
+    restart: "no"
 
   # --- THE VPN SHIELD (PUREVPN) ---
   gluetun:

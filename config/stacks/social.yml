@@ -16,7 +16,7 @@ services:
       - MEMOS_PUBLIC=true
       - MEMOS_BASE_URL=/memos/
     container_name: memos
-    restart: unless-stopped
+    restart: "no"
     volumes:
       - /home/pibulus/.config/memos:/var/opt/memos
     ports:
