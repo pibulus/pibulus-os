@@ -23,6 +23,9 @@ data/
 *.log
 
 # Local backups / junk
+backups/
+*.backup-*/
+bunny.backup-*/
 *.bak
 *.bak-*
 *.backup
