@@ -2567,12 +2567,13 @@
         const res = await fetch('/msg/shouts.json');
         if (!res.ok) return;
         const shouts = await res.json();
+        const visibleShouts = shouts.filter(s => !s.hidden);
         const countEl = document.getElementById('wallCount');
-        if (countEl) countEl.textContent = shouts.length + ' msg' + (shouts.length !== 1 ? 's' : '');
-        if (shouts.length === 0) {
+        if (countEl) countEl.textContent = visibleShouts.length + ' msg' + (visibleShouts.length !== 1 ? 's' : '');
+        if (visibleShouts.length === 0) {
           shoutList.innerHTML = '<div style="padding:48px 16px;text-align:center;color:rgba(0,255,234,0.25);font-style:italic">// no transmissions yet</div>';
         } else {
-          shoutList.innerHTML = shouts.map(s => `
+          shoutList.innerHTML = visibleShouts.map(s => `
             <div class="shout-item">
               <div class="shout-header">
                 <span class="shout-name">${escHtml(s.n)}</span>
