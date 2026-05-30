@@ -1,0 +1,12 @@
+[Unit]
+Description=PIBULUS service health watchdog
+Wants=network-online.target docker.service
+After=network-online.target docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/home/pibulus/pibulus-os/scripts/pibulus-watchdog.sh
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+TimeoutStartSec=75

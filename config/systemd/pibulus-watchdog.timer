@@ -1,0 +1,11 @@
+[Unit]
+Description=Run PIBULUS service health watchdog
+
+[Timer]
+OnBootSec=3min
+OnUnitActiveSec=5min
+RandomizedDelaySec=30s
+Unit=pibulus-watchdog.service
+
+[Install]
+WantedBy=timers.target
