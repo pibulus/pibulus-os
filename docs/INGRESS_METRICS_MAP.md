@@ -20,6 +20,7 @@ This is the "what is actually true" map for public traffic, deck numbers, and ra
 - `www.kpab.fm`
 - `kpab.fm`
 - `deck.quickcat.club`
+- `comics.quickcat.club`
 - `music.quickcat.club`
 - `stream.quickcat.club`
 - `madebypablo.app`
@@ -33,7 +34,6 @@ These are the only hostnames guaranteed to pass through `web_host`.
 - `radio.quickcat.club` -> `8000`
 - `watch.quickcat.club` -> `8096`
 - `read.quickcat.club` -> `8083`
-- `comics.quickcat.club` -> `5000`
 - `memo.quickcat.club` -> `5230`
 - `go.quickcat.club` -> `8088`
 - `tv.quickcat.club` -> `3099`
@@ -45,6 +45,8 @@ These are the only hostnames guaranteed to pass through `web_host`.
 - `scummvm.quickcat.club` -> `3001`
 
 These bypass nginx entirely, so they also bypass shared auth, shared logging, and shared visitor counting.
+
+Note: `comics.quickcat.club` goes through nginx even though Kavita itself still listens on `5000`. Nginx redirects `/` to `/login` to avoid Kavita's misleading anonymous-user authorization toast, then proxies the rest to `172.17.0.1:5000`.
 
 ## nginx Coverage
 

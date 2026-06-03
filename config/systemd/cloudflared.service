@@ -4,11 +4,12 @@ After=network-online.target
 Wants=network-online.target
 
 [Service]
-TimeoutStartSec=15
+TimeoutStartSec=120
+TimeoutStopSec=30
 Type=notify
 ExecStart=/usr/bin/cloudflared --no-autoupdate --config /etc/cloudflared/config.yml tunnel run
 Restart=on-failure
-RestartSec=5s
+RestartSec=10s
 
 [Install]
 WantedBy=multi-user.target

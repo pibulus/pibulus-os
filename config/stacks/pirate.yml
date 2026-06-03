@@ -30,7 +30,7 @@ services:
     mem_reservation: 512m
     cpu_shares: 768
     pids_limit: 256
-    restart: "no"
+    restart: unless-stopped
 
   kavita:
     image: jvmilazz0/kavita:0.9.0.2  # stable, bumped 2026-05-18 after old pinned digest crash-looped on arm64
@@ -88,6 +88,7 @@ services:
     volumes:
       - /home/pibulus/.config/calibre-web:/config
       - /media/pibulus/passport/Ebooks/Calibre-Library:/books
+      - /home/pibulus/pibulus-os/config/calibre-web/caliBlur_override.css:/app/calibre-web/cps/static/css/caliBlur_override.css:ro
     cpus: "0.75"
     mem_limit: 512m
     memswap_limit: 768m

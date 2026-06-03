@@ -1,7 +1,7 @@
 # PIBULUS CYBERDECK - Claude Code Instructions
 
 ## System Overview
-Raspberry Pi 5 (4GB RAM) running the Quick Cat Club cyberdeck. Start at `~/pibulus-os/DOCS_INDEX.md`, then use `FIELD_MANUAL.md`, `GLOSSARY.md`, and the operational truth docs as needed.
+Raspberry Pi 5 (4GB RAM) running the Quick Cat Club cyberdeck. Start at `~/pibulus-os/PIBULUS_QUICKSTART.md` for fast orientation, then use `DOCS_INDEX.md`, `FIELD_MANUAL.md`, `GLOSSARY.md`, and the operational truth docs as needed.
 
 ## EMERGENCY / BREAK GLASS
 **Read this FIRST if something is broken.**
@@ -105,3 +105,7 @@ This IP is stable and does NOT change when containers restart.
 - Jellyfin runs on host network, port 8096
 - AzuraCast has its own compose lifecycle — don't manage it from stacks
 - Kavita may show as "unhealthy" — it has a flaky healthcheck, usually works fine
+- Remote SSH is available via Cloudflare Tunnel at `ssh.quickcat.club`; from Pablo's Mac use `ssh pibulus-remote`.
+- `comics.quickcat.club` routes through `web_host` nginx first, then proxies Kavita on port 5000. The `/` route redirects to `/login` to avoid Kavita's misleading anonymous-user auth toast.
+- `pibulus-watchdog.timer` checks the public Quick Cat routes every 20 minutes and restarts the narrow broken component when possible.
+- `scripts/nightly-backup.sh` backs up system config to `/media/pibulus/passport/Backups/pi-system` and records Docker manifests. Set `OFFSITE_RSYNC_TARGET` later for an off-box mirror.

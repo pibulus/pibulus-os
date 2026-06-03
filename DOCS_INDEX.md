@@ -4,6 +4,9 @@ This is the sane starting map for both humans and AI agents.
 
 ## Start Here
 
+- [PIBULUS_QUICKSTART.md](./PIBULUS_QUICKSTART.md)
+  Fast orientation for Codex/agents: access, routes, watchdog, backups, and guardrails.
+
 - [README.md](./README.md)
   Big-picture story, service overview, and the vibe.
 
