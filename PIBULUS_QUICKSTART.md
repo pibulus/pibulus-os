@@ -43,6 +43,8 @@ vcgencmd get_throttled 2>/dev/null || true
 systemctl --failed --no-pager
 systemctl status cloudflared docker pibulus-watchdog.timer --no-pager
 docker ps --format '{{.Names}} {{.Status}} {{.Ports}}'
+cat /proc/swaps
+systemctl list-timers rpi-zram-writeback.timer --no-pager 2>/dev/null || true
 ```
 
 Quick public smoke tests:
@@ -79,6 +81,31 @@ Do not do these without explicit user approval:
 - Do not commit secrets, `.env` files, tunnel credentials, htpasswd files, or local-only state.
 
 The Pi has 4GB RAM and can look dead when CPU, swap, or USB disk I/O is overloaded. Prefer one careful operation at a time.
+
+## Current Storage Posture
+
+As of 2026-06-03, treat the root microSD path as suspect. The Pi had intermittent hangs where LAN/SSH/app ports flapped, but power and thermals were clean:
+
+- `vcgencmd get_throttled` stayed `0x0`.
+- Temperature was normal for this box.
+- Kernel logs showed `mmc0: Card stuck being busy` plus blocked ext4/journal work on `/dev/mmcblk0p2`.
+
+Mitigations now in live config:
+
+- `/boot/firmware/config.txt` has `dtparam=sd_cqe=off` to reduce SD controller weirdness.
+- `/etc/fstab` disables the old `/swapfile2` disk swap entry.
+- `/etc/rpi/swap.conf.d/99-pibulus-zram-only.conf` sets `Mechanism=zram`, so Raspberry Pi OS does not regenerate SD-backed zram writeback.
+- `/etc/fstab` mounts MEMBOT read-only with a longer device timeout: UUID `649A-D7FA` at `/media/pibulus/MEMBOT`.
+
+Important constraint: do not repurpose MEMBOT or Passport as root/boot media. MEMBOT is vital data and should stay read-only. Passport is the bulky media/backup drive and is already very full. If root media must be replaced using existing gear, Pablo's spare 1TB Switch microSD is the realistic candidate, but validate it first and prefer a clean Raspberry Pi OS install plus restore over cloning a possibly flaky root filesystem.
+
+After any reboot, check that the writeback timer is absent and zram is still live:
+
+```bash
+cat /proc/swaps
+systemctl list-timers rpi-zram-writeback.timer --no-pager
+cat /run/systemd/zram-generator.conf.d/20-rpi-swap-zram0-ctrl.conf 2>/dev/null || true
+```
 
 ## Architecture
 
@@ -350,6 +377,14 @@ Also inspect storage/kernel warnings:
 
 ```bash
 sudo journalctl -b -k -p warning..emerg --no-pager | egrep -i '(ext4|i/o error|buffer i/o|mmc|sd[a-z]|uas|usb|under-voltage|voltage|thrott|reset|readonly|corrupt|error)' || true
+```
+
+For the 2026-06-03 SD stall pattern, these are the useful targeted checks:
+
+```bash
+sudo journalctl -b -k --since "30 min ago" --no-pager | egrep -i '(mmc0|mmcblk0|jbd2|ext4|blocked|timeout|i/o error)' || true
+sudo cat /sys/kernel/debug/mmc0/err_stats 2>/dev/null || true
+findmnt /media/pibulus/MEMBOT /media/pibulus/passport
 ```
 
 ## Documentation Rule
