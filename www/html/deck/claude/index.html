@@ -1,0 +1,639 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+  <title>Claude Deck</title>
+  <link rel="icon" href="/deck/favicon.svg" type="image/svg+xml">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0d1113;
+      --panel: #161b1e;
+      --panel-2: #1d2428;
+      --line: rgba(255,255,255,.12);
+      --text: #f5efe3;
+      --muted: rgba(245,239,227,.66);
+      --soft: rgba(245,239,227,.42);
+      --teal: #47c7b0;
+      --amber: #f4c65f;
+      --coral: #ff7c5f;
+      --magenta: #d762ff;
+      --danger: #ff4f6f;
+      --shadow: 0 18px 50px rgba(0,0,0,.34);
+      --radius: 8px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; letter-spacing: 0; }
+    html, body { width: 100%; min-height: 100%; margin: 0; }
+    body {
+      background: linear-gradient(145deg, #0d1113 0%, #15181d 48%, #101416 100%);
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    button, textarea, select { font: inherit; }
+    button { -webkit-tap-highlight-color: transparent; }
+
+    .app {
+      height: 100dvh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      overflow: hidden;
+    }
+
+    .topbar {
+      padding: calc(12px + env(safe-area-inset-top)) 14px 10px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(13,17,19,.88);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 12px 30px rgba(0,0,0,.24);
+      z-index: 3;
+    }
+
+    .topline {
+      min-height: 44px;
+      display: grid;
+      grid-template-columns: 44px 1fr auto;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .icon-btn,
+    .send,
+    .mode,
+    .hold,
+    .select {
+      min-height: 44px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      color: var(--text);
+      background: rgba(255,255,255,.05);
+    }
+
+    .icon-btn {
+      width: 44px;
+      display: inline-grid;
+      place-items: center;
+      text-decoration: none;
+      font-size: 22px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.1;
+      color: var(--amber);
+    }
+
+    .title {
+      min-width: 0;
+      display: grid;
+      gap: 4px;
+    }
+
+    .status {
+      min-height: 22px;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      border: 1px solid rgba(71,199,176,.28);
+      border-radius: 999px;
+      padding: 3px 8px;
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+      background: rgba(71,199,176,.07);
+      width: max-content;
+      max-width: 100%;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--teal);
+      box-shadow: 0 0 12px rgba(71,199,176,.8);
+    }
+
+    .status.bad {
+      border-color: rgba(255,79,111,.35);
+      background: rgba(255,79,111,.08);
+    }
+
+    .status.bad .dot {
+      background: var(--danger);
+      box-shadow: 0 0 12px rgba(255,79,111,.75);
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .modes {
+      min-width: 0;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .mode {
+      padding: 0 7px;
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    .mode.active {
+      border-color: rgba(244,198,95,.58);
+      color: var(--text);
+      background: rgba(244,198,95,.14);
+    }
+
+    .mode[data-mode="full"].active {
+      border-color: rgba(255,79,111,.72);
+      background: rgba(255,79,111,.14);
+    }
+
+    .select {
+      width: 112px;
+      padding: 0 10px;
+      color: var(--text);
+      background: rgba(22,27,30,.92);
+    }
+
+    .transcript {
+      overflow-y: auto;
+      padding: 16px 12px 120px;
+      scroll-behavior: smooth;
+    }
+
+    .empty {
+      max-width: 620px;
+      margin: 10vh auto 0;
+      border: 1px solid rgba(244,198,95,.22);
+      background: rgba(22,27,30,.72);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .empty-title {
+      font-size: 24px;
+      line-height: 1.05;
+      font-weight: 800;
+      color: var(--amber);
+      margin-bottom: 10px;
+    }
+
+    .msg {
+      width: min(100%, 760px);
+      margin: 0 auto 12px;
+      display: grid;
+      gap: 5px;
+    }
+
+    .msg.user { justify-items: end; }
+    .msg.assistant { justify-items: start; }
+
+    .label {
+      color: var(--soft);
+      font-size: 12px;
+      padding: 0 4px;
+    }
+
+    .bubble {
+      max-width: min(88vw, 680px);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 12px 13px;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      line-height: 1.42;
+      font-size: 15px;
+      box-shadow: 0 10px 24px rgba(0,0,0,.18);
+    }
+
+    .user .bubble {
+      background: rgba(71,199,176,.13);
+      border-color: rgba(71,199,176,.36);
+    }
+
+    .assistant .bubble {
+      background: rgba(22,27,30,.88);
+      border-color: rgba(244,198,95,.22);
+    }
+
+    .system .bubble {
+      background: rgba(255,124,95,.08);
+      border-color: rgba(255,124,95,.25);
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .composer {
+      padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+      border-top: 1px solid var(--line);
+      background: rgba(13,17,19,.92);
+      backdrop-filter: blur(18px);
+      z-index: 4;
+    }
+
+    .full-arm {
+      display: none;
+      margin: 0 auto 8px;
+      width: min(100%, 760px);
+      grid-template-columns: 1fr 96px;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .full-arm.show { display: grid; }
+
+    .arm-copy {
+      color: var(--soft);
+      font-size: 12px;
+      line-height: 1.25;
+    }
+
+    .hold {
+      color: var(--danger);
+      border-color: rgba(255,79,111,.5);
+      background: rgba(255,79,111,.09);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .hold.armed {
+      color: #12090c;
+      background: var(--danger);
+      border-color: var(--danger);
+    }
+
+    .compose-row {
+      width: min(100%, 760px);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 58px;
+      gap: 8px;
+      align-items: end;
+    }
+
+    textarea {
+      min-height: 50px;
+      max-height: 180px;
+      resize: none;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: var(--radius);
+      padding: 13px 12px;
+      color: var(--text);
+      background: rgba(22,27,30,.96);
+      outline: none;
+      line-height: 1.35;
+    }
+
+    textarea:focus {
+      border-color: rgba(71,199,176,.58);
+      box-shadow: 0 0 0 3px rgba(71,199,176,.12);
+    }
+
+    .send {
+      width: 58px;
+      height: 50px;
+      border-color: rgba(71,199,176,.46);
+      background: rgba(71,199,176,.18);
+      color: var(--text);
+      font-size: 20px;
+      font-weight: 900;
+    }
+
+    .send:disabled,
+    .icon-btn.disabled {
+      opacity: .45;
+      pointer-events: none;
+    }
+
+    .stop {
+      border-color: rgba(255,79,111,.44);
+      color: var(--danger);
+    }
+
+    @media (min-width: 720px) {
+      .topbar { padding-left: 20px; padding-right: 20px; }
+      .transcript { padding-left: 20px; padding-right: 20px; }
+      .composer { padding-left: 20px; padding-right: 20px; }
+      h1 { font-size: 23px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { scroll-behavior: auto !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="topline">
+        <a class="icon-btn" href="/deck/" aria-label="Back">‹</a>
+        <div class="title">
+          <h1>Claude Deck</h1>
+          <div class="status" id="statusPill"><span class="dot"></span><span id="statusText">checking</span></div>
+        </div>
+        <button class="icon-btn stop" id="stopBtn" type="button" aria-label="Stop">■</button>
+      </div>
+      <div class="controls">
+        <div class="modes" id="modes" role="group" aria-label="Mode"></div>
+        <select class="select" id="workspace" aria-label="Workspace"></select>
+      </div>
+    </header>
+
+    <section class="transcript" id="transcript" aria-live="polite">
+      <div class="empty" id="empty">
+        <div class="empty-title">Ready</div>
+      </div>
+    </section>
+
+    <footer class="composer">
+      <div class="full-arm" id="fullArm">
+        <div class="arm-copy">Full mode can edit and run commands in the selected workspace.</div>
+        <button class="hold" id="holdBtn" type="button">HOLD</button>
+      </div>
+      <form class="compose-row" id="form">
+        <textarea id="input" rows="1" maxlength="12000" placeholder="Message Claude"></textarea>
+        <button class="send" id="sendBtn" type="submit" aria-label="Send">›</button>
+      </form>
+    </footer>
+  </main>
+
+  <script>
+    const api = '/claude/api';
+    const transcript = document.getElementById('transcript');
+    const empty = document.getElementById('empty');
+    const form = document.getElementById('form');
+    const input = document.getElementById('input');
+    const sendBtn = document.getElementById('sendBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const modesEl = document.getElementById('modes');
+    const workspaceEl = document.getElementById('workspace');
+    const fullArm = document.getElementById('fullArm');
+    const holdBtn = document.getElementById('holdBtn');
+    const statusPill = document.getElementById('statusPill');
+    const statusText = document.getElementById('statusText');
+
+    let csrf = '';
+    let chatId = localStorage.getItem('pibulus.claude.chatId') || '';
+    let mode = localStorage.getItem('pibulus.claude.mode') || 'plan';
+    let workspace = localStorage.getItem('pibulus.claude.workspace') || 'pibulus-os';
+    let running = false;
+    let fullArmed = false;
+    let holdTimer = null;
+    let currentBubble = null;
+    let messages = [];
+
+    function setRunning(value) {
+      running = value;
+      sendBtn.disabled = value;
+      stopBtn.classList.toggle('disabled', !value);
+    }
+
+    function scrollDown() {
+      transcript.scrollTop = transcript.scrollHeight;
+    }
+
+    function clearEmpty() {
+      if (empty) empty.remove();
+    }
+
+    function addMessage(role, text, label) {
+      clearEmpty();
+      const wrap = document.createElement('div');
+      wrap.className = `msg ${role}`;
+      const small = document.createElement('div');
+      small.className = 'label';
+      small.textContent = label || (role === 'user' ? 'you' : role);
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+      bubble.textContent = text || '';
+      wrap.append(small, bubble);
+      transcript.appendChild(wrap);
+      scrollDown();
+      return bubble;
+    }
+
+    function appendAssistant(text) {
+      if (!currentBubble) currentBubble = addMessage('assistant', '', 'claude');
+      currentBubble.textContent += text;
+      scrollDown();
+    }
+
+    function addSystem(text) {
+      currentBubble = null;
+      addMessage('system', text, 'system');
+    }
+
+    function saveChatId(id) {
+      chatId = id || chatId;
+      if (chatId) localStorage.setItem('pibulus.claude.chatId', chatId);
+    }
+
+    function setMode(next) {
+      mode = next;
+      localStorage.setItem('pibulus.claude.mode', mode);
+      fullArmed = false;
+      holdBtn.classList.remove('armed');
+      holdBtn.textContent = 'HOLD';
+      fullArm.classList.toggle('show', mode === 'full');
+      [...modesEl.querySelectorAll('.mode')].forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.mode === mode);
+      });
+    }
+
+    function renderModes(modes) {
+      modesEl.textContent = '';
+      modes.forEach(item => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'mode';
+        btn.dataset.mode = item.key;
+        btn.textContent = item.label;
+        btn.disabled = item.enabled === false;
+        btn.addEventListener('click', () => setMode(item.key));
+        modesEl.appendChild(btn);
+      });
+      if (![...modesEl.querySelectorAll('.mode')].some(btn => btn.dataset.mode === mode && !btn.disabled)) {
+        mode = 'plan';
+      }
+      setMode(mode);
+    }
+
+    function renderWorkspaces(workspaces) {
+      workspaceEl.textContent = '';
+      workspaces.forEach(item => {
+        const option = document.createElement('option');
+        option.value = item.key;
+        option.textContent = item.label;
+        workspaceEl.appendChild(option);
+      });
+      if (![...workspaceEl.options].some(option => option.value === workspace)) {
+        workspace = 'pibulus-os';
+      }
+      workspaceEl.value = workspace;
+    }
+
+    async function bootstrap() {
+      const res = await fetch(`${api}/bootstrap`, { credentials: 'same-origin', cache: 'no-store' });
+      if (!res.ok) throw new Error(`bootstrap ${res.status}`);
+      const data = await res.json();
+      csrf = data.csrf;
+      renderModes(data.modes || []);
+      renderWorkspaces(data.workspaces || []);
+      setRunning(Boolean(data.active));
+      input.maxLength = data.max_prompt_chars || 12000;
+      const authed = data.claude_auth && data.claude_auth.ok;
+      statusPill.classList.toggle('bad', !authed);
+      statusText.textContent = authed ? data.claude_version : 'auth needed';
+      if (!authed) addSystem('Claude is not logged in on the Pi.');
+    }
+
+    workspaceEl.addEventListener('change', () => {
+      workspace = workspaceEl.value;
+      localStorage.setItem('pibulus.claude.workspace', workspace);
+    });
+
+    input.addEventListener('input', () => {
+      input.style.height = 'auto';
+      input.style.height = Math.min(input.scrollHeight, 180) + 'px';
+    });
+
+    holdBtn.addEventListener('pointerdown', () => {
+      if (mode !== 'full') return;
+      holdBtn.textContent = '...';
+      holdTimer = setTimeout(() => {
+        fullArmed = true;
+        holdBtn.classList.add('armed');
+        holdBtn.textContent = 'ARMED';
+      }, 900);
+    });
+
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach(name => {
+      holdBtn.addEventListener(name, () => {
+        if (holdTimer) clearTimeout(holdTimer);
+        holdTimer = null;
+        if (!fullArmed) holdBtn.textContent = 'HOLD';
+      });
+    });
+
+    async function stopRun() {
+      if (!running) return;
+      await fetch(`${api}/stop`, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', 'X-PIBULUS-CSRF': csrf },
+        body: JSON.stringify({ chat_id: chatId })
+      }).catch(() => {});
+      addSystem('stop requested');
+    }
+
+    stopBtn.addEventListener('click', stopRun);
+
+    async function sendMessage(text) {
+      if (running) return;
+      if (mode === 'full' && !fullArmed) {
+        addSystem('full mode is not armed');
+        return;
+      }
+
+      addMessage('user', text, 'you');
+      currentBubble = null;
+      setRunning(true);
+      const payload = {
+        message: text,
+        chat_id: chatId,
+        mode,
+        workspace,
+        confirm: mode === 'full' && fullArmed ? 'PIBULUS_FULL_AUTONOMY' : ''
+      };
+      fullArmed = false;
+      holdBtn.classList.remove('armed');
+      holdBtn.textContent = 'HOLD';
+
+      const res = await fetch(`${api}/chat`, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', 'X-PIBULUS-CSRF': csrf },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        let msg = `request failed ${res.status}`;
+        try {
+          const err = await res.json();
+          msg = err.error || msg;
+        } catch (_) {}
+        addSystem(msg);
+        setRunning(false);
+        return;
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        let idx;
+        while ((idx = buffer.indexOf('\n')) >= 0) {
+          const line = buffer.slice(0, idx).trim();
+          buffer = buffer.slice(idx + 1);
+          if (!line) continue;
+          let event;
+          try { event = JSON.parse(line); } catch (_) { continue; }
+          if (event.type === 'started') {
+            saveChatId(event.chat_id);
+          } else if (event.type === 'claude' && event.text) {
+            appendAssistant(event.text);
+          } else if (event.type === 'line' && event.text) {
+            appendAssistant(event.text + '\n');
+          } else if (event.type === 'stderr' && event.text) {
+            addSystem(event.text);
+          } else if (event.type === 'error' && event.text) {
+            addSystem(event.text);
+          } else if (event.type === 'done') {
+            currentBubble = null;
+            setRunning(false);
+            if (event.timed_out) addSystem('run timed out');
+            if (event.code && event.code !== 0) addSystem(`exit ${event.code}`);
+          }
+        }
+      }
+      setRunning(false);
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+      input.style.height = 'auto';
+      try {
+        await sendMessage(text);
+      } catch (err) {
+        addSystem(err.message || String(err));
+        setRunning(false);
+      }
+    });
+
+    bootstrap().catch(err => {
+      addSystem(err.message || String(err));
+      setRunning(false);
+    });
+  </script>
+</body>
+</html>

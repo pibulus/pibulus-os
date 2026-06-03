@@ -161,6 +161,7 @@ Core examples:
 - `quickcat.club` -> `localhost:80` -> `web_host`
 - `kpab.fm` / `www.kpab.fm` -> `localhost:80` -> `web_host`
 - `deck.quickcat.club` -> `localhost:80` -> `web_host`
+- `deck.quickcat.club/deck/claude/` -> static mobile UI -> `/claude/api/` -> `claude-chat.service` on `172.17.0.1:9016`
 - `comics.quickcat.club` -> `localhost:80` -> nginx -> Kavita
 - `watch.quickcat.club` -> `localhost:8096` -> Jellyfin direct
 - `music.quickcat.club` -> `localhost:4533` -> Navidrome direct
@@ -239,6 +240,23 @@ The watchdog is intentionally narrow. It checks:
 - `jellyfin` / local port 8096
 
 It should not become a broad restart machine.
+
+Claude Deck:
+
+```bash
+systemctl status claude-chat.service --no-pager
+journalctl -u claude-chat.service -n 80 --no-pager
+curl -sS http://172.17.0.1:9016/api/bootstrap | python3 -m json.tool
+```
+
+`claude-chat.service` is the host-local gateway for `https://deck.quickcat.club/deck/claude/`. It binds to `172.17.0.1:9016`, is proxied only under the authenticated Deck host, accepts JSON POSTs with a CSRF token, and allows one active Claude run at a time.
+
+If the UI says `auth needed`, authenticate Claude Code on the Pi:
+
+```bash
+claude auth login
+claude auth status --text
+```
 
 Custom app services are documented in `APP_DEPLOYMENT_MAP.md`; inspect with:
 

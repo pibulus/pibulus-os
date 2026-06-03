@@ -1,0 +1,37 @@
+[Unit]
+Description=PIBULUS Claude Deck Gateway
+After=network.target
+
+[Service]
+Type=simple
+User=pibulus
+Group=pibulus
+WorkingDirectory=/home/pibulus/pibulus-os
+Environment=PYTHONUNBUFFERED=1
+Environment=CLAUDE_CHAT_HOST=172.17.0.1
+Environment=CLAUDE_CHAT_PORT=9016
+Environment=CLAUDE_CHAT_ALLOWED_ORIGINS=https://deck.quickcat.club
+Environment=CLAUDE_CHAT_ENABLE_FULL=1
+ExecStart=/usr/bin/python3 /home/pibulus/pibulus-os/scripts/claude_chat_gateway.py
+Restart=on-failure
+RestartSec=5
+KillMode=mixed
+TimeoutStopSec=15
+
+NoNewPrivileges=true
+UMask=0077
+PrivateTmp=true
+ProtectSystem=full
+CapabilityBoundingSet=
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryAccounting=yes
+MemoryMax=1G
+CPUAccounting=yes
+CPUQuota=150%
+TasksMax=96
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+
+[Install]
+WantedBy=multi-user.target

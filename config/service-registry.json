@@ -40,6 +40,14 @@
       "canonical": true
     },
     {
+      "key": "claude_deck",
+      "name": "Claude Deck",
+      "url": "https://deck.quickcat.club/deck/claude/",
+      "category": "admin",
+      "description": "mobile Claude Code gateway",
+      "systemd": "claude-chat.service"
+    },
+    {
       "key": "watch",
       "name": "Jellyfin",
       "url": "https://watch.quickcat.club",

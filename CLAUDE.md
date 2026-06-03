@@ -95,6 +95,7 @@ This IP is stable and does NOT change when containers restart.
 | 9003  | Node app         | systemd      | Custom service                 |
 | 9004  | Node app         | systemd      | Custom service                 |
 | 9005  | Node app         | systemd      | Custom service                 |
+| 9016  | Claude Deck      | systemd      | Mobile Claude Code gateway     |
 | 13378 | Audiobookshelf   | pirate.yml   | Audiobook library (internal 80)|
 | 50300 | Slskd peer       | pirate.yml   | Soulseek listen port           |
 
@@ -109,3 +110,4 @@ This IP is stable and does NOT change when containers restart.
 - `comics.quickcat.club` routes through `web_host` nginx first, then proxies Kavita on port 5000. The `/` route redirects to `/login` to avoid Kavita's misleading anonymous-user auth toast.
 - `pibulus-watchdog.timer` checks the public Quick Cat routes every 20 minutes and restarts the narrow broken component when possible.
 - `scripts/nightly-backup.sh` backs up system config to `/media/pibulus/passport/Backups/pi-system` and records Docker manifests. Set `OFFSITE_RSYNC_TARGET` later for an off-box mirror.
+- `claude-chat.service` binds only to `172.17.0.1:9016` and is exposed through the authenticated Deck route at `/deck/claude/`. It uses CSRF/origin checks, one active run, an allowlisted workspace set, and `NoNewPrivileges=true`, so browser-triggered Claude cannot sudo through this service.
