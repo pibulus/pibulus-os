@@ -30,6 +30,7 @@ mkdir -p "$BACKUP_DIR/configs"
 mkdir -p "$BACKUP_DIR/docker-db"
 mkdir -p "$BACKUP_DIR/volumes"
 mkdir -p "$BACKUP_DIR/system"
+mkdir -p "$BACKUP_DIR/manifests"
 
 # ── 1. Service configs (rsync, incremental) ───────────────────────────────────
 
@@ -173,6 +174,14 @@ sudo cp /etc/cloudflared/config.yml "$BACKUP_DIR/system/cloudflared-config.yml" 
 crontab -l > "$BACKUP_DIR/system/crontab.txt" 2>> "$LOG"
 docker ps --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}' \
     > "$BACKUP_DIR/system/docker-services.txt" 2>> "$LOG"
+docker ps -a --format '{{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}' \
+    > "$BACKUP_DIR/manifests/docker-containers.tsv" 2>> "$LOG"
+docker image ls --digests --format '{{.Repository}}\t{{.Tag}}\t{{.Digest}}\t{{.ID}}\t{{.CreatedSince}}\t{{.Size}}' \
+    > "$BACKUP_DIR/manifests/docker-images.tsv" 2>> "$LOG"
+docker inspect $(docker ps -aq) --format '{{.Name}}\t{{.Config.Image}}\t{{.HostConfig.RestartPolicy.Name}}\t{{.HostConfig.NetworkMode}}' \
+    > "$BACKUP_DIR/manifests/docker-restart-policies.tsv" 2>> "$LOG"
+systemctl list-timers --all --no-pager \
+    > "$BACKUP_DIR/system/systemd-timers.txt" 2>> "$LOG"
 log "  system: OK"
 
 # ── 5. Pibulus-OS (scripts, compose files, www) ───────────────────────────────
@@ -196,6 +205,18 @@ rsync -a --delete \
   --exclude '*.backup' \
   /home/pibulus/pibulus-os/ "$BACKUP_DIR/pibulus-os/" >> "$LOG" 2>&1
 log "  pibulus-os: OK"
+
+# ── 6. Optional off-box mirror ────────────────────────────────────────────────
+# Set OFFSITE_RSYNC_TARGET in the environment to something like:
+#   user@elitedesk.local:/srv/backups/pibulus/pi-system
+# This is intentionally opt-in so the nightly local backup never fails just
+# because the second host is asleep.
+
+if [ -n "${OFFSITE_RSYNC_TARGET:-}" ]; then
+  log "[offsite] Mirroring backup to $OFFSITE_RSYNC_TARGET..."
+  rsync -a --delete --timeout=60 "$BACKUP_DIR/" "$OFFSITE_RSYNC_TARGET/" >> "$LOG" 2>&1 \
+    || log "[offsite] WARN: mirror failed"
+fi
 
 # ── Done ──────────────────────────────────────────────────────────────────────
 
