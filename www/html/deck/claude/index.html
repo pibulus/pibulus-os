@@ -443,7 +443,7 @@
       width: min(100%, 760px);
       margin: 0 auto;
       display: grid;
-      grid-template-columns: 1fr 58px;
+      grid-template-columns: 1fr 50px 58px;
       gap: 8px;
       align-items: end;
     }
@@ -477,6 +477,22 @@
       font-weight: 900;
     }
 
+    .mic {
+      width: 50px;
+      height: 50px;
+      border-color: rgba(134,168,255,.38);
+      color: var(--blue);
+      background: rgba(134,168,255,.1);
+      font-size: 18px;
+    }
+
+    .mic.recording {
+      border-color: rgba(255,124,95,.68);
+      color: var(--coral);
+      background: rgba(255,124,95,.14);
+      box-shadow: 0 0 0 3px rgba(255,124,95,.1);
+    }
+
     .send.running {
       border-color: rgba(244,198,95,.5);
       background: rgba(244,198,95,.14);
@@ -484,6 +500,7 @@
     }
 
     .send:disabled,
+    .mic:disabled,
     .icon-btn:disabled,
     .icon-btn.disabled {
       opacity: .45;
@@ -570,6 +587,7 @@
       </div>
       <form class="compose-row" id="form">
         <textarea id="input" rows="1" maxlength="12000" placeholder="Message Claude" enterkeyhint="send" autocomplete="off" autocapitalize="sentences" spellcheck="true"></textarea>
+        <button class="mic" id="micBtn" type="button" aria-label="Dictate">◉</button>
         <button class="send" id="sendBtn" type="submit" aria-label="Send">›</button>
       </form>
     </footer>
@@ -583,6 +601,7 @@
     const form = document.getElementById('form');
     const input = document.getElementById('input');
     const sendBtn = document.getElementById('sendBtn');
+    const micBtn = document.getElementById('micBtn');
     const speakerBtn = document.getElementById('speakerBtn');
     const newBtn = document.getElementById('newBtn');
     const stopBtn = document.getElementById('stopBtn');
@@ -614,7 +633,14 @@
     let speakEnabled = localStorage.getItem('pibulus.claude.speak') === '1';
     let speaking = false;
     let preferredVoice = null;
+    let recognition = null;
+    let dictating = false;
+    let dictateBaseText = '';
+    let dictateFinalText = '';
+    let dictationHadResult = false;
     const canSpeak = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
+    const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+    const canDictate = Boolean(Recognition);
 
     function setRunning(value) {
       running = value;
@@ -626,6 +652,7 @@
       stopBtn.setAttribute('aria-disabled', String(!value));
       form.setAttribute('aria-busy', String(value));
       if (signalRun) signalRun.textContent = value ? 'live' : 'idle';
+      syncMicButton();
     }
 
     function syncSpeakerButton() {
@@ -634,6 +661,131 @@
       speakerBtn.textContent = speakEnabled && canSpeak ? '♫' : '♪';
       speakerBtn.setAttribute('aria-pressed', String(speakEnabled && canSpeak));
       speakerBtn.setAttribute('aria-label', speakEnabled && canSpeak ? 'Mute replies' : 'Speak replies');
+    }
+
+    function fitInput() {
+      input.style.height = 'auto';
+      input.style.height = Math.min(input.scrollHeight, 180) + 'px';
+    }
+
+    function setComposerText(text, focus = false) {
+      const max = Number(input.maxLength) > 0 ? Number(input.maxLength) : 12000;
+      input.value = String(text || '').slice(0, max);
+      fitInput();
+      if (focus) input.focus();
+    }
+
+    function syncMicButton() {
+      micBtn.disabled = !authReady || running || !canDictate;
+      micBtn.classList.toggle('recording', dictating);
+      micBtn.textContent = dictating ? '■' : '◉';
+      micBtn.setAttribute('aria-pressed', String(dictating));
+      micBtn.setAttribute('aria-label', dictating ? 'Stop dictation' : 'Dictate');
+    }
+
+    function composeDictation(interim = '') {
+      const pieces = [dictateBaseText, dictateFinalText, interim]
+        .map(value => String(value || '').trim())
+        .filter(Boolean);
+      setComposerText(pieces.join(' '), true);
+    }
+
+    function endDictation() {
+      dictating = false;
+      dictateBaseText = '';
+      dictateFinalText = '';
+      dictationHadResult = false;
+      input.placeholder = authReady ? 'Ask / steer / ship' : 'Needs Claude key';
+      syncMicButton();
+    }
+
+    function stopDictation({ abort = false } = {}) {
+      if (!recognition || !dictating) return;
+      try {
+        abort ? recognition.abort() : recognition.stop();
+      } catch (_) {}
+      if (abort) endDictation();
+    }
+
+    function ensureRecognition() {
+      if (!canDictate) return null;
+      if (recognition) return recognition;
+      recognition = new Recognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
+      recognition.lang = navigator.language || 'en-AU';
+
+      recognition.onstart = () => {
+        dictating = true;
+        dictationHadResult = false;
+        input.placeholder = 'listening';
+        syncMicButton();
+      };
+
+      recognition.onresult = event => {
+        let interim = '';
+        dictationHadResult = true;
+        for (let index = event.resultIndex; index < event.results.length; index += 1) {
+          const result = event.results[index];
+          const text = result[0]?.transcript || '';
+          if (result.isFinal) {
+            dictateFinalText = `${dictateFinalText} ${text}`.trim();
+          } else {
+            interim = `${interim} ${text}`.trim();
+          }
+        }
+        composeDictation(interim);
+      };
+
+      recognition.onerror = event => {
+        const error = event.error || 'speech error';
+        if (!['aborted', 'no-speech'].includes(error)) {
+          const message = error === 'not-allowed' || error === 'service-not-allowed'
+            ? 'mic permission was blocked'
+            : `voice input ${error}`;
+          addSystem(message);
+        } else if (error === 'no-speech' && !dictationHadResult) {
+          addSystem('no speech caught');
+        }
+        endDictation();
+      };
+
+      recognition.onend = endDictation;
+      return recognition;
+    }
+
+    function startDictation() {
+      if (!canDictate) {
+        addSystem('voice input is not available in this browser');
+        return;
+      }
+      if (!authReady || running) return;
+      cancelSpeech();
+      dictateBaseText = input.value.trim();
+      dictateFinalText = '';
+      dictationHadResult = false;
+      const recognizer = ensureRecognition();
+      dictating = true;
+      input.placeholder = 'listening';
+      syncMicButton();
+      try {
+        recognizer.start();
+      } catch (_) {
+        stopDictation({ abort: true });
+        setTimeout(() => {
+          if (!authReady || running) return;
+          dictating = true;
+          input.placeholder = 'listening';
+          syncMicButton();
+          try {
+            recognizer.start();
+          } catch (err) {
+            endDictation();
+            addSystem(err.message || 'voice input could not start');
+          }
+        }, 120);
+      }
     }
 
     function pickVoice() {
@@ -732,6 +884,7 @@
       input.disabled = !authReady;
       workspaceEl.disabled = !authReady;
       sendBtn.disabled = running || !authReady;
+      syncMicButton();
       promptChips.forEach(btn => { btn.disabled = !authReady; });
       [...modesEl.querySelectorAll('.mode')].forEach(btn => {
         btn.disabled = btn.dataset.enabled === 'false' || !authReady;
@@ -889,16 +1042,12 @@
     promptChips.forEach(btn => {
       btn.addEventListener('click', () => {
         if (!authReady) return;
-        input.value = btn.dataset.prompt || '';
-        input.dispatchEvent(new Event('input'));
-        input.focus();
+        stopDictation({ abort: true });
+        setComposerText(btn.dataset.prompt || '', true);
       });
     });
 
-    input.addEventListener('input', () => {
-      input.style.height = 'auto';
-      input.style.height = Math.min(input.scrollHeight, 180) + 'px';
-    });
+    input.addEventListener('input', fitInput);
 
     async function armFullMode() {
       if (mode !== 'full' || armPending || running) return;
@@ -959,6 +1108,14 @@
 
     stopBtn.addEventListener('click', stopRun);
 
+    micBtn.addEventListener('click', () => {
+      if (dictating) {
+        stopDictation();
+      } else {
+        startDictation();
+      }
+    });
+
     speakerBtn.addEventListener('click', () => {
       if (!canSpeak) {
         addSystem('speech is not available in this browser');
@@ -979,6 +1136,7 @@
       chatId = '';
       currentBubble = null;
       currentReplyText = '';
+      stopDictation({ abort: true });
       cancelSpeech();
       clearFullArm();
       localStorage.removeItem('pibulus.claude.chatId');
@@ -987,6 +1145,7 @@
 
     async function sendMessage(text) {
       if (running) return;
+      stopDictation({ abort: true });
       const fullReady = fullArmed && armToken && Date.now() < armExpiresAt;
       if (mode === 'full' && !fullReady) {
         clearFullArm();
@@ -1069,6 +1228,7 @@
 
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
+      stopDictation({ abort: true });
       const text = input.value.trim();
       if (!text) return;
       const fullReady = fullArmed && armToken && Date.now() < armExpiresAt;
@@ -1077,8 +1237,7 @@
         addSystem('hold Full first');
         return;
       }
-      input.value = '';
-      input.style.height = 'auto';
+      setComposerText('');
       try {
         await sendMessage(text);
       } catch (err) {
@@ -1092,6 +1251,7 @@
       pickVoice();
     }
     syncSpeakerButton();
+    syncMicButton();
 
     bootstrap().catch(err => {
       addSystem(err.message || String(err));
