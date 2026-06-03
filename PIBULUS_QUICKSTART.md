@@ -111,11 +111,11 @@ cat /run/systemd/zram-generator.conf.d/20-rpi-swap-zram0-ctrl.conf 2>/dev/null |
 
 As of 2026-06-03, background polling has been deliberately calmed down to reduce SD/root churn:
 
-- `scripts/status.sh`: every 5 minutes, not every minute. It reads Docker/web status and writes `status.json` plus the heartbeat log on Passport.
-- `scripts/cloudflare-watchdog.sh`: every 30 minutes, matching the script's own intent.
-- `scripts/qb_unstick.sh`: every 30 minutes.
-- `scripts/gen_request_catalog.py`: every 12 hours; it fetches all AzuraCast request pages and rewrites the KPAB catalog.
-- `pibulus-watchdog.timer`: every 10 minutes with a 90 second randomized delay.
+- `scripts/status.sh`: every 15 minutes, not every minute. It reads Docker/web status and writes `status.json` plus the heartbeat log on Passport.
+- `scripts/cloudflare-watchdog.sh`: hourly, matching the low-risk reality that Cloudflare zone activation rarely changes.
+- `scripts/qb_unstick.sh`: hourly.
+- `scripts/gen_request_catalog.py`: daily at 11:17; it fetches all AzuraCast request pages and rewrites the KPAB catalog.
+- `pibulus-watchdog.timer`: every 20 minutes with a 180 second randomized delay.
 
 Keep daily backup jobs unless Pablo explicitly asks to trade recovery coverage for less disk activity. The daily `counts.sh` job walks parts of Passport, not the root SD, and should stay daily unless the Passport is struggling.
 

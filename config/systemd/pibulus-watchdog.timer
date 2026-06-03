@@ -3,8 +3,8 @@ Description=Run PIBULUS service health watchdog
 
 [Timer]
 OnBootSec=3min
-OnUnitActiveSec=10min
-RandomizedDelaySec=90s
+OnUnitActiveSec=20min
+RandomizedDelaySec=180s
 Unit=pibulus-watchdog.service
 
 [Install]
