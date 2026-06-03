@@ -484,6 +484,7 @@
     }
 
     .send:disabled,
+    .icon-btn:disabled,
     .icon-btn.disabled {
       opacity: .45;
       pointer-events: none;
@@ -492,6 +493,12 @@
     .stop {
       border-color: rgba(255,79,111,.44);
       color: var(--danger);
+    }
+
+    .voice.on {
+      border-color: rgba(71,199,176,.52);
+      color: var(--teal);
+      background: rgba(71,199,176,.12);
     }
 
     @media (min-width: 720px) {
@@ -523,6 +530,7 @@
           <div class="status" id="statusPill"><span class="dot"></span><span id="statusText">checking</span></div>
         </div>
         <div class="top-actions">
+          <button class="icon-btn voice" id="speakerBtn" type="button" aria-label="Speak replies" aria-pressed="false">♪</button>
           <button class="icon-btn" id="newBtn" type="button" aria-label="New chat">＋</button>
           <button class="icon-btn stop" id="stopBtn" type="button" aria-label="Stop">■</button>
         </div>
@@ -575,6 +583,7 @@
     const form = document.getElementById('form');
     const input = document.getElementById('input');
     const sendBtn = document.getElementById('sendBtn');
+    const speakerBtn = document.getElementById('speakerBtn');
     const newBtn = document.getElementById('newBtn');
     const stopBtn = document.getElementById('stopBtn');
     const modesEl = document.getElementById('modes');
@@ -601,6 +610,11 @@
     let armPending = false;
     let holdTimer = null;
     let currentBubble = null;
+    let currentReplyText = '';
+    let speakEnabled = localStorage.getItem('pibulus.claude.speak') === '1';
+    let speaking = false;
+    let preferredVoice = null;
+    const canSpeak = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
 
     function setRunning(value) {
       running = value;
@@ -612,6 +626,106 @@
       stopBtn.setAttribute('aria-disabled', String(!value));
       form.setAttribute('aria-busy', String(value));
       if (signalRun) signalRun.textContent = value ? 'live' : 'idle';
+    }
+
+    function syncSpeakerButton() {
+      speakerBtn.disabled = !canSpeak;
+      speakerBtn.classList.toggle('on', speakEnabled && canSpeak);
+      speakerBtn.textContent = speakEnabled && canSpeak ? '♫' : '♪';
+      speakerBtn.setAttribute('aria-pressed', String(speakEnabled && canSpeak));
+      speakerBtn.setAttribute('aria-label', speakEnabled && canSpeak ? 'Mute replies' : 'Speak replies');
+    }
+
+    function pickVoice() {
+      if (!canSpeak) return null;
+      const voices = window.speechSynthesis.getVoices();
+      preferredVoice =
+        voices.find(voice => /Samantha|Karen|Daniel|Serena/i.test(voice.name)) ||
+        voices.find(voice => /^en-AU\b/i.test(voice.lang)) ||
+        voices.find(voice => /^en-GB\b/i.test(voice.lang)) ||
+        voices.find(voice => /^en\b/i.test(voice.lang)) ||
+        null;
+      return preferredVoice;
+    }
+
+    function speechChunks(text) {
+      const cleaned = String(text || '')
+        .replace(/```[\s\S]*?```/g, ' code block in chat. ')
+        .replace(/`([^`]+)`/g, '$1')
+        .replace(/https?:\/\/\S+/g, ' link ')
+        .replace(/[#>*_~|[\]{}]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      if (!cleaned) return [];
+      const sentences = cleaned.match(/[^.!?]+[.!?]+|\S.+$/g) || [cleaned];
+      const chunks = [];
+      let current = '';
+      sentences.forEach(sentence => {
+        const next = current ? `${current} ${sentence.trim()}` : sentence.trim();
+        if (next.length <= 230) {
+          current = next;
+          return;
+        }
+        if (current) chunks.push(current);
+        current = '';
+        const words = sentence.trim().split(/\s+/);
+        let part = '';
+        words.forEach(word => {
+          const candidate = part ? `${part} ${word}` : word;
+          if (candidate.length > 230) {
+            if (part) chunks.push(part);
+            part = word;
+          } else {
+            part = candidate;
+          }
+        });
+        if (part) current = part;
+      });
+      if (current) chunks.push(current);
+      return chunks.slice(0, 48);
+    }
+
+    function cancelSpeech() {
+      if (!canSpeak) return;
+      speaking = false;
+      window.speechSynthesis.cancel();
+      syncSpeakerButton();
+    }
+
+    function speakText(text, options = {}) {
+      if (!canSpeak || (!speakEnabled && !options.force)) return;
+      const chunks = speechChunks(text);
+      if (!chunks.length) return;
+      window.speechSynthesis.cancel();
+      speaking = true;
+      syncSpeakerButton();
+      let index = 0;
+      const voice = preferredVoice || pickVoice();
+      const next = () => {
+        if (!speaking || (!speakEnabled && !options.force) || index >= chunks.length) {
+          speaking = false;
+          syncSpeakerButton();
+          return;
+        }
+        const utterance = new SpeechSynthesisUtterance(chunks[index]);
+        index += 1;
+        utterance.rate = 0.96;
+        utterance.pitch = 1;
+        utterance.volume = 1;
+        if (voice) {
+          utterance.voice = voice;
+          utterance.lang = voice.lang || 'en-AU';
+        } else {
+          utterance.lang = 'en-AU';
+        }
+        utterance.onend = next;
+        utterance.onerror = () => {
+          speaking = false;
+          syncSpeakerButton();
+        };
+        window.speechSynthesis.speak(utterance);
+      };
+      next();
     }
 
     function syncControls() {
@@ -674,12 +788,14 @@
         currentBubble.closest('.msg')?.classList.remove('thinking');
       }
       currentBubble.textContent += text;
+      currentReplyText += text;
       currentBubble.closest('.msg')?.classList.add('streaming');
       scrollDown();
     }
 
     function startAssistantPlaceholder() {
       currentBubble = addMessage('assistant', 'thinking', 'claude');
+      currentReplyText = '';
       currentBubble.dataset.placeholder = 'true';
       currentBubble.closest('.msg')?.classList.add('streaming', 'thinking');
     }
@@ -759,6 +875,7 @@
       statusText.textContent = authReady ? 'online' : 'needs key';
       input.placeholder = authReady ? 'Ask / steer / ship' : 'Needs Claude key';
       syncControls();
+      syncSpeakerButton();
       if (!authReady) addSystem('Claude needs its key before this deck can talk.');
     }
 
@@ -842,9 +959,27 @@
 
     stopBtn.addEventListener('click', stopRun);
 
+    speakerBtn.addEventListener('click', () => {
+      if (!canSpeak) {
+        addSystem('speech is not available in this browser');
+        return;
+      }
+      speakEnabled = !speakEnabled;
+      localStorage.setItem('pibulus.claude.speak', speakEnabled ? '1' : '0');
+      if (!speakEnabled) {
+        cancelSpeech();
+        return;
+      }
+      syncSpeakerButton();
+      pickVoice();
+      speakText('voice on', { force: true });
+    });
+
     newBtn.addEventListener('click', () => {
       chatId = '';
       currentBubble = null;
+      currentReplyText = '';
+      cancelSpeech();
       clearFullArm();
       localStorage.removeItem('pibulus.claude.chatId');
       addSystem('new thread');
@@ -861,6 +996,7 @@
 
       addMessage('user', text, 'you');
       currentBubble = null;
+      currentReplyText = '';
       setRunning(true);
       const payload = {
         message: text,
@@ -919,7 +1055,9 @@
             currentBubble?.closest('.msg')?.classList.remove('streaming');
             currentBubble?.closest('.msg')?.classList.remove('thinking');
             if (currentBubble?.dataset.placeholder === 'true') currentBubble.closest('.msg')?.remove();
+            if (currentReplyText.trim()) speakText(currentReplyText);
             currentBubble = null;
+            currentReplyText = '';
             setRunning(false);
             if (event.timed_out) addSystem('run timed out');
             if (event.code && event.code !== 0) addSystem(`exit ${event.code}`);
@@ -948,6 +1086,12 @@
         setRunning(false);
       }
     });
+
+    if (canSpeak) {
+      window.speechSynthesis.onvoiceschanged = pickVoice;
+      pickVoice();
+    }
+    syncSpeakerButton();
 
     bootstrap().catch(err => {
       addSystem(err.message || String(err));
