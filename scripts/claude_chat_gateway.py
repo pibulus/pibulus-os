@@ -44,9 +44,9 @@ ALLOWED_ORIGINS = {
 }
 
 WORKSPACES = {
-    "pibulus-os": ROOT,
-    "apps": Path("/home/pibulus/apps"),
-    "deck-www": ROOT / "www" / "html",
+    "pibulus-os": {"label": "pibulus-os", "path": ROOT},
+    "apps": {"label": "apps", "path": Path("/home/pibulus/apps")},
+    "deck-www": {"label": "deck-www", "path": ROOT / "www" / "html"},
 }
 
 MODE_CONFIG = {
@@ -57,13 +57,13 @@ MODE_CONFIG = {
         "timeout": int(os.environ.get("CLAUDE_CHAT_PLAN_TIMEOUT", "900")),
     },
     "default": {
-        "label": "Default",
+        "label": "Ask",
         "permission": "default",
         "budget": os.environ.get("CLAUDE_CHAT_DEFAULT_BUDGET", "0.90"),
         "timeout": int(os.environ.get("CLAUDE_CHAT_DEFAULT_TIMEOUT", "1200")),
     },
     "auto": {
-        "label": "Auto",
+        "label": "Act",
         "permission": "auto",
         "budget": os.environ.get("CLAUDE_CHAT_AUTO_BUDGET", "1.25"),
         "timeout": int(os.environ.get("CLAUDE_CHAT_AUTO_TIMEOUT", "1500")),
@@ -120,9 +120,10 @@ def json_bytes(data: Any) -> bytes:
 
 
 def workspace_path(key: str) -> Path:
-    path = WORKSPACES.get(key)
-    if path is None:
+    item = WORKSPACES.get(key)
+    if item is None:
         raise ValueError("unknown workspace")
+    path = item["path"]
     resolved = path.resolve()
     if not resolved.exists() or not resolved.is_dir():
         raise ValueError("workspace unavailable")
@@ -146,6 +147,8 @@ def claude_version() -> str:
 
 
 def claude_auth_status() -> dict[str, Any]:
+    if os.environ.get("ANTHROPIC_API_KEY"):
+        return {"ok": True, "text": "ANTHROPIC_API_KEY loaded"}
     try:
         proc = subprocess.run(
             ["claude", "auth", "status", "--text"],
@@ -264,9 +267,9 @@ class Handler(BaseHTTPRequestHandler):
         if self.path == "/api/bootstrap":
             token = self.csrf_token_from_cookie() or make_cookie_token()
             workspaces = [
-                {"key": key, "label": key, "path": str(path)}
-                for key, path in WORKSPACES.items()
-                if path.exists()
+                {"key": key, "label": str(item["label"])}
+                for key, item in WORKSPACES.items()
+                if item["path"].exists()
             ]
             modes = [
                 {

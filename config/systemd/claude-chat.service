@@ -12,6 +12,7 @@ Environment=CLAUDE_CHAT_HOST=172.17.0.1
 Environment=CLAUDE_CHAT_PORT=9016
 Environment=CLAUDE_CHAT_ALLOWED_ORIGINS=https://deck.quickcat.club
 Environment=CLAUDE_CHAT_ENABLE_FULL=1
+EnvironmentFile=-/home/pibulus/.config/claude-chat.env
 ExecStart=/usr/bin/python3 /home/pibulus/pibulus-os/scripts/claude_chat_gateway.py
 Restart=on-failure
 RestartSec=5

@@ -251,11 +251,12 @@ curl -sS http://172.17.0.1:9016/api/bootstrap | python3 -m json.tool
 
 `claude-chat.service` is the host-local gateway for `https://deck.quickcat.club/deck/claude/`. It binds to `172.17.0.1:9016`, is proxied only under the authenticated Deck host, accepts JSON POSTs with a CSRF token, and allows one active Claude run at a time.
 
-If the UI says `auth needed`, authenticate Claude Code on the Pi:
+`claude-chat.service` reads `/home/pibulus/.config/claude-chat.env`, which should contain only the Claude API key needed by this gateway. If the UI says `auth needed`, refresh that private env file from the main local key store:
 
 ```bash
-claude auth login
-claude auth status --text
+bash -lc 'set -eu; set -a; . /home/pibulus/.config/api_keys; set +a; test -n "${ANTHROPIC_API_KEY:-}"; umask 077; printf "ANTHROPIC_API_KEY=%s\n" "$ANTHROPIC_API_KEY" > /home/pibulus/.config/claude-chat.env'
+sudo systemctl restart claude-chat.service
+curl -sS http://172.17.0.1:9016/api/bootstrap | python3 -m json.tool
 ```
 
 Custom app services are documented in `APP_DEPLOYMENT_MAP.md`; inspect with:
