@@ -249,7 +249,7 @@ journalctl -u claude-chat.service -n 80 --no-pager
 curl -sS http://172.17.0.1:9016/api/bootstrap | python3 -m json.tool
 ```
 
-`claude-chat.service` is the host-local gateway for `https://deck.quickcat.club/deck/claude/`. It binds to `172.17.0.1:9016`, is proxied only under the authenticated Deck host, accepts JSON POSTs with a CSRF token, and allows one active Claude run at a time.
+`claude-chat.service` is the host-local gateway for `https://deck.quickcat.club/deck/claude/`. It binds to `172.17.0.1:9016`, is proxied only under the authenticated Deck host, accepts JSON POSTs with a CSRF token, requires a short-lived `/api/arm` token for Full mode, and allows one active Claude run at a time.
 
 `claude-chat.service` reads `/home/pibulus/.config/claude-chat.env`, which should contain only the Claude API key needed by this gateway. If the UI says `auth needed`, refresh that private env file from the main local key store:
 

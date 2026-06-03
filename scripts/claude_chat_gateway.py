@@ -33,7 +33,7 @@ HOST = os.environ.get("CLAUDE_CHAT_HOST", "172.17.0.1")
 PORT = int(os.environ.get("CLAUDE_CHAT_PORT", "9016"))
 MAX_PROMPT_CHARS = int(os.environ.get("CLAUDE_CHAT_MAX_PROMPT_CHARS", "12000"))
 ENABLE_FULL = os.environ.get("CLAUDE_CHAT_ENABLE_FULL", "1") == "1"
-FULL_CONFIRM = os.environ.get("CLAUDE_CHAT_FULL_CONFIRM", "PIBULUS_FULL_AUTONOMY")
+FULL_ARM_TTL = int(os.environ.get("CLAUDE_CHAT_FULL_ARM_TTL", "75"))
 ALLOWED_ORIGINS = {
     item.strip()
     for item in os.environ.get(
@@ -78,7 +78,9 @@ MODE_CONFIG = {
 
 sessions_lock = threading.Lock()
 active_lock = threading.Lock()
+full_arm_lock = threading.Lock()
 active_run: dict[str, Any] | None = None
+full_arm_tokens: dict[str, dict[str, Any]] = {}
 
 
 def ensure_data_dir() -> None:
@@ -165,6 +167,33 @@ def claude_auth_status() -> dict[str, Any]:
 
 def make_cookie_token() -> str:
     return secrets.token_urlsafe(32)
+
+
+def cleanup_full_arm_tokens(now: float | None = None) -> None:
+    current = now or time.time()
+    expired = [token for token, meta in full_arm_tokens.items() if float(meta.get("expires", 0)) <= current]
+    for token in expired:
+        full_arm_tokens.pop(token, None)
+
+
+def issue_full_arm_token(workspace_key: str) -> tuple[str, int]:
+    token = secrets.token_urlsafe(32)
+    expires = time.time() + FULL_ARM_TTL
+    with full_arm_lock:
+        cleanup_full_arm_tokens(expires - FULL_ARM_TTL)
+        full_arm_tokens[token] = {"workspace": workspace_key, "expires": expires}
+    return token, FULL_ARM_TTL
+
+
+def consume_full_arm_token(token: str, workspace_key: str) -> bool:
+    if not token:
+        return False
+    with full_arm_lock:
+        cleanup_full_arm_tokens()
+        meta = full_arm_tokens.pop(token, None)
+    if not meta:
+        return False
+    return meta.get("workspace") == workspace_key
 
 
 def parse_cookie(header: str | None) -> http.cookies.SimpleCookie:
@@ -266,6 +295,8 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         if self.path == "/api/bootstrap":
             token = self.csrf_token_from_cookie() or make_cookie_token()
+            with active_lock:
+                is_active = active_run is not None
             workspaces = [
                 {"key": key, "label": str(item["label"])}
                 for key, item in WORKSPACES.items()
@@ -288,13 +319,13 @@ class Handler(BaseHTTPRequestHandler):
                     "claude_auth": claude_auth_status(),
                     "workspaces": workspaces,
                     "modes": modes,
-                    "active": active_run is not None,
+                    "active": is_active,
                     "max_prompt_chars": MAX_PROMPT_CHARS,
                 },
                 extra_headers={
                     "Set-Cookie": (
                         f"pibulus_claude_csrf={token}; Path=/claude/; "
-                        "SameSite=Strict; Secure"
+                        "SameSite=Strict; Secure; HttpOnly"
                     )
                 },
             )
@@ -326,10 +357,30 @@ class Handler(BaseHTTPRequestHandler):
         if self.path == "/api/chat":
             self.handle_chat()
             return
+        if self.path == "/api/arm":
+            self.handle_arm()
+            return
         if self.path == "/api/stop":
             self.handle_stop()
             return
         self.send_json({"error": "not found"}, HTTPStatus.NOT_FOUND)
+
+    def handle_arm(self) -> None:
+        if not self.require_post_guard():
+            return
+        if not ENABLE_FULL:
+            self.send_json({"error": "full mode disabled"}, HTTPStatus.FORBIDDEN)
+            return
+        try:
+            request = self.read_json()
+            workspace_key = str(request.get("workspace", "pibulus-os")).strip()
+            workspace_path(workspace_key)
+        except Exception as exc:
+            self.send_json({"error": f"bad request: {exc}"}, HTTPStatus.BAD_REQUEST)
+            return
+        token, expires_in = issue_full_arm_token(workspace_key)
+        audit("arm", workspace=workspace_key)
+        self.send_json({"ok": True, "arm_token": token, "expires_in": expires_in})
 
     def handle_stop(self) -> None:
         if not self.require_post_guard():
@@ -388,7 +439,7 @@ class Handler(BaseHTTPRequestHandler):
             self.send_json({"error": str(exc)}, HTTPStatus.BAD_REQUEST)
             return
 
-        if mode_key == "full" and request.get("confirm") != FULL_CONFIRM:
+        if mode_key == "full" and not consume_full_arm_token(str(request.get("arm_token") or ""), workspace_key):
             self.send_json({"error": "full mode not armed"}, HTTPStatus.FORBIDDEN)
             return
 

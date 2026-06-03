@@ -20,6 +20,7 @@
       --amber: #f4c65f;
       --coral: #ff7c5f;
       --magenta: #d762ff;
+      --blue: #86a8ff;
       --danger: #ff4f6f;
       --shadow: 0 18px 50px rgba(0,0,0,.34);
       --radius: 8px;
@@ -37,8 +38,31 @@
       overflow: hidden;
     }
 
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(rgba(255,255,255,.025) 50%, transparent 50%);
+      background-size: 100% 4px;
+      opacity: .24;
+      mix-blend-mode: screen;
+    }
+
     button, textarea, select { font: inherit; }
-    button { -webkit-tap-highlight-color: transparent; }
+    button {
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform .16s ease, border-color .16s ease, background-color .16s ease, color .16s ease, opacity .16s ease;
+    }
+
+    button:active { transform: translateY(1px); }
+    button:focus-visible,
+    textarea:focus-visible,
+    select:focus-visible {
+      outline: 2px solid rgba(71,199,176,.72);
+      outline-offset: 2px;
+    }
 
     .app {
       height: 100dvh;
@@ -62,6 +86,11 @@
       grid-template-columns: 44px 1fr auto;
       align-items: center;
       gap: 10px;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 6px;
     }
 
     .icon-btn,
@@ -129,6 +158,32 @@
     .status.bad .dot {
       background: var(--danger);
       box-shadow: 0 0 12px rgba(255,79,111,.75);
+    }
+
+    .signal-rail {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .signal-cell {
+      min-height: 24px;
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: var(--radius);
+      display: grid;
+      place-items: center;
+      color: var(--soft);
+      background: rgba(255,255,255,.035);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+
+    .signal-cell.hot {
+      color: var(--teal);
+      border-color: rgba(71,199,176,.3);
+      background: rgba(71,199,176,.07);
     }
 
     .controls {
@@ -213,6 +268,15 @@
       margin-bottom: 10px;
     }
 
+    .empty-art {
+      margin: 0 0 12px;
+      color: rgba(134,168,255,.76);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.1;
+      white-space: pre;
+    }
+
     .empty-actions {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -227,14 +291,33 @@
       color: var(--text);
       background: rgba(255,255,255,.055);
       text-align: left;
-      font-size: 13px;
       font-weight: 750;
+      display: grid;
+      gap: 2px;
+    }
+
+    .chip-main {
+      color: var(--text);
+      font-size: 13px;
+      line-height: 1.1;
+    }
+
+    .chip-sub {
+      color: var(--soft);
+      font-size: 11px;
+      line-height: 1.15;
+      font-weight: 650;
     }
 
     .prompt-chip:active {
       transform: translateY(1px);
       border-color: rgba(71,199,176,.58);
       background: rgba(71,199,176,.12);
+    }
+
+    .prompt-chip:disabled {
+      cursor: not-allowed;
+      opacity: .42;
     }
 
     .msg {
@@ -345,6 +428,14 @@
       border-color: var(--danger);
     }
 
+    .hold.pending {
+      color: var(--amber);
+      border-color: rgba(244,198,95,.5);
+      background:
+        linear-gradient(90deg, rgba(244,198,95,.24), rgba(244,198,95,.24)) 0 0 / 100% 100% no-repeat,
+        rgba(244,198,95,.08);
+    }
+
     .compose-row {
       width: min(100%, 760px);
       margin: 0 auto;
@@ -428,7 +519,15 @@
           <h1>Claude Deck</h1>
           <div class="status" id="statusPill"><span class="dot"></span><span id="statusText">checking</span></div>
         </div>
-        <button class="icon-btn stop" id="stopBtn" type="button" aria-label="Stop">■</button>
+        <div class="top-actions">
+          <button class="icon-btn" id="newBtn" type="button" aria-label="New chat">＋</button>
+          <button class="icon-btn stop" id="stopBtn" type="button" aria-label="Stop">■</button>
+        </div>
+      </div>
+      <div class="signal-rail" aria-hidden="true">
+        <div class="signal-cell hot" id="signalMode">plan</div>
+        <div class="signal-cell" id="signalWorkspace">pibulus-os</div>
+        <div class="signal-cell" id="signalRun">idle</div>
       </div>
       <div class="controls">
         <div class="modes" id="modes" role="group" aria-label="Mode"></div>
@@ -439,12 +538,16 @@
     <section class="transcript" id="transcript" aria-live="polite">
       <div class="empty" id="empty">
         <div class="empty-kicker" id="emptyKicker">pibulus-os · plan</div>
+        <pre class="empty-art" aria-hidden="true">┌─ deck link ─┐
+│  ◉     ◉    │
+│    ▔▔▔      │
+└─────────────┘</pre>
         <div class="empty-title">Ready</div>
         <div class="empty-actions">
-          <button class="prompt-chip" type="button" data-prompt="Check Pi health, storage, recent warnings, and the public Quick Cat routes. Summarize what needs attention first.">Health sweep</button>
-          <button class="prompt-chip" type="button" data-prompt="Inspect recent changes in /home/pibulus/pibulus-os and tell me what is dirty, risky, or ready to commit.">Repo pulse</button>
-          <button class="prompt-chip" type="button" data-prompt="Look at the running services and containers. Flag anything noisy, stuck, or safe to leave alone.">Service scan</button>
-          <button class="prompt-chip" type="button" data-prompt="Plan the next smallest safe improvement for the Pi. Do not change files yet.">Plan move</button>
+          <button class="prompt-chip" type="button" data-prompt="Check Pi health, storage, recent warnings, and the public Quick Cat routes. Summarize what needs attention first."><span class="chip-main">Health sweep</span><span class="chip-sub">Pi + public routes</span></button>
+          <button class="prompt-chip" type="button" data-prompt="Inspect recent changes in /home/pibulus/pibulus-os and tell me what is dirty, risky, or ready to commit."><span class="chip-main">Repo pulse</span><span class="chip-sub">dirty files + next move</span></button>
+          <button class="prompt-chip" type="button" data-prompt="Look at the running services and containers. Flag anything noisy, stuck, or safe to leave alone."><span class="chip-main">Service scan</span><span class="chip-sub">containers + timers</span></button>
+          <button class="prompt-chip" type="button" data-prompt="Plan the next smallest safe improvement for the Pi. Do not change files yet."><span class="chip-main">Plan move</span><span class="chip-sub">no edits yet</span></button>
         </div>
       </div>
     </section>
@@ -469,6 +572,7 @@
     const form = document.getElementById('form');
     const input = document.getElementById('input');
     const sendBtn = document.getElementById('sendBtn');
+    const newBtn = document.getElementById('newBtn');
     const stopBtn = document.getElementById('stopBtn');
     const modesEl = document.getElementById('modes');
     const workspaceEl = document.getElementById('workspace');
@@ -477,6 +581,10 @@
     const holdBtn = document.getElementById('holdBtn');
     const statusPill = document.getElementById('statusPill');
     const statusText = document.getElementById('statusText');
+    const signalMode = document.getElementById('signalMode');
+    const signalWorkspace = document.getElementById('signalWorkspace');
+    const signalRun = document.getElementById('signalRun');
+    const promptChips = [...document.querySelectorAll('.prompt-chip')];
 
     let csrf = '';
     let chatId = localStorage.getItem('pibulus.claude.chatId') || '';
@@ -485,6 +593,9 @@
     let running = false;
     let authReady = false;
     let fullArmed = false;
+    let armToken = '';
+    let armExpiresAt = 0;
+    let armPending = false;
     let holdTimer = null;
     let currentBubble = null;
 
@@ -497,12 +608,14 @@
       stopBtn.classList.toggle('disabled', !value);
       stopBtn.setAttribute('aria-disabled', String(!value));
       form.setAttribute('aria-busy', String(value));
+      if (signalRun) signalRun.textContent = value ? 'live' : 'idle';
     }
 
     function syncControls() {
       input.disabled = !authReady;
       workspaceEl.disabled = !authReady;
       sendBtn.disabled = running || !authReady;
+      promptChips.forEach(btn => { btn.disabled = !authReady; });
       [...modesEl.querySelectorAll('.mode')].forEach(btn => {
         btn.disabled = btn.dataset.enabled === 'false' || !authReady;
       });
@@ -511,6 +624,19 @@
     function syncReadouts() {
       if (emptyKicker) emptyKicker.textContent = `${workspace} · ${mode}`;
       if (armCopy) armCopy.textContent = `Full mode can edit in ${workspace}.`;
+      if (signalMode) signalMode.textContent = mode;
+      if (signalWorkspace) signalWorkspace.textContent = workspace;
+    }
+
+    function clearFullArm() {
+      fullArmed = false;
+      armToken = '';
+      armExpiresAt = 0;
+      armPending = false;
+      if (holdTimer) clearTimeout(holdTimer);
+      holdTimer = null;
+      holdBtn.classList.remove('armed', 'charging', 'pending');
+      holdBtn.textContent = 'HOLD';
     }
 
     function scrollDown() {
@@ -568,10 +694,7 @@
     function setMode(next) {
       mode = next;
       localStorage.setItem('pibulus.claude.mode', mode);
-      fullArmed = false;
-      holdBtn.classList.remove('armed');
-      holdBtn.classList.remove('charging');
-      holdBtn.textContent = 'HOLD';
+      clearFullArm();
       fullArm.classList.toggle('show', mode === 'full');
       syncReadouts();
       [...modesEl.querySelectorAll('.mode')].forEach(btn => {
@@ -624,26 +747,28 @@
       if (!res.ok) throw new Error(`bootstrap ${res.status}`);
       const data = await res.json();
       csrf = data.csrf;
+      authReady = Boolean(data.claude_auth && data.claude_auth.ok);
       renderModes(data.modes || []);
       renderWorkspaces(data.workspaces || []);
       setRunning(Boolean(data.active));
       input.maxLength = data.max_prompt_chars || 12000;
-      authReady = Boolean(data.claude_auth && data.claude_auth.ok);
       statusPill.classList.toggle('bad', !authReady);
-      statusText.textContent = authReady ? data.claude_version : 'auth needed';
-      input.placeholder = authReady ? 'Message Claude' : 'Auth needed';
+      statusText.textContent = authReady ? 'online' : 'needs key';
+      input.placeholder = authReady ? 'Ask / steer / ship' : 'Needs Claude key';
       syncControls();
-      if (!authReady) addSystem('Claude auth is not available to claude-chat.service.');
+      if (!authReady) addSystem('Claude needs its key before this deck can talk.');
     }
 
     workspaceEl.addEventListener('change', () => {
       workspace = workspaceEl.value;
       localStorage.setItem('pibulus.claude.workspace', workspace);
+      clearFullArm();
       syncReadouts();
     });
 
-    document.querySelectorAll('.prompt-chip').forEach(btn => {
+    promptChips.forEach(btn => {
       btn.addEventListener('click', () => {
+        if (!authReady) return;
         input.value = btn.dataset.prompt || '';
         input.dispatchEvent(new Event('input'));
         input.focus();
@@ -655,16 +780,41 @@
       input.style.height = Math.min(input.scrollHeight, 180) + 'px';
     });
 
+    async function armFullMode() {
+      if (mode !== 'full' || armPending || running) return;
+      armPending = true;
+      holdBtn.classList.remove('charging');
+      holdBtn.classList.add('pending');
+      holdBtn.textContent = '...';
+      try {
+        const res = await fetch(`${api}/arm`, {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json', 'X-PIBULUS-CSRF': csrf },
+          body: JSON.stringify({ workspace })
+        });
+        if (!res.ok) throw new Error(`arm ${res.status}`);
+        const data = await res.json();
+        armToken = data.arm_token || '';
+        armExpiresAt = Date.now() + ((data.expires_in || 60) * 1000);
+        fullArmed = Boolean(armToken);
+        holdBtn.classList.toggle('armed', fullArmed);
+        holdBtn.textContent = fullArmed ? 'NEXT' : 'HOLD';
+      } catch (err) {
+        clearFullArm();
+        addSystem('Full could not arm.');
+      } finally {
+        armPending = false;
+        holdBtn.classList.remove('pending');
+      }
+    }
+
     holdBtn.addEventListener('pointerdown', () => {
       if (mode !== 'full') return;
-      holdBtn.textContent = '...';
+      clearFullArm();
+      holdBtn.textContent = 'HOLD';
       holdBtn.classList.add('charging');
-      holdTimer = setTimeout(() => {
-        fullArmed = true;
-        holdBtn.classList.remove('charging');
-        holdBtn.classList.add('armed');
-        holdBtn.textContent = 'NEXT';
-      }, 900);
+      holdTimer = setTimeout(armFullMode, 900);
     });
 
     ['pointerup', 'pointercancel', 'pointerleave'].forEach(name => {
@@ -689,10 +839,20 @@
 
     stopBtn.addEventListener('click', stopRun);
 
+    newBtn.addEventListener('click', () => {
+      chatId = '';
+      currentBubble = null;
+      clearFullArm();
+      localStorage.removeItem('pibulus.claude.chatId');
+      addSystem('new thread');
+    });
+
     async function sendMessage(text) {
       if (running) return;
-      if (mode === 'full' && !fullArmed) {
-        addSystem('full mode is not armed');
+      const fullReady = fullArmed && armToken && Date.now() < armExpiresAt;
+      if (mode === 'full' && !fullReady) {
+        clearFullArm();
+        addSystem('hold Full first');
         return;
       }
 
@@ -704,11 +864,9 @@
         chat_id: chatId,
         mode,
         workspace,
-        confirm: mode === 'full' && fullArmed ? 'PIBULUS_FULL_AUTONOMY' : ''
+        arm_token: mode === 'full' ? armToken : ''
       };
-      fullArmed = false;
-      holdBtn.classList.remove('armed');
-      holdBtn.textContent = 'HOLD';
+      clearFullArm();
 
       const res = await fetch(`${api}/chat`, {
         method: 'POST',
@@ -743,10 +901,10 @@
           if (!line) continue;
           let event;
           try { event = JSON.parse(line); } catch (_) { continue; }
-      if (event.type === 'started') {
-        saveChatId(event.chat_id);
-        startAssistantPlaceholder();
-      } else if (event.type === 'claude' && event.text) {
+          if (event.type === 'started') {
+            saveChatId(event.chat_id);
+            startAssistantPlaceholder();
+          } else if (event.type === 'claude' && event.text) {
             appendAssistant(event.text);
           } else if (event.type === 'line' && event.text) {
             appendAssistant(event.text + '\n');
@@ -772,8 +930,10 @@
       event.preventDefault();
       const text = input.value.trim();
       if (!text) return;
-      if (mode === 'full' && !fullArmed) {
-        addSystem('full mode is not armed');
+      const fullReady = fullArmed && armToken && Date.now() < armExpiresAt;
+      if (mode === 'full' && !fullReady) {
+        clearFullArm();
+        addSystem('hold Full first');
         return;
       }
       input.value = '';
