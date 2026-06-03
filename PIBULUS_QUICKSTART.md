@@ -107,6 +107,18 @@ systemctl list-timers rpi-zram-writeback.timer --no-pager
 cat /run/systemd/zram-generator.conf.d/20-rpi-swap-zram0-ctrl.conf 2>/dev/null || true
 ```
 
+## Ambient Automation
+
+As of 2026-06-03, background polling has been deliberately calmed down to reduce SD/root churn:
+
+- `scripts/status.sh`: every 5 minutes, not every minute. It reads Docker/web status and writes `status.json` plus the heartbeat log on Passport.
+- `scripts/cloudflare-watchdog.sh`: every 30 minutes, matching the script's own intent.
+- `scripts/qb_unstick.sh`: every 30 minutes.
+- `scripts/gen_request_catalog.py`: every 12 hours; it fetches all AzuraCast request pages and rewrites the KPAB catalog.
+- `pibulus-watchdog.timer`: every 10 minutes with a 90 second randomized delay.
+
+Keep daily backup jobs unless Pablo explicitly asks to trade recovery coverage for less disk activity. The daily `counts.sh` job walks parts of Passport, not the root SD, and should stay daily unless the Passport is struggling.
+
 ## Architecture
 
 Main layers:
