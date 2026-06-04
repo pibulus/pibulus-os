@@ -32,8 +32,16 @@
       --coral-rgb: 255,122,92;
       --danger: #ff5470;
       --danger-rgb: 255,84,112;
+      --rose: #d8a8b8;
+      --rose-rgb: 216,168,184;
+      --sage: #7fa89f;
+      --sage-rgb: 127,168,159;
+      --indigo: #4a5a7a;
+      --indigo-rgb: 74,90,122;
       --teal: var(--green);
       --amber: var(--gold);
+      --moon-phase: 0.5;
+      --weather-tint: 0deg;
       --shadow: 0 18px 50px rgba(0,0,0,.34);
       --radius: 8px;
       --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
@@ -51,6 +59,7 @@
       background-size: 42px 42px, 100% 100%;
       color: var(--text);
       overflow: hidden;
+      filter: url(#chromatic) saturate(calc(.85 + var(--moon-phase) * .3));
     }
 
     body::before {
@@ -333,6 +342,13 @@
         opacity: 1;
         transform: scale(1) translateY(0);
       }
+    }
+
+    @keyframes fadeInOut {
+      0% { opacity: 0; }
+      20% { opacity: 0.3; }
+      80% { opacity: 0.3; }
+      100% { opacity: 0; }
     }
 
     .spending-bar {
@@ -656,6 +672,16 @@
     </footer>
   </main>
 
+  <svg style="display:none">
+    <defs>
+      <filter id="chromatic">
+        <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" seed="2" result="noise" />
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="0.8" xChannelSelector="R" yChannelSelector="G" />
+        <feColorMatrix type="saturate" values="0.95" />
+      </filter>
+    </defs>
+  </svg>
+
   <script>
     const api = '/claude/api';
     const transcript = document.getElementById('transcript');
@@ -751,6 +777,39 @@
           }
         } catch (_) {}
       }
+    }
+
+    function updateMoonPhase() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth() + 1;
+      const day = now.getDate();
+      const c = Math.floor(year / 100);
+      const s = Math.floor((year - 1900) / 100);
+      const a = (14 - month) / 12;
+      const y = year - a;
+      const m = month + 12 * a - 2;
+      const jd = day + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
+      const d = jd - 2451550.1;
+      const phase = ((d % 29.530588861) / 29.530588861 + 1) % 1;
+      document.documentElement.style.setProperty('--moon-phase', phase.toFixed(3));
+      return phase;
+    }
+
+    function fetchSigil() {
+      fetch('/stargram/api/sigil', { cache: 'no-store' })
+        .then(r => r.json())
+        .then(data => {
+          if (data.sigil) {
+            const corner = ['top-left', 'top-right', 'bottom-left', 'bottom-right'][Math.floor(Math.random() * 4)];
+            const el = document.createElement('div');
+            el.style.cssText = `position: fixed; ${corner === 'top-left' ? 'top: 20px; left: 20px' : corner === 'top-right' ? 'top: 20px; right: 20px' : corner === 'bottom-left' ? 'bottom: 20px; left: 20px' : 'bottom: 20px; right: 20px'}; font-size: 32px; opacity: 0.2; pointer-events: none; animation: fadeInOut 8s ease-in-out; z-index: 1;`;
+            el.textContent = data.sigil;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 8000);
+          }
+        })
+        .catch(() => {});
     }
 
     function setRunning(value) {
@@ -1106,8 +1165,12 @@
       syncSpeakerButton();
       if (!authReady) addSystem('Claude needs its key before this deck can talk.');
       injectOrganic();
+      updateMoonPhase();
       updatePiGlow();
+      setInterval(updateMoonPhase, 3600000);
       setInterval(updatePiGlow, 30000);
+      setInterval(fetchSigil, 120000);
+      setTimeout(fetchSigil, 2000);
     }
 
     promptChips.forEach(btn => {
@@ -1153,7 +1216,17 @@
       clearFullArm();
       holdBtn.textContent = 'HOLD';
       holdBtn.classList.add('charging');
-      holdTimer = setTimeout(armFullMode, 900);
+      if (navigator.vibrate) navigator.vibrate(40);
+      let hapticCount = 0;
+      const hapticInterval = setInterval(() => {
+        if (hapticCount++ > 8) clearInterval(hapticInterval);
+        if (navigator.vibrate) navigator.vibrate(30 + hapticCount * 5);
+      }, 110);
+      holdTimer = setTimeout(() => {
+        clearInterval(hapticInterval);
+        if (navigator.vibrate) navigator.vibrate([50, 50, 100]);
+        armFullMode();
+      }, 900);
     });
 
     ['pointerup', 'pointercancel', 'pointerleave'].forEach(name => {
@@ -1162,6 +1235,7 @@
         holdTimer = null;
         holdBtn.classList.remove('charging');
         if (!fullArmed) holdBtn.textContent = 'HOLD';
+        if (navigator.vibrate) navigator.vibrate(20);
       });
     });
 
