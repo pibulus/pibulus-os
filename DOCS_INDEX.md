@@ -36,6 +36,12 @@ This is the sane starting map for both humans and AI agents.
 - [docs/DECK_MAP.md](./docs/DECK_MAP.md)
   Reverse-engineering guide for the Pi control surface.
 
+- [scripts/agent_tools.sh](./scripts/agent_tools.sh)
+  Read-only toolbox map for Deck-launched agents.
+
+- [scripts/deck_doctor.sh](./scripts/deck_doctor.sh)
+  Compact health pass for the Deck gateway, services, disks, mount state, and timers.
+
 ## Context / Archaeology
 
 - [docs/AI_COLLECTIVE_CONTEXT.md](./docs/AI_COLLECTIVE_CONTEXT.md)

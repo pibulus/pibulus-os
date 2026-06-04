@@ -6,6 +6,10 @@ Quick reverse-engineering guide for the Pi control surface.
 
 - `launcher.sh`
   Admin launcher for the `deck` alias. This is the main control surface for SSH/TTY use.
+- `scripts/agent_tools.sh`
+  Read-only toolbox map for agents. Use `--list` for humans and `--json` for structured agent context.
+- `scripts/deck_doctor.sh`
+  Read-only health pass for the web Deck, gateway, service state, disk pressure, Passport mount, timers, and SD-card guardrails.
 - `public-deck.sh`
   Public-facing textworld gateway used by the public terminal flow.
 - `FIELD_MANUAL.md`
@@ -68,6 +72,10 @@ There are more modules in the repo, but the three above are the ones directly to
   Home/away network mode helper.
 - `scripts/find_media.py`
   Search helper for local media browsing.
+- `scripts/agent_tools.sh`
+  Current agent toolbox inventory, including the `deck` alias/launcher and risk notes.
+- `scripts/deck_doctor.sh`
+  Compact doctor pass for cron/systemd health logging.
 - `scripts/pirate_grab.py`
   TV/movie grab engine behind pirate-grab.
 - `scripts/deploy.sh`
@@ -86,6 +94,8 @@ There are more modules in the repo, but the three above are the ones directly to
 - Main media drive: `/media/pibulus/passport`
 - Newsboat config: `/home/pibulus/.newsboat`
 - Field notes log: `/home/pibulus/pibulus-os/logs/field-notes.log`
+- Deck doctor JSON: `/media/pibulus/passport/www/html/deck-doctor.json`
+- Deck doctor log: `/media/pibulus/passport/Backups/pi-system/logs/deck-doctor.log`
 
 ## External / Service Expectations
 

@@ -57,10 +57,14 @@ This is shared orientation for Claude Code, Codex CLI, Gemini CLI, DeepSeek/Open
 
 ## Operator Tools Available
 
-Scripts live in `/home/pibulus/pibulus-os/scripts`. Prefer `--dry-run`, `--list`, or read-only status commands first. Many tools write to Passport media folders or talk to local services; do not run large downloads, broad scans, Docker starts, or queue-changing actions from Plan mode.
+Start with `/home/pibulus/pibulus-os/scripts/agent_tools.sh --list` or `--json` when you need the current toolbox map. Scripts live in `/home/pibulus/pibulus-os/scripts`. Prefer `--dry-run`, `--list`, or read-only status commands first. Many tools write to Passport media folders or talk to local services; do not run large downloads, broad scans, Docker starts, or queue-changing actions from Plan mode.
+
+The terminal alias `deck` points to `/home/pibulus/pibulus-os/launcher.sh`. That launcher is Pablo's SSH/TTY control surface: SIGINT, radio, media, drives, ops, Soulseek, feeds, notes, and terminal chat. The web Deck and terminal `deck` launcher are two faces of the same private Pi cockpit.
 
 ### System And Deck
 
+- `agent_tools.sh --list` / `--json`: read-only source of truth for agent-visible tools, commands, risk level, and availability.
+- `deck_doctor.sh`: read-only health pass for Deck bootstrap, service health, disk pressure, Passport mount, watchdog timers, and SD-card guardrails. It writes compact status JSON to Passport.
 - `status.sh`: writes live deck status JSON to Passport-backed web state.
 - `pulse.py`: terminal live panel for system, downloads, radio, Jellyfin, and Navidrome.
 - `deploy_app.sh <talktype|ziplist|stargram|ghostnote>`: guarded app deploy with lock, capacity checks, Passport-backed staging, backup, smoke test, and rollback metadata.

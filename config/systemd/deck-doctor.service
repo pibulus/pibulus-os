@@ -1,0 +1,19 @@
+[Unit]
+Description=PIBULUS Deck doctor status pass
+Wants=network-online.target docker.service
+After=network-online.target docker.service claude-chat.service
+
+[Service]
+Type=oneshot
+User=pibulus
+Group=pibulus
+WorkingDirectory=/home/pibulus/pibulus-os
+ExecStart=/home/pibulus/pibulus-os/scripts/deck_doctor.sh --quiet
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+TimeoutStartSec=45
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ReadWritePaths=/media/pibulus/passport /tmp
