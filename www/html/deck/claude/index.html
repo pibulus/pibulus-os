@@ -175,82 +175,6 @@
       box-shadow: 0 0 12px rgba(var(--danger-rgb),.75);
     }
 
-    .signal-rail {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 6px;
-      margin-top: 10px;
-    }
-
-    .signal-cell {
-      min-height: 24px;
-      border: 1px solid rgba(var(--cream-rgb),.1);
-      border-radius: var(--radius);
-      display: grid;
-      place-items: center;
-      color: var(--soft);
-      background: rgba(var(--cream-rgb),.035);
-      font-family: var(--mono);
-      font-size: 11px;
-      text-transform: uppercase;
-    }
-
-    .signal-cell.hot {
-      color: var(--amber);
-      border-color: rgba(var(--gold-rgb),.32);
-      background: rgba(var(--gold-rgb),.075);
-    }
-
-    .controls {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 8px;
-      margin-top: 10px;
-    }
-
-    .modes {
-      min-width: 0;
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 6px;
-    }
-
-    .mode {
-      padding: 0 7px;
-      color: var(--muted);
-      font-weight: 700;
-      font-size: 12px;
-      display: grid;
-      place-items: center;
-      gap: 1px;
-    }
-
-    .mode.active {
-      border-color: rgba(var(--gold-rgb),.6);
-      color: var(--text);
-      background: rgba(var(--gold-rgb),.13);
-    }
-
-    .mode[data-mode="full"].active {
-      border-color: rgba(var(--danger-rgb),.72);
-      background: rgba(var(--danger-rgb),.14);
-    }
-
-    .mode-label { line-height: 1; }
-
-    .mode-budget {
-      color: var(--soft);
-      font-size: 10px;
-      font-weight: 650;
-      line-height: 1;
-    }
-
-    .select {
-      width: 112px;
-      padding: 0 10px;
-      color: var(--text);
-      background: rgba(var(--panel-rgb),.92);
-    }
 
     .transcript {
       overflow-y: auto;
@@ -382,10 +306,83 @@
     .assistant.thinking .bubble {
       color: var(--soft);
       font-style: italic;
+      animation: breathe 1.8s ease-in-out infinite;
+      border-color: rgba(var(--green-rgb),.42);
+      box-shadow: 0 0 12px rgba(var(--green-rgb),.16);
+    }
+
+    @keyframes breathe {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    .spending-bar {
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 8px;
+      border: 1px solid rgba(var(--green-rgb),.24);
+      border-radius: var(--radius);
+      background: rgba(var(--green-rgb),.06);
+      font-size: 13px;
+    }
+
+    .spending-label {
+      color: var(--soft);
+      font-weight: 600;
+    }
+
+    .spending-amount {
+      color: var(--green);
+      font-weight: 800;
     }
 
     .msg.system {
       justify-items: center;
+    }
+
+    .bubble-wrapper {
+      position: relative;
+      display: grid;
+      gap: 6px;
+      align-items: start;
+    }
+
+    .copy-btn {
+      opacity: 0;
+      transition: opacity .2s ease;
+      width: 32px;
+      height: 32px;
+      min-height: 0;
+      padding: 6px;
+      font-size: 14px;
+      border-color: rgba(var(--green-rgb),.3);
+      background: rgba(var(--green-rgb),.08);
+      color: var(--green);
+      align-self: start;
+      margin-top: 2px;
+    }
+
+    .copy-btn:hover {
+      border-color: rgba(var(--green-rgb),.54);
+      background: rgba(var(--green-rgb),.15);
+    }
+
+    .copy-btn.copied {
+      color: var(--text);
+      border-color: rgba(var(--green-rgb),.7);
+      background: rgba(var(--green-rgb),.18);
+    }
+
+    .assistant .bubble-wrapper:hover .copy-btn {
+      opacity: 1;
+    }
+
+    @media (max-width: 520px) {
+      .copy-btn {
+        opacity: 1;
+      }
     }
 
     .system .bubble {
@@ -581,8 +578,6 @@
 
     @media (max-width: 390px) {
       .topbar { padding-left: 10px; padding-right: 10px; }
-      .controls { grid-template-columns: 1fr; }
-      .select { width: 100%; }
       .empty-actions { grid-template-columns: 1fr; }
     }
 
@@ -605,15 +600,6 @@
           <button class="icon-btn" id="newBtn" type="button" aria-label="New chat">＋</button>
           <button class="icon-btn stop" id="stopBtn" type="button" aria-label="Stop">■</button>
         </div>
-      </div>
-      <div class="signal-rail" aria-hidden="true">
-        <div class="signal-cell hot" id="signalMode">plan</div>
-        <div class="signal-cell" id="signalWorkspace">pibulus-os</div>
-        <div class="signal-cell" id="signalRun">idle</div>
-      </div>
-      <div class="controls">
-        <div class="modes" id="modes" role="group" aria-label="Mode"></div>
-        <select class="select" id="workspace" aria-label="Workspace"></select>
       </div>
     </header>
 
@@ -639,6 +625,10 @@
         <div class="arm-copy" id="armCopy">Full mode can edit in pibulus-os.</div>
         <button class="hold" id="holdBtn" type="button">HOLD</button>
       </div>
+      <div class="spending-bar">
+        <span class="spending-label">chat cost:</span>
+        <span class="spending-amount" id="spendingAmount">$0.00</span>
+      </div>
       <form class="compose-row" id="form">
         <textarea id="input" rows="1" maxlength="12000" placeholder="Message Claude" enterkeyhint="send" autocomplete="off" autocapitalize="sentences" spellcheck="true"></textarea>
         <button class="mic" id="micBtn" type="button" aria-label="Dictate">◉</button>
@@ -659,22 +649,18 @@
     const speakerBtn = document.getElementById('speakerBtn');
     const newBtn = document.getElementById('newBtn');
     const stopBtn = document.getElementById('stopBtn');
-    const modesEl = document.getElementById('modes');
-    const workspaceEl = document.getElementById('workspace');
     const fullArm = document.getElementById('fullArm');
     const armCopy = document.getElementById('armCopy');
     const holdBtn = document.getElementById('holdBtn');
     const statusPill = document.getElementById('statusPill');
     const statusText = document.getElementById('statusText');
-    const signalMode = document.getElementById('signalMode');
-    const signalWorkspace = document.getElementById('signalWorkspace');
-    const signalRun = document.getElementById('signalRun');
+    const spendingAmount = document.getElementById('spendingAmount');
     const promptChips = [...document.querySelectorAll('.prompt-chip')];
 
     let csrf = '';
     let chatId = localStorage.getItem('pibulus.claude.chatId') || '';
-    let mode = localStorage.getItem('pibulus.claude.mode') || 'plan';
-    let workspace = localStorage.getItem('pibulus.claude.workspace') || 'pibulus-os';
+    const mode = 'auto';
+    const workspace = 'pibulus-os';
     let running = false;
     let authReady = false;
     let fullArmed = false;
@@ -684,6 +670,7 @@
     let holdTimer = null;
     let currentBubble = null;
     let currentReplyText = '';
+    let chatCost = 0;
     let speakEnabled = localStorage.getItem('pibulus.claude.speak') === '1';
     let speaking = false;
     let preferredVoice = null;
@@ -696,6 +683,23 @@
     const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition || null;
     const canDictate = Boolean(Recognition);
 
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    function playSound(f, d) {
+      try {
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        osc.connect(gain); gain.connect(audioContext.destination);
+        osc.frequency.setValueAtTime(f, audioContext.currentTime);
+        gain.gain.setValueAtTime(0.08, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + d);
+        osc.start(audioContext.currentTime);
+        osc.stop(audioContext.currentTime + d);
+      } catch (_) {}
+    }
+    function beepSend() { playSound(800, 0.1); }
+    function beepThinking() { playSound(400, 0.08); setTimeout(() => playSound(520, 0.08), 80); }
+    function beepDone() { playSound(600, 0.08); setTimeout(() => playSound(420, 0.08), 80); }
+
     function setRunning(value) {
       running = value;
       sendBtn.disabled = value || !authReady;
@@ -705,7 +709,6 @@
       stopBtn.classList.toggle('disabled', !value);
       stopBtn.setAttribute('aria-disabled', String(!value));
       form.setAttribute('aria-busy', String(value));
-      if (signalRun) signalRun.textContent = value ? 'live' : 'idle';
       syncMicButton();
     }
 
@@ -720,6 +723,7 @@
     function fitInput() {
       input.style.height = 'auto';
       input.style.height = Math.min(input.scrollHeight, 180) + 'px';
+      setTimeout(() => { input.scrollTop = input.scrollHeight; }, 0);
     }
 
     function setComposerText(text, focus = false) {
@@ -936,20 +940,9 @@
 
     function syncControls() {
       input.disabled = !authReady;
-      workspaceEl.disabled = !authReady;
       sendBtn.disabled = running || !authReady;
       syncMicButton();
       promptChips.forEach(btn => { btn.disabled = !authReady; });
-      [...modesEl.querySelectorAll('.mode')].forEach(btn => {
-        btn.disabled = btn.dataset.enabled === 'false' || !authReady;
-      });
-    }
-
-    function syncReadouts() {
-      if (emptyKicker) emptyKicker.textContent = `${workspace} · ${mode}`;
-      if (armCopy) armCopy.textContent = `Full mode can edit in ${workspace}.`;
-      if (signalMode) signalMode.textContent = mode;
-      if (signalWorkspace) signalWorkspace.textContent = workspace;
     }
 
     function clearFullArm() {
@@ -981,7 +974,34 @@
       const bubble = document.createElement('div');
       bubble.className = 'bubble';
       bubble.textContent = text || '';
-      wrap.append(small, bubble);
+
+      if (role === 'assistant') {
+        const bubbleWrapper = document.createElement('div');
+        bubbleWrapper.className = 'bubble-wrapper';
+        const copyBtn = document.createElement('button');
+        copyBtn.type = 'button';
+        copyBtn.className = 'copy-btn';
+        copyBtn.innerHTML = '📋';
+        copyBtn.setAttribute('aria-label', 'Copy');
+        copyBtn.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(bubble.textContent);
+            copyBtn.classList.add('copied');
+            copyBtn.innerHTML = '✓';
+            setTimeout(() => {
+              copyBtn.classList.remove('copied');
+              copyBtn.innerHTML = '📋';
+            }, 1800);
+          } catch (e) {
+            console.log('Copy failed:', e);
+          }
+        });
+        bubbleWrapper.append(bubble, copyBtn);
+        wrap.append(small, bubbleWrapper);
+      } else {
+        wrap.append(small, bubble);
+      }
+
       transcript.appendChild(wrap);
       scrollDown();
       return bubble;
@@ -1001,6 +1021,7 @@
     }
 
     function startAssistantPlaceholder() {
+      beepThinking();
       currentBubble = addMessage('assistant', 'thinking', 'claude');
       currentReplyText = '';
       currentBubble.dataset.placeholder = 'true';
@@ -1017,65 +1038,12 @@
       if (chatId) localStorage.setItem('pibulus.claude.chatId', chatId);
     }
 
-    function setMode(next) {
-      mode = next;
-      localStorage.setItem('pibulus.claude.mode', mode);
-      clearFullArm();
-      fullArm.classList.toggle('show', mode === 'full');
-      syncReadouts();
-      [...modesEl.querySelectorAll('.mode')].forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.mode === mode);
-      });
-    }
-
-    function renderModes(modes) {
-      modesEl.textContent = '';
-      modes.forEach(item => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'mode';
-        btn.dataset.mode = item.key;
-        btn.dataset.enabled = item.enabled === false ? 'false' : 'true';
-        const label = document.createElement('span');
-        label.className = 'mode-label';
-        label.textContent = item.label;
-        const budget = document.createElement('span');
-        budget.className = 'mode-budget';
-        budget.textContent = item.budget ? `$${item.budget}` : '';
-        btn.append(label, budget);
-        btn.disabled = item.enabled === false || !authReady;
-        btn.addEventListener('click', () => setMode(item.key));
-        modesEl.appendChild(btn);
-      });
-      if (![...modesEl.querySelectorAll('.mode')].some(btn => btn.dataset.mode === mode && !btn.disabled)) {
-        mode = 'plan';
-      }
-      setMode(mode);
-    }
-
-    function renderWorkspaces(workspaces) {
-      workspaceEl.textContent = '';
-      workspaces.forEach(item => {
-        const option = document.createElement('option');
-        option.value = item.key;
-        option.textContent = item.label;
-        workspaceEl.appendChild(option);
-      });
-      if (![...workspaceEl.options].some(option => option.value === workspace)) {
-        workspace = 'pibulus-os';
-      }
-      workspaceEl.value = workspace;
-      syncReadouts();
-    }
-
     async function bootstrap() {
       const res = await fetch(`${api}/bootstrap`, { credentials: 'same-origin', cache: 'no-store' });
       if (!res.ok) throw new Error(`bootstrap ${res.status}`);
       const data = await res.json();
       csrf = data.csrf;
       authReady = Boolean(data.claude_auth && data.claude_auth.ok);
-      renderModes(data.modes || []);
-      renderWorkspaces(data.workspaces || []);
       setRunning(Boolean(data.active));
       input.maxLength = data.max_prompt_chars || 12000;
       statusPill.classList.toggle('bad', !authReady);
@@ -1085,13 +1053,6 @@
       syncSpeakerButton();
       if (!authReady) addSystem('Claude needs its key before this deck can talk.');
     }
-
-    workspaceEl.addEventListener('change', () => {
-      workspace = workspaceEl.value;
-      localStorage.setItem('pibulus.claude.workspace', workspace);
-      clearFullArm();
-      syncReadouts();
-    });
 
     promptChips.forEach(btn => {
       btn.addEventListener('click', () => {
@@ -1104,7 +1065,7 @@
     input.addEventListener('input', fitInput);
 
     async function armFullMode() {
-      if (mode !== 'full' || armPending || running) return;
+      if (armPending || running) return;
       armPending = true;
       holdBtn.classList.remove('charging');
       holdBtn.classList.add('pending');
@@ -1133,7 +1094,6 @@
     }
 
     holdBtn.addEventListener('pointerdown', () => {
-      if (mode !== 'full') return;
       clearFullArm();
       holdBtn.textContent = 'HOLD';
       holdBtn.classList.add('charging');
@@ -1201,22 +1161,19 @@
       if (running) return;
       stopDictation({ abort: true });
       const fullReady = fullArmed && armToken && Date.now() < armExpiresAt;
-      if (mode === 'full' && !fullReady) {
-        clearFullArm();
-        addSystem('hold Full first');
-        return;
-      }
+      if (fullReady) beepSend();
 
       addMessage('user', text, 'you');
       currentBubble = null;
       currentReplyText = '';
       setRunning(true);
+      const sendMode = fullReady ? 'full' : mode;
       const payload = {
         message: text,
         chat_id: chatId,
-        mode,
+        mode: sendMode,
         workspace,
-        arm_token: mode === 'full' ? armToken : ''
+        arm_token: fullReady ? armToken : ''
       };
       clearFullArm();
 
@@ -1265,6 +1222,11 @@
           } else if (event.type === 'error' && event.text) {
             addSystem(event.text);
           } else if (event.type === 'done') {
+            beepDone();
+            if (event.result && event.result.cost_usd) {
+              chatCost += parseFloat(event.result.cost_usd) || 0;
+              spendingAmount.textContent = '$' + chatCost.toFixed(2);
+            }
             currentBubble?.closest('.msg')?.classList.remove('streaming');
             currentBubble?.closest('.msg')?.classList.remove('thinking');
             if (currentBubble?.dataset.placeholder === 'true') currentBubble.closest('.msg')?.remove();
@@ -1285,12 +1247,6 @@
       stopDictation({ abort: true });
       const text = input.value.trim();
       if (!text) return;
-      const fullReady = fullArmed && armToken && Date.now() < armExpiresAt;
-      if (mode === 'full' && !fullReady) {
-        clearFullArm();
-        addSystem('hold Full first');
-        return;
-      }
       setComposerText('');
       try {
         await sendMessage(text);
