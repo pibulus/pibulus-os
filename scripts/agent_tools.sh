@@ -17,7 +17,9 @@ tool_rows() {
   cat <<'EOF'
 Human Deck	deck	deck	interactive	/home/pibulus/pibulus-os/launcher.sh	Human terminal deck alias. Main SSH/TTY control surface for SIGINT, radio, media, drives, ops, notes, and Soulseek.
 Human Deck	launcher	/home/pibulus/pibulus-os/launcher.sh	interactive	/home/pibulus/pibulus-os/launcher.sh	Same surface behind the deck alias; inspect before changing launcher flow.
+Human Deck	bishop	/home/pibulus/pibulus-os/scripts/bishop.sh	interactive	/home/pibulus/pibulus-os/scripts/bishop.sh	Legacy helper alias restored as a wrapper to the canonical deck launcher.
 System And Deck	agent_tools	/home/pibulus/pibulus-os/scripts/agent_tools.sh --list	read-only	/home/pibulus/pibulus-os/scripts/agent_tools.sh	This inventory. Use --json for structured context and --verify for path availability.
+System And Deck	ai_bootstrap	/home/pibulus/pibulus-os/scripts/ai_bootstrap.sh	read-only	/home/pibulus/pibulus-os/scripts/ai_bootstrap.sh	Safe start-of-session context for Pi agents. No model calls and no writes.
 System And Deck	deck_doctor	/home/pibulus/pibulus-os/scripts/deck_doctor.sh	read-only	/home/pibulus/pibulus-os/scripts/deck_doctor.sh	Checks Deck gateway, service health, disk pressure, Passport mount, timers, and SD guardrails.
 System And Deck	status	/home/pibulus/pibulus-os/scripts/status.sh	writes-status	/home/pibulus/pibulus-os/scripts/status.sh	Refreshes Passport-backed public status.json and heartbeat log.
 System And Deck	pulse	python3 /home/pibulus/pibulus-os/scripts/pulse.py	read-only	/home/pibulus/pibulus-os/scripts/pulse.py	Terminal live panel for radio, Jellyfin, Navidrome, qBittorrent, network, and disks.

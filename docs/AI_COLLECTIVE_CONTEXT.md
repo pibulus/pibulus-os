@@ -2,6 +2,16 @@
 
 This is shared orientation for Claude Code, Codex CLI, Gemini CLI, DeepSeek/OpenCode, and any other agent launched from the PIBULUS Deck.
 
+## Fast Boot
+
+Run `/home/pibulus/pibulus-os/scripts/ai_bootstrap.sh` at the start of serious Pi work. It is read-only, makes no model calls, writes nothing, and gives the current repo/doctor/tools/read-order snapshot.
+
+Then read:
+
+1. `/home/pibulus/pibulus-os/docs/AI_CONTINUITY.md`
+2. `/home/pibulus/pibulus-os/docs/PIBULUS_SPIRIT.md`
+3. `/home/pibulus/pibulus-os/scripts/agent_tools.sh --list`
+
 ## Where You Are
 
 - Host: Raspberry Pi 5, 4GB RAM, Debian Bookworm, in Melbourne.
@@ -18,6 +28,7 @@ This is shared orientation for Claude Code, Codex CLI, Gemini CLI, DeepSeek/Open
 - Prefer the next smallest useful move. 80/20 beats heroic sprawl.
 - Keep the weirdness, but make it work.
 - Pablo likes tools with personality, utility, and soul. No corporate filler.
+- Each model stays itself, but shares the same Pi house context: careful operator, creative collaborator, private-machine caretaker.
 - Ask before irreversible operations. If something smells risky, say why.
 - If you inspect, summarize what matters first. If you edit, state what changed and how you verified it.
 
@@ -46,6 +57,7 @@ This is shared orientation for Claude Code, Codex CLI, Gemini CLI, DeepSeek/Open
 - Use amber/green/cream on dark as a base, with small accent colors for state.
 - Interfaces should feel private, useful, and alive, not like SaaS marketing.
 - Dense is fine when it is organized. Motion should help the operator, not show off.
+- If you need the deeper vibe brief, read `docs/PIBULUS_SPIRIT.md`. It distills the safe local reference docs without copying private Mac material into the Pi repo.
 
 ## Important Services
 
@@ -64,6 +76,7 @@ The terminal alias `deck` points to `/home/pibulus/pibulus-os/launcher.sh`. That
 ### System And Deck
 
 - `agent_tools.sh --list` / `--json`: read-only source of truth for agent-visible tools, commands, risk level, and availability.
+- `ai_bootstrap.sh` / `--json`: read-only start-of-session context card for all Pi agents.
 - `deck_doctor.sh`: read-only health pass for Deck bootstrap, service health, disk pressure, Passport mount, watchdog timers, and SD-card guardrails. It writes compact status JSON to Passport.
 - `status.sh`: writes live deck status JSON to Passport-backed web state.
 - `pulse.py`: terminal live panel for system, downloads, radio, Jellyfin, and Navidrome.
@@ -107,6 +120,8 @@ The terminal alias `deck` points to `/home/pibulus/pibulus-os/launcher.sh`. That
 
 ## Shared Memory
 
-- Claude diary may exist at `/home/pibulus/.claude/claude_diary.md`.
+- Memory protocol: `/home/pibulus/pibulus-os/docs/AI_CONTINUITY.md`.
+- Shared private diary: `/home/pibulus/.claude/claude_diary.md`. Append short session notes when meaningful work changes the system story. Do not paste secrets.
+- Fresh Codex snapshot: `/home/pibulus/.codex/AGENTS.override.md`.
 - Trust live config and scripts before older docs.
 - When docs disagree, prefer current systemd units, nginx config, compose files, and running services.

@@ -39,6 +39,9 @@ This is the sane starting map for both humans and AI agents.
 - [scripts/agent_tools.sh](./scripts/agent_tools.sh)
   Read-only toolbox map for Deck-launched agents.
 
+- [scripts/ai_bootstrap.sh](./scripts/ai_bootstrap.sh)
+  Read-only start-of-session context card for Claude, Codex, Gemini, DeepSeek, and future Deck agents.
+
 - [scripts/deck_doctor.sh](./scripts/deck_doctor.sh)
   Compact health pass for the Deck gateway, services, disks, mount state, and timers.
 
@@ -46,6 +49,12 @@ This is the sane starting map for both humans and AI agents.
 
 - [docs/AI_COLLECTIVE_CONTEXT.md](./docs/AI_COLLECTIVE_CONTEXT.md)
   Shared boot context for Pi agents launched through the Deck.
+
+- [docs/AI_CONTINUITY.md](./docs/AI_CONTINUITY.md)
+  Shared memory tiers, bootup/bootdown rhythm, and diary protocol for Pi agents.
+
+- [docs/PIBULUS_SPIRIT.md](./docs/PIBULUS_SPIRIT.md)
+  Safe distillation of the local design/reference philosophy for Pi-side agents.
 
 - [docs/ELI.md](./docs/ELI.md)
   High-level explanation of the system and why it exists.

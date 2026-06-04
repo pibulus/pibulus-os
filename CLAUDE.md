@@ -101,7 +101,7 @@ This IP is stable and does NOT change when containers restart.
 
 ## Important Notes
 - Passport mount is at `/media/pibulus/passport/` (lowercase p, case-sensitive!)
-- Root disk is ~85% full — avoid writing large files to SD card. Run `docker image prune` if needed.
+- Root SD card is precious — check `df -h /` and avoid large writes there. App deploy staging defaults to Passport-backed `/media/pibulus/passport/app-data/apps-staging`.
 - Swap is often heavily used — be cautious with memory-heavy operations
 - Jellyfin runs on host network, port 8096
 - AzuraCast has its own compose lifecycle — don't manage it from stacks

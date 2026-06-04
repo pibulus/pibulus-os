@@ -8,6 +8,8 @@ Quick reverse-engineering guide for the Pi control surface.
   Admin launcher for the `deck` alias. This is the main control surface for SSH/TTY use.
 - `scripts/agent_tools.sh`
   Read-only toolbox map for agents. Use `--list` for humans and `--json` for structured agent context.
+- `scripts/ai_bootstrap.sh`
+  Read-only start-of-session card for Pi agents: doctor status, git state, tool count, diary headings, and read order.
 - `scripts/deck_doctor.sh`
   Read-only health pass for the web Deck, gateway, service state, disk pressure, Passport mount, timers, and SD-card guardrails.
 - `public-deck.sh`
@@ -19,12 +21,14 @@ Quick reverse-engineering guide for the Pi control surface.
 
 ## Mental Model
 
-There are two decks:
+There are three related Deck surfaces:
 
 - Admin deck: `launcher.sh`
   For you. System ops, radio, media, drives, notes, Soulseek, feed reader, textworlds.
 - Public deck: `public-deck.sh`
   For friends/visitors. Curated terminal gateway into MUDs, MOOs, BBSs, and local text toys.
+- Web AI deck: `https://deck.quickcat.club/deck/claude/`
+  For browser-launched Claude/Codex/Gemini/DeepSeek runs through `claude-chat.service`.
 
 ## Admin Deck Structure
 
@@ -74,6 +78,8 @@ There are more modules in the repo, but the three above are the ones directly to
   Search helper for local media browsing.
 - `scripts/agent_tools.sh`
   Current agent toolbox inventory, including the `deck` alias/launcher and risk notes.
+- `scripts/ai_bootstrap.sh`
+  Safe context bootstrap for all model CLIs and Deck-launched agents.
 - `scripts/deck_doctor.sh`
   Compact doctor pass for cron/systemd health logging.
 - `scripts/pirate_grab.py`
@@ -96,6 +102,8 @@ There are more modules in the repo, but the three above are the ones directly to
 - Field notes log: `/home/pibulus/pibulus-os/logs/field-notes.log`
 - Deck doctor JSON: `/media/pibulus/passport/www/html/deck-doctor.json`
 - Deck doctor log: `/media/pibulus/passport/Backups/pi-system/logs/deck-doctor.log`
+- Shared AI diary: `/home/pibulus/.claude/claude_diary.md`
+- Fresh Codex session snapshot: `/home/pibulus/.codex/AGENTS.override.md`
 
 ## External / Service Expectations
 

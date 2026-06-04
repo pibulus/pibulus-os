@@ -136,7 +136,10 @@ pibulus-os/
 │   └── vault_module.sh      # Encrypted vault open/close
 │
 ├── scripts/                 # Operational scripts
+│   ├── agent_tools.sh        # Agent-visible tool inventory
+│   ├── ai_bootstrap.sh       # Read-only AI start-of-session context
 │   ├── backup.sh / nightly-backup.sh  # Backup systems
+│   ├── deck_doctor.sh        # Read-only Deck/service health check
 │   ├── deploy.sh            # Service deployment wizard
 │   ├── dropzone.py          # File upload handler
 │   ├── flush_ram.sh         # Emergency RAM flush
@@ -161,6 +164,9 @@ pibulus-os/
 ├── www/html/                # Web pages (see URLs above)
 │
 ├── DOCS_INDEX.md            # Where to start reading
+├── docs/AI_COLLECTIVE_CONTEXT.md  # Shared Deck AI context
+├── docs/AI_CONTINUITY.md    # AI memory and boot/bootdown rhythm
+├── docs/PIBULUS_SPIRIT.md   # Pi-side design/spirit distillation
 ├── GLOSSARY.md              # This file
 ├── ELI.md                   # ELI12/27/42 explanations
 ├── FIELD_MANUAL.md          # Access tiers, ports, emergencies
