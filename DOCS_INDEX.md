@@ -38,6 +38,9 @@ This is the sane starting map for both humans and AI agents.
 
 ## Context / Archaeology
 
+- [docs/AI_COLLECTIVE_CONTEXT.md](./docs/AI_COLLECTIVE_CONTEXT.md)
+  Shared boot context for Pi agents launched through the Deck.
+
 - [docs/ELI.md](./docs/ELI.md)
   High-level explanation of the system and why it exists.
 

@@ -6,9 +6,9 @@ usage() {
 Usage: deploy_app.sh <talktype|ziplist|stargram|ghostnote> [--force]
 
 Deploys one Pi-hosted app at a time. This script is intentionally sequential:
-it takes a lock, checks memory/disk, builds in /home/pibulus/apps-staging, smoke
-tests before swapping, backs up the live dir, writes .pibulus-meta, then restarts
-the systemd service.
+it takes a lock, checks memory/disk, builds in Passport-backed staging by
+default, smoke tests before swapping, backs up the live dir, writes
+.pibulus-meta, then restarts the systemd service.
 EOF
 }
 
@@ -71,7 +71,7 @@ case "$APP" in
     ;;
 esac
 
-STAGING_ROOT="/home/pibulus/apps-staging"
+STAGING_ROOT="${PIBULUS_APP_STAGING_ROOT:-/media/pibulus/passport/app-data/apps-staging}"
 BACKUP_ROOT="/media/pibulus/passport/app-data/apps-backups"
 STAMP="$(date +%Y%m%d-%H%M%S)"
 SRC_DIR="$STAGING_ROOT/${APP}-src-$STAMP"
@@ -94,6 +94,20 @@ require_safe_path() {
       exit 1
       ;;
   esac
+}
+
+validate_staging_root() {
+  case "$STAGING_ROOT" in
+    "" | "/" | "/home" | "/home/pibulus" | "/home/pibulus/apps" | "/media" | "/media/pibulus" | "/media/pibulus/passport" | "/media/pibulus/passport/app-data")
+      echo "Unsafe staging root: $STAGING_ROOT" >&2
+      exit 1
+      ;;
+  esac
+
+  if [[ "$STAGING_ROOT" == /media/pibulus/passport/* ]] && ! mountpoint -q /media/pibulus/passport; then
+    echo "Passport is not mounted; refusing to stage on root-backed /media." >&2
+    exit 1
+  fi
 }
 
 check_capacity() {
@@ -295,6 +309,7 @@ deploy_deno_checkout() {
   exit 1
 }
 
+validate_staging_root
 mkdir -p "$STAGING_ROOT" "$BACKUP_ROOT"
 
 case "$KIND" in

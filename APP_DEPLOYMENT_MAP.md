@@ -12,7 +12,7 @@ Read this first for `talktype.app`, `ziplist.app`, `stargram.app`,
 5. For SvelteKit Node apps, the live directory is usually adapter-node build output, not a git checkout. Do not assume `git pull` works in the live directory.
 6. Do not use `/home/pibulus/pibulus-os/deploy.sh` for these live systemd apps unless it has been updated. That script is historical and mentions an older PM2/static deploy model.
 7. Never build multiple Node apps in parallel on the Pi. It can exhaust RAM/swap and make SSH appear dead.
-8. Prefer `/home/pibulus/pibulus-os/scripts/deploy_app.sh <app>` for local Pi deploys. It has a lock, capacity checks, staging, backup, smoke test, rollback, and metadata.
+8. Prefer `/home/pibulus/pibulus-os/scripts/deploy_app.sh <app>` for local Pi deploys. It has a lock, capacity checks, Passport-backed staging, backup, smoke test, rollback, and metadata.
 
 ## App Map
 

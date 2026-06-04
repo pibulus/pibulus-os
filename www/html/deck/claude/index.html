@@ -5,47 +5,98 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no, maximum-scale=1">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Claude Deck">
-  <meta name="theme-color" content="#0b1011">
+  <meta name="apple-mobile-web-app-title" content="QuickCat Deck">
+  <meta name="theme-color" content="#11121a">
   <meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
-  <title>Claude Deck</title>
+  <title>QuickCat Deck</title>
   <link rel="icon" href="/deck/favicon.svg" type="image/svg+xml">
   <style>
     :root {
       color-scheme: dark;
-      --bg: #0b1011;
-      --bg-2: #101717;
-      --panel: #151c1d;
-      --panel-2: #1c2627;
-      --line: rgba(247,236,216,.13);
-      --line-strong: rgba(247,236,216,.22);
-      --text: #f7ecd8;
-      --muted: rgba(247,236,216,.68);
-      --soft: rgba(247,236,216,.44);
-      --ink-rgb: 11,16,17;
-      --panel-rgb: 21,28,29;
-      --panel-2-rgb: 28,38,39;
-      --cream-rgb: 247,236,216;
-      --gold: #f0b85a;
-      --gold-rgb: 240,184,90;
-      --green: #6be2af;
-      --green-rgb: 107,226,175;
-      --blue: #8aa6d8;
-      --blue-rgb: 138,166,216;
-      --coral: #ff7a5c;
-      --coral-rgb: 255,122,92;
-      --danger: #ff5470;
-      --danger-rgb: 255,84,112;
-      --rose: #d8a8b8;
-      --rose-rgb: 216,168,184;
-      --sage: #7fa89f;
-      --sage-rgb: 127,168,159;
-      --indigo: #4a5a7a;
-      --indigo-rgb: 74,90,122;
+      --bg: #11121a;
+      --bg-2: #171824;
+      --panel: #1c2029;
+      --panel-2: #242636;
+      --line: rgba(255,236,226,.14);
+      --line-strong: rgba(255,236,226,.25);
+      --text: #fff0e6;
+      --muted: rgba(255,240,230,.7);
+      --soft: rgba(255,240,230,.46);
+      --ink-rgb: 17,18,26;
+      --panel-rgb: 28,32,41;
+      --panel-2-rgb: 36,38,54;
+      --cream-rgb: 255,240,230;
+      --gold: #ffd18a;
+      --gold-rgb: 255,209,138;
+      --green: #96e8c6;
+      --green-rgb: 150,232,198;
+      --blue: #b8b6ff;
+      --blue-rgb: 184,182,255;
+      --coral: #ff9a85;
+      --coral-rgb: 255,154,133;
+      --danger: #ff6f9e;
+      --danger-rgb: 255,111,158;
+      --rose: #f2a6cf;
+      --rose-rgb: 242,166,207;
+      --sage: #a6d2c5;
+      --sage-rgb: 166,210,197;
+      --indigo: #6f6aa8;
+      --indigo-rgb: 111,106,168;
       --teal: var(--green);
       --amber: var(--gold);
       --moon-phase: 0.5;
+      --moon-angle: 180deg;
       --weather-tint: 0deg;
+      --sigil-spin: 28s;
+      --sigil-counterspin: 48s;
+      --sigil-scale: 1;
+      --sigil-alpha: .82;
+      --sigil-halo: .32;
+      --sigil-orbit-alpha: .5;
+      --sigil-core: .82;
+      --sigil-tilt: 0deg;
+      --spark-hue: 0deg;
+      --pulse-load: .12;
+      --pulse-load-pct: 12%;
+      --pulse-mem: .45;
+      --pulse-mem-pct: 45%;
+      --pulse-swap: .2;
+      --pulse-swap-pct: 20%;
+      --pulse-root: .5;
+      --pulse-root-pct: 50%;
+      --pulse-passport: .9;
+      --pulse-passport-pct: 90%;
+      --pulse-temp: .18;
+      --pulse-temp-pct: 18%;
+      --pulse-uptime: .3;
+      --load-bg-alpha: .023;
+      --scan-opacity: .19;
+      --cross-opacity: .07;
+      --root-shift: 0px;
+      --passport-shift: 0px;
+      --uptime-shift: 0px;
+      --moon-shift: 0%;
+      --dot-speed: 1.4s;
+      --empty-border-alpha: .26;
+      --empty-glow-px: 20px;
+      --empty-glow-alpha: .07;
+      --empty-sheen-opacity: .18;
+      --stream-border-alpha: .44;
+      --stream-glow-px: 32px;
+      --stream-glow-alpha: .12;
+      --reply-speed: 1.4s;
+      --spending-alpha: .04;
+      --hold-hue: 0deg;
+      --bubble-hue: 0deg;
+      --rail-opacity: .4;
+      --bar-load: .12;
+      --bar-mem: .45;
+      --bar-swap: .2;
+      --bar-root: .5;
+      --bar-passport: .9;
+      --chaos-hue: 0deg;
+      --chaos-tilt: 0deg;
+      --scan-speed: 16s;
       --shadow: 0 18px 50px rgba(0,0,0,.34);
       --radius: 8px;
       --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
@@ -69,12 +120,13 @@
     }
     body {
       background:
+        linear-gradient(115deg, rgba(var(--rose-rgb), var(--load-bg-alpha)) 0 var(--pulse-load-pct), transparent var(--pulse-load-pct) 100%),
         linear-gradient(90deg, rgba(var(--cream-rgb),.028) 1px, transparent 1px),
-        linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 48%, #0d1312 100%);
-      background-size: 42px 42px, 100% 100%;
+        linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 48%, #12131c 100%);
+      background-size: 100% 100%, 42px 42px, 100% 100%;
       color: var(--text);
       overflow: hidden;
-      filter: url(#chromatic) saturate(calc(.85 + var(--moon-phase) * .3));
+      isolation: isolate;
     }
 
     body::before {
@@ -84,8 +136,28 @@
       pointer-events: none;
       background: linear-gradient(rgba(var(--cream-rgb),.024) 50%, transparent 50%);
       background-size: 100% 4px;
-      opacity: .2;
+      opacity: var(--scan-opacity);
       mix-blend-mode: screen;
+      animation: scanDrift var(--scan-speed) linear infinite;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, transparent calc(50% - 1px), rgba(var(--blue-rgb),.075) 50%, transparent calc(50% + 1px)),
+        linear-gradient(180deg, transparent calc(50% - 1px), rgba(var(--rose-rgb),.055) 50%, transparent calc(50% + 1px));
+      opacity: var(--cross-opacity);
+      transform: translate3d(var(--root-shift), var(--passport-shift), 0);
+      filter: hue-rotate(var(--chaos-hue));
+      mix-blend-mode: screen;
+    }
+
+    @keyframes scanDrift {
+      from { background-position: 0 0; }
+      to { background-position: 0 40px; }
     }
 
     button, textarea, select { font: inherit; }
@@ -111,12 +183,31 @@
     }
 
     .topbar {
+      position: relative;
       padding: calc(12px + env(safe-area-inset-top)) 14px 10px;
       border-bottom: 1px solid var(--line);
       background: rgba(var(--ink-rgb),.9);
       backdrop-filter: blur(18px);
       box-shadow: 0 12px 30px rgba(0,0,0,.24);
       z-index: 3;
+    }
+
+    .topbar::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -1px;
+      height: 1px;
+      background:
+        linear-gradient(90deg,
+          rgba(var(--blue-rgb),.38) 0 18%,
+          rgba(var(--rose-rgb),.3) 34%,
+          rgba(var(--gold-rgb),.32) 58%,
+          rgba(var(--green-rgb),.24) 82%,
+          rgba(var(--coral-rgb),.24) 100%);
+      opacity: var(--rail-opacity);
+      filter: hue-rotate(var(--chaos-hue));
     }
 
     .topline {
@@ -157,6 +248,7 @@
       font-size: 20px;
       line-height: 1.1;
       color: var(--amber);
+      text-shadow: 0 0 16px rgba(var(--rose-rgb),.2);
     }
 
     .title {
@@ -187,6 +279,12 @@
       border-radius: 50%;
       background: var(--teal);
       box-shadow: 0 0 12px rgba(var(--green-rgb),.72);
+      animation: liveDot var(--dot-speed) ease-in-out infinite;
+    }
+
+    @keyframes liveDot {
+      0%, 100% { transform: scale(.82); opacity: .65; }
+      50% { transform: scale(1.15); opacity: 1; }
     }
 
     .status.bad {
@@ -208,37 +306,221 @@
     }
 
     .empty {
+      position: relative;
+      overflow: hidden;
       max-width: 620px;
       margin: 10vh auto 0;
-      border: 1px solid rgba(var(--gold-rgb),.24);
+      border: 1px solid rgba(var(--gold-rgb), var(--empty-border-alpha));
       background: linear-gradient(180deg, rgba(var(--panel-2-rgb),.92), rgba(var(--ink-rgb),.88));
       border-radius: var(--radius);
       padding: 16px;
-      box-shadow: var(--shadow);
+      box-shadow:
+        var(--shadow),
+        0 0 var(--empty-glow-px) rgba(var(--rose-rgb), var(--empty-glow-alpha));
+      transform: rotate(var(--chaos-tilt));
+    }
+
+    .empty::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, transparent, rgba(var(--rose-rgb),.08), transparent),
+        linear-gradient(180deg, rgba(var(--gold-rgb),.07), transparent 38%, rgba(var(--blue-rgb),.08));
+      opacity: var(--empty-sheen-opacity);
+      transform: translateX(var(--moon-shift));
+      filter: hue-rotate(var(--chaos-hue));
+    }
+
+    .empty > * {
+      position: relative;
     }
 
     .empty-kicker {
-      color: var(--green);
+      color: var(--blue);
       font-size: 12px;
       font-weight: 800;
       text-transform: uppercase;
+      line-height: 1.25;
+      overflow-wrap: anywhere;
     }
 
-    .empty-title {
-      font-size: 24px;
-      line-height: 1.05;
-      font-weight: 800;
-      color: var(--amber);
-      margin-bottom: 10px;
+    .sigil-stage {
+      position: relative;
+      width: 112px;
+      height: 112px;
+      margin: 4px auto 14px;
+      display: grid;
+      place-items: center;
+      transform:
+        translateX(var(--uptime-shift))
+        rotate(var(--sigil-tilt))
+        scale(var(--sigil-scale));
+      filter: hue-rotate(var(--chaos-hue)) drop-shadow(0 0 20px rgba(var(--rose-rgb),.14));
+      transition: transform .7s ease, filter .7s ease;
     }
 
-    .empty-art {
-      margin: 0 0 12px;
-      color: rgba(var(--blue-rgb),.78);
-      font-family: var(--mono);
-      font-size: 12px;
-      line-height: 1.1;
-      white-space: pre;
+    .sigil-stage::before,
+    .sigil-stage::after {
+      content: "";
+      position: absolute;
+      inset: 11px;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .sigil-stage::before {
+      background:
+        radial-gradient(circle, rgba(var(--gold-rgb),.12) 0 16%, transparent 38%),
+        conic-gradient(from var(--moon-angle), rgba(var(--rose-rgb),.18), rgba(var(--blue-rgb),.16), rgba(var(--green-rgb),.1), rgba(var(--gold-rgb),.16), rgba(var(--rose-rgb),.18));
+      opacity: var(--sigil-halo);
+      filter: blur(.4px);
+      animation: portalBreathe 4.8s ease-in-out infinite;
+    }
+
+    .sigil-stage::after {
+      inset: 27px;
+      border: 1px solid rgba(var(--cream-rgb),.09);
+      box-shadow:
+        0 0 24px rgba(var(--blue-rgb),.14),
+        inset 0 0 22px rgba(var(--rose-rgb),.12);
+      opacity: .72;
+    }
+
+    .empty-sigil {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      animation: sigilDrift var(--sigil-spin) linear infinite;
+    }
+
+    .sigil-ring,
+    .sigil-orbit,
+    .sigil-rose,
+    .sigil-constellation {
+      vector-effect: non-scaling-stroke;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .sigil-ring {
+      stroke: rgba(var(--gold-rgb),.42);
+      stroke-width: .8;
+      stroke-dasharray: 1.5 7;
+      opacity: .58;
+      transform-origin: center;
+      animation: sigilCounterspin var(--sigil-counterspin) linear infinite;
+    }
+
+    .sigil-orbit {
+      stroke: rgba(var(--blue-rgb),.45);
+      stroke-width: .72;
+      opacity: var(--sigil-orbit-alpha);
+    }
+
+    .sigil-rose {
+      stroke: rgba(var(--rose-rgb),.82);
+      stroke-width: 1.12;
+      opacity: var(--sigil-alpha);
+      filter: drop-shadow(0 0 8px rgba(var(--rose-rgb),.28));
+    }
+
+    .sigil-constellation {
+      stroke: rgba(var(--cream-rgb),.24);
+      stroke-width: .58;
+      opacity: .72;
+    }
+
+    .sigil-star {
+      fill: rgba(var(--cream-rgb),.76);
+      opacity: .78;
+      filter: drop-shadow(0 0 5px rgba(var(--gold-rgb),.28));
+    }
+
+    .sigil-core {
+      fill: rgba(var(--gold-rgb),.9);
+      opacity: var(--sigil-core);
+      filter:
+        drop-shadow(0 0 7px rgba(var(--gold-rgb),.5))
+        drop-shadow(0 0 14px rgba(var(--rose-rgb),.24));
+      animation: corePulse 2.6s ease-in-out infinite;
+    }
+
+    body.is-running .sigil-stage::before {
+      opacity: .54;
+      animation-duration: 1.7s;
+    }
+
+    body.is-running .sigil-rose {
+      stroke-width: 1.32;
+      filter: drop-shadow(0 0 12px rgba(var(--rose-rgb),.38));
+    }
+
+    @keyframes portalBreathe {
+      0%, 100% { transform: scale(.92); opacity: .22; }
+      45% { transform: scale(1.04); opacity: .42; }
+      70% { transform: scale(.99); opacity: .3; }
+    }
+
+    @keyframes sigilDrift {
+      from { transform: rotate(0turn); }
+      to { transform: rotate(1turn); }
+    }
+
+    @keyframes sigilCounterspin {
+      from { transform: rotate(0turn); }
+      to { transform: rotate(-1turn); }
+    }
+
+    @keyframes corePulse {
+      0%, 100% { transform: scale(.88); }
+      50% { transform: scale(1.2); }
+    }
+
+    .agent-lights {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 14px;
+      margin: 0 0 14px;
+    }
+
+    .agent-lights i {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      border: 1px solid rgba(var(--cream-rgb),.18);
+      background: rgba(var(--cream-rgb),.08);
+      box-shadow: none;
+      opacity: .48;
+      transition: transform .18s ease, opacity .18s ease, background-color .18s ease, box-shadow .18s ease;
+    }
+
+    .agent-lights i.ready {
+      background: rgba(var(--green-rgb),.92);
+      box-shadow: 0 0 12px rgba(var(--green-rgb),.34);
+      opacity: .86;
+    }
+
+    .agent-lights i.off {
+      background: rgba(var(--danger-rgb),.34);
+      box-shadow: 0 0 8px rgba(var(--danger-rgb),.2);
+      opacity: .58;
+    }
+
+    .agent-lights i.current {
+      transform: scale(1.28);
+      background: var(--rose);
+      box-shadow: 0 0 16px rgba(var(--rose-rgb),.5);
+      opacity: 1;
+    }
+
+    .agent-lights i.running {
+      animation: liveDot .72s ease-in-out infinite;
     }
 
     .empty-actions {
@@ -248,6 +530,7 @@
     }
 
     .prompt-chip {
+      width: 100%;
       min-height: 44px;
       border: 1px solid rgba(var(--cream-rgb),.13);
       border-radius: var(--radius);
@@ -302,6 +585,8 @@
     }
 
     .bubble {
+      position: relative;
+      overflow: hidden;
       max-width: min(88vw, 680px);
       border: 1px solid var(--line);
       border-radius: var(--radius);
@@ -311,7 +596,7 @@
       line-height: 1.55;
       font-size: 16px;
       box-shadow: 0 10px 24px rgba(0,0,0,.18);
-      --load-glow: 0.12;
+      --load-glow: var(--pulse-load);
     }
 
     .user .bubble {
@@ -326,23 +611,42 @@
     }
 
     .assistant.streaming .bubble {
-      border-color: rgba(var(--green-rgb), calc(.38 + var(--load-glow)));
-      box-shadow: 0 10px calc(28px + var(--load-glow) * 40px) rgba(var(--green-rgb), calc(.08 + var(--load-glow) * 0.2));
+      border-color: rgba(var(--rose-rgb), var(--stream-border-alpha));
+      box-shadow: 0 10px var(--stream-glow-px) rgba(var(--rose-rgb), var(--stream-glow-alpha));
+      filter: hue-rotate(var(--bubble-hue));
+    }
+
+    .assistant.streaming .bubble::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(105deg, transparent 0 32%, rgba(var(--rose-rgb),.1) 48%, transparent 64% 100%);
+      transform: translateX(-120%);
+      animation: replySweep var(--reply-speed) ease-in-out infinite;
+      mix-blend-mode: screen;
+    }
+
+    @keyframes replySweep {
+      0% { transform: translateX(-120%); opacity: 0; }
+      20% { opacity: .65; }
+      70% { opacity: .22; }
+      100% { transform: translateX(120%); opacity: 0; }
     }
 
     .assistant.thinking .bubble {
       color: var(--soft);
       font-style: italic;
       animation: breathe 1.8s ease-in-out infinite;
-      border-color: rgba(var(--green-rgb),.42);
-      box-shadow: 0 0 12px rgba(var(--green-rgb),.16);
+      border-color: rgba(var(--blue-rgb),.42);
+      box-shadow: 0 0 12px rgba(var(--blue-rgb),.14);
     }
 
     @keyframes breathe {
-      0% { opacity: 0.55; filter: drop-shadow(0 0 8px rgba(var(--green-rgb),.2)); }
-      35% { opacity: 0.75; filter: drop-shadow(0 0 16px rgba(var(--green-rgb),.32)); }
-      65% { opacity: 0.95; filter: drop-shadow(0 0 20px rgba(var(--green-rgb),.42)); }
-      100% { opacity: 0.55; filter: drop-shadow(0 0 8px rgba(var(--green-rgb),.2)); }
+      0% { opacity: 0.55; filter: drop-shadow(0 0 8px rgba(var(--blue-rgb),.18)); }
+      35% { opacity: 0.75; filter: drop-shadow(0 0 16px rgba(var(--rose-rgb),.24)); }
+      65% { opacity: 0.95; filter: drop-shadow(0 0 20px rgba(var(--blue-rgb),.3)); }
+      100% { opacity: 0.55; filter: drop-shadow(0 0 8px rgba(var(--blue-rgb),.18)); }
     }
 
     @keyframes messageBloom {
@@ -360,16 +664,9 @@
       }
     }
 
-    @keyframes fadeInOut {
-      0% { opacity: 0; }
-      20% { opacity: 0.3; }
-      80% { opacity: 0.3; }
-      100% { opacity: 0; }
-    }
-
     @keyframes messageComplete {
-      0% { box-shadow: 0 10px 28px rgba(var(--green-rgb),.24); }
-      100% { box-shadow: 0 10px 28px rgba(var(--green-rgb),.0); }
+      0% { box-shadow: 0 10px 28px rgba(var(--rose-rgb),.22); }
+      100% { box-shadow: 0 10px 28px rgba(var(--rose-rgb),.0); }
     }
 
     .assistant.complete .bubble {
@@ -377,15 +674,23 @@
     }
 
     .spending-bar {
-      margin-top: 10px;
+      width: min(100%, 760px);
+      margin: 0 auto 8px;
       display: flex;
       align-items: center;
       gap: 6px;
       padding: 6px 8px;
-      border: 1px solid rgba(var(--green-rgb),.24);
+      border: 1px solid rgba(var(--rose-rgb),.24);
       border-radius: var(--radius);
-      background: rgba(var(--green-rgb),.06);
+      background: rgba(var(--rose-rgb),.052);
       font-size: 13px;
+      box-shadow: inset 0 0 0 1px rgba(var(--rose-rgb), var(--spending-alpha));
+    }
+
+    .spending-bar::before {
+      content: "▣";
+      color: var(--amber);
+      font-size: 12px;
     }
 
     .spending-label {
@@ -394,7 +699,7 @@
     }
 
     .spending-amount {
-      color: var(--green);
+      color: var(--rose);
       font-weight: 800;
       display: inline-block;
       transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.3s ease;
@@ -425,21 +730,21 @@
     .copy-btn {
       opacity: 0;
       transition: opacity .2s ease;
-      width: 32px;
-      height: 32px;
-      min-height: 0;
-      padding: 6px;
-      font-size: 14px;
-      border-color: rgba(var(--green-rgb),.3);
-      background: rgba(var(--green-rgb),.08);
-      color: var(--green);
+      width: 44px;
+      height: 44px;
+      min-height: 44px;
+      padding: 0;
+      font-size: 15px;
+      border-color: rgba(var(--rose-rgb),.3);
+      background: rgba(var(--rose-rgb),.08);
+      color: var(--rose);
       align-self: start;
       margin-top: 2px;
     }
 
     .copy-btn:hover {
-      border-color: rgba(var(--green-rgb),.54);
-      background: rgba(var(--green-rgb),.15);
+      border-color: rgba(var(--rose-rgb),.54);
+      background: rgba(var(--rose-rgb),.15);
     }
 
     .copy-btn.copied {
@@ -475,6 +780,34 @@
       z-index: 4;
     }
 
+    .control-row {
+      width: min(100%, 760px);
+      margin: 0 auto 8px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(94px, .72fr) minmax(118px, .9fr);
+      gap: 8px;
+    }
+
+    .select {
+      width: 100%;
+      appearance: none;
+      -webkit-appearance: none;
+      padding: 0 32px 0 11px;
+      color: var(--text);
+      background:
+        linear-gradient(45deg, transparent 50%, rgba(var(--rose-rgb),.82) 50%) calc(100% - 18px) 19px / 6px 6px no-repeat,
+        linear-gradient(135deg, rgba(var(--rose-rgb),.82) 50%, transparent 50%) calc(100% - 12px) 19px / 6px 6px no-repeat,
+        rgba(var(--panel-rgb),.96);
+      font-size: 13px;
+      font-weight: 750;
+      line-height: 1;
+    }
+
+    .select:disabled {
+      opacity: .48;
+      cursor: not-allowed;
+    }
+
     .full-arm {
       display: none;
       margin: 0 auto 8px;
@@ -505,7 +838,30 @@
       transition: background-size .9s linear;
     }
 
-    .hold.charging { background-size: 100% 100%, auto; }
+    .hold::after {
+      content: "";
+      position: absolute;
+      inset: 4px;
+      border: 1px solid rgba(var(--danger-rgb),.16);
+      opacity: 0;
+      transform: scaleX(.84);
+      pointer-events: none;
+    }
+
+    .hold.charging {
+      background-size: 100% 100%, auto;
+      filter: hue-rotate(var(--hold-hue));
+    }
+
+    .hold.charging::after {
+      opacity: .85;
+      animation: wardPulse .3s steps(2, end) infinite;
+    }
+
+    @keyframes wardPulse {
+      0% { transform: scaleX(.72) scaleY(.76); }
+      100% { transform: scaleX(1) scaleY(1); }
+    }
 
     .hold.armed {
       color: #180b0e;
@@ -551,19 +907,13 @@
       border-color: rgba(var(--gold-rgb),.6);
       box-shadow: 0 0 0 3px rgba(var(--gold-rgb),.15), 0 0 20px rgba(var(--gold-rgb),.2);
       background: rgba(var(--panel-rgb), 0.98);
-      animation: inputBreath 1.8s ease-in-out infinite;
-    }
-
-    @keyframes inputBreath {
-      0%, 100% { box-shadow: 0 0 0 3px rgba(var(--gold-rgb),.12), 0 0 12px rgba(var(--gold-rgb),.1); }
-      50% { box-shadow: 0 0 0 3px rgba(var(--gold-rgb),.24), 0 0 24px rgba(var(--gold-rgb),.24); }
     }
 
     .send {
       width: 58px;
       height: 50px;
-      border-color: rgba(var(--green-rgb),.48);
-      background: rgba(var(--green-rgb),.16);
+      border-color: rgba(var(--rose-rgb),.48);
+      background: rgba(var(--rose-rgb),.14);
       color: var(--text);
       font-size: 20px;
       font-weight: 900;
@@ -610,16 +960,136 @@
       background: rgba(var(--green-rgb),.12);
     }
 
+    .radio-orb {
+      position: fixed;
+      right: calc(14px + env(safe-area-inset-right));
+      bottom: calc(154px + env(safe-area-inset-bottom));
+      z-index: 4;
+      width: 44px;
+      height: 44px;
+      min-height: 44px;
+      color: var(--gold);
+      border-color: rgba(var(--gold-rgb),.34);
+      background: rgba(var(--panel-rgb),.82);
+      box-shadow:
+        0 10px 24px rgba(0,0,0,.24),
+        0 0 18px rgba(var(--gold-rgb),.08);
+      backdrop-filter: blur(14px);
+      filter: hue-rotate(var(--chaos-hue));
+    }
+
+    .radio-orb::after {
+      content: "";
+      position: absolute;
+      inset: 7px;
+      border-radius: 50%;
+      border: 1px solid rgba(var(--gold-rgb),.18);
+      opacity: .72;
+      pointer-events: none;
+    }
+
+    .radio-orb.loading {
+      color: var(--rose);
+      border-color: rgba(var(--rose-rgb),.52);
+      animation: liveDot .76s ease-in-out infinite;
+    }
+
+    .radio-orb.open {
+      color: var(--blue);
+      border-color: rgba(var(--blue-rgb),.56);
+      background: rgba(var(--blue-rgb),.12);
+    }
+
+    .radio-orb.on {
+      color: #161019;
+      border-color: rgba(var(--gold-rgb),.7);
+      background:
+        radial-gradient(circle at 50% 38%, rgba(var(--cream-rgb),.5), transparent 38%),
+        var(--gold);
+      box-shadow:
+        0 10px 28px rgba(0,0,0,.28),
+        0 0 22px rgba(var(--gold-rgb),.28),
+        0 0 34px rgba(var(--rose-rgb),.12);
+    }
+
+    body.radio-on .topbar::after {
+      opacity: .72;
+    }
+
+    .raya-dock {
+      position: fixed;
+      right: calc(14px + env(safe-area-inset-right));
+      bottom: calc(206px + env(safe-area-inset-bottom));
+      z-index: 4;
+      width: min(344px, calc(100vw - 28px));
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(10px) scale(.97);
+      transform-origin: bottom right;
+      transition: opacity .18s ease, transform .18s ease;
+      filter: hue-rotate(var(--weather-tint));
+    }
+
+    .raya-dock.show {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0) scale(1);
+    }
+
+    .raya-dock radio-widget {
+      width: 100%;
+      max-width: 100%;
+    }
+
+    .touch-spark {
+      position: fixed;
+      width: 56px;
+      height: 56px;
+      left: 0;
+      top: 0;
+      z-index: 20;
+      border-radius: 50%;
+      pointer-events: none;
+      background:
+        radial-gradient(circle, rgba(var(--cream-rgb),.62) 0 8%, rgba(var(--rose-rgb),.22) 18%, transparent 58%),
+        conic-gradient(from var(--moon-angle), rgba(var(--blue-rgb),.0), rgba(var(--blue-rgb),.36), rgba(var(--gold-rgb),.28), rgba(var(--rose-rgb),.34), rgba(var(--blue-rgb),.0));
+      mix-blend-mode: screen;
+      filter: hue-rotate(var(--spark-hue));
+      transform: translate(-50%, -50%) scale(.22);
+      animation: touchSpark .72s cubic-bezier(.2,.7,.1,1) forwards;
+    }
+
+    .touch-spark.danger {
+      background:
+        radial-gradient(circle, rgba(var(--danger-rgb),.62) 0 8%, rgba(var(--danger-rgb),.2) 24%, transparent 62%),
+        conic-gradient(from var(--moon-angle), rgba(var(--danger-rgb),.0), rgba(var(--danger-rgb),.44), rgba(var(--gold-rgb),.22), rgba(var(--danger-rgb),.0));
+    }
+
+    .touch-spark.blue {
+      background:
+        radial-gradient(circle, rgba(var(--blue-rgb),.54) 0 8%, rgba(var(--blue-rgb),.18) 24%, transparent 62%),
+        conic-gradient(from var(--moon-angle), rgba(var(--blue-rgb),.0), rgba(var(--blue-rgb),.42), rgba(var(--green-rgb),.18), rgba(var(--blue-rgb),.0));
+    }
+
+    @keyframes touchSpark {
+      0% { opacity: 0; transform: translate(-50%, -50%) scale(.18) rotate(0turn); }
+      18% { opacity: .76; }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(1.35) rotate(.18turn); }
+    }
+
     @media (min-width: 720px) {
       .topbar { padding-left: 20px; padding-right: 20px; }
       .transcript { padding-left: 20px; padding-right: 20px; }
       .composer { padding-left: 20px; padding-right: 20px; }
+      .radio-orb { right: 20px; bottom: calc(164px + env(safe-area-inset-bottom)); }
+      .raya-dock { right: 20px; bottom: calc(216px + env(safe-area-inset-bottom)); }
       h1 { font-size: 23px; }
     }
 
     @media (hover: hover) and (pointer: fine) {
       .icon-btn:hover,
       .mode:hover,
+      .select:hover,
       .prompt-chip:hover,
       .hold:hover {
         border-color: var(--line-strong);
@@ -627,8 +1097,8 @@
       }
 
       .send:hover {
-        border-color: rgba(var(--green-rgb),.62);
-        background: rgba(var(--green-rgb),.22);
+        border-color: rgba(var(--rose-rgb),.62);
+        background: rgba(var(--rose-rgb),.2);
       }
 
       .mic:hover {
@@ -662,10 +1132,12 @@
     @media (max-width: 390px) {
       .topbar { padding-left: 10px; padding-right: 10px; }
       .empty-actions { grid-template-columns: 1fr; }
+      .control-row { grid-template-columns: 1fr 1fr; }
+      .workspace-select { grid-column: 1 / -1; }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      * { scroll-behavior: auto !important; transition: none !important; }
+      * { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
     }
   </style>
 </head>
@@ -675,7 +1147,7 @@
       <div class="topline">
         <a class="icon-btn" href="/deck/" aria-label="Back">‹</a>
         <div class="title">
-          <h1>Claude Deck</h1>
+          <h1>QuickCat Deck</h1>
           <div class="status" id="statusPill"><span class="dot"></span><span id="statusText">checking</span></div>
         </div>
         <div class="top-actions">
@@ -688,17 +1160,22 @@
 
     <section class="transcript" id="transcript" aria-live="polite">
       <div class="empty" id="empty">
-        <div class="empty-kicker" id="emptyKicker">pibulus-os · plan</div>
-        <pre class="empty-art" aria-hidden="true">┌─ deck link ─┐
-│  ◉     ◉    │
-│    ▔▔▔      │
-└─────────────┘</pre>
-        <div class="empty-title">Ready</div>
+        <div class="empty-kicker" id="emptyKicker">checking</div>
+        <div class="sigil-stage" id="sigilStage" aria-hidden="true">
+          <svg class="empty-sigil" id="emptySigil" viewBox="-64 -64 128 128" focusable="false">
+            <path class="sigil-ring" id="sigilRing" d="M 0 -43 A 43 43 0 1 1 -.01 -43"></path>
+            <path class="sigil-orbit" id="sigilOrbit" d="M 0 -12 C 20 -36 45 -16 36 10 C 26 40 -16 44 -34 12 C -46 -12 -25 -38 0 -12"></path>
+            <path class="sigil-rose" id="sigilRose" d="M 34 0 C 14 10 14 24 0 34 C -14 24 -14 10 -34 0 C -14 -10 -14 -24 0 -34 C 14 -24 14 -10 34 0"></path>
+            <g class="sigil-stars" id="sigilStars"></g>
+            <circle class="sigil-core" id="sigilCore" cx="0" cy="0" r="4"></circle>
+          </svg>
+        </div>
+        <div class="agent-lights" id="agentLights" aria-hidden="true"></div>
         <div class="empty-actions">
           <button class="prompt-chip" type="button" data-prompt="Check Pi health, storage, recent warnings, and the public Quick Cat routes. Summarize what needs attention first."><span class="chip-main">Health sweep</span><span class="chip-sub">Pi + public routes</span></button>
           <button class="prompt-chip" type="button" data-prompt="Inspect recent changes in /home/pibulus/pibulus-os and tell me what is dirty, risky, or ready to commit."><span class="chip-main">Repo pulse</span><span class="chip-sub">dirty files + next move</span></button>
           <button class="prompt-chip" type="button" data-prompt="Look at the running services and containers. Flag anything noisy, stuck, or safe to leave alone."><span class="chip-main">Service scan</span><span class="chip-sub">containers + timers</span></button>
-          <button class="prompt-chip" type="button" data-prompt="Plan the next smallest safe improvement for the Pi. Do not change files yet."><span class="chip-main">Plan move</span><span class="chip-sub">no edits yet</span></button>
+          <button class="prompt-chip" type="button" data-prompt="Read the shared Pi AI context and tell me what mode/model you are best suited for right now. Do not change files yet."><span class="chip-main">Agent handoff</span><span class="chip-sub">context + role</span></button>
         </div>
       </div>
     </section>
@@ -708,33 +1185,47 @@
         <div class="arm-copy" id="armCopy">Full mode can edit in pibulus-os.</div>
         <button class="hold" id="holdBtn" type="button">HOLD</button>
       </div>
+      <div class="control-row" aria-label="Deck controls">
+        <select class="select" id="modelSelect" aria-label="Model"></select>
+        <select class="select" id="modeSelect" aria-label="Mode"></select>
+        <select class="select workspace-select" id="workspaceSelect" aria-label="Workspace"></select>
+      </div>
       <div class="spending-bar">
         <span class="spending-label">chat cost:</span>
         <span class="spending-amount" id="spendingAmount">$0.00</span>
       </div>
       <form class="compose-row" id="form">
-        <textarea id="input" rows="1" maxlength="12000" placeholder="Message Claude" enterkeyhint="send" autocomplete="off" autocapitalize="sentences" spellcheck="true"></textarea>
+        <textarea id="input" rows="1" maxlength="12000" placeholder="Message deck" enterkeyhint="send" autocomplete="off" autocapitalize="sentences" spellcheck="true"></textarea>
         <button class="mic" id="micBtn" type="button" aria-label="Dictate">◉</button>
         <button class="send" id="sendBtn" type="submit" aria-label="Send">›</button>
       </form>
     </footer>
+    <div class="raya-dock" id="rayaDock">
+      <radio-widget
+        id="rayaRadio"
+        theme="dark"
+        default-channel="groovesalad"
+        volume="0.42"
+        storage-key="quickcat.deck.raya"
+        style="--raya-border: 1px; --raya-radius: 8px; --raya-shadow: 0 18px 38px rgba(0,0,0,.32); --raya-shadow-sm: 0 0 0 1px rgba(255,240,230,.16); --raya-ink: #fff0e6; --raya-bg: #1c2029; --raya-surface: #f2a6cf; --raya-surface-2: #96e8c6; --raya-surface-glow: rgba(242,166,207,.18); --raya-accent: #ffd18a; --raya-accent-2: #b8b6ff; --raya-muted: rgba(255,240,230,.5); --raya-off-bg: linear-gradient(135deg, #202331 0%, #1a3336 58%, #2a2035 100%);"
+      ></radio-widget>
+    </div>
+    <button class="icon-btn radio-orb" id="radioBtn" type="button" aria-label="Open Raya radio" aria-controls="rayaDock" aria-expanded="false" aria-pressed="false">≋</button>
   </main>
 
-  <svg style="display:none">
-    <defs>
-      <filter id="chromatic">
-        <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" seed="2" result="noise" />
-        <feDisplacementMap in="SourceGraphic" in2="noise" scale="0.8" xChannelSelector="R" yChannelSelector="G" />
-        <feColorMatrix type="saturate" values="0.95" />
-      </filter>
-    </defs>
-  </svg>
-
+  <script src="/deck/claude/radio-widget.min.js"></script>
   <script>
     const api = '/claude/api';
     const transcript = document.getElementById('transcript');
     const empty = document.getElementById('empty');
     const emptyKicker = document.getElementById('emptyKicker');
+    const sigilStage = document.getElementById('sigilStage');
+    const sigilRing = document.getElementById('sigilRing');
+    const sigilOrbit = document.getElementById('sigilOrbit');
+    const sigilRose = document.getElementById('sigilRose');
+    const sigilStars = document.getElementById('sigilStars');
+    const sigilCore = document.getElementById('sigilCore');
+    const agentLights = document.getElementById('agentLights');
     const form = document.getElementById('form');
     const input = document.getElementById('input');
     const sendBtn = document.getElementById('sendBtn');
@@ -748,12 +1239,22 @@
     const statusPill = document.getElementById('statusPill');
     const statusText = document.getElementById('statusText');
     const spendingAmount = document.getElementById('spendingAmount');
+    const modelSelect = document.getElementById('modelSelect');
+    const modeSelect = document.getElementById('modeSelect');
+    const workspaceSelect = document.getElementById('workspaceSelect');
+    const rayaDock = document.getElementById('rayaDock');
+    const rayaRadio = document.getElementById('rayaRadio');
+    const radioBtn = document.getElementById('radioBtn');
     const promptChips = [...document.querySelectorAll('.prompt-chip')];
 
     let csrf = '';
-    let chatId = localStorage.getItem('pibulus.claude.chatId') || '';
-    const mode = 'auto';
-    const workspace = 'pibulus-os';
+    let models = [];
+    let modes = [];
+    let workspaces = [];
+    let model = localStorage.getItem('pibulus.deck.model') || 'claude';
+    let mode = localStorage.getItem('pibulus.deck.mode') || 'auto';
+    let workspace = localStorage.getItem('pibulus.deck.workspace') || 'pibulus-os';
+    let chatId = '';
     let running = false;
     let authReady = false;
     let fullArmed = false;
@@ -761,6 +1262,7 @@
     let armExpiresAt = 0;
     let armPending = false;
     let holdTimer = null;
+    let rayaCollapseTimer = null;
     let currentBubble = null;
     let currentReplyText = '';
     let chatCost = 0;
@@ -775,56 +1277,501 @@
     const canSpeak = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
     const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition || null;
     const canDictate = Boolean(Recognition);
+    const svgNS = 'http://www.w3.org/2000/svg';
 
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    function playSound(f, d) {
+    let audioContext = null;
+    let sonicRoot = 246;
+    let sonicMood = 0;
+    function haptic(pattern) {
+      if (navigator.vibrate) navigator.vibrate(pattern);
+    }
+
+    function ensureAudioContext() {
+      const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextCtor) return null;
+      if (!audioContext) audioContext = new AudioContextCtor();
+      if (audioContext.state === 'suspended') audioContext.resume().catch(() => {});
+      return audioContext;
+    }
+
+    function playSound(f, d, type = 'sine', volume = 0.055) {
       try {
+        const ctx = ensureAudioContext();
+        if (!ctx) return;
         const osc = audioContext.createOscillator();
         const gain = audioContext.createGain();
         osc.connect(gain); gain.connect(audioContext.destination);
+        osc.type = type;
         osc.frequency.setValueAtTime(f, audioContext.currentTime);
-        gain.gain.setValueAtTime(0.08, audioContext.currentTime);
+        gain.gain.setValueAtTime(volume, audioContext.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + d);
         osc.start(audioContext.currentTime);
         osc.stop(audioContext.currentTime + d);
       } catch (_) {}
     }
-    function beepSend() { playSound(800, 0.1); }
-    function beepThinking() { playSound(400, 0.08); setTimeout(() => playSound(520, 0.08), 80); }
-    function beepDone() { playSound(600, 0.08); setTimeout(() => playSound(420, 0.08), 80); }
+    function blip(sequence) {
+      sequence.forEach(([freq, delay = 0, dur = 0.07, type = 'sine', volume = 0.05]) => {
+        setTimeout(() => playSound(freq, dur, type, volume), delay);
+      });
+    }
+    function pulseTone(step = 0, octave = 1) {
+      const scale = [0, 3, 5, 7, 10, 12, 15];
+      const semitone = scale[(sonicMood + step + scale.length) % scale.length];
+      return Math.round(sonicRoot * octave * Math.pow(2, semitone / 12));
+    }
+    function beepSend() { blip([[pulseTone(2, 2), 0, .055, 'triangle'], [pulseTone(4, 2), 58, .05, 'sine', .035]]); }
+    function beepThinking() { blip([[pulseTone(-1), 0, .055, 'sine', .028], [pulseTone(1), 70, .055, 'triangle', .028], [pulseTone(0), 140, .05, 'sine', .024]]); }
+    function beepDone() { blip([[pulseTone(3, 1.5), 0, .065, 'triangle', .035], [pulseTone(1, 1.25), 82, .07, 'sine', .03]]); }
+    function beepArm() { blip([[pulseTone(-3, .72), 0, .08, 'sawtooth', .02], [pulseTone(0), 95, .06, 'triangle', .034], [pulseTone(4, 1.6), 170, .045, 'sine', .034]]); }
+    function beepError() { blip([[pulseTone(-4, .68), 0, .08, 'square', .018], [pulseTone(-5, .58), 100, .09, 'square', .015]]); }
 
-    function randomize(base, variance) {
-      return base + (Math.random() - 0.5) * variance;
+    const keyClicker = {
+      enabled: localStorage.getItem('pibulus.deck.keyclicks') !== '0',
+      loaded: false,
+      loading: null,
+      buffer: null,
+      config: null,
+      lastAt: 0,
+      async load() {
+        if (this.loaded || this.loading) return this.loading;
+        const ctx = ensureAudioContext();
+        if (!ctx) return null;
+        this.loading = Promise.all([
+          fetch('/deck/claude/sounds/keyboard-packs/cherry-mx-black/config.json', { cache: 'force-cache' }).then(r => r.ok ? r.json() : null),
+          fetch('/deck/claude/sounds/keyboard-packs/cherry-mx-black/sound.ogg', { cache: 'force-cache' }).then(r => r.ok ? r.arrayBuffer() : null)
+        ]).then(async ([config, bytes]) => {
+          if (!config || !bytes) return null;
+          this.config = config;
+          this.buffer = await ctx.decodeAudioData(bytes);
+          this.loaded = true;
+          return true;
+        }).catch(() => null);
+        return this.loading;
+      },
+      keyId(event) {
+        const special = {
+          ' ': '57',
+          Enter: '28',
+          Backspace: '14',
+          Tab: '15',
+          Escape: '41',
+          Shift: '42',
+          Control: '17',
+          Alt: '18',
+          Meta: '3675',
+          '.': '52',
+          ',': '51',
+          '/': '53',
+          ';': '39',
+          "'": '40',
+          '[': '26',
+          ']': '27'
+        };
+        if (special[event.key]) return special[event.key];
+        if (/^[a-z]$/i.test(event.key)) return String(event.key.toUpperCase().charCodeAt(0));
+        if (/^[0-9]$/.test(event.key)) return event.key === '0' ? '11' : String(Number(event.key) + 1);
+        return '65';
+      },
+      play(event) {
+        if (!this.enabled || event.repeat || event.metaKey || event.ctrlKey) return;
+        const now = performance.now();
+        if (now - this.lastAt < 22) return;
+        this.lastAt = now;
+        if (!this.loaded) {
+          this.load();
+          playSound(pulseTone(event.key === 'Backspace' ? -2 : 1, 1.55), .018, 'triangle', .009);
+          return;
+        }
+        const segment = this.config?.defines?.[this.keyId(event)] || this.config?.defines?.['65'];
+        if (!segment || !this.buffer) return;
+        const ctx = ensureAudioContext();
+        if (!ctx) return;
+        const source = ctx.createBufferSource();
+        const gain = ctx.createGain();
+        source.buffer = this.buffer;
+        gain.gain.value = event.key === 'Backspace' ? .11 : .085;
+        source.connect(gain);
+        gain.connect(ctx.destination);
+        source.start(0, segment[0] / 1000, segment[1] / 1000);
+      }
+    };
+
+    function pulseAt(target, tone = 'soft') {
+      if (!target || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const rect = target.getBoundingClientRect();
+      const spark = document.createElement('span');
+      spark.className = `touch-spark ${tone}`;
+      spark.style.left = `${rect.left + rect.width / 2}px`;
+      spark.style.top = `${rect.top + rect.height / 2}px`;
+      document.body.appendChild(spark);
+      setTimeout(() => spark.remove(), 760);
+    }
+
+    function clearRayaCollapse() {
+      if (rayaCollapseTimer) clearTimeout(rayaCollapseTimer);
+      rayaCollapseTimer = null;
+    }
+
+    function scheduleRayaCollapse(delay = 5200) {
+      clearRayaCollapse();
+      if (!rayaDock?.classList.contains('show')) return;
+      rayaCollapseTimer = setTimeout(() => setRayaOpen(false), delay);
+    }
+
+    function setRayaOpen(value) {
+      clearRayaCollapse();
+      rayaDock?.classList.toggle('show', value);
+      radioBtn?.classList.toggle('open', value);
+      radioBtn?.setAttribute('aria-expanded', String(value));
+      if (value) scheduleRayaCollapse(6200);
+    }
+
+    function syncRayaOrb(state = {}) {
+      if (!radioBtn) return;
+      const loading = state.loading ?? Boolean(rayaRadio?.isLoading);
+      const playing = state.playing ?? Boolean(rayaRadio?.isPlaying);
+      radioBtn.classList.toggle('loading', loading);
+      radioBtn.classList.toggle('on', playing);
+      radioBtn.setAttribute('aria-pressed', String(playing));
+      document.body.classList.toggle('radio-on', playing);
+      radioBtn.setAttribute('aria-label', playing ? 'Open Raya radio' : 'Open Raya radio');
+    }
+
+    radioBtn?.addEventListener('click', () => {
+      setRayaOpen(!rayaDock?.classList.contains('show'));
+      pulseAt(radioBtn, 'blue');
+      haptic(12);
+      blip([[pulseTone(1, 1.35), 0, .045, 'triangle', .018]]);
+    });
+
+    rayaDock?.addEventListener('pointerenter', clearRayaCollapse);
+    rayaDock?.addEventListener('pointerleave', () => scheduleRayaCollapse(2400));
+    rayaDock?.addEventListener('focusin', clearRayaCollapse);
+    rayaDock?.addEventListener('focusout', () => {
+      setTimeout(() => {
+        if (!rayaDock.contains(document.activeElement)) scheduleRayaCollapse(1800);
+      }, 0);
+    });
+
+    document.addEventListener('pointerdown', event => {
+      if (!rayaDock?.classList.contains('show')) return;
+      if (rayaDock.contains(event.target) || radioBtn?.contains(event.target)) return;
+      setRayaOpen(false);
+    });
+
+    ['loading', 'play', 'pause', 'channelchange', 'error', 'nowplaying'].forEach(name => {
+      rayaRadio?.addEventListener(name, () => {
+        if (name === 'play') {
+          syncRayaOrb({ playing: true, loading: false });
+          pulseAt(radioBtn, 'soft');
+          haptic([10, 18, 10]);
+          scheduleRayaCollapse(900);
+        } else if (name === 'loading') {
+          clearRayaCollapse();
+          syncRayaOrb({ loading: true });
+        } else if (name === 'error') {
+          syncRayaOrb({ playing: false, loading: false });
+          beepError();
+          pulseAt(radioBtn, 'danger');
+          scheduleRayaCollapse(3200);
+        } else if (name === 'pause' || name === 'channelchange') {
+          syncRayaOrb();
+          scheduleRayaCollapse(900);
+        } else {
+          syncRayaOrb();
+        }
+      });
+    });
+
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') setRayaOpen(false);
+    });
+
+    function selectedModelConfig() {
+      return models.find(item => item.key === model) || models.find(item => item.enabled) || models[0] || {
+        key: 'claude',
+        label: 'Claude Code',
+        enabled: false,
+        modes: ['auto'],
+        default_mode: 'auto'
+      };
+    }
+
+    function selectedModeConfig() {
+      return modes.find(item => item.key === mode) || { key: mode, label: mode };
+    }
+
+    function shortModelLabel(item = selectedModelConfig()) {
+      return String(item?.label || 'Deck').split(' · ')[0];
+    }
+
+    function chatStorageKey() {
+      return `pibulus.deck.chatId.${model}.${workspace}`;
+    }
+
+    function loadChatId() {
+      const legacy = model === 'claude' && workspace === 'pibulus-os'
+        ? localStorage.getItem('pibulus.claude.chatId') || ''
+        : '';
+      chatId = localStorage.getItem(chatStorageKey()) || legacy;
+    }
+
+    function persistSelections() {
+      localStorage.setItem('pibulus.deck.model', model);
+      localStorage.setItem('pibulus.deck.mode', mode);
+      localStorage.setItem('pibulus.deck.workspace', workspace);
+    }
+
+    function fillSelect(select, items, currentValue) {
+      select.replaceChildren();
+      items.forEach(item => {
+        const option = document.createElement('option');
+        option.value = item.key;
+        option.textContent = item.enabled === false && item.detail
+          ? `${item.label} · ${item.detail}`
+          : item.label;
+        option.disabled = item.enabled === false;
+        select.appendChild(option);
+      });
+      select.value = currentValue;
+    }
+
+    function normalizeSelections() {
+      const enabledModel = models.find(item => item.key === model && item.enabled) || models.find(item => item.enabled);
+      if (enabledModel) model = enabledModel.key;
+
+      const activeModel = selectedModelConfig();
+      const allowedModes = new Set(activeModel.modes || []);
+      if (!allowedModes.has(mode)) {
+        mode = activeModel.default_mode || [...allowedModes][0] || 'default';
+      }
+
+      if (!workspaces.some(item => item.key === workspace)) {
+        workspace = workspaces[0]?.key || 'pibulus-os';
+      }
+
+      persistSelections();
+      loadChatId();
+    }
+
+    function syncDeckMeta() {
+      const activeModel = selectedModelConfig();
+      const ready = Boolean(activeModel.enabled);
+      authReady = ready;
+      statusPill.classList.toggle('bad', !ready);
+      const detail = activeModel.detail ? ` · ${activeModel.detail}` : '';
+      emptyKicker.textContent = `${activeModel.label}${detail} · ${workspace} · ${selectedModeConfig().label}`;
+      input.placeholder = ready ? `Message ${shortModelLabel(activeModel)}` : `${shortModelLabel(activeModel)} unavailable`;
+      statusText.textContent = ready ? 'online' : (activeModel.detail || 'unavailable');
+      armCopy.textContent = `Full gives ${shortModelLabel(activeModel)} write access in ${workspace} for the next send.`;
+    }
+
+    function syncFullArmVisibility() {
+      const canFull = (selectedModelConfig().modes || []).includes('full');
+      const show = canFull && mode === 'full';
+      fullArm.classList.toggle('show', show);
+      if (!show) clearFullArm();
+    }
+
+    function renderControls() {
+      const activeModel = selectedModelConfig();
+      const allowedModes = new Set(activeModel.modes || []);
+      fillSelect(modelSelect, models, model);
+      fillSelect(
+        modeSelect,
+        modes.map(item => ({ ...item, enabled: item.enabled !== false && allowedModes.has(item.key) })),
+        mode
+      );
+      fillSelect(workspaceSelect, workspaces, workspace);
+      syncFullArmVisibility();
+      syncDeckMeta();
+      syncControls();
+      renderAgentLights();
+    }
+
+    function setVar(name, value) {
+      document.documentElement.style.setProperty(name, value);
+    }
+
+    function pct(value) {
+      return `${Math.round(Math.max(0, Math.min(1, Number(value) || 0)) * 100)}%`;
+    }
+
+    function minScale(value) {
+      return Math.max(0.08, Math.min(1, Number(value) || 0)).toFixed(4);
+    }
+
+    function seedNumber(seed, offset = 0) {
+      const chunk = String(seed || '000000000000').slice(offset, offset + 2) || '00';
+      return parseInt(chunk, 16) / 255;
+    }
+
+    function clamp(value, min = 0, max = 1) {
+      return Math.max(min, Math.min(max, Number(value) || 0));
+    }
+
+    function pathFromPoints(points) {
+      return points.map((point, index) => `${index ? 'L' : 'M'} ${point.x.toFixed(2)} ${point.y.toFixed(2)}`).join(' ');
+    }
+
+    function setMoonPhase(phase) {
+      const value = clamp(phase);
+      setVar('--moon-phase', value.toFixed(3));
+      setVar('--moon-angle', `${Math.round(value * 360)}deg`);
+      setVar('--weather-tint', `${Math.round((value - .5) * 80)}deg`);
+      setVar('--moon-shift', `${((value - .5) * 22).toFixed(2)}%`);
+      return value;
+    }
+
+    function renderSigil(seed, pulse = {}) {
+      if (!sigilRose || !sigilOrbit || !sigilRing || !sigilStars) return;
+      const load = clamp(pulse.load);
+      const mem = clamp(pulse.mem);
+      const root = clamp(pulse.root);
+      const temp = clamp(pulse.temp);
+      const moon = clamp(pulse.moon ?? getComputedStyle(document.documentElement).getPropertyValue('--moon-phase'));
+      const petalCount = 3 + Math.floor(seedNumber(seed, 1) * 5);
+      const roseSteps = 144;
+      const roseAmp = 24 + root * 8 + temp * 5;
+      const twist = (seedNumber(seed, 2) - .5) * Math.PI * .72 + moon * Math.PI * .16;
+      const rose = [];
+      for (let i = 0; i <= roseSteps; i += 1) {
+        const theta = (i / roseSteps) * Math.PI * 2;
+        const breathe = 1 + Math.sin(theta * 3 + moon * Math.PI * 2) * (.025 + load * .045);
+        const r = roseAmp * Math.cos(petalCount * theta) * breathe;
+        rose.push({
+          x: r * Math.cos(theta + twist),
+          y: r * Math.sin(theta + twist)
+        });
+      }
+      sigilRose.setAttribute('d', pathFromPoints(rose));
+
+      const orbitSteps = 96;
+      const orbit = [];
+      const turns = 1.16 + seedNumber(seed, 4) * .95;
+      for (let i = 0; i <= orbitSteps; i += 1) {
+        const t = i / orbitSteps;
+        const theta = t * Math.PI * 2 * turns + twist * .5;
+        const r = 8 + t * (36 + mem * 9) + Math.sin(t * Math.PI * 6 + moon * Math.PI * 2) * (1.3 + load * 2.7);
+        orbit.push({
+          x: r * Math.cos(theta),
+          y: r * Math.sin(theta)
+        });
+      }
+      sigilOrbit.setAttribute('d', pathFromPoints(orbit));
+
+      const ring = 40 + temp * 6 + seedNumber(seed, 7) * 4;
+      sigilRing.setAttribute('d', `M 0 -${ring.toFixed(2)} A ${ring.toFixed(2)} ${ring.toFixed(2)} 0 1 1 -.01 -${ring.toFixed(2)}`);
+      sigilCore?.setAttribute('r', (3.1 + load * 2.2 + temp * 1.2).toFixed(2));
+
+      const starCount = 6 + Math.floor(seedNumber(seed, 8) * 5);
+      const constellation = [];
+      sigilStars.replaceChildren();
+      for (let i = 0; i < starCount; i += 1) {
+        const angle = (i / starCount) * Math.PI * 2 + seedNumber(seed, i % 10) * .72 + moon * .42;
+        const radius = 19 + seedNumber(seed, (i * 2 + 3) % 12) * 34;
+        const x = radius * Math.cos(angle);
+        const y = radius * Math.sin(angle);
+        constellation.push({ x, y });
+      }
+      const line = document.createElementNS(svgNS, 'path');
+      line.setAttribute('class', 'sigil-constellation');
+      line.setAttribute('d', pathFromPoints(constellation));
+      sigilStars.appendChild(line);
+      constellation.forEach((point, index) => {
+        const star = document.createElementNS(svgNS, 'circle');
+        star.setAttribute('class', 'sigil-star');
+        star.setAttribute('cx', point.x.toFixed(2));
+        star.setAttribute('cy', point.y.toFixed(2));
+        star.setAttribute('r', (1 + seedNumber(seed, index + 2) * 1.4).toFixed(2));
+        sigilStars.appendChild(star);
+      });
+    }
+
+    function applyPulse(data = {}) {
+      const load = clamp(data.load);
+      const mem = clamp(data.mem);
+      const swap = clamp(data.swap);
+      const root = clamp(data.root?.used);
+      const passport = clamp(data.passport?.used);
+      const temp = clamp(data.temp);
+      const uptime = clamp(data.uptime);
+      const seed = data.seed || `${Date.now().toString(16)}000000000000`;
+      const moon = Number.isFinite(Number(data.moon))
+        ? setMoonPhase(Number(data.moon))
+        : clamp(getComputedStyle(document.documentElement).getPropertyValue('--moon-phase'));
+      const hue = Math.round((seedNumber(seed, 0) - .5) * 70 + moon * 34);
+      const tilt = ((seedNumber(seed, 2) - .5) * .42).toFixed(3);
+      const speed = (10 + seedNumber(seed, 4) * 16 + load * 8).toFixed(2);
+      const loadGlow = load * .25;
+      sonicRoot = 196 + Math.round(seedNumber(seed, 8) * 92) + Math.round(moon * 28);
+      sonicMood = Math.floor(seedNumber(seed, 10) * 7);
+      setVar('--pulse-load', load.toFixed(4));
+      setVar('--pulse-load-pct', pct(load));
+      setVar('--pulse-mem', mem.toFixed(4));
+      setVar('--pulse-mem-pct', pct(mem));
+      setVar('--pulse-swap', swap.toFixed(4));
+      setVar('--pulse-swap-pct', pct(swap));
+      setVar('--pulse-root', root.toFixed(4));
+      setVar('--pulse-root-pct', pct(root));
+      setVar('--pulse-passport', passport.toFixed(4));
+      setVar('--pulse-passport-pct', pct(passport));
+      setVar('--pulse-temp', temp.toFixed(4));
+      setVar('--pulse-temp-pct', pct(temp));
+      setVar('--pulse-uptime', uptime.toFixed(4));
+      setVar('--load-glow', loadGlow.toFixed(4));
+      setVar('--load-bg-alpha', (.018 + load * .04).toFixed(4));
+      setVar('--scan-opacity', (.16 + temp * .16).toFixed(4));
+      setVar('--cross-opacity', (.05 + load * .16).toFixed(4));
+      setVar('--root-shift', `${((root - .5) * 20).toFixed(2)}px`);
+      setVar('--passport-shift', `${((passport - .5) * -14).toFixed(2)}px`);
+      setVar('--uptime-shift', `${((uptime - .5) * 8).toFixed(2)}px`);
+      setVar('--dot-speed', `${(1.2 + load * 1.8).toFixed(2)}s`);
+      setVar('--empty-border-alpha', (.18 + root * .18).toFixed(4));
+      setVar('--empty-glow-px', `${(16 + load * 30).toFixed(2)}px`);
+      setVar('--empty-glow-alpha', (.04 + load * .12).toFixed(4));
+      setVar('--empty-sheen-opacity', (.16 + temp * .18).toFixed(4));
+      setVar('--stream-border-alpha', (.38 + loadGlow).toFixed(4));
+      setVar('--stream-glow-px', `${(28 + loadGlow * 40).toFixed(2)}px`);
+      setVar('--stream-glow-alpha', (.08 + loadGlow * .2).toFixed(4));
+      setVar('--reply-speed', `${(1.2 + load * 1.2).toFixed(2)}s`);
+      setVar('--spending-alpha', (load * .12).toFixed(4));
+      setVar('--hold-hue', `${Math.round(hue * .12)}deg`);
+      setVar('--bubble-hue', `${Math.round(hue * .08)}deg`);
+      setVar('--rail-opacity', (.38 + load * .22).toFixed(4));
+      setVar('--bar-load', minScale(load));
+      setVar('--bar-mem', minScale(mem));
+      setVar('--bar-swap', minScale(swap));
+      setVar('--bar-root', minScale(root));
+      setVar('--bar-passport', minScale(passport));
+      setVar('--chaos-hue', `${hue}deg`);
+      setVar('--chaos-tilt', `${tilt}deg`);
+      setVar('--scan-speed', `${speed}s`);
+      setVar('--sigil-spin', `${(22 + seedNumber(seed, 6) * 26 + uptime * 8).toFixed(2)}s`);
+      setVar('--sigil-counterspin', `${(46 + seedNumber(seed, 5) * 28 + passport * 8).toFixed(2)}s`);
+      setVar('--sigil-scale', (0.96 + load * .07 + temp * .035).toFixed(3));
+      setVar('--sigil-alpha', (.68 + load * .12 + (1 - root) * .12).toFixed(4));
+      setVar('--sigil-halo', (.22 + load * .14 + temp * .08).toFixed(4));
+      setVar('--sigil-orbit-alpha', (.42 + load * .12 + (1 - mem) * .08).toFixed(4));
+      setVar('--sigil-core', (.68 + temp * .2 + seedNumber(seed, 9) * .12).toFixed(4));
+      setVar('--sigil-tilt', `${((seedNumber(seed, 11) - .5) * 7).toFixed(2)}deg`);
+      setVar('--spark-hue', `${Math.round(hue * .5)}deg`);
+      renderSigil(seed, { load, mem, swap, root, passport, temp, uptime, moon });
     }
 
     function updatePiGlow() {
-      fetch('/status.json', { cache: 'no-store' })
+      fetch(`${api}/pulse`, { credentials: 'same-origin', cache: 'no-store' })
         .then(r => r.json())
-        .then(data => {
-          const load = parseFloat(data?.system?.load?.split(',')[0]) || 0.5;
-          const normalized = Math.max(0, Math.min(1, load / 2));
-          document.documentElement.style.setProperty('--load-glow', normalized * 0.25);
-        })
+        .then(applyPulse)
         .catch(() => {
-          document.documentElement.style.setProperty('--load-glow', Math.random() * 0.12);
+          fetch('/status.json', { cache: 'no-store' })
+            .then(r => r.json())
+            .then(data => {
+              const load = parseFloat(data?.system?.load?.split(',')[0]) || 0.5;
+              applyPulse({ load: Math.max(0, Math.min(1, load / 4)), seed: Date.now().toString(16) });
+            })
+            .catch(() => applyPulse({ load: 0.12, seed: Date.now().toString(16) }));
         });
-    }
-
-    function injectOrganic() {
-      const sheets = document.styleSheets;
-      for (let sheet of sheets) {
-        try {
-          const rules = sheet.cssRules || sheet.rules;
-          for (let rule of rules) {
-            if (rule.selectorText?.includes('breathe')) {
-              const durationBase = 1800;
-              const durationVariance = 400;
-              const randomDuration = randomize(durationBase, durationVariance) + 'ms';
-              rule.style.animationDuration = randomDuration;
-            }
-          }
-        } catch (_) {}
-      }
     }
 
     function updateMoonPhase() {
@@ -840,24 +1787,7 @@
       const jd = day + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
       const d = jd - 2451550.1;
       const phase = ((d % 29.530588861) / 29.530588861 + 1) % 1;
-      document.documentElement.style.setProperty('--moon-phase', phase.toFixed(3));
-      return phase;
-    }
-
-    function fetchSigil() {
-      fetch('/stargram/api/sigil', { cache: 'no-store' })
-        .then(r => r.json())
-        .then(data => {
-          if (data.sigil) {
-            const corner = ['top-left', 'top-right', 'bottom-left', 'bottom-right'][Math.floor(Math.random() * 4)];
-            const el = document.createElement('div');
-            el.style.cssText = `position: fixed; ${corner === 'top-left' ? 'top: 20px; left: 20px' : corner === 'top-right' ? 'top: 20px; right: 20px' : corner === 'bottom-left' ? 'bottom: 20px; left: 20px' : 'bottom: 20px; right: 20px'}; font-size: 32px; opacity: 0.2; pointer-events: none; animation: fadeInOut 8s ease-in-out; z-index: 1;`;
-            el.textContent = data.sigil;
-            document.body.appendChild(el);
-            setTimeout(() => el.remove(), 8000);
-          }
-        })
-        .catch(() => {});
+      return setMoonPhase(phase);
     }
 
     function setRunning(value) {
@@ -869,7 +1799,9 @@
       stopBtn.classList.toggle('disabled', !value);
       stopBtn.setAttribute('aria-disabled', String(!value));
       form.setAttribute('aria-busy', String(value));
-      syncMicButton();
+      document.body.classList.toggle('is-running', value);
+      syncControls();
+      renderAgentLights();
     }
 
     function syncSpeakerButton() {
@@ -913,7 +1845,7 @@
       dictateBaseText = '';
       dictateFinalText = '';
       dictationHadResult = false;
-      input.placeholder = authReady ? 'Ask / steer / ship' : 'Needs Claude key';
+      syncDeckMeta();
       syncMicButton();
     }
 
@@ -1101,8 +2033,23 @@
     function syncControls() {
       input.disabled = !authReady;
       sendBtn.disabled = running || !authReady;
+      modelSelect.disabled = running || models.filter(item => item.enabled).length <= 1;
+      modeSelect.disabled = running || !authReady;
+      workspaceSelect.disabled = running || !authReady || workspaces.length <= 1;
       syncMicButton();
       promptChips.forEach(btn => { btn.disabled = !authReady; });
+    }
+
+    function renderAgentLights() {
+      if (!agentLights) return;
+      agentLights.replaceChildren();
+      models.slice(0, 6).forEach(item => {
+        const light = document.createElement('i');
+        light.className = item.enabled ? 'ready' : 'off';
+        if (item.key === model) light.classList.add('current');
+        if (item.key === model && running) light.classList.add('running');
+        agentLights.appendChild(light);
+      });
     }
 
     function clearFullArm() {
@@ -1141,16 +2088,19 @@
         const copyBtn = document.createElement('button');
         copyBtn.type = 'button';
         copyBtn.className = 'copy-btn';
-        copyBtn.innerHTML = '📋';
+        copyBtn.textContent = '⧉';
         copyBtn.setAttribute('aria-label', 'Copy');
         copyBtn.addEventListener('click', async () => {
           try {
             await navigator.clipboard.writeText(bubble.textContent);
+            blip([[pulseTone(2, 1.35), 0, .04, 'triangle', .018], [pulseTone(4, 1.35), 48, .04, 'sine', .014]]);
+            haptic(12);
+            pulseAt(copyBtn, 'blue');
             copyBtn.classList.add('copied');
-            copyBtn.innerHTML = '✓';
+            copyBtn.textContent = '✓';
             setTimeout(() => {
               copyBtn.classList.remove('copied');
-              copyBtn.innerHTML = '📋';
+              copyBtn.textContent = '⧉';
             }, 1800);
           } catch (e) {
             console.log('Copy failed:', e);
@@ -1168,7 +2118,7 @@
     }
 
     function appendAssistant(text) {
-      if (!currentBubble) currentBubble = addMessage('assistant', '', 'claude');
+      if (!currentBubble) currentBubble = addMessage('assistant', '', shortModelLabel().toLowerCase());
       if (currentBubble.dataset.placeholder === 'true') {
         currentBubble.textContent = '';
         delete currentBubble.dataset.placeholder;
@@ -1182,7 +2132,8 @@
 
     function startAssistantPlaceholder() {
       beepThinking();
-      currentBubble = addMessage('assistant', 'thinking', 'claude');
+      haptic([12, 24, 10]);
+      currentBubble = addMessage('assistant', '◌ ◌ ◌', shortModelLabel().toLowerCase());
       currentReplyText = '';
       currentBubble.dataset.placeholder = 'true';
       currentBubble.closest('.msg')?.classList.add('streaming', 'thinking');
@@ -1195,7 +2146,12 @@
 
     function saveChatId(id) {
       chatId = id || chatId;
-      if (chatId) localStorage.setItem('pibulus.claude.chatId', chatId);
+      if (chatId) {
+        localStorage.setItem(chatStorageKey(), chatId);
+        if (model === 'claude' && workspace === 'pibulus-os') {
+          localStorage.setItem('pibulus.claude.chatId', chatId);
+        }
+      }
     }
 
     async function bootstrap() {
@@ -1203,22 +2159,24 @@
       if (!res.ok) throw new Error(`bootstrap ${res.status}`);
       const data = await res.json();
       csrf = data.csrf;
-      authReady = Boolean(data.claude_auth && data.claude_auth.ok);
-      setRunning(Boolean(data.active));
+      models = data.models || [{ key: 'claude', label: 'Claude Code', enabled: Boolean(data.claude_auth?.ok), modes: ['plan', 'default', 'auto', 'full'], default_mode: 'auto' }];
+      modes = data.modes || [
+        { key: 'plan', label: 'Plan', enabled: true },
+        { key: 'default', label: 'Ask', enabled: true },
+        { key: 'auto', label: 'Act', enabled: true },
+        { key: 'full', label: 'Full', enabled: true }
+      ];
+      workspaces = data.workspaces || [{ key: 'pibulus-os', label: 'pibulus-os' }];
       input.maxLength = data.max_prompt_chars || 12000;
-      statusPill.classList.toggle('bad', !authReady);
-      statusText.textContent = authReady ? 'online' : 'needs key';
-      input.placeholder = authReady ? 'Ask / steer / ship' : 'Needs Claude key';
-      syncControls();
+      normalizeSelections();
+      renderControls();
+      setRunning(Boolean(data.active));
       syncSpeakerButton();
-      if (!authReady) addSystem('Claude needs its key before this deck can talk.');
-      injectOrganic();
+      if (!authReady) addSystem(`${shortModelLabel()} is unavailable.`);
       updateMoonPhase();
-      updatePiGlow();
+      applyPulse(data.pulse || { load: 0.12, seed: Date.now().toString(16) });
       setInterval(updateMoonPhase, 3600000);
       setInterval(updatePiGlow, 30000);
-      setInterval(fetchSigil, 120000);
-      setTimeout(fetchSigil, 2000);
     }
 
     promptChips.forEach(btn => {
@@ -1229,7 +2187,38 @@
       });
     });
 
+    modelSelect.addEventListener('change', () => {
+      model = modelSelect.value;
+      const activeModel = selectedModelConfig();
+      if (!activeModel.enabled) {
+        normalizeSelections();
+      } else {
+        const allowedModes = new Set(activeModel.modes || []);
+        if (!allowedModes.has(mode)) mode = activeModel.default_mode || [...allowedModes][0] || 'default';
+        persistSelections();
+        loadChatId();
+      }
+      clearFullArm();
+      renderControls();
+    });
+
+    modeSelect.addEventListener('change', () => {
+      mode = modeSelect.value;
+      persistSelections();
+      clearFullArm();
+      renderControls();
+    });
+
+    workspaceSelect.addEventListener('change', () => {
+      workspace = workspaceSelect.value;
+      persistSelections();
+      loadChatId();
+      clearFullArm();
+      renderControls();
+    });
+
     input.addEventListener('input', fitInput);
+    input.addEventListener('keydown', event => keyClicker.play(event));
 
     async function armFullMode() {
       if (armPending || running) return;
@@ -1251,8 +2240,14 @@
         fullArmed = Boolean(armToken);
         holdBtn.classList.toggle('armed', fullArmed);
         holdBtn.textContent = fullArmed ? 'NEXT' : 'HOLD';
+        if (fullArmed) {
+          beepArm();
+          haptic([28, 28, 70]);
+        }
       } catch (err) {
         clearFullArm();
+        beepError();
+        haptic([70, 40, 30]);
         addSystem('Full could not arm.');
       } finally {
         armPending = false;
@@ -1264,15 +2259,15 @@
       clearFullArm();
       holdBtn.textContent = 'HOLD';
       holdBtn.classList.add('charging');
-      if (navigator.vibrate) navigator.vibrate(40);
+      haptic(40);
       let hapticCount = 0;
       const hapticInterval = setInterval(() => {
         if (hapticCount++ > 8) clearInterval(hapticInterval);
-        if (navigator.vibrate) navigator.vibrate(30 + hapticCount * 5);
+        haptic(30 + hapticCount * 5);
       }, 110);
       holdTimer = setTimeout(() => {
         clearInterval(hapticInterval);
-        if (navigator.vibrate) navigator.vibrate([50, 50, 100]);
+        haptic([50, 50, 100]);
         armFullMode();
       }, 900);
     });
@@ -1283,12 +2278,14 @@
         holdTimer = null;
         holdBtn.classList.remove('charging');
         if (!fullArmed) holdBtn.textContent = 'HOLD';
-        if (navigator.vibrate) navigator.vibrate(20);
+        haptic(20);
       });
     });
 
     async function stopRun() {
       if (!running) return;
+      beepError();
+      haptic([25, 20, 25]);
       await fetch(`${api}/stop`, {
         method: 'POST',
         credentials: 'same-origin',
@@ -1302,8 +2299,10 @@
 
     micBtn.addEventListener('click', () => {
       if (dictating) {
+        haptic(12);
         stopDictation();
       } else {
+        haptic(18);
         startDictation();
       }
     });
@@ -1331,15 +2330,24 @@
       stopDictation({ abort: true });
       cancelSpeech();
       clearFullArm();
-      localStorage.removeItem('pibulus.claude.chatId');
+      localStorage.removeItem(chatStorageKey());
+      if (model === 'claude' && workspace === 'pibulus-os') localStorage.removeItem('pibulus.claude.chatId');
       addSystem('new thread');
     });
 
     async function sendMessage(text) {
       if (running) return;
       stopDictation({ abort: true });
-      const fullReady = fullArmed && armToken && Date.now() < armExpiresAt;
-      if (fullReady) beepSend();
+      const wantsFull = mode === 'full';
+      const fullReady = wantsFull && fullArmed && armToken && Date.now() < armExpiresAt;
+      if (wantsFull && !fullReady) {
+        beepError();
+        haptic([50, 30, 25]);
+        addSystem('hold to arm full first');
+        return;
+      }
+      beepSend();
+      haptic(fullReady ? [18, 28, 18] : 16);
 
       addMessage('user', text, 'you');
       currentBubble = null;
@@ -1349,6 +2357,7 @@
       const payload = {
         message: text,
         chat_id: chatId,
+        model,
         mode: sendMode,
         workspace,
         arm_token: fullReady ? armToken : ''
@@ -1368,6 +2377,8 @@
           const err = await res.json();
           msg = err.error || msg;
         } catch (_) {}
+        beepError();
+        haptic([60, 30, 25]);
         addSystem(msg);
         setRunning(false);
         return;
@@ -1391,16 +2402,19 @@
           if (event.type === 'started') {
             saveChatId(event.chat_id);
             startAssistantPlaceholder();
-          } else if (event.type === 'claude' && event.text) {
+          } else if ((event.type === 'claude' || event.type === 'agent') && event.text) {
             appendAssistant(event.text);
           } else if (event.type === 'line' && event.text) {
             appendAssistant(event.text + '\n');
           } else if (event.type === 'stderr' && event.text) {
             addSystem(event.text);
           } else if (event.type === 'error' && event.text) {
+            beepError();
+            haptic([60, 30, 25]);
             addSystem(event.text);
           } else if (event.type === 'done') {
             beepDone();
+            haptic([14, 34, 18]);
             if (event.result && event.result.cost_usd) {
               chatCost += parseFloat(event.result.cost_usd) || 0;
               spendingAmount.textContent = '$' + chatCost.toFixed(2);
