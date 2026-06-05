@@ -764,6 +764,9 @@ class Handler(BaseHTTPRequestHandler):
 
             env = os.environ.copy()
             env.update({"HOME": "/home/pibulus", "TERM": "dumb", "NO_COLOR": "1"})
+            if model_key == "codex":
+                env.pop("OPENAI_API_KEY", None)
+                env.pop("CODEX_API_KEY", None)
             if model_key == "gemini":
                 env.pop("GOOGLE_API_KEY", None)
 
