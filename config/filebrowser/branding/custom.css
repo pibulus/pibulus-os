@@ -322,12 +322,46 @@ table tr:hover {
   transition:
     background-color 120ms ease,
     box-shadow 120ms ease,
-    transform 120ms ease;
+    border-color 120ms ease,
+    transform 150ms cubic-bezier(0.2, 0.9, 0.3, 1.15);
 }
 
 #listing.list .item:hover {
   background: rgba(120, 220, 232, 0.09);
   box-shadow: inset 3px 0 0 var(--blue);
+  transform: translateX(2px);
+}
+
+@keyframes vault-folder-glow {
+  0% { box-shadow: inset 3px 0 0 var(--blue), 0 0 0 rgba(120, 220, 232, 0); }
+  45% { box-shadow: inset 3px 0 0 var(--blue), 0 0 22px rgba(120, 220, 232, 0.18); }
+  100% { box-shadow: inset 3px 0 0 var(--blue), 0 0 10px rgba(215, 180, 106, 0.08); }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  #listing.list .item[data-dir="true"]:hover,
+  #listing.list .item[data-dir="true"].vault-folder-hover {
+    background:
+      linear-gradient(90deg, rgba(215, 180, 106, 0.13), rgba(120, 220, 232, 0.075));
+    border-color: rgba(215, 180, 106, 0.24);
+    transform: translateX(4px) scale(1.008);
+    animation: vault-folder-glow 420ms ease both;
+  }
+
+  #listing.list .item[data-dir="true"]:hover .name {
+    color: #fff7e8;
+    text-shadow: 0 0 12px rgba(215, 180, 106, 0.16);
+  }
+
+  .file-icons [data-dir="true"]:hover i,
+  .file-icons [data-dir="true"].vault-folder-hover i,
+  #listing .item[data-dir="true"]:hover i,
+  #listing .item[data-dir="true"].vault-folder-hover i {
+    color: #f0c878;
+    filter: drop-shadow(0 0 10px rgba(215, 180, 106, 0.32));
+    transform: translateY(-1px) scale(1.08) rotate(-2deg);
+    transition: transform 150ms cubic-bezier(0.2, 0.9, 0.3, 1.15), filter 150ms ease, color 150ms ease;
+  }
 }
 
 #listing.list .item[aria-selected="true"] {

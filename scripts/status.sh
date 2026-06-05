@@ -94,7 +94,15 @@ cat > "$STATUS_TMP" <<JSON
   "date": "$(date '+%Y-%m-%d')"
 }
 JSON
-mv "$STATUS_TMP" "$STATUS_FILE"
+
+# Docker bind-mounts this single file into web_host. Replacing it with mv(1)
+# changes the inode and leaves nginx holding a dead mount until the container is
+# restarted. Preserve the inode when the file already exists.
+if [ -e "$STATUS_FILE" ]; then
+  cat "$STATUS_TMP" > "$STATUS_FILE"
+else
+  cp "$STATUS_TMP" "$STATUS_FILE"
+fi
 
 HEALTH_LOG="/media/pibulus/passport/Backups/pi-system/logs/health-heartbeat.log"
 mkdir -p "$(dirname "$HEALTH_LOG")"
