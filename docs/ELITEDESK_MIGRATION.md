@@ -193,7 +193,7 @@ git clone <your-git-remote> pibulus-os
 BACKUP=/media/pibulus/passport/Backups/pi-system
 
 mkdir -p ~/.config/{jellyfin,navidrome,kavita,calibre-web,memos,qbittorrent,thelounge}
-mkdir -p ~/filebrowser-db
+mkdir -p ~/filebrowser-db ~/filebrowser-config
 
 rsync -a "$BACKUP/configs/jellyfin/"    ~/.config/jellyfin/
 rsync -a "$BACKUP/configs/navidrome/"   ~/.config/navidrome/
@@ -202,7 +202,8 @@ rsync -a "$BACKUP/configs/calibre-web/" ~/.config/calibre-web/
 rsync -a "$BACKUP/configs/memos/"       ~/.config/memos/
 rsync -a "$BACKUP/configs/qbittorrent/" ~/.config/qbittorrent/
 rsync -a "$BACKUP/configs/thelounge/"   ~/.config/thelounge/
-rsync -a "$BACKUP/configs/filebrowser/" ~/filebrowser-db/
+rsync -a "$BACKUP/configs/filebrowser/"        ~/filebrowser-db/
+rsync -a "$BACKUP/configs/filebrowser-config/" ~/filebrowser-config/
 ```
 
 ### Start stacks in order

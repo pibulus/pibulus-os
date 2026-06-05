@@ -154,8 +154,9 @@ services:
       - "8080:80"
     volumes:
       - /media/pibulus/passport:/srv
-      - /opt/filebrowser/database.db:/database.db
-      - /opt/filebrowser/filebrowser.json:/.filebrowser.json
+      - /home/pibulus/filebrowser-db:/database
+      - /home/pibulus/filebrowser-config:/config
+      - /home/pibulus/pibulus-os/config/filebrowser/branding:/branding:ro
     cpus: "0.35"
     mem_limit: 192m
     memswap_limit: 256m

@@ -89,6 +89,8 @@ log "  qbittorrent: OK"
 
 rsync -a --delete \
   /home/pibulus/filebrowser-db/ "$BACKUP_DIR/configs/filebrowser/" >> "$LOG" 2>&1
+rsync -a --delete \
+  /home/pibulus/filebrowser-config/ "$BACKUP_DIR/configs/filebrowser-config/" >> "$LOG" 2>&1
 log "  filebrowser: OK"
 
 if [ -d /home/pibulus/.config/pibulus-youtube-archive ]; then
