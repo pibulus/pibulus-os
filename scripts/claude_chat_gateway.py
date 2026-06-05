@@ -974,6 +974,8 @@ class Handler(BaseHTTPRequestHandler):
                 return
             for line in proc.stderr:
                 cleaned = line.rstrip("\n")
+                if stream_kind == "codex" and cleaned == "Reading additional input from stdin...":
+                    continue
                 stderr_lines.append(cleaned[:500])
                 try:
                     self.stream_event({"type": "stderr", "text": cleaned[:500]})
@@ -1079,6 +1081,9 @@ class Handler(BaseHTTPRequestHandler):
 
         item = payload.get("item")
         if isinstance(item, dict):
+            value = item.get("text")
+            if isinstance(value, str):
+                return value
             content = item.get("content")
             if isinstance(content, list):
                 return "".join(
