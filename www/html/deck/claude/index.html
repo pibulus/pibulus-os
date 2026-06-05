@@ -112,19 +112,27 @@
       font-feature-settings: "zero" 1;
     }
 
-    * {
-      box-sizing: border-box;
-      letter-spacing: 0;
-      -webkit-tap-highlight-color: transparent;
-    }
-    html, body {
-      width: 100%;
-      min-height: 100%;
-      margin: 0;
-      scroll-behavior: smooth;
-      -webkit-font-smoothing: antialiased;
-      -webkit-text-size-adjust: 100%;
-    }
+        * {
+          box-sizing: border-box;
+          letter-spacing: 0;
+          -webkit-tap-highlight-color: transparent;
+          scrollbar-width: none;
+        }
+        *::-webkit-scrollbar {
+          width: 0;
+          height: 0;
+          display: none;
+        }
+        html, body {
+          width: 100%;
+          height: 100%;
+          min-height: 100%;
+          margin: 0;
+          scroll-behavior: auto;
+          overflow: hidden;
+          -webkit-font-smoothing: antialiased;
+          -webkit-text-size-adjust: 100%;
+        }
     body {
       background:
         linear-gradient(180deg, rgba(5, 6, 12, .05), rgba(5, 6, 12, .3)),
@@ -135,11 +143,12 @@
         linear-gradient(90deg, rgba(var(--cream-rgb),.028) 1px, transparent 1px),
         linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 48%, #12131c 100%);
       background-blend-mode: normal, screen, screen, screen, normal, normal, normal;
-      background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 42px 42px, 100% 100%;
-      color: var(--text);
-      overflow: hidden;
-      isolation: isolate;
-    }
+          background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 42px 42px, 100% 100%;
+          color: var(--text);
+          overflow: hidden;
+          isolation: isolate;
+          touch-action: manipulation;
+        }
 
     body.is-listening {
       --scan-opacity: .32;
@@ -163,12 +172,12 @@
       position: fixed;
       inset: 0;
       pointer-events: none;
-      background: linear-gradient(rgba(var(--cream-rgb),.024) 50%, transparent 50%);
-      background-size: 100% 4px;
-      opacity: var(--scan-opacity);
-      mix-blend-mode: screen;
-      animation: scanDrift var(--scan-speed) linear infinite;
-    }
+          background: linear-gradient(rgba(var(--cream-rgb),.024) 50%, transparent 50%);
+          background-size: 100% 4px;
+          opacity: var(--scan-opacity);
+          mix-blend-mode: screen;
+          transform: translateZ(0);
+        }
 
     body::after {
       content: "";
@@ -204,12 +213,14 @@
       outline-offset: 2px;
     }
 
-    .app {
-      height: 100dvh;
-      display: grid;
-      grid-template-rows: auto 1fr auto;
-      overflow: hidden;
-    }
+        .app {
+          height: 100dvh;
+          width: 100%;
+          max-width: 100vw;
+          display: grid;
+          grid-template-rows: auto 1fr auto;
+          overflow: hidden;
+        }
 
     .topbar {
       position: relative;
@@ -329,65 +340,73 @@
 
 
     .transcript {
+      position: relative;
       overflow-y: auto;
-      padding: 16px 12px 112px;
-      scroll-behavior: smooth;
-      -webkit-overflow-scrolling: touch;
-    }
+      overflow-x: clip;
+      overscroll-behavior: contain;
+          padding: 16px 12px 104px;
+          scroll-behavior: auto;
+          -webkit-overflow-scrolling: touch;
+        }
 
     .empty {
-      position: relative;
-      overflow: visible;
-      width: min(100%, 980px);
-      min-height: min(70vh, 720px);
-      margin: min(7vh, 64px) auto 0;
+      position: fixed;
+      inset: calc(74px + env(safe-area-inset-top)) 0 calc(84px + env(safe-area-inset-bottom));
+      z-index: 0;
+      overflow: hidden;
+      width: 100vw;
+      min-height: 0;
+      margin: 0;
       display: grid;
-      place-items: start center;
+      place-items: center;
       border: 0;
       background: transparent;
       padding: 0;
       box-shadow: none;
-      transform: rotate(var(--chaos-tilt));
+      transform: translateZ(0);
+      contain: paint;
+      pointer-events: none;
     }
 
     .empty::before {
       content: "";
       position: absolute;
-      inset: -16% -26% auto;
-      height: min(104vmin, 960px);
+          inset: -10% -7% auto;
+          height: min(88vmin, 860px);
       pointer-events: none;
       background:
         conic-gradient(from calc(var(--moon-angle) - 32deg), rgba(var(--blue-rgb),.3), rgba(var(--rose-rgb),.38), rgba(var(--gold-rgb),.16), rgba(var(--green-rgb),.28), rgba(var(--indigo-rgb),.3), rgba(var(--blue-rgb),.3)),
         radial-gradient(ellipse at 52% 48%, rgba(var(--cream-rgb),.05), transparent 58%);
       border-radius: 46% 54% 50% 48%;
-      opacity: var(--gooey-alpha);
-      transform: translateX(var(--moon-shift)) scale(1.08);
-      filter: blur(34px) saturate(1.85) brightness(.9) hue-rotate(var(--chaos-hue));
-      mix-blend-mode: screen;
-      animation: gooeyFloat 9s ease-in-out infinite;
-    }
+          opacity: calc(var(--gooey-alpha) * .9);
+          transform: translateX(calc(var(--moon-shift) * .45)) scale(1.03);
+          filter: blur(28px) saturate(1.38) brightness(.92) hue-rotate(var(--chaos-hue));
+          mix-blend-mode: screen;
+          animation: gooeyFloat 18s ease-in-out infinite;
+        }
 
     .empty::after {
       content: "";
       position: absolute;
-      inset: 12% 4% auto;
-      height: min(72vmin, 740px);
+          inset: 15% 8% auto;
+          height: min(62vmin, 680px);
       pointer-events: none;
       background:
         conic-gradient(from calc(var(--moon-angle) + 88deg), transparent, rgba(var(--rose-rgb),.16), transparent 42%, rgba(var(--green-rgb),.12), transparent 72%, rgba(var(--blue-rgb),.12), transparent);
       opacity: var(--gooey-secondary-alpha);
-      filter: blur(26px) saturate(1.18);
-      mix-blend-mode: screen;
-      transform: rotate(calc(var(--sigil-tilt) * -1)) scale(.96);
-    }
+          filter: blur(22px) saturate(1.08);
+          mix-blend-mode: screen;
+          transform: rotate(calc(var(--sigil-tilt) * -1)) scale(.96);
+        }
 
     .empty > * {
       position: relative;
       z-index: 1;
     }
 
-    .empty-kicker {
-      color: var(--blue);
+        .empty-kicker {
+          display: none;
+          color: var(--blue);
       align-self: start;
       justify-self: center;
       margin-top: clamp(64px, 12vh, 122px);
@@ -427,13 +446,13 @@
       transform: rotate(var(--familiar-tilt)) scale(1.08);
     }
 
-    .sigil-stage {
-      position: absolute;
-      left: 50%;
-      top: 52%;
-      z-index: 0;
-      width: clamp(560px, 96vmin, 1120px);
-      height: clamp(560px, 96vmin, 1120px);
+        .sigil-stage {
+          position: absolute;
+          left: 50%;
+          top: 52%;
+          z-index: 0;
+          width: clamp(360px, 82vmin, 900px);
+          height: clamp(360px, 82vmin, 900px);
       margin: 0;
       display: grid;
       place-items: center;
@@ -442,15 +461,15 @@
         rotate(var(--sigil-tilt))
         scale(var(--sigil-scale));
       opacity: var(--field-sigil-alpha);
-      filter:
-        blur(var(--field-blur))
-        saturate(1.28)
-        hue-rotate(var(--chaos-hue))
-        drop-shadow(0 0 58px rgba(var(--rose-rgb),.18))
-        drop-shadow(0 0 82px rgba(var(--blue-rgb),.14));
-      mix-blend-mode: screen;
-      transition: transform .28s cubic-bezier(.2, 1, .2, 1), filter .28s ease, opacity .28s ease;
-    }
+          filter:
+      blur(var(--field-blur))
+            saturate(1.16)
+            hue-rotate(var(--chaos-hue))
+            drop-shadow(0 0 36px rgba(var(--rose-rgb),.13))
+            drop-shadow(0 0 52px rgba(var(--blue-rgb),.1));
+          mix-blend-mode: screen;
+          transition: transform .28s cubic-bezier(.2, 1, .2, 1), filter .28s ease, opacity .28s ease;
+        }
 
     body.is-listening .sigil-stage {
       filter:
@@ -472,10 +491,10 @@
       background:
         radial-gradient(circle, rgba(var(--gold-rgb),.14) 0 12%, transparent 36%),
         conic-gradient(from var(--moon-angle), rgba(var(--rose-rgb),.26), rgba(var(--blue-rgb),.22), rgba(var(--green-rgb),.16), rgba(var(--gold-rgb),.2), rgba(var(--rose-rgb),.26));
-      opacity: calc(var(--sigil-halo) + .1);
-      filter: blur(14px);
-      animation: portalBreathe 4.8s ease-in-out infinite;
-    }
+          opacity: calc(var(--sigil-halo) * .82);
+          filter: blur(13px);
+          animation: portalBreathe 8.5s ease-in-out infinite;
+        }
 
     .sigil-stage::after {
       inset: clamp(58px, 15vmin, 158px);
@@ -492,9 +511,9 @@
       width: 100%;
       height: 100%;
       overflow: visible;
-      animation: sigilDrift var(--sigil-spin) linear infinite;
-      opacity: .76;
-    }
+          animation: sigilDrift var(--sigil-spin) linear infinite;
+          opacity: .76;
+        }
 
     .sigil-ring,
     .sigil-orbit,
@@ -512,7 +531,7 @@
       stroke-dasharray: 1.5 7;
       opacity: .46;
       transform-origin: center;
-      animation: sigilCounterspin var(--sigil-counterspin) linear infinite;
+          animation: none;
     }
 
     .sigil-orbit {
@@ -546,7 +565,7 @@
       filter:
         drop-shadow(0 0 7px rgba(var(--gold-rgb),.5))
         drop-shadow(0 0 14px rgba(var(--rose-rgb),.24));
-      animation: corePulse 2.6s ease-in-out infinite;
+          animation: corePulse 4.8s ease-in-out infinite;
     }
 
     body.is-running .sigil-stage::before {
@@ -566,10 +585,10 @@
     }
 
     @keyframes gooeyFloat {
-      0%, 100% { border-radius: 46% 54% 50% 48%; transform: translateX(var(--moon-shift)) scale(1.04) rotate(-1deg); }
-      45% { border-radius: 58% 42% 48% 54%; transform: translateX(calc(var(--moon-shift) * -1)) scale(1.12) rotate(1.4deg); }
-      72% { border-radius: 50% 48% 56% 44%; transform: translateX(var(--moon-shift)) scale(1.07) rotate(.2deg); }
-    }
+          0%, 100% { border-radius: 46% 54% 50% 48%; transform: translateX(calc(var(--moon-shift) * .35)) scale(1.01) rotate(-.4deg); }
+          45% { border-radius: 56% 44% 49% 53%; transform: translateX(calc(var(--moon-shift) * -.28)) scale(1.055) rotate(.6deg); }
+          72% { border-radius: 50% 48% 55% 45%; transform: translateX(calc(var(--moon-shift) * .2)) scale(1.025) rotate(.1deg); }
+        }
 
     @keyframes sigilDrift {
       from { transform: rotate(0turn); }
@@ -673,6 +692,8 @@
     }
 
     .msg {
+      position: relative;
+      z-index: 1;
       width: min(100%, 760px);
       margin: 0 auto 12px;
       display: grid;
@@ -684,6 +705,7 @@
     .msg.assistant { justify-items: start; }
 
     .label {
+      display: none;
       color: var(--soft);
       font-size: 12px;
       padding: 0 4px;
@@ -713,6 +735,7 @@
     .assistant .bubble {
       background: rgba(var(--panel-rgb),.9);
       border-color: rgba(var(--gold-rgb),.22);
+      padding-right: 48px;
     }
 
     .assistant.streaming .bubble {
@@ -778,42 +801,50 @@
       animation: messageComplete 0.8s ease-out;
     }
 
-    .spending-bar {
-      width: min(100%, 760px);
-      margin: 0 auto 8px;
-      display: none;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 8px;
-      border: 1px solid rgba(var(--rose-rgb),.24);
-      border-radius: var(--radius);
-      background: rgba(var(--rose-rgb),.052);
-      font-size: 13px;
-      box-shadow: inset 0 0 0 1px rgba(var(--rose-rgb), var(--spending-alpha));
-    }
+        .spending-bar {
+          width: min(100%, 760px);
+          margin: 0 auto 7px;
+          display: none;
+          justify-content: flex-end;
+          align-items: center;
+          gap: 5px;
+          padding: 0 2px;
+          border: 0;
+          border-radius: var(--radius);
+          background: transparent;
+          font-size: 11px;
+          opacity: .76;
+        }
 
-    .spending-bar::before {
-      content: "▣";
-      color: var(--amber);
-      font-size: 12px;
-    }
+        body.cost-visible .spending-bar {
+          display: flex;
+        }
+
+        .spending-bar::before {
+          content: "";
+          width: 5px;
+          height: 5px;
+          border-radius: 50%;
+          background: rgba(var(--gold-rgb),.78);
+          box-shadow: 0 0 9px rgba(var(--gold-rgb),.2);
+        }
 
     .spending-label {
       color: var(--soft);
       font-weight: 600;
     }
 
-    .spending-amount {
-      color: var(--rose);
-      font-weight: 800;
-      display: inline-block;
+        .spending-amount {
+          color: var(--amber);
+          font-weight: 800;
+          display: inline-block;
       transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.3s ease;
     }
 
-    .spending-amount.tick {
-      animation: spendingTick 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-      color: var(--rose);
-    }
+        .spending-amount.tick {
+          animation: spendingTick 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+          color: var(--green);
+        }
 
     @keyframes spendingTick {
       0% { transform: scale(0.8); }
@@ -828,13 +859,14 @@
     .bubble-wrapper {
       position: relative;
       display: block;
+      max-width: min(88vw, 680px);
     }
 
     .copy-btn {
       opacity: 0;
       position: absolute;
-      right: -10px;
-      top: -10px;
+      right: 6px;
+      top: 6px;
       transition: opacity .2s ease, transform .2s ease, border-color .2s ease, background-color .2s ease;
       width: 30px;
       height: 30px;
@@ -870,8 +902,8 @@
     @media (max-width: 520px) {
       .copy-btn {
         opacity: .72;
-        right: -7px;
-        top: -9px;
+        right: 6px;
+        top: 6px;
       }
     }
 
@@ -921,16 +953,16 @@
       pointer-events: none;
     }
 
-    .control-row {
-      width: min(100%, 760px);
-      margin: 0 auto 8px;
-      display: none;
-      grid-template-columns: minmax(0, 1.2fr) minmax(94px, .72fr) minmax(118px, .9fr);
-      gap: 8px;
-      opacity: 0;
-      transform: translateY(6px) scale(.99);
-      transition: opacity .14s ease, transform .14s cubic-bezier(.2, 1, .2, 1);
-    }
+        .control-row {
+          width: min(100%, 760px);
+          margin: 0 auto 8px;
+          display: none;
+          grid-template-columns: minmax(0, 1fr);
+          gap: 8px;
+          opacity: 0;
+          transform: translateY(6px) scale(.99);
+          transition: opacity .14s ease, transform .14s cubic-bezier(.2, 1, .2, 1);
+        }
 
     body.setup-open .control-row {
       display: grid;
@@ -954,13 +986,183 @@
       box-shadow: 2px 2px 0 rgba(var(--blue-rgb),.13);
     }
 
-    .select:disabled {
-      opacity: .48;
-      cursor: not-allowed;
-    }
+        .select:disabled {
+          opacity: .48;
+          cursor: not-allowed;
+        }
 
-    .full-arm {
-      display: none !important;
+        .setup-modal {
+          position: fixed;
+          inset: 0;
+          z-index: 30;
+          display: none;
+          place-items: center;
+          padding: max(16px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+          overflow: hidden;
+          background:
+            radial-gradient(circle at 50% 36%, rgba(var(--rose-rgb),.12), transparent 34%),
+            radial-gradient(circle at 20% 80%, rgba(var(--green-rgb),.1), transparent 30%),
+            rgba(var(--ink-rgb),.76);
+          backdrop-filter: blur(12px) saturate(1.08);
+        }
+
+        body.setup-open .setup-modal {
+          display: grid;
+        }
+
+        body.setup-open .app {
+          filter: saturate(.88) brightness(.78);
+        }
+
+        .setup-panel {
+          position: relative;
+          width: min(100%, 430px);
+          max-height: min(520px, calc(100dvh - 32px));
+          overflow: hidden;
+          padding: 18px;
+          border: 1px solid rgba(var(--cream-rgb),.18);
+          border-radius: 8px;
+          color: var(--text);
+          background:
+            linear-gradient(135deg, rgba(var(--blue-rgb),.09), transparent 42%, rgba(var(--rose-rgb),.09)),
+            rgba(var(--panel-rgb),.94);
+          box-shadow:
+            0 28px 70px rgba(0,0,0,.42),
+            0 0 0 1px rgba(var(--gold-rgb),.08),
+            inset 0 1px 0 rgba(var(--cream-rgb),.08);
+        }
+
+        .setup-panel::before {
+          content: "";
+          position: absolute;
+          inset: -38% -18% auto;
+          height: 320px;
+          pointer-events: none;
+          background:
+            conic-gradient(from var(--moon-angle), rgba(var(--rose-rgb),.24), rgba(var(--gold-rgb),.12), rgba(var(--green-rgb),.18), rgba(var(--blue-rgb),.22), rgba(var(--rose-rgb),.24));
+          filter: blur(24px) saturate(1.22);
+          opacity: .48;
+          mix-blend-mode: screen;
+        }
+
+        .setup-panel > * {
+          position: relative;
+          z-index: 1;
+        }
+
+        .setup-mark {
+          width: 58px;
+          height: 58px;
+          margin: 0 auto 12px;
+          border-radius: 50%;
+          border: 1px solid rgba(var(--gold-rgb),.2);
+          background:
+            radial-gradient(circle, rgba(var(--gold-rgb),.32) 0 10%, transparent 28%),
+            conic-gradient(from var(--moon-angle), rgba(var(--rose-rgb),.55), rgba(var(--blue-rgb),.36), rgba(var(--green-rgb),.42), rgba(var(--gold-rgb),.34), rgba(var(--rose-rgb),.55));
+          box-shadow:
+            0 0 22px rgba(var(--rose-rgb),.16),
+            inset 0 0 18px rgba(var(--ink-rgb),.5);
+          opacity: .92;
+        }
+
+        .setup-title {
+          margin: 0 0 14px;
+          color: var(--amber);
+          font-size: 18px;
+          line-height: 1.15;
+          text-align: center;
+        }
+
+        .setup-label {
+          display: block;
+          margin: 12px 0 6px;
+          color: var(--soft);
+          font-size: 11px;
+          font-weight: 800;
+          text-transform: uppercase;
+        }
+
+        .setup-modal .control-row {
+          width: 100%;
+          margin: 0;
+        }
+
+        .setup-modal #modeSelect,
+        .setup-modal .workspace-select {
+          display: none;
+        }
+
+        .mode-choice {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 8px;
+        }
+
+        .mode-option {
+          min-height: 54px;
+          border: 1px solid var(--line);
+          border-radius: var(--radius);
+          padding: 9px 10px;
+          color: var(--text);
+          background:
+            linear-gradient(135deg, rgba(var(--cream-rgb),.045), rgba(var(--cream-rgb),.02)),
+            rgba(var(--panel-2-rgb),.78);
+          text-align: left;
+          box-shadow: 2px 2px 0 rgba(var(--blue-rgb),.1);
+        }
+
+        .mode-option strong,
+        .mode-option span {
+          display: block;
+        }
+
+        .mode-option strong {
+          font-size: 13px;
+          line-height: 1.15;
+        }
+
+        .mode-option span {
+          margin-top: 3px;
+          color: var(--soft);
+          font-size: 10px;
+          line-height: 1.2;
+        }
+
+        .mode-option.active {
+          border-color: rgba(var(--gold-rgb),.6);
+          background:
+            linear-gradient(135deg, rgba(var(--gold-rgb),.18), rgba(var(--rose-rgb),.08)),
+            rgba(var(--panel-2-rgb),.92);
+          box-shadow:
+            2px 2px 0 rgba(var(--gold-rgb),.18),
+            0 0 22px rgba(var(--gold-rgb),.08);
+        }
+
+        .mode-option[data-mode-option="full"].active {
+          border-color: rgba(var(--danger-rgb),.64);
+          background:
+            linear-gradient(135deg, rgba(var(--danger-rgb),.18), rgba(var(--gold-rgb),.08)),
+            rgba(var(--panel-2-rgb),.92);
+        }
+
+        .setup-start {
+          width: 100%;
+          min-height: 46px;
+          margin-top: 14px;
+          border: 1px solid rgba(var(--rose-rgb),.58);
+          border-radius: var(--radius);
+          color: var(--text);
+          background:
+            linear-gradient(135deg, rgba(var(--rose-rgb),.3), rgba(var(--coral-rgb),.14), rgba(var(--blue-rgb),.1)),
+            rgba(var(--panel-rgb),.9);
+          font-weight: 900;
+          box-shadow:
+            2px 2px 0 rgba(var(--rose-rgb),.2),
+            0 0 22px rgba(var(--rose-rgb),.12);
+        }
+
+        .full-arm {
+          display: none !important;
       margin: 0 auto 8px;
       width: min(100%, 760px);
       grid-template-columns: 1fr 96px;
@@ -1327,14 +1529,13 @@
       }
     }
 
-    @media (max-width: 390px) {
-      .topbar { padding-left: 10px; padding-right: 10px; }
-      .empty-actions { grid-template-columns: 1fr; }
-      .control-row { grid-template-columns: 1fr 1fr; }
-      .workspace-select { grid-column: 1 / -1; }
-      .radio-orb { bottom: calc(112px + env(safe-area-inset-bottom)); }
-      .raya-dock { bottom: calc(164px + env(safe-area-inset-bottom)); }
-      body.setup-open .radio-orb { bottom: calc(184px + env(safe-area-inset-bottom)); }
+        @media (max-width: 390px) {
+          .topbar { padding-left: 10px; padding-right: 10px; }
+          .empty-actions { grid-template-columns: 1fr; }
+          .control-row { grid-template-columns: 1fr; }
+          .radio-orb { bottom: calc(112px + env(safe-area-inset-bottom)); }
+          .raya-dock { bottom: calc(164px + env(safe-area-inset-bottom)); }
+          body.setup-open .radio-orb { bottom: calc(184px + env(safe-area-inset-bottom)); }
       body.setup-open .raya-dock { bottom: calc(236px + env(safe-area-inset-bottom)); }
     }
 
@@ -1375,20 +1576,15 @@
       </div>
     </section>
 
-    <footer class="composer">
-      <div class="full-arm" id="fullArm">
-        <div class="arm-copy" id="armCopy">Full mode can edit in pibulus-os.</div>
-        <button class="hold" id="holdBtn" type="button">HOLD</button>
-      </div>
-      <div class="control-row" aria-label="Deck controls">
-        <select class="select" id="modelSelect" aria-label="Model"></select>
-        <select class="select" id="modeSelect" aria-label="Mode"></select>
-        <select class="select workspace-select" id="workspaceSelect" aria-label="Workspace"></select>
-      </div>
-      <div class="spending-bar">
-        <span class="spending-label">chat cost:</span>
-        <span class="spending-amount" id="spendingAmount">$0.00</span>
-      </div>
+        <footer class="composer">
+          <div class="full-arm" id="fullArm">
+            <div class="arm-copy" id="armCopy">Full mode can edit in pibulus-os.</div>
+            <button class="hold" id="holdBtn" type="button">HOLD</button>
+          </div>
+          <div class="spending-bar" id="spendingBar" aria-live="polite">
+            <span class="spending-label">chat cost:</span>
+            <span class="spending-amount" id="spendingAmount">$0.00</span>
+          </div>
       <form class="compose-row" id="form">
         <textarea id="input" rows="1" maxlength="12000" placeholder="Message deck" enterkeyhint="send" autocomplete="off" autocapitalize="sentences" spellcheck="true"></textarea>
         <button class="mic" id="micBtn" type="button" aria-label="Dictate">◉</button>
@@ -1405,11 +1601,36 @@
         style="--raya-border: 1px; --raya-radius: 8px; --raya-shadow: 0 18px 38px rgba(0,0,0,.32); --raya-shadow-sm: 0 0 0 1px rgba(255,240,230,.16); --raya-ink: #fff0e6; --raya-bg: #1c2029; --raya-surface: #f2a6cf; --raya-surface-2: #96e8c6; --raya-surface-glow: rgba(242,166,207,.18); --raya-accent: #ffd18a; --raya-accent-2: #b8b6ff; --raya-muted: rgba(255,240,230,.5); --raya-off-bg: linear-gradient(135deg, #202331 0%, #1a3336 58%, #2a2035 100%);"
       ></radio-widget>
     </div>
-    <button class="icon-btn radio-orb" id="radioBtn" type="button" aria-label="Open Raya radio" aria-controls="rayaDock" aria-expanded="false" aria-pressed="false">≋</button>
-    <div class="deck-familiar" id="deckFamiliar" aria-hidden="true">=^..^=</div>
-  </main>
+        <button class="icon-btn radio-orb" id="radioBtn" type="button" aria-label="Open Raya radio" aria-controls="rayaDock" aria-expanded="false" aria-pressed="false">≋</button>
+        <div class="deck-familiar" id="deckFamiliar" aria-hidden="true">=^..^=</div>
+      </main>
 
-  <script src="/deck/claude/radio-widget.min.js"></script>
+      <div class="setup-modal" id="setupModal" role="dialog" aria-modal="true" aria-labelledby="setupTitle">
+        <section class="setup-panel">
+          <div class="setup-mark" aria-hidden="true"></div>
+          <h2 class="setup-title" id="setupTitle">Choose the deck</h2>
+          <label class="setup-label" for="modelSelect">Model</label>
+          <div class="control-row" aria-label="Deck controls">
+            <select class="select" id="modelSelect" aria-label="Model"></select>
+            <select class="select" id="modeSelect" aria-label="Mode"></select>
+            <select class="select workspace-select" id="workspaceSelect" aria-label="Workspace"></select>
+          </div>
+          <div class="setup-label" id="modeChoiceLabel">Access</div>
+          <div class="mode-choice" role="group" aria-labelledby="modeChoiceLabel">
+            <button class="mode-option" type="button" data-mode-option="default">
+              <strong>Ask</strong>
+              <span>Read, reason, check first.</span>
+            </button>
+            <button class="mode-option" type="button" data-mode-option="full">
+              <strong>Full access</strong>
+              <span>Edit when the job needs it.</span>
+            </button>
+          </div>
+          <button class="setup-start" id="setupStartBtn" type="button">Enter chat</button>
+        </section>
+      </div>
+
+      <script src="/deck/claude/radio-widget.min.js"></script>
   <script>
     const api = '/claude/api';
     const transcript = document.getElementById('transcript');
@@ -1432,13 +1653,17 @@
     const fullArm = document.getElementById('fullArm');
     const armCopy = document.getElementById('armCopy');
     const holdBtn = document.getElementById('holdBtn');
-    const statusPill = document.getElementById('statusPill');
-    const statusText = document.getElementById('statusText');
-    const spendingAmount = document.getElementById('spendingAmount');
-    const modelSelect = document.getElementById('modelSelect');
-    const modeSelect = document.getElementById('modeSelect');
-    const workspaceSelect = document.getElementById('workspaceSelect');
-    const rayaDock = document.getElementById('rayaDock');
+        const statusPill = document.getElementById('statusPill');
+        const statusText = document.getElementById('statusText');
+        const spendingBar = document.getElementById('spendingBar');
+        const spendingAmount = document.getElementById('spendingAmount');
+        const modelSelect = document.getElementById('modelSelect');
+        const modeSelect = document.getElementById('modeSelect');
+        const workspaceSelect = document.getElementById('workspaceSelect');
+        const setupModal = document.getElementById('setupModal');
+        const setupStartBtn = document.getElementById('setupStartBtn');
+        const modeOptionButtons = [...document.querySelectorAll('[data-mode-option]')];
+        const rayaDock = document.getElementById('rayaDock');
     const rayaRadio = document.getElementById('rayaRadio');
     const radioBtn = document.getElementById('radioBtn');
     const deckFamiliar = document.getElementById('deckFamiliar');
@@ -1533,7 +1758,7 @@
     function beepError() { blip([[pulseTone(-4, .68), 0, .08, 'square', .018], [pulseTone(-5, .58), 100, .09, 'square', .015]]); }
 
     const keyClicker = {
-      enabled: localStorage.getItem('pibulus.deck.keyclicks') !== '0',
+          enabled: localStorage.getItem('pibulus.deck.keyclicks') === '1',
       loaded: false,
       loading: null,
       buffer: null,
@@ -1690,9 +1915,14 @@
       });
     });
 
-    document.addEventListener('keydown', event => {
-      if (event.key === 'Escape') setRayaOpen(false);
-    });
+        document.addEventListener('keydown', event => {
+          if (event.key !== 'Escape') return;
+          if (setupOpen && authReady && !running) {
+            setSetupOpen(false);
+            return;
+          }
+          setRayaOpen(false);
+        });
 
     function selectedModelConfig() {
       return models.find(item => item.key === model) || models.find(item => item.enabled) || models[0] || {
@@ -1766,40 +1996,66 @@
       loadChatId();
     }
 
-    function syncDeckMeta() {
-      const activeModel = selectedModelConfig();
-      const ready = Boolean(activeModel.enabled);
-      authReady = ready;
-      statusPill.classList.toggle('bad', !ready);
-      const detail = activeModel.detail ? ` · ${activeModel.detail}` : '';
-      emptyKicker.textContent = `${shortModelLabel(activeModel)} · ${workspace} · ${selectedModeConfig().label}`;
-      input.placeholder = ready ? `Message ${shortModelLabel(activeModel)}` : `${shortModelLabel(activeModel)} unavailable`;
-      statusText.textContent = ready ? 'online' : (activeModel.detail || 'unavailable');
-      statusPill.title = ready ? `${activeModel.label}${detail}` : (activeModel.detail || 'unavailable');
-      armCopy.textContent = `Full gives ${shortModelLabel(activeModel)} write access in ${workspace} for the next send.`;
-    }
+        function syncDeckMeta() {
+          const activeModel = selectedModelConfig();
+          const ready = Boolean(activeModel.enabled);
+          authReady = ready;
+          statusPill.classList.toggle('bad', !ready);
+          const detail = activeModel.detail ? ` · ${activeModel.detail}` : '';
+          emptyKicker.textContent = ready ? 'ready' : 'offline';
+          input.placeholder = ready ? 'Message deck' : `${shortModelLabel(activeModel)} unavailable`;
+          statusText.textContent = ready ? 'online' : (activeModel.detail || 'unavailable');
+          statusPill.title = ready ? `${activeModel.label}${detail}` : (activeModel.detail || 'unavailable');
+          armCopy.textContent = `Full gives ${shortModelLabel(activeModel)} write access in ${workspace} for the next send.`;
+        }
+
+        function syncSpendingVisibility() {
+          const visible = model === 'claude';
+          document.body.classList.toggle('cost-visible', visible);
+          spendingBar?.setAttribute('aria-hidden', String(!visible));
+        }
+
+        function pulseSpending(value) {
+          const cost = Number(value);
+          if (!Number.isFinite(cost) || cost <= 0 || model !== 'claude') return;
+          chatCost += cost;
+          spendingAmount.textContent = '$' + chatCost.toFixed(2);
+          spendingAmount.classList.remove('tick');
+          void spendingAmount.offsetWidth;
+          spendingAmount.classList.add('tick');
+          setTimeout(() => spendingAmount.classList.remove('tick'), 400);
+        }
 
     function syncFullArmVisibility() {
       fullArm.classList.remove('show');
       clearFullArm();
     }
 
-    function renderControls() {
-      const activeModel = selectedModelConfig();
-      const allowedModes = new Set(activeModel.modes || []);
-      const enabledModels = models.filter(item => item.enabled !== false);
-      fillSelect(modelSelect, enabledModels.length ? enabledModels : models, model);
+        function renderControls() {
+          const activeModel = selectedModelConfig();
+          const allowedModes = new Set(activeModel.modes || []);
+          const enabledModels = models.filter(item => item.enabled !== false);
+          fillSelect(modelSelect, enabledModels.length ? enabledModels : models, model);
       fillSelect(
         modeSelect,
         visibleModesFor(activeModel).map(item => ({ ...item, enabled: item.enabled !== false && allowedModes.has(item.key) })),
         mode
-      );
-      fillSelect(workspaceSelect, workspaces, workspace);
-      syncFullArmVisibility();
-      syncDeckMeta();
-      syncControls();
-      renderAgentLights();
-    }
+          );
+          fillSelect(workspaceSelect, workspaces, workspace);
+          modeOptionButtons.forEach(btn => {
+            const key = btn.dataset.modeOption;
+            const available = visibleModesFor(activeModel).some(item => item.key === key);
+            btn.hidden = !available;
+            btn.disabled = running || !authReady || !available;
+            btn.classList.toggle('active', mode === key);
+            btn.setAttribute('aria-pressed', String(mode === key));
+          });
+          syncFullArmVisibility();
+          syncDeckMeta();
+          syncSpendingVisibility();
+          syncControls();
+          renderAgentLights();
+        }
 
     function setVar(name, value) {
       document.documentElement.style.setProperty(name, value);
@@ -1884,9 +2140,9 @@
       const root = clamp(pulse.root);
       const temp = clamp(pulse.temp);
       const moon = clamp(pulse.moon ?? getComputedStyle(document.documentElement).getPropertyValue('--moon-phase'));
-      const petalCount = 3 + Math.floor(seedNumber(seed, 1) * 5);
-      const roseSteps = 144;
-      const roseAmp = 24 + root * 8 + temp * 5;
+          const petalCount = 3 + Math.floor(seedNumber(seed, 1) * 4);
+          const roseSteps = 88;
+          const roseAmp = 22 + root * 7 + temp * 4;
       const twist = (seedNumber(seed, 2) - .5) * Math.PI * .72 + moon * Math.PI * .16;
       const rose = [];
       for (let i = 0; i <= roseSteps; i += 1) {
@@ -1900,7 +2156,7 @@
       }
       sigilRose.setAttribute('d', pathFromPoints(rose));
 
-      const orbitSteps = 96;
+          const orbitSteps = 64;
       const orbit = [];
       const turns = 1.16 + seedNumber(seed, 4) * .95;
       for (let i = 0; i <= orbitSteps; i += 1) {
@@ -1918,7 +2174,7 @@
       sigilRing.setAttribute('d', `M 0 -${ring.toFixed(2)} A ${ring.toFixed(2)} ${ring.toFixed(2)} 0 1 1 -.01 -${ring.toFixed(2)}`);
       sigilCore?.setAttribute('r', (3.1 + load * 2.2 + temp * 1.2).toFixed(2));
 
-      const starCount = 6 + Math.floor(seedNumber(seed, 8) * 5);
+          const starCount = 5 + Math.floor(seedNumber(seed, 8) * 3);
       const constellation = [];
       sigilStars.replaceChildren();
       for (let i = 0; i < starCount; i += 1) {
@@ -1975,11 +2231,11 @@
       setVar('--pulse-uptime', uptime.toFixed(4));
       setVar('--load-glow', loadGlow.toFixed(4));
       setVar('--load-bg-alpha', (.018 + load * .04).toFixed(4));
-      setVar('--scan-opacity', (.16 + temp * .16).toFixed(4));
-      setVar('--cross-opacity', (.05 + load * .16).toFixed(4));
-      setVar('--root-shift', `${((root - .5) * 20).toFixed(2)}px`);
-      setVar('--passport-shift', `${((passport - .5) * -14).toFixed(2)}px`);
-      setVar('--uptime-shift', `${((uptime - .5) * 8).toFixed(2)}px`);
+          setVar('--scan-opacity', (.07 + temp * .09).toFixed(4));
+          setVar('--cross-opacity', (.025 + load * .08).toFixed(4));
+          setVar('--root-shift', `${((root - .5) * 8).toFixed(2)}px`);
+          setVar('--passport-shift', `${((passport - .5) * -6).toFixed(2)}px`);
+          setVar('--uptime-shift', `${((uptime - .5) * 4).toFixed(2)}px`);
       setVar('--dot-speed', `${(1.2 + load * 1.8).toFixed(2)}s`);
       setVar('--empty-border-alpha', (.18 + root * .18).toFixed(4));
       setVar('--empty-glow-px', `${(16 + load * 30).toFixed(2)}px`);
@@ -2001,18 +2257,18 @@
       setVar('--chaos-hue', `${hue}deg`);
       setVar('--chaos-tilt', `${tilt}deg`);
       setVar('--scan-speed', `${speed}s`);
-      setVar('--sigil-spin', `${(22 + seedNumber(seed, 6) * 26 + uptime * 8).toFixed(2)}s`);
-      setVar('--sigil-counterspin', `${(46 + seedNumber(seed, 5) * 28 + passport * 8).toFixed(2)}s`);
-      setVar('--sigil-scale', (0.96 + load * .07 + temp * .035).toFixed(3));
-      setVar('--sigil-alpha', (.44 + load * .1 + (1 - root) * .08).toFixed(4));
-      setVar('--sigil-halo', (.22 + load * .14 + temp * .08).toFixed(4));
-      setVar('--sigil-orbit-alpha', (.42 + load * .12 + (1 - mem) * .08).toFixed(4));
-      setVar('--sigil-core', (.68 + temp * .2 + seedNumber(seed, 9) * .12).toFixed(4));
-      setVar('--sigil-tilt', `${((seedNumber(seed, 11) - .5) * 7).toFixed(2)}deg`);
-      setVar('--field-sigil-alpha', (.34 + load * .16 + temp * .12 + seedNumber(seed, 12) * .08).toFixed(4));
-      setVar('--field-blur', `${(1 + temp * 2.6 + load * 1.2).toFixed(2)}px`);
-      setVar('--gooey-alpha', (.18 + temp * .12 + load * .08 + seedNumber(seed, 14) * .06).toFixed(4));
-      setVar('--gooey-secondary-alpha', (.1 + temp * .08 + load * .05 + seedNumber(seed, 15) * .04).toFixed(4));
+          setVar('--sigil-spin', `${(58 + seedNumber(seed, 6) * 42 + uptime * 12).toFixed(2)}s`);
+          setVar('--sigil-counterspin', `${(80 + seedNumber(seed, 5) * 36 + passport * 8).toFixed(2)}s`);
+          setVar('--sigil-scale', (0.94 + load * .04 + temp * .02).toFixed(3));
+          setVar('--sigil-alpha', (.38 + load * .06 + (1 - root) * .06).toFixed(4));
+          setVar('--sigil-halo', (.16 + load * .08 + temp * .05).toFixed(4));
+          setVar('--sigil-orbit-alpha', (.34 + load * .08 + (1 - mem) * .06).toFixed(4));
+          setVar('--sigil-core', (.58 + temp * .16 + seedNumber(seed, 9) * .1).toFixed(4));
+          setVar('--sigil-tilt', `${((seedNumber(seed, 11) - .5) * 3.5).toFixed(2)}deg`);
+          setVar('--field-sigil-alpha', (.26 + load * .1 + temp * .08 + seedNumber(seed, 12) * .06).toFixed(4));
+          setVar('--field-blur', `${(.8 + temp * 1.4 + load * .7).toFixed(2)}px`);
+          setVar('--gooey-alpha', (.13 + temp * .08 + load * .05 + seedNumber(seed, 14) * .04).toFixed(4));
+          setVar('--gooey-secondary-alpha', (.07 + temp * .05 + load * .03 + seedNumber(seed, 15) * .025).toFixed(4));
       setVar('--spark-hue', `${Math.round(hue * .5)}deg`);
       renderSigil(seed, { load, mem, swap, root, passport, temp, uptime, moon });
     }
@@ -2083,8 +2339,8 @@
       if (focus) input.focus();
     }
 
-    function syncMicButton() {
-      micBtn.disabled = !authReady || running || !canDictate;
+        function syncMicButton() {
+          micBtn.disabled = setupOpen || !authReady || running || !canDictate;
       micBtn.classList.toggle('recording', dictating);
       document.body.classList.toggle('is-listening', dictating);
       micBtn.textContent = dictating ? '■' : '◉';
@@ -2295,15 +2551,19 @@
       next();
     }
 
-    function syncControls() {
-      input.disabled = !authReady;
-      sendBtn.disabled = running || !authReady;
-      modelSelect.disabled = running || models.filter(item => item.enabled).length <= 1;
-      modeSelect.disabled = running || !authReady;
-      workspaceSelect.disabled = running || !authReady || workspaces.length <= 1;
-      syncMicButton();
-      promptChips.forEach(btn => { btn.disabled = !authReady; });
-    }
+        function syncControls() {
+          input.disabled = setupOpen || !authReady;
+          sendBtn.disabled = setupOpen || running || !authReady;
+          modelSelect.disabled = running || models.filter(item => item.enabled).length <= 1;
+          modeSelect.disabled = running || !authReady;
+          workspaceSelect.disabled = running || !authReady || workspaces.length <= 1;
+          setupStartBtn.disabled = running || !authReady;
+          modeOptionButtons.forEach(btn => {
+            if (!btn.hidden) btn.disabled = running || !authReady;
+          });
+          syncMicButton();
+          promptChips.forEach(btn => { btn.disabled = !authReady; });
+        }
 
     function renderAgentLights() {
       if (!agentLights) return;
@@ -2328,22 +2588,31 @@
       holdBtn.textContent = 'HOLD';
     }
 
-    function setSetupOpen(value) {
-      setupOpen = Boolean(value);
-      document.body.classList.toggle('setup-open', setupOpen);
-      newBtn.classList.toggle('on', setupOpen);
-      newBtn.textContent = setupOpen ? '×' : '＋';
-      newBtn.setAttribute('aria-pressed', String(setupOpen));
-      newBtn.setAttribute('aria-label', setupOpen ? 'Hide setup' : 'New chat setup');
-    }
+        function setSetupOpen(value) {
+          setupOpen = Boolean(value);
+          document.body.classList.toggle('setup-open', setupOpen);
+          newBtn.classList.toggle('on', setupOpen);
+          newBtn.textContent = setupOpen ? '×' : '＋';
+          newBtn.setAttribute('aria-pressed', String(setupOpen));
+          newBtn.setAttribute('aria-label', setupOpen ? 'Close chooser' : 'New chat');
+          setupModal?.setAttribute('aria-hidden', String(!setupOpen));
+          syncControls();
+          setTimeout(() => {
+            if (setupOpen) {
+              modelSelect?.focus();
+            } else if (!running && authReady) {
+              input.focus();
+            }
+          }, 0);
+        }
 
     function scrollDown() {
       transcript.scrollTop = transcript.scrollHeight;
     }
 
-    function clearEmpty() {
-      if (empty) empty.remove();
-    }
+      function clearEmpty() {
+        // The sigil is ambient now; keep it mounted behind active chats.
+      }
 
     function restoreEmpty() {
       if (empty && !empty.isConnected) {
@@ -2487,21 +2756,32 @@
       syncSpeakerButton();
       if (!authReady) addSystem(`${shortModelLabel()} is unavailable.`);
       updateMoonPhase();
-      applyPulse(data.pulse || { load: 0.12, seed: Date.now().toString(16) });
-      setInterval(updateMoonPhase, 3600000);
-      setInterval(updatePiGlow, 30000);
-    }
+          applyPulse(data.pulse || { load: 0.12, seed: Date.now().toString(16) });
+          setInterval(updateMoonPhase, 3600000);
+          setInterval(updatePiGlow, 45000);
+          setSetupOpen(true);
+        }
 
-    promptChips.forEach(btn => {
-      btn.addEventListener('click', () => {
-        if (!authReady) return;
+        promptChips.forEach(btn => {
+          btn.addEventListener('click', () => {
+            if (!authReady) return;
         stopDictation({ abort: true });
         setComposerText(btn.dataset.prompt || '', true);
-      });
-    });
+          });
+        });
 
-    modelSelect.addEventListener('change', () => {
-      model = modelSelect.value;
+        function chooseMode(nextMode) {
+          const activeModel = selectedModelConfig();
+          const allowed = visibleModesFor(activeModel).some(item => item.key === nextMode);
+          if (!allowed || running) return;
+          mode = nextMode;
+          persistSelections();
+          clearFullArm();
+          renderControls();
+        }
+
+        modelSelect.addEventListener('change', () => {
+          model = modelSelect.value;
       const activeModel = selectedModelConfig();
       if (!activeModel.enabled) {
         normalizeSelections();
@@ -2513,24 +2793,38 @@
         persistSelections();
         loadChatId();
       }
-      clearFullArm();
-      renderControls();
-    });
+          clearFullArm();
+          renderControls();
+        });
 
-    modeSelect.addEventListener('change', () => {
-      mode = modeSelect.value;
-      persistSelections();
-      clearFullArm();
-      renderControls();
-    });
+        modeSelect.addEventListener('change', () => {
+          chooseMode(modeSelect.value);
+        });
 
-    workspaceSelect.addEventListener('change', () => {
-      workspace = workspaceSelect.value;
+        modeOptionButtons.forEach(btn => {
+          btn.addEventListener('click', () => {
+            chooseMode(btn.dataset.modeOption);
+            haptic(10);
+            blip([[pulseTone(btn.dataset.modeOption === 'full' ? -1 : 1, 1.2), 0, .04, 'triangle', .014]]);
+          });
+        });
+
+        workspaceSelect.addEventListener('change', () => {
+          workspace = workspaceSelect.value;
       persistSelections();
       loadChatId();
       clearFullArm();
-      renderControls();
-    });
+          renderControls();
+        });
+
+        setupStartBtn.addEventListener('click', () => {
+          if (!authReady || running) return;
+          persistSelections();
+          setSetupOpen(false);
+          pulseAt(setupStartBtn, mode === 'full' ? 'danger' : 'blue');
+          haptic(mode === 'full' ? [18, 20, 18] : 14);
+          blip([[pulseTone(mode === 'full' ? -2 : 2, 1.15), 0, .045, 'triangle', .016]]);
+        });
 
     input.addEventListener('input', fitInput);
     input.addEventListener('keydown', event => keyClicker.play(event));
@@ -2646,10 +2940,12 @@
         blip([[pulseTone(1, .9), 0, .035, 'triangle', .012]]);
         return;
       }
-      chatId = '';
-      currentBubble = null;
-      currentReplyText = '';
-      stopDictation({ abort: true });
+          chatId = '';
+          currentBubble = null;
+          currentReplyText = '';
+          chatCost = 0;
+          spendingAmount.textContent = '$0.00';
+          stopDictation({ abort: true });
       cancelSpeech();
       clearFullArm();
       localStorage.removeItem(chatStorageKey());
@@ -2760,14 +3056,7 @@
           } else if (event.type === 'done') {
             beepDone();
             haptic([14, 34, 18]);
-            if (event.result && event.result.cost_usd) {
-              chatCost += parseFloat(event.result.cost_usd) || 0;
-              spendingAmount.textContent = '$' + chatCost.toFixed(2);
-              spendingAmount.classList.remove('tick');
-              void spendingAmount.offsetWidth;
-              spendingAmount.classList.add('tick');
-              setTimeout(() => spendingAmount.classList.remove('tick'), 400);
-            }
+                if (event.model === 'claude' && event.result && event.result.cost_usd) pulseSpending(event.result.cost_usd);
             const msgEl = currentBubble?.closest('.msg');
             msgEl?.classList.remove('streaming', 'thinking');
             msgEl?.classList.add('complete');
