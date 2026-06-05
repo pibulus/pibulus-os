@@ -84,7 +84,12 @@ CODEX_MODEL = os.environ.get("CLAUDE_CHAT_CODEX_MODEL", "gpt-5.4").strip() or "g
 CODEX_TIMEOUT = int(os.environ.get("CLAUDE_CHAT_CODEX_TIMEOUT", "1200"))
 GEMINI_MODEL = os.environ.get("CLAUDE_CHAT_GEMINI_MODEL", "").strip()
 GEMINI_TIMEOUT = int(os.environ.get("CLAUDE_CHAT_GEMINI_TIMEOUT", "1200"))
-DEEPSEEK_MODEL = os.environ.get("CLAUDE_CHAT_DEEPSEEK_MODEL", "deepseek/deepseek-v4-flash").strip()
+DEEPSEEK_FLASH_MODEL = (
+    os.environ.get("CLAUDE_CHAT_DEEPSEEK_FLASH_MODEL")
+    or os.environ.get("CLAUDE_CHAT_DEEPSEEK_MODEL")
+    or "deepseek/deepseek-v4-flash"
+).strip()
+DEEPSEEK_PRO_MODEL = os.environ.get("CLAUDE_CHAT_DEEPSEEK_PRO_MODEL", "deepseek/deepseek-v4-pro").strip()
 OPENCODE_TIMEOUT = int(os.environ.get("CLAUDE_CHAT_OPENCODE_TIMEOUT", "1200"))
 OLLAMA_TIMEOUT = int(os.environ.get("CLAUDE_CHAT_OLLAMA_TIMEOUT", "900"))
 
@@ -367,9 +372,17 @@ def available_models(claude_auth: dict[str, Any] | None = None) -> list[dict[str
             "default_mode": "plan",
         },
         {
-            "key": "deepseek",
-            "label": "DeepSeek",
-            "detail": DEEPSEEK_MODEL if deepseek_key else "needs key",
+            "key": "deepseek-flash",
+            "label": "DeepSeek Flash",
+            "detail": DEEPSEEK_FLASH_MODEL if deepseek_key else "needs key",
+            "enabled": opencode_installed and deepseek_key,
+            "modes": ["plan", "default", "full"],
+            "default_mode": "plan",
+        },
+        {
+            "key": "deepseek-pro",
+            "label": "DeepSeek Pro",
+            "detail": DEEPSEEK_PRO_MODEL if deepseek_key else "needs key",
             "enabled": opencode_installed and deepseek_key,
             "modes": ["plan", "default", "full"],
             "default_mode": "plan",
@@ -402,6 +415,8 @@ def available_models(claude_auth: dict[str, Any] | None = None) -> list[dict[str
 
 def model_for_request(value: str, claude_auth: dict[str, Any] | None = None) -> dict[str, Any]:
     key = value or "claude"
+    if key == "deepseek":
+        key = "deepseek-flash"
     for model in available_models(claude_auth):
         if model["key"] == key:
             if not model.get("enabled"):
@@ -848,9 +863,10 @@ class Handler(BaseHTTPRequestHandler):
             argv.append(codex_prompt)
             return argv, "codex", CODEX_TIMEOUT
 
-        if model_key == "deepseek":
+        if model_key in {"deepseek", "deepseek-flash", "deepseek-pro"}:
             if not command_available("opencode") or not env_key_loaded("DEEPSEEK_API_KEY"):
                 raise ValueError("DeepSeek unavailable")
+            opencode_model = DEEPSEEK_PRO_MODEL if model_key == "deepseek-pro" else DEEPSEEK_FLASH_MODEL
             opencode_prompt = (
                 f"{system_prompt}\n\n"
                 + (
@@ -864,7 +880,7 @@ class Handler(BaseHTTPRequestHandler):
                 "opencode",
                 "run",
                 "--model",
-                DEEPSEEK_MODEL,
+                opencode_model,
                 "--format",
                 "json",
                 "--dir",

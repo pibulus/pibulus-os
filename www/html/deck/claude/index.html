@@ -1682,6 +1682,7 @@
     let modes = [];
     let workspaces = [];
     let model = localStorage.getItem('pibulus.deck.model') || 'claude';
+    if (model === 'deepseek') model = 'deepseek-flash';
     let mode = localStorage.getItem('pibulus.deck.mode') || 'default';
     let workspace = localStorage.getItem('pibulus.deck.workspace') || 'pibulus-os';
     let chatId = '';
@@ -2017,21 +2018,30 @@
           armCopy.textContent = `Full gives ${shortModelLabel(activeModel)} write access in ${workspace} for the next send.`;
         }
 
+        function modelHasCost(modelKey = model) {
+          return modelKey === 'claude' || String(modelKey || '').startsWith('deepseek');
+        }
+
         function syncSpendingVisibility() {
-          const visible = model === 'claude';
+          const visible = modelHasCost();
           document.body.classList.toggle('cost-visible', visible);
           spendingBar?.setAttribute('aria-hidden', String(!visible));
         }
 
-        function pulseSpending(value) {
+        function pulseSpending(value, modelKey = model) {
           const cost = Number(value);
-          if (!Number.isFinite(cost) || cost <= 0 || model !== 'claude') return;
+          if (!Number.isFinite(cost) || cost <= 0 || !modelHasCost(modelKey)) return;
           chatCost += cost;
-          spendingAmount.textContent = '$' + chatCost.toFixed(2);
+          spendingAmount.textContent = formatCost(chatCost);
           spendingAmount.classList.remove('tick');
           void spendingAmount.offsetWidth;
           spendingAmount.classList.add('tick');
           setTimeout(() => spendingAmount.classList.remove('tick'), 400);
+        }
+
+        function formatCost(cost) {
+          if (cost > 0 && cost < 0.01) return '$' + cost.toFixed(4);
+          return '$' + cost.toFixed(2);
         }
 
     function syncFullArmVisibility() {
@@ -3064,7 +3074,7 @@
           } else if (event.type === 'done') {
             beepDone();
             haptic([14, 34, 18]);
-                if (event.model === 'claude' && event.result && event.result.cost_usd) pulseSpending(event.result.cost_usd);
+                if (event.result && event.result.cost_usd) pulseSpending(event.result.cost_usd, event.model);
             const msgEl = currentBubble?.closest('.msg');
             msgEl?.classList.remove('streaming', 'thinking');
             msgEl?.classList.add('complete');
