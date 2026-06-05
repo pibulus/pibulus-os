@@ -1,5 +1,6 @@
 0 */6 * * * /usr/bin/python3 /home/pibulus/pibulus-os/scripts/gen_request_catalog.py >> /tmp/catalog-regen.log 2>&1
 0 3 * * * /home/pibulus/pibulus-os/scripts/nightly-backup.sh >> /tmp/nightly-backup.log 2>&1
+# Deck dashboard snapshot. status.sh self-locks, so a slow run will not overlap.
 * * * * * /bin/bash /home/pibulus/pibulus-os/scripts/status.sh >/dev/null 2>&1
 0 4 * * * /bin/bash /home/pibulus/pibulus-os/scripts/counts.sh >/dev/null 2>&1
 0 10 * * 5 /usr/bin/python3 /home/pibulus/pibulus-os/scripts/curator.py --apply --max-torrents 4 >> /tmp/curator.log 2>&1

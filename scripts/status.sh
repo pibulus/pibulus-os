@@ -5,8 +5,17 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 # shellcheck disable=SC1091
 [ -f "$SCRIPT_DIR/load_pibulus_env.sh" ] && . "$SCRIPT_DIR/load_pibulus_env.sh"
 
+LOCK_FILE="/tmp/pibulus-status.lock"
+exec 9>"$LOCK_FILE"
+flock -n 9 || exit 0
+
 JF_URL="${JELLYFIN_URL:-http://localhost:8096}"
 JF_TOKEN="${JELLYFIN_API_KEY:?JELLYFIN_API_KEY not set}"
+STATUS_DIR="/media/pibulus/passport/www/html"
+STATUS_FILE="$STATUS_DIR/status.json"
+STATUS_TMP="$STATUS_FILE.tmp.$$"
+GENERATED_AT=$(date '+%s')
+trap 'rm -f "$STATUS_TMP"' EXIT
 
 TEMP=$(vcgencmd measure_temp | grep -oP '[0-9.]+')
 UPTIME=$(uptime -p | sed 's/up //; s/ days\?/d/g; s/ hours\?/h/g; s/ minutes\?/m/g; s/,//g')
@@ -55,8 +64,11 @@ USERS_ONLINE=$(docker logs web_host --since 10m 2>/dev/null | \
   grep -oP '"\d+\.\d+\.\d+\.\d+"$' | tr -d '"' | \
   grep -v '^-$' | sort -u | wc -l | tr -d ' ')
 
-cat > /media/pibulus/passport/www/html/status.json <<JSON
+mkdir -p "$STATUS_DIR"
+cat > "$STATUS_TMP" <<JSON
 {
+  "generated_at": ${GENERATED_AT},
+  "interval_seconds": 60,
   "temp": "${TEMP}",
   "uptime": "$UPTIME",
   "power": "$POWER_STATUS",
@@ -82,6 +94,7 @@ cat > /media/pibulus/passport/www/html/status.json <<JSON
   "date": "$(date '+%Y-%m-%d')"
 }
 JSON
+mv "$STATUS_TMP" "$STATUS_FILE"
 
 HEALTH_LOG="/media/pibulus/passport/Backups/pi-system/logs/health-heartbeat.log"
 mkdir -p "$(dirname "$HEALTH_LOG")"

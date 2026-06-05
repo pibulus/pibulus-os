@@ -299,6 +299,9 @@
     .footer-text a { color: var(--dim-soft); text-decoration: none; border-bottom: 1px solid rgba(77,255,210,0.2); }
     .footer-text a:hover { color: var(--cyan); }
     .footer-text span { color: var(--cyan); }
+    .freshness { color: var(--cyan); }
+    .freshness.warn { color: var(--orange); }
+    .freshness.stale { color: var(--red); }
 
     /* pulse on live indicator */
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
@@ -770,7 +773,7 @@
     <footer>
       <p class="footer-text"><span>QUICK CAT PORTAL</span> v7 &mdash; raspberry pi 5 &mdash; <span id="f-containers">--</span> containers</p>
       <p class="footer-text" style="margin-top: 0.3rem; font-size: 0.8rem;">
-        ~(=^..^) source // last ping <span id="f-ts">--:--</span>
+        ~(=^..^) source // last ping <span id="f-ts">--:--</span> // <span id="f-age" class="freshness stale">waiting</span>
       </p>
     </footer>
 
@@ -780,7 +783,29 @@
     function esc(str) { var d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
     var skipBusy = false;
 
-    // Live dashboard — polls status.json every 30s
+    function formatAge(seconds) {
+      if (!Number.isFinite(seconds)) return 'age unknown';
+      if (seconds < 75) return 'fresh';
+      if (seconds < 3600) return Math.floor(seconds / 60) + 'm old';
+      return Math.floor(seconds / 3600) + 'h old';
+    }
+
+    function freshnessClass(seconds) {
+      if (!Number.isFinite(seconds)) return 'freshness stale';
+      if (seconds < 90) return 'freshness';
+      if (seconds < 180) return 'freshness warn';
+      return 'freshness stale';
+    }
+
+    function updateFreshness(d) {
+      var ageEl = document.getElementById('f-age');
+      var epoch = Number(d.generated_at || 0);
+      var age = epoch ? Math.max(0, Math.round(Date.now() / 1000 - epoch)) : NaN;
+      ageEl.textContent = formatAge(age);
+      ageEl.className = freshnessClass(age);
+    }
+
+    // Live dashboard — polls status.json every 30s; the Pi regenerates it every minute.
     function loadStatus() {
       fetch('/status.json', { cache: 'no-cache' })
         .then(r => r.ok ? r.json() : null)
@@ -845,8 +870,13 @@
           // Footer
           document.getElementById('f-containers').textContent = d.containers;
           document.getElementById('f-ts').textContent = d.ts;
+          updateFreshness(d);
         })
-        .catch(() => {});
+        .catch(() => {
+          var ageEl = document.getElementById('f-age');
+          ageEl.textContent = 'offline';
+          ageEl.className = 'freshness stale';
+        });
     }
 
     function fireDeckSkip() {
