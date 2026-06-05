@@ -275,6 +275,15 @@
       box-shadow: 0 4px 20px rgba(77,255,210,0.18), 0 0 40px rgba(77,255,210,0.08);
       background: rgba(30, 34, 48, 0.95);
     }
+    .card.disabled,
+    .card.disabled:hover {
+      opacity: 0.42;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+      background: rgba(22, 25, 34, 0.72);
+      border-color: rgba(140, 149, 169, 0.16);
+    }
 
     .card-emoji { font-size: 1.8rem; display: block; margin-bottom: 0.35rem; line-height: 1; }
     .card-label { font-size: 1.4rem; color: var(--cyan); letter-spacing: 2px; display: block; margin-bottom: 0.1rem; }
@@ -530,11 +539,11 @@
         <span class="card-label">RADIO MGR</span>
         <span class="card-desc">AzuraCast admin</span>
       </a>
-      <a class="card admin" href="http://pibulus.local:5030" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click">
+      <span class="card admin disabled" aria-disabled="true" title="slskd is intentionally off right now">
         <span class="card-emoji">&#127926;</span>
         <span class="card-label">SOULSEEK</span>
-        <span class="card-desc">P2P downloads</span>
-      </a>
+        <span class="card-desc">offline on purpose</span>
+      </span>
       <a class="card admin" href="https://deck.quickcat.club/terminal/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click">
         <span class="card-emoji">&#128187;</span>
         <span class="card-label">TERMINAL</span>
@@ -545,7 +554,7 @@
         <span class="card-label">CLAUDE DECK</span>
         <span class="card-desc">mobile code chat</span>
       </a>
-      <a class="card admin" href="http://pibulus.local:8888" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click">
+      <a class="card admin" href="/torrents/" data-sound-hover="hover" data-sound-click="click">
         <span class="card-emoji">&#x1F9F2;</span>
         <span class="card-label">TORRENTS</span>
         <span class="card-desc">qbittorrent</span>
@@ -653,7 +662,7 @@
         <span class="card-label">WIKIPEDIA</span>
         <span class="card-desc">offline encyclopedia</span>
       </a>
-      <a class="card solidarity" href="http://pibulus.local:8091" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click">
+      <a class="card solidarity" href="https://vault.quickcat.club/" target="_blank" rel="noopener" data-sound-hover="hover" data-sound-click="click">
         <span class="card-emoji">&#128193;</span>
         <span class="card-label">THE VAULT</span>
         <span class="card-desc">file browser</span>
@@ -1034,11 +1043,10 @@
         '5000': 'https://comics.quickcat.club',
         '8500': 'https://radio-admin.quickcat.club',
         '8091': 'https://vault.quickcat.club',
-        '5030': 'https://slskd.quickcat.club',
         '8100': 'https://tv.quickcat.club',
         '3099': 'https://retro.quickcat.club',
         '2283': 'https://photos.quickcat.club',
-        '8888': 'http://pibulus.local:8888'
+        '8888': 'https://deck.quickcat.club/torrents/'
       };
 
       var pathMap = {
