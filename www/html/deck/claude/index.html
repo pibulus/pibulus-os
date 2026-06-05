@@ -97,6 +97,9 @@
       --chaos-hue: 0deg;
       --chaos-tilt: 0deg;
       --scan-speed: 16s;
+      --familiar-x: 6vw;
+      --familiar-y: 18vh;
+      --familiar-tilt: -2deg;
       --shadow: 0 18px 50px rgba(0,0,0,.34);
       --radius: 8px;
       --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
@@ -120,6 +123,9 @@
     }
     body {
       background:
+        radial-gradient(circle at 82% 12%, rgba(var(--blue-rgb),.12), transparent 24%),
+        radial-gradient(circle at 18% 86%, rgba(var(--green-rgb),.09), transparent 28%),
+        radial-gradient(circle at 50% 112%, rgba(var(--rose-rgb),.1), transparent 38%),
         linear-gradient(115deg, rgba(var(--rose-rgb), var(--load-bg-alpha)) 0 var(--pulse-load-pct), transparent var(--pulse-load-pct) 100%),
         linear-gradient(90deg, rgba(var(--cream-rgb),.028) 1px, transparent 1px),
         linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 48%, #12131c 100%);
@@ -127,6 +133,19 @@
       color: var(--text);
       overflow: hidden;
       isolation: isolate;
+    }
+
+    body.is-listening {
+      --scan-opacity: .32;
+      --cross-opacity: .13;
+      --load-bg-alpha: .075;
+      --sigil-scale: 1.035;
+      --empty-sheen-opacity: .32;
+    }
+
+    body.heard-voice {
+      --spark-hue: 64deg;
+      --sigil-core: 1;
     }
 
     body::before {
@@ -356,6 +375,30 @@
       z-index: 2;
     }
 
+    .deck-familiar {
+      position: fixed;
+      left: var(--familiar-x);
+      top: var(--familiar-y);
+      z-index: 1;
+      pointer-events: none;
+      color: rgba(var(--green-rgb),.58);
+      font-size: clamp(12px, 2.4vw, 18px);
+      line-height: 1;
+      text-shadow:
+        0 0 12px rgba(var(--green-rgb),.2),
+        0 0 24px rgba(var(--blue-rgb),.14);
+      transform: rotate(var(--familiar-tilt));
+      opacity: .42;
+      mix-blend-mode: screen;
+      transition: color .3s ease, opacity .3s ease, transform .45s ease;
+    }
+
+    body.is-listening .deck-familiar {
+      color: rgba(var(--gold-rgb),.82);
+      opacity: .78;
+      transform: rotate(calc(var(--familiar-tilt) * -1)) scale(1.08);
+    }
+
     .sigil-stage {
       position: relative;
       width: clamp(300px, 68vmin, 720px);
@@ -370,6 +413,13 @@
       opacity: .88;
       filter: hue-rotate(var(--chaos-hue)) drop-shadow(0 0 42px rgba(var(--rose-rgb),.2));
       transition: transform .7s ease, filter .7s ease;
+    }
+
+    body.is-listening .sigil-stage {
+      filter:
+        hue-rotate(var(--chaos-hue))
+        drop-shadow(0 0 32px rgba(var(--gold-rgb),.2))
+        drop-shadow(0 0 58px rgba(var(--rose-rgb),.18));
     }
 
     .sigil-stage::before,
@@ -733,29 +783,34 @@
 
     .bubble-wrapper {
       position: relative;
-      display: grid;
-      gap: 6px;
-      align-items: start;
+      display: block;
     }
 
     .copy-btn {
       opacity: 0;
-      transition: opacity .2s ease;
-      width: 44px;
-      height: 44px;
-      min-height: 44px;
+      position: absolute;
+      right: -10px;
+      top: -10px;
+      transition: opacity .2s ease, transform .2s ease, border-color .2s ease, background-color .2s ease;
+      width: 30px;
+      height: 30px;
+      min-height: 30px;
+      min-width: 30px;
       padding: 0;
-      font-size: 15px;
-      border-color: rgba(var(--rose-rgb),.3);
-      background: rgba(var(--rose-rgb),.08);
+      border-radius: 999px;
+      font-size: 12px;
+      border-color: rgba(var(--rose-rgb),.34);
+      background: rgba(var(--ink-rgb),.88);
       color: var(--rose);
       align-self: start;
-      margin-top: 2px;
+      box-shadow: 0 6px 14px rgba(0,0,0,.24), 0 0 0 1px rgba(var(--cream-rgb),.06);
+      backdrop-filter: blur(10px);
     }
 
     .copy-btn:hover {
       border-color: rgba(var(--rose-rgb),.54);
       background: rgba(var(--rose-rgb),.15);
+      transform: translateY(-1px) scale(1.04);
     }
 
     .copy-btn.copied {
@@ -770,8 +825,22 @@
 
     @media (max-width: 520px) {
       .copy-btn {
-        opacity: 1;
+        opacity: .72;
+        right: -7px;
+        top: -9px;
       }
+    }
+
+    .bubble a {
+      color: var(--green);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(var(--green-rgb),.38);
+      text-shadow: 0 0 12px rgba(var(--green-rgb),.18);
+    }
+
+    .bubble a:hover {
+      color: var(--gold);
+      border-bottom-color: rgba(var(--gold-rgb),.58);
     }
 
     .system .bubble {
@@ -784,7 +853,7 @@
     }
 
     .composer {
-      padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+      padding: 9px 12px calc(10px + env(safe-area-inset-bottom));
       border-top: 1px solid var(--line);
       background: rgba(var(--ink-rgb),.93);
       backdrop-filter: blur(18px);
@@ -794,9 +863,19 @@
     .control-row {
       width: min(100%, 760px);
       margin: 0 auto 8px;
-      display: grid;
+      display: none;
       grid-template-columns: minmax(0, 1.2fr) minmax(94px, .72fr) minmax(118px, .9fr);
       gap: 8px;
+    }
+
+    body.setup-open .control-row {
+      display: grid;
+      animation: setupBloom .24s ease-out both;
+    }
+
+    @keyframes setupBloom {
+      from { opacity: 0; transform: translateY(8px) scale(.985); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
     .select {
@@ -812,6 +891,7 @@
       font-size: 13px;
       font-weight: 750;
       line-height: 1;
+      box-shadow: 2px 2px 0 rgba(var(--blue-rgb),.13);
     }
 
     .select:disabled {
@@ -909,6 +989,7 @@
       outline: none;
       line-height: 1.35;
       font-size: 16px;
+      box-shadow: inset 0 -1px 0 rgba(var(--cream-rgb),.06), 2px 2px 0 rgba(var(--gold-rgb),.08);
       -webkit-user-select: text;
       user-select: text;
       -webkit-touch-callout: none;
@@ -928,6 +1009,7 @@
       color: var(--text);
       font-size: 20px;
       font-weight: 900;
+      box-shadow: 2px 2px 0 rgba(var(--rose-rgb),.18);
     }
 
     .mic {
@@ -937,6 +1019,7 @@
       color: var(--blue);
       background: rgba(var(--blue-rgb),.1);
       font-size: 18px;
+      box-shadow: 2px 2px 0 rgba(var(--blue-rgb),.14);
     }
 
     .mic.recording {
@@ -973,6 +1056,13 @@
       border-color: rgba(var(--green-rgb),.54);
       color: var(--teal);
       background: rgba(var(--green-rgb),.12);
+    }
+
+    .icon-btn.on {
+      color: #15121e;
+      border-color: rgba(var(--gold-rgb),.72);
+      background: var(--gold);
+      box-shadow: 0 0 18px rgba(var(--gold-rgb),.18);
     }
 
     .radio-orb {
@@ -1029,6 +1119,14 @@
 
     body.radio-on .topbar::after {
       opacity: .72;
+    }
+
+    body.setup-open .radio-orb {
+      bottom: calc(184px + env(safe-area-inset-bottom));
+    }
+
+    body.setup-open .raya-dock {
+      bottom: calc(236px + env(safe-area-inset-bottom));
     }
 
     .raya-dock {
@@ -1096,8 +1194,10 @@
       .topbar { padding-left: 20px; padding-right: 20px; }
       .transcript { padding-left: 20px; padding-right: 20px; }
       .composer { padding-left: 20px; padding-right: 20px; }
-      .radio-orb { right: 20px; bottom: calc(122px + env(safe-area-inset-bottom)); }
-      .raya-dock { right: 20px; bottom: calc(174px + env(safe-area-inset-bottom)); }
+      .radio-orb { right: 20px; bottom: calc(112px + env(safe-area-inset-bottom)); }
+      .raya-dock { right: 20px; bottom: calc(164px + env(safe-area-inset-bottom)); }
+      body.setup-open .radio-orb { bottom: calc(164px + env(safe-area-inset-bottom)); }
+      body.setup-open .raya-dock { bottom: calc(216px + env(safe-area-inset-bottom)); }
       h1 { font-size: 23px; }
     }
 
@@ -1149,8 +1249,10 @@
       .empty-actions { grid-template-columns: 1fr; }
       .control-row { grid-template-columns: 1fr 1fr; }
       .workspace-select { grid-column: 1 / -1; }
-      .radio-orb { bottom: calc(184px + env(safe-area-inset-bottom)); }
-      .raya-dock { bottom: calc(236px + env(safe-area-inset-bottom)); }
+      .radio-orb { bottom: calc(112px + env(safe-area-inset-bottom)); }
+      .raya-dock { bottom: calc(164px + env(safe-area-inset-bottom)); }
+      body.setup-open .radio-orb { bottom: calc(184px + env(safe-area-inset-bottom)); }
+      body.setup-open .raya-dock { bottom: calc(236px + env(safe-area-inset-bottom)); }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -1221,6 +1323,7 @@
       ></radio-widget>
     </div>
     <button class="icon-btn radio-orb" id="radioBtn" type="button" aria-label="Open Raya radio" aria-controls="rayaDock" aria-expanded="false" aria-pressed="false">≋</button>
+    <div class="deck-familiar" id="deckFamiliar" aria-hidden="true">=^..^=</div>
   </main>
 
   <script src="/deck/claude/radio-widget.min.js"></script>
@@ -1255,6 +1358,7 @@
     const rayaDock = document.getElementById('rayaDock');
     const rayaRadio = document.getElementById('rayaRadio');
     const radioBtn = document.getElementById('radioBtn');
+    const deckFamiliar = document.getElementById('deckFamiliar');
     const promptChips = [...document.querySelectorAll('.prompt-chip')];
 
     let csrf = '';
@@ -1284,11 +1388,20 @@
     let dictateBaseText = '';
     let dictateFinalText = '';
     let dictationHadResult = false;
+    let setupOpen = false;
+    let heardTimer = null;
     const canSpeak = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
     const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition || null;
     const canDictate = Boolean(Recognition);
     const svgNS = 'http://www.w3.org/2000/svg';
     const deckModeKeys = ['default', 'full'];
+    const deckFaces = ['=^..^=', '(^._.^)ﾉ', '(=^･ｪ･^=)', '(=｀ω´=)', 'ฅ^•ﻌ•^ฅ', '/ᐠ｡ꞈ｡ᐟ\\'];
+    const deckPalettes = [
+      { name: 'miami terminal', bg: '#11121a', bg2: '#19162a', panel: '#202432', panel2: '#2a2740', text: '#fff0e6', gold: '#ffd76e', green: '#b4d47a', blue: '#87ceeb', rose: '#ea8fb4', coral: '#ff9a85', danger: '#ff6f9e', indigo: '#8f86ff' },
+      { name: 'pool ghost', bg: '#10141d', bg2: '#121d28', panel: '#1c2632', panel2: '#22313f', text: '#fff8ed', gold: '#f9e79f', green: '#96e8c6', blue: '#b0e0e6', rose: '#dda0dd', coral: '#ffc0a8', danger: '#ff7ea8', indigo: '#9d9af2' },
+      { name: 'riso night', bg: '#120f1d', bg2: '#1b1627', panel: '#211f2d', panel2: '#30273a', text: '#fff6dc', gold: '#ffe800', green: '#00d48a', blue: '#5dc7ff', rose: '#ff48b0', coral: '#ff665e', danger: '#ff4f8b', indigo: '#8d7dff' },
+      { name: 'lavender boot', bg: '#11131f', bg2: '#181a2b', panel: '#1f2332', panel2: '#292b3f', text: '#fff9f0', gold: '#fad7a0', green: '#a6d2c5', blue: '#b8b6ff', rose: '#f2a6cf', coral: '#ffb09b', danger: '#ff6f9e', indigo: '#9370db' }
+    ];
 
     let audioContext = null;
     let sonicRoot = 246;
@@ -1609,6 +1722,48 @@
       document.documentElement.style.setProperty(name, value);
     }
 
+    function hashToIndex(seed, length, salt = 0) {
+      const text = String(seed || Date.now()) + ':' + salt;
+      let hash = 0;
+      for (let index = 0; index < text.length; index += 1) {
+        hash = ((hash << 5) - hash + text.charCodeAt(index)) | 0;
+      }
+      return Math.abs(hash) % Math.max(1, length);
+    }
+
+    function hexToRgb(hex) {
+      const clean = String(hex || '').replace('#', '').trim();
+      const value = clean.length === 3
+        ? clean.split('').map(ch => ch + ch).join('')
+        : clean.padEnd(6, '0').slice(0, 6);
+      const int = parseInt(value, 16);
+      return [(int >> 16) & 255, (int >> 8) & 255, int & 255].join(',');
+    }
+
+    function applyDeckMood(seed) {
+      const palette = deckPalettes[hashToIndex(seed, deckPalettes.length, 7)];
+      const colorKeys = ['gold', 'green', 'blue', 'rose', 'coral', 'danger', 'indigo'];
+      setVar('--bg', palette.bg);
+      setVar('--bg-2', palette.bg2);
+      setVar('--text', palette.text);
+      setVar('--panel', palette.panel);
+      setVar('--panel-2', palette.panel2);
+      setVar('--panel-rgb', hexToRgb(palette.panel));
+      setVar('--panel-2-rgb', hexToRgb(palette.panel2));
+      setVar('--cream-rgb', hexToRgb(palette.text));
+      colorKeys.forEach(key => {
+        setVar(`--${key}`, palette[key]);
+        setVar(`--${key}-rgb`, hexToRgb(palette[key]));
+      });
+      if (deckFamiliar) {
+        deckFamiliar.textContent = deckFaces[hashToIndex(seed, deckFaces.length, 13)];
+        setVar('--familiar-x', `${8 + hashToIndex(seed, 72, 21)}vw`);
+        setVar('--familiar-y', `${13 + hashToIndex(seed, 42, 29)}vh`);
+        setVar('--familiar-tilt', `${hashToIndex(seed, 17, 31) - 8}deg`);
+        deckFamiliar.title = palette.name;
+      }
+    }
+
     function pct(value) {
       return `${Math.round(Math.max(0, Math.min(1, Number(value) || 0)) * 100)}%`;
     }
@@ -1844,6 +1999,7 @@
     function syncMicButton() {
       micBtn.disabled = !authReady || running || !canDictate;
       micBtn.classList.toggle('recording', dictating);
+      document.body.classList.toggle('is-listening', dictating);
       micBtn.textContent = dictating ? '■' : '◉';
       micBtn.setAttribute('aria-pressed', String(dictating));
       micBtn.setAttribute('aria-label', dictating ? 'Stop dictation' : 'Dictate');
@@ -1861,6 +2017,9 @@
       dictateBaseText = '';
       dictateFinalText = '';
       dictationHadResult = false;
+      if (heardTimer) clearTimeout(heardTimer);
+      heardTimer = null;
+      document.body.classList.remove('heard-voice');
       syncDeckMeta();
       syncMicButton();
     }
@@ -1892,6 +2051,9 @@
       recognition.onresult = event => {
         let interim = '';
         dictationHadResult = true;
+        document.body.classList.add('heard-voice');
+        if (heardTimer) clearTimeout(heardTimer);
+        heardTimer = setTimeout(() => document.body.classList.remove('heard-voice'), 420);
         for (let index = event.resultIndex; index < event.results.length; index += 1) {
           const result = event.results[index];
           const text = result[0]?.transcript || '';
@@ -2079,12 +2241,61 @@
       holdBtn.textContent = 'HOLD';
     }
 
+    function setSetupOpen(value) {
+      setupOpen = Boolean(value);
+      document.body.classList.toggle('setup-open', setupOpen);
+      newBtn.classList.toggle('on', setupOpen);
+      newBtn.textContent = setupOpen ? '×' : '＋';
+      newBtn.setAttribute('aria-pressed', String(setupOpen));
+      newBtn.setAttribute('aria-label', setupOpen ? 'Hide setup' : 'New chat setup');
+    }
+
     function scrollDown() {
       transcript.scrollTop = transcript.scrollHeight;
     }
 
     function clearEmpty() {
       if (empty) empty.remove();
+    }
+
+    function restoreEmpty() {
+      if (empty && !empty.isConnected) {
+        transcript.prepend(empty);
+      }
+    }
+
+    function resetThreadSurface() {
+      transcript.querySelectorAll('.msg').forEach(node => node.remove());
+      restoreEmpty();
+      scrollDown();
+    }
+
+    function renderBubbleText(target, text) {
+      target.dataset.rawText = text || '';
+      target.replaceChildren();
+      const source = String(text || '');
+      const urlPattern = /https?:\/\/[^\s<>"']+/g;
+      let index = 0;
+      let match;
+      while ((match = urlPattern.exec(source)) !== null) {
+        if (match.index > index) target.append(document.createTextNode(source.slice(index, match.index)));
+        let url = match[0];
+        let trailing = '';
+        const punctuation = url.match(/[),.!?]+$/);
+        if (punctuation) {
+          trailing = punctuation[0];
+          url = url.slice(0, -trailing.length);
+        }
+        const link = document.createElement('a');
+        link.href = url;
+        link.textContent = url;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        target.append(link);
+        if (trailing) target.append(document.createTextNode(trailing));
+        index = match.index + match[0].length;
+      }
+      if (index < source.length) target.append(document.createTextNode(source.slice(index)));
     }
 
     function addMessage(role, text, label) {
@@ -2096,7 +2307,7 @@
       small.textContent = label || (role === 'user' ? 'you' : role);
       const bubble = document.createElement('div');
       bubble.className = 'bubble';
-      bubble.textContent = text || '';
+      renderBubbleText(bubble, text || '');
 
       if (role === 'assistant') {
         const bubbleWrapper = document.createElement('div');
@@ -2108,7 +2319,7 @@
         copyBtn.setAttribute('aria-label', 'Copy');
         copyBtn.addEventListener('click', async () => {
           try {
-            await navigator.clipboard.writeText(bubble.textContent);
+            await navigator.clipboard.writeText(bubble.dataset.rawText || bubble.textContent);
             blip([[pulseTone(2, 1.35), 0, .04, 'triangle', .018], [pulseTone(4, 1.35), 48, .04, 'sine', .014]]);
             haptic(12);
             pulseAt(copyBtn, 'blue');
@@ -2136,12 +2347,12 @@
     function appendAssistant(text) {
       if (!currentBubble) currentBubble = addMessage('assistant', '', shortModelLabel().toLowerCase());
       if (currentBubble.dataset.placeholder === 'true') {
-        currentBubble.textContent = '';
+        renderBubbleText(currentBubble, '');
         delete currentBubble.dataset.placeholder;
         currentBubble.closest('.msg')?.classList.remove('thinking');
       }
-      currentBubble.textContent += text;
       currentReplyText += text;
+      renderBubbleText(currentBubble, currentReplyText);
       currentBubble.closest('.msg')?.classList.add('streaming');
       scrollDown();
     }
@@ -2182,6 +2393,7 @@
       ];
       workspaces = data.workspaces || [{ key: 'pibulus-os', label: 'pibulus-os' }];
       input.maxLength = data.max_prompt_chars || 12000;
+      applyDeckMood(data.pulse?.seed || Date.now().toString(16));
       normalizeSelections();
       renderControls();
       setRunning(Boolean(data.active));
@@ -2340,6 +2552,13 @@
     });
 
     newBtn.addEventListener('click', () => {
+      if (setupOpen) {
+        setSetupOpen(false);
+        input.focus();
+        haptic(8);
+        blip([[pulseTone(1, .9), 0, .035, 'triangle', .012]]);
+        return;
+      }
       chatId = '';
       currentBubble = null;
       currentReplyText = '';
@@ -2348,7 +2567,11 @@
       clearFullArm();
       localStorage.removeItem(chatStorageKey());
       if (model === 'claude' && workspace === 'pibulus-os') localStorage.removeItem('pibulus.claude.chatId');
-      addSystem('new thread');
+      resetThreadSurface();
+      setSetupOpen(true);
+      input.focus();
+      haptic(12);
+      blip([[pulseTone(2, 1.1), 0, .04, 'triangle', .016]]);
     });
 
     async function sendMessage(text) {
@@ -2382,6 +2605,7 @@
       }
       beepSend();
       haptic(wantsFull ? [18, 28, 18] : 16);
+      setSetupOpen(false);
 
       addMessage('user', text, 'you');
       currentBubble = null;
