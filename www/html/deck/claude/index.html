@@ -253,29 +253,35 @@
 
     .title {
       min-width: 0;
-      display: grid;
-      gap: 4px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
     }
 
     .status {
-      min-height: 22px;
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      border: 1px solid rgba(var(--green-rgb),.3);
-      border-radius: 999px;
-      padding: 3px 8px;
-      color: var(--muted);
-      font-size: 12px;
+      width: 14px;
+      height: 14px;
+      min-height: 14px;
+      display: inline-grid;
+      place-items: center;
+      flex: 0 0 auto;
+      border-radius: 50%;
+      background: rgba(var(--green-rgb),.08);
+    }
+
+    .status span:not(.dot) {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      clip-path: inset(50%);
       white-space: nowrap;
-      background: rgba(var(--green-rgb),.075);
-      width: max-content;
-      max-width: 100%;
     }
 
     .dot {
-      width: 7px;
-      height: 7px;
+      width: 9px;
+      height: 9px;
       border-radius: 50%;
       background: var(--teal);
       box-shadow: 0 0 12px rgba(var(--green-rgb),.72);
@@ -287,11 +293,6 @@
       50% { transform: scale(1.15); opacity: 1; }
     }
 
-    .status.bad {
-      border-color: rgba(var(--danger-rgb),.38);
-      background: rgba(var(--danger-rgb),.09);
-    }
-
     .status.bad .dot {
       background: var(--danger);
       box-shadow: 0 0 12px rgba(var(--danger-rgb),.75);
@@ -300,37 +301,38 @@
 
     .transcript {
       overflow-y: auto;
-      padding: 16px 12px 120px;
+      padding: 16px 12px 112px;
       scroll-behavior: smooth;
       -webkit-overflow-scrolling: touch;
     }
 
     .empty {
       position: relative;
-      overflow: hidden;
-      max-width: 620px;
-      margin: 10vh auto 0;
-      border: 1px solid rgba(var(--gold-rgb), var(--empty-border-alpha));
-      background: linear-gradient(180deg, rgba(var(--panel-2-rgb),.92), rgba(var(--ink-rgb),.88));
-      border-radius: var(--radius);
-      padding: 16px;
-      box-shadow:
-        var(--shadow),
-        0 0 var(--empty-glow-px) rgba(var(--rose-rgb), var(--empty-glow-alpha));
+      overflow: visible;
+      width: min(100%, 860px);
+      min-height: min(62vh, 620px);
+      margin: min(9vh, 78px) auto 0;
+      display: grid;
+      place-items: center;
+      border: 0;
+      background: transparent;
+      padding: 0;
+      box-shadow: none;
       transform: rotate(var(--chaos-tilt));
     }
 
     .empty::before {
       content: "";
       position: absolute;
-      inset: 0;
+      inset: 4% 0 auto;
+      height: min(70vmin, 720px);
       pointer-events: none;
       background:
-        linear-gradient(90deg, transparent, rgba(var(--rose-rgb),.08), transparent),
-        linear-gradient(180deg, rgba(var(--gold-rgb),.07), transparent 38%, rgba(var(--blue-rgb),.08));
-      opacity: var(--empty-sheen-opacity);
+        radial-gradient(circle, rgba(var(--rose-rgb),.12), transparent 58%),
+        conic-gradient(from var(--moon-angle), rgba(var(--blue-rgb),.08), rgba(var(--rose-rgb),.12), rgba(var(--green-rgb),.06), rgba(var(--gold-rgb),.1), rgba(var(--blue-rgb),.08));
+      opacity: calc(var(--empty-sheen-opacity) + .08);
       transform: translateX(var(--moon-shift));
-      filter: hue-rotate(var(--chaos-hue));
+      filter: blur(18px) hue-rotate(var(--chaos-hue));
     }
 
     .empty > * {
@@ -339,25 +341,34 @@
 
     .empty-kicker {
       color: var(--blue);
-      font-size: 12px;
+      align-self: end;
+      justify-self: center;
+      margin-bottom: clamp(18px, 6vh, 56px);
+      padding: 5px 8px;
+      border-radius: 999px;
+      background: rgba(var(--ink-rgb),.42);
+      font-size: 11px;
       font-weight: 800;
       text-transform: uppercase;
       line-height: 1.25;
       overflow-wrap: anywhere;
+      text-align: center;
+      z-index: 2;
     }
 
     .sigil-stage {
       position: relative;
-      width: 112px;
-      height: 112px;
-      margin: 4px auto 14px;
+      width: clamp(300px, 68vmin, 720px);
+      height: clamp(300px, 68vmin, 720px);
+      margin: 0;
       display: grid;
       place-items: center;
       transform:
         translateX(var(--uptime-shift))
         rotate(var(--sigil-tilt))
         scale(var(--sigil-scale));
-      filter: hue-rotate(var(--chaos-hue)) drop-shadow(0 0 20px rgba(var(--rose-rgb),.14));
+      opacity: .88;
+      filter: hue-rotate(var(--chaos-hue)) drop-shadow(0 0 42px rgba(var(--rose-rgb),.2));
       transition: transform .7s ease, filter .7s ease;
     }
 
@@ -365,7 +376,7 @@
     .sigil-stage::after {
       content: "";
       position: absolute;
-      inset: 11px;
+      inset: clamp(22px, 7vmin, 70px);
       border-radius: 50%;
       pointer-events: none;
     }
@@ -380,7 +391,7 @@
     }
 
     .sigil-stage::after {
-      inset: 27px;
+      inset: clamp(58px, 15vmin, 158px);
       border: 1px solid rgba(var(--cream-rgb),.09);
       box-shadow:
         0 0 24px rgba(var(--blue-rgb),.14),
@@ -482,7 +493,7 @@
     }
 
     .agent-lights {
-      display: flex;
+      display: none;
       align-items: center;
       gap: 7px;
       min-height: 14px;
@@ -524,7 +535,7 @@
     }
 
     .empty-actions {
-      display: grid;
+      display: none;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 8px;
     }
@@ -676,7 +687,7 @@
     .spending-bar {
       width: min(100%, 760px);
       margin: 0 auto 8px;
-      display: flex;
+      display: none;
       align-items: center;
       gap: 6px;
       padding: 6px 8px;
@@ -809,7 +820,7 @@
     }
 
     .full-arm {
-      display: none;
+      display: none !important;
       margin: 0 auto 8px;
       width: min(100%, 760px);
       grid-template-columns: 1fr 96px;
@@ -954,6 +965,10 @@
       color: var(--danger);
     }
 
+    .stop.disabled {
+      display: none;
+    }
+
     .voice.on {
       border-color: rgba(var(--green-rgb),.54);
       color: var(--teal);
@@ -963,7 +978,7 @@
     .radio-orb {
       position: fixed;
       right: calc(14px + env(safe-area-inset-right));
-      bottom: calc(154px + env(safe-area-inset-bottom));
+      bottom: calc(118px + env(safe-area-inset-bottom));
       z-index: 4;
       width: 44px;
       height: 44px;
@@ -1019,7 +1034,7 @@
     .raya-dock {
       position: fixed;
       right: calc(14px + env(safe-area-inset-right));
-      bottom: calc(206px + env(safe-area-inset-bottom));
+      bottom: calc(170px + env(safe-area-inset-bottom));
       z-index: 4;
       width: min(344px, calc(100vw - 28px));
       opacity: 0;
@@ -1081,8 +1096,8 @@
       .topbar { padding-left: 20px; padding-right: 20px; }
       .transcript { padding-left: 20px; padding-right: 20px; }
       .composer { padding-left: 20px; padding-right: 20px; }
-      .radio-orb { right: 20px; bottom: calc(164px + env(safe-area-inset-bottom)); }
-      .raya-dock { right: 20px; bottom: calc(216px + env(safe-area-inset-bottom)); }
+      .radio-orb { right: 20px; bottom: calc(122px + env(safe-area-inset-bottom)); }
+      .raya-dock { right: 20px; bottom: calc(174px + env(safe-area-inset-bottom)); }
       h1 { font-size: 23px; }
     }
 
@@ -1134,6 +1149,8 @@
       .empty-actions { grid-template-columns: 1fr; }
       .control-row { grid-template-columns: 1fr 1fr; }
       .workspace-select { grid-column: 1 / -1; }
+      .radio-orb { bottom: calc(184px + env(safe-area-inset-bottom)); }
+      .raya-dock { bottom: calc(236px + env(safe-area-inset-bottom)); }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -1169,13 +1186,6 @@
             <g class="sigil-stars" id="sigilStars"></g>
             <circle class="sigil-core" id="sigilCore" cx="0" cy="0" r="4"></circle>
           </svg>
-        </div>
-        <div class="agent-lights" id="agentLights" aria-hidden="true"></div>
-        <div class="empty-actions">
-          <button class="prompt-chip" type="button" data-prompt="Check Pi health, storage, recent warnings, and the public Quick Cat routes. Summarize what needs attention first."><span class="chip-main">Health sweep</span><span class="chip-sub">Pi + public routes</span></button>
-          <button class="prompt-chip" type="button" data-prompt="Inspect recent changes in /home/pibulus/pibulus-os and tell me what is dirty, risky, or ready to commit."><span class="chip-main">Repo pulse</span><span class="chip-sub">dirty files + next move</span></button>
-          <button class="prompt-chip" type="button" data-prompt="Look at the running services and containers. Flag anything noisy, stuck, or safe to leave alone."><span class="chip-main">Service scan</span><span class="chip-sub">containers + timers</span></button>
-          <button class="prompt-chip" type="button" data-prompt="Read the shared Pi AI context and tell me what mode/model you are best suited for right now. Do not change files yet."><span class="chip-main">Agent handoff</span><span class="chip-sub">context + role</span></button>
         </div>
       </div>
     </section>
@@ -1252,7 +1262,7 @@
     let modes = [];
     let workspaces = [];
     let model = localStorage.getItem('pibulus.deck.model') || 'claude';
-    let mode = localStorage.getItem('pibulus.deck.mode') || 'auto';
+    let mode = localStorage.getItem('pibulus.deck.mode') || 'default';
     let workspace = localStorage.getItem('pibulus.deck.workspace') || 'pibulus-os';
     let chatId = '';
     let running = false;
@@ -1278,6 +1288,7 @@
     const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition || null;
     const canDictate = Boolean(Recognition);
     const svgNS = 'http://www.w3.org/2000/svg';
+    const deckModeKeys = ['default', 'full'];
 
     let audioContext = null;
     let sonicRoot = 246;
@@ -1492,13 +1503,18 @@
         key: 'claude',
         label: 'Claude Code',
         enabled: false,
-        modes: ['auto'],
-        default_mode: 'auto'
+        modes: ['default'],
+        default_mode: 'default'
       };
     }
 
     function selectedModeConfig() {
       return modes.find(item => item.key === mode) || { key: mode, label: mode };
+    }
+
+    function visibleModesFor(activeModel = selectedModelConfig()) {
+      const allowedModes = new Set(activeModel.modes || []);
+      return modes.filter(item => deckModeKeys.includes(item.key) && allowedModes.has(item.key));
     }
 
     function shortModelLabel(item = selectedModelConfig()) {
@@ -1541,9 +1557,9 @@
       if (enabledModel) model = enabledModel.key;
 
       const activeModel = selectedModelConfig();
-      const allowedModes = new Set(activeModel.modes || []);
-      if (!allowedModes.has(mode)) {
-        mode = activeModel.default_mode || [...allowedModes][0] || 'default';
+      const visibleModes = visibleModesFor(activeModel);
+      if (!visibleModes.some(item => item.key === mode)) {
+        mode = visibleModes.some(item => item.key === 'default') ? 'default' : (visibleModes[0]?.key || 'default');
       }
 
       if (!workspaces.some(item => item.key === workspace)) {
@@ -1560,26 +1576,26 @@
       authReady = ready;
       statusPill.classList.toggle('bad', !ready);
       const detail = activeModel.detail ? ` · ${activeModel.detail}` : '';
-      emptyKicker.textContent = `${activeModel.label}${detail} · ${workspace} · ${selectedModeConfig().label}`;
+      emptyKicker.textContent = `${shortModelLabel(activeModel)} · ${workspace} · ${selectedModeConfig().label}`;
       input.placeholder = ready ? `Message ${shortModelLabel(activeModel)}` : `${shortModelLabel(activeModel)} unavailable`;
       statusText.textContent = ready ? 'online' : (activeModel.detail || 'unavailable');
+      statusPill.title = ready ? `${activeModel.label}${detail}` : (activeModel.detail || 'unavailable');
       armCopy.textContent = `Full gives ${shortModelLabel(activeModel)} write access in ${workspace} for the next send.`;
     }
 
     function syncFullArmVisibility() {
-      const canFull = (selectedModelConfig().modes || []).includes('full');
-      const show = canFull && mode === 'full';
-      fullArm.classList.toggle('show', show);
-      if (!show) clearFullArm();
+      fullArm.classList.remove('show');
+      clearFullArm();
     }
 
     function renderControls() {
       const activeModel = selectedModelConfig();
       const allowedModes = new Set(activeModel.modes || []);
-      fillSelect(modelSelect, models, model);
+      const enabledModels = models.filter(item => item.enabled !== false);
+      fillSelect(modelSelect, enabledModels.length ? enabledModels : models, model);
       fillSelect(
         modeSelect,
-        modes.map(item => ({ ...item, enabled: item.enabled !== false && allowedModes.has(item.key) })),
+        visibleModesFor(activeModel).map(item => ({ ...item, enabled: item.enabled !== false && allowedModes.has(item.key) })),
         mode
       );
       fillSelect(workspaceSelect, workspaces, workspace);
@@ -2159,11 +2175,9 @@
       if (!res.ok) throw new Error(`bootstrap ${res.status}`);
       const data = await res.json();
       csrf = data.csrf;
-      models = data.models || [{ key: 'claude', label: 'Claude Code', enabled: Boolean(data.claude_auth?.ok), modes: ['plan', 'default', 'auto', 'full'], default_mode: 'auto' }];
+      models = data.models || [{ key: 'claude', label: 'Claude Code', enabled: Boolean(data.claude_auth?.ok), modes: ['default', 'full'], default_mode: 'default' }];
       modes = data.modes || [
-        { key: 'plan', label: 'Plan', enabled: true },
         { key: 'default', label: 'Ask', enabled: true },
-        { key: 'auto', label: 'Act', enabled: true },
         { key: 'full', label: 'Full', enabled: true }
       ];
       workspaces = data.workspaces || [{ key: 'pibulus-os', label: 'pibulus-os' }];
@@ -2193,8 +2207,10 @@
       if (!activeModel.enabled) {
         normalizeSelections();
       } else {
-        const allowedModes = new Set(activeModel.modes || []);
-        if (!allowedModes.has(mode)) mode = activeModel.default_mode || [...allowedModes][0] || 'default';
+        const visibleModes = visibleModesFor(activeModel);
+        if (!visibleModes.some(item => item.key === mode)) {
+          mode = visibleModes.some(item => item.key === 'default') ? 'default' : (visibleModes[0]?.key || 'default');
+        }
         persistSelections();
         loadChatId();
       }
@@ -2339,28 +2355,46 @@
       if (running) return;
       stopDictation({ abort: true });
       const wantsFull = mode === 'full';
-      const fullReady = wantsFull && fullArmed && armToken && Date.now() < armExpiresAt;
-      if (wantsFull && !fullReady) {
-        beepError();
-        haptic([50, 30, 25]);
-        addSystem('hold to arm full first');
-        return;
+      let fullToken = wantsFull && armToken && Date.now() < armExpiresAt ? armToken : '';
+      if (wantsFull && !fullToken) {
+        try {
+          const res = await fetch(`${api}/arm`, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json', 'X-PIBULUS-CSRF': csrf },
+            body: JSON.stringify({ workspace })
+          });
+          if (!res.ok) throw new Error(`arm ${res.status}`);
+          const data = await res.json();
+          fullToken = data.arm_token || '';
+          armToken = fullToken;
+          armExpiresAt = Date.now() + ((data.expires_in || 60) * 1000);
+          fullArmed = Boolean(fullToken);
+          if (!fullToken) throw new Error('full mode unavailable');
+          beepArm();
+        } catch (err) {
+          clearFullArm();
+          beepError();
+          haptic([50, 30, 25]);
+          addSystem('Full could not start.');
+          return;
+        }
       }
       beepSend();
-      haptic(fullReady ? [18, 28, 18] : 16);
+      haptic(wantsFull ? [18, 28, 18] : 16);
 
       addMessage('user', text, 'you');
       currentBubble = null;
       currentReplyText = '';
       setRunning(true);
-      const sendMode = fullReady ? 'full' : mode;
+      const sendMode = wantsFull ? 'full' : mode;
       const payload = {
         message: text,
         chat_id: chatId,
         model,
         mode: sendMode,
         workspace,
-        arm_token: fullReady ? armToken : ''
+        arm_token: wantsFull ? fullToken : ''
       };
       clearFullArm();
 
