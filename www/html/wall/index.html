@@ -30,7 +30,7 @@
     }
 
     main {
-      width: min(100%, 760px);
+      width: min(100%, 960px);
       margin: 0 auto;
       display: flex;
       flex-direction: column;
@@ -68,8 +68,18 @@
       text-align: center;
     }
 
+    .wall-area {
+      width: min(100%, 900px);
+      display: grid;
+      grid-template-columns: minmax(0, 680px) 160px;
+      gap: 0.75rem;
+      align-items: start;
+      justify-content: center;
+    }
+
     .wall-shell {
-      width: min(100%, 680px);
+      width: 100%;
+      max-width: 680px;
       border: 1px solid var(--edge);
       background: #000;
       box-shadow: 0 0 0 1px rgba(108, 255, 218, 0.08), 0 18px 60px rgba(0, 0, 0, 0.38);
@@ -89,6 +99,61 @@
       width: 100%;
       height: 100%;
       image-rendering: pixelated;
+    }
+
+    .archive {
+      display: none;
+      width: 100%;
+      border: 1px solid rgba(108, 255, 218, 0.22);
+      background: rgba(8, 13, 11, 0.72);
+      padding: 0.65rem;
+    }
+
+    .archive.visible {
+      display: block;
+    }
+
+    .archive h2 {
+      color: var(--edge-strong);
+      font-size: 1.2rem;
+      font-weight: 400;
+      line-height: 1;
+      margin-bottom: 0.55rem;
+    }
+
+    .archive-list {
+      display: grid;
+      gap: 0.55rem;
+    }
+
+    .archive-item {
+      display: grid;
+      gap: 0.3rem;
+      color: var(--dim);
+      text-decoration: none;
+      font-size: 1rem;
+    }
+
+    .archive-item:focus-visible {
+      outline: 2px solid var(--edge-strong);
+      outline-offset: 3px;
+    }
+
+    .archive-thumb {
+      width: 100%;
+      aspect-ratio: 1;
+      display: block;
+      border: 1px solid rgba(108, 255, 218, 0.26);
+      background: #000;
+      image-rendering: pixelated;
+      object-fit: contain;
+    }
+
+    .archive-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.35rem;
+      line-height: 1;
     }
 
     .toolbar {
@@ -152,6 +217,17 @@
 
     #saveState { color: var(--edge-strong); }
 
+    @media (max-width: 900px) {
+      .wall-area {
+        grid-template-columns: 1fr;
+        width: min(100%, 680px);
+      }
+
+      .archive-list {
+        grid-template-columns: repeat(auto-fit, minmax(86px, 1fr));
+      }
+    }
+
     @media (max-width: 620px) {
       body { padding-inline: 0.65rem; }
       main { gap: 0.65rem; }
@@ -169,8 +245,14 @@
     <a href="/" class="back">&larr; quickcat.club</a>
     <h1>the wall</h1>
     <p class="sub">make it worse</p>
-    <div class="wall-shell" id="wallShell">
-      <div class="wall-frame" id="wallFrame"><canvas id="wall"></canvas></div>
+    <div class="wall-area">
+      <div class="wall-shell" id="wallShell">
+        <div class="wall-frame" id="wallFrame"><canvas id="wall"></canvas></div>
+      </div>
+      <aside class="archive" id="archivePanel" aria-label="monthly wall archive">
+        <h2>archive</h2>
+        <div class="archive-list" id="archiveList"></div>
+      </aside>
     </div>
     <div class="toolbar">
       <div class="palette" id="palette" aria-label="wall colors"></div>
@@ -189,6 +271,9 @@
     const ctx = canvas.getContext('2d', { alpha: false });
     const wallFrame = document.getElementById('wallFrame');
     const saveState = document.getElementById('saveState');
+    const archivePanel = document.getElementById('archivePanel');
+    const archiveList = document.getElementById('archiveList');
+    const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
     const PALETTE = [
       '#ff5c57', '#ff9f43', '#ffd166', '#b8e986',
       '#5ee6a8', '#4dd0e1', '#5dade2', '#8e7dff',
@@ -253,6 +338,56 @@
           }
         })
         .catch(() => setStatus('offline'));
+    }
+
+    function archiveLabel(month) {
+      const [year, monthNumber] = String(month || '').split('-');
+      const index = Number(monthNumber) - 1;
+      if (!year || index < 0 || index >= MONTHS.length) return String(month || '');
+      return `${MONTHS[index]} ${year}`;
+    }
+
+    function renderArchive(items) {
+      const archives = Array.isArray(items) ? items.slice(0, 12) : [];
+      archiveList.textContent = '';
+      archivePanel.classList.toggle('visible', archives.length > 0);
+      if (!archives.length) return;
+
+      archives.forEach((item) => {
+        const label = item.label || archiveLabel(item.month);
+        const link = document.createElement('a');
+        link.className = 'archive-item';
+        link.href = item.png;
+        link.target = '_blank';
+        link.rel = 'noopener';
+        link.title = `${label} - ${item.pixels || 0} pixels`;
+
+        const img = document.createElement('img');
+        img.className = 'archive-thumb';
+        img.src = item.png;
+        img.alt = `${label} wall`;
+        img.loading = 'lazy';
+
+        const meta = document.createElement('span');
+        meta.className = 'archive-meta';
+
+        const month = document.createElement('span');
+        month.textContent = label;
+
+        const count = document.createElement('span');
+        count.textContent = item.pixels ? item.pixels : '';
+
+        meta.append(month, count);
+        link.append(img, meta);
+        archiveList.appendChild(link);
+      });
+    }
+
+    function loadArchive() {
+      fetch('/wall/archive.json', { cache: 'no-cache' })
+        .then((response) => response.ok ? response.json() : { archives: [] })
+        .then((data) => renderArchive(data.archives))
+        .catch(() => renderArchive([]));
     }
 
     function render() {
@@ -339,7 +474,9 @@
     resize();
     visitorId();
     load();
+    loadArchive();
     setInterval(load, 5000);
+    setInterval(loadArchive, 60000);
   </script>
 </body>
 </html>
