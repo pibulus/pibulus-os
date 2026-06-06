@@ -168,6 +168,14 @@ else
     log "  romm-assets: SKIP (not found)"
 fi
 
+if [ -d /media/pibulus/passport/app-data/romm/resources ]; then
+    rsync -a --delete \
+      /media/pibulus/passport/app-data/romm/resources/ "$BACKUP_DIR/volumes/romm-resources/" >> "$LOG" 2>&1
+    log "  romm-resources: OK"
+else
+    log "  romm-resources: SKIP (not found)"
+fi
+
 # ── 4. Key system files ───────────────────────────────────────────────────────
 
 log "[system] Backing up system configs..."

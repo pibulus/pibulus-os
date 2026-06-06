@@ -20,6 +20,7 @@ services:
     volumes:
       - /media/pibulus/passport/app-data/romm/assets:/romm/assets
       - /media/pibulus/passport/app-data/romm/config:/romm/config
+      - /media/pibulus/passport/app-data/romm/resources:/romm/resources
       - /media/pibulus/passport/Roms/gb:/romm/library/roms/gb:ro
       - /media/pibulus/passport/Roms/gba:/romm/library/roms/gba:ro
       - /media/pibulus/passport/Roms/nes:/romm/library/roms/nes:ro

@@ -6,6 +6,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 TAG="pibulus-watchdog"
 REPO="/home/pibulus/pibulus-os"
 COMPOSE_FILE="${REPO}/config/stacks/pirate.yml"
+ROMM_COMPOSE_FILE="${REPO}/config/stacks/romm/docker-compose.yml"
 STATUS=0
 
 log() {
@@ -102,6 +103,38 @@ restart_compose_service_for_http() {
   return 1
 }
 
+check_romm_covers() {
+  local service="romm"
+  local container="romm"
+  local urls=(
+    "http://127.0.0.1:8095/assets/romm/resources/roms/1/356/cover/small.png"
+    "http://127.0.0.1:8095/assets/romm/resources/roms/3/4479/cover/big.png"
+    "http://127.0.0.1:8095/assets/romm/resources/roms/6/4664/cover/small.png"
+  )
+
+  if ! docker inspect -f '{{.State.Running}}' "${container}" 2>/dev/null | grep -qx true; then
+    log "WARN: container ${container} is not running; starting compose service ${service}"
+    if ! docker compose -f "${ROMM_COMPOSE_FILE}" up -d "${service}"; then
+      mark_failed "docker compose up ${service} failed"
+      return 1
+    fi
+    sleep 12
+  fi
+
+  if ! http_ok "romm" "http://127.0.0.1:8095/"; then
+    mark_failed "romm did not respond at http://127.0.0.1:8095/"
+    return 1
+  fi
+
+  for url in "${urls[@]}"; do
+    if curl -fsS --connect-timeout 3 --max-time 8 "${url}" >/dev/null; then
+      log "ok: romm cover responded at ${url}"
+    else
+      mark_failed "romm cover missing at ${url}"
+    fi
+  done
+}
+
 log "starting health pass"
 
 restart_unit_if_needed cloudflared.service || true
@@ -110,6 +143,7 @@ restart_unit_if_needed docker.service || true
 if systemctl is-active --quiet docker.service; then
   restart_compose_service_for_http web_host web_host "web host" "http://127.0.0.1/" 8 || true
   restart_compose_service_for_http jellyfin jellyfin "jellyfin" "http://127.0.0.1:8096/web/" 20 || true
+  check_romm_covers || true
 else
   mark_failed "docker.service inactive; skipped container checks"
 fi
