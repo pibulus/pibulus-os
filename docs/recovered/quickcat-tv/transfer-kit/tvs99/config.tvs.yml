@@ -1,0 +1,60 @@
+defaultChannel: 2
+
+channelPreview: false
+
+scanlines: true
+noise: 0.006
+shadowMask: aperture-grille
+blur: 0
+bezel: flat
+
+channels:
+
+- number: 1
+  name: QUICK CAT TV
+  abbr: QCTV
+  video:
+    provider: hls
+    src: https://stream.quickcat.club/stream/channels/1.m3u8
+
+- number: 2
+  name: PIBULUS PRIME
+  abbr: PRIME
+  video:
+    provider: hls
+    src: https://stream.quickcat.club/stream/channels/2.m3u8
+
+- number: 3
+  name: THE MARATHON
+  abbr: MRTHN
+  video:
+    provider: hls
+    src: https://stream.quickcat.club/stream/channels/3.m3u8
+
+- number: 4
+  name: CHANNEL Z
+  abbr: CHNLZ
+  video:
+    provider: hls
+    src: https://stream.quickcat.club/stream/channels/4.m3u8
+
+- number: 5
+  name: KPAB RADIO
+  abbr: KPAB
+  generator: color
+  color: "#160c24"
+  backgroundAudio: https://kpab.fm/listen/kpab.fm/radio.mp3
+
+- number: 12
+  name: PROGRAM GUIDE
+  abbr: GUIDE
+  v-split:
+    a:
+      video:
+        provider: hls
+        src: https://stream.quickcat.club/stream/channels/2.m3u8
+        volume: false
+    b:
+      guide:
+        primaryColor: white
+        secondaryColor: blue

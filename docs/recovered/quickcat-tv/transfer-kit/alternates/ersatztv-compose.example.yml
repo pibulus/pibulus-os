@@ -1,0 +1,23 @@
+# Alternate backend only. Tunarr is the recommended base because the existing
+# PIBULUS lineups already survive as Tunarr data.
+#
+# Current ErsatzTV docs use ghcr.io/ersatztv/legacy and port 8409.
+
+name: quickcat-tv-ersatztv-dormant
+
+services:
+  ersatztv:
+    profiles:
+      - manual
+    image: ghcr.io/ersatztv/legacy
+    container_name: qctv-ersatztv
+    restart: unless-stopped
+    environment:
+      - TZ=${TZ:-Australia/Melbourne}
+    ports:
+      - "127.0.0.1:${ERSATZTV_HOST_PORT:-8409}:8409"
+    volumes:
+      - ${QCTV_ERSATZTV_DATA:-./data/ersatztv}:/config
+      - ${QCTV_MEDIA_ROOT:-/srv/media}:/media:ro
+    tmpfs:
+      - /transcode

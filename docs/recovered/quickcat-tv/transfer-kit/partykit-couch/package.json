@@ -1,0 +1,17 @@
+{
+  "name": "quickcat-couch-room",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "partykit dev",
+    "deploy": "partykit deploy",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "partykit": "latest",
+    "partysocket": "latest"
+  },
+  "devDependencies": {
+    "typescript": "latest"
+  }
+}

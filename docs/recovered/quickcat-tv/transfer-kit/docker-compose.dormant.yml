@@ -1,0 +1,47 @@
+# Dormant example for a future stronger TV server.
+# Nothing in the live PIBULUS stack includes this file.
+#
+# Services use the "manual" profile so an accidental plain `docker compose up`
+# from this directory will not start the TV stack.
+
+name: quickcat-tv-dormant
+
+x-manual-profile: &manual-profile
+  profiles:
+    - manual
+
+services:
+  tunarr:
+    <<: *manual-profile
+    image: chrisbenincasa/tunarr:latest
+    container_name: qctv-tunarr
+    restart: unless-stopped
+    ports:
+      - "${TUNARR_BIND:-127.0.0.1}:${TUNARR_HOST_PORT:-8100}:8000"
+    environment:
+      - TZ=${TZ:-Australia/Melbourne}
+      - TUNARR_LOG_LEVEL=${TUNARR_LOG_LEVEL:-INFO}
+      - TUNARR_SERVER_TRUST_PROXY=${TUNARR_SERVER_TRUST_PROXY:-true}
+      - TUNARR_DISABLE_SEARCH_SNAPSHOT_IN_BACKUP=${TUNARR_DISABLE_SEARCH_SNAPSHOT_IN_BACKUP:-true}
+      - TUNARR_SEARCH_MAX_MEMORY=${TUNARR_SEARCH_MAX_MEMORY:-1024Mb}
+    volumes:
+      - ${QCTV_TUNARR_DATA:-./data/tunarr}:/config/tunarr
+      # Optional if Tunarr streams directly from disk instead of through Jellyfin.
+      # Keep read-only.
+      # - ${QCTV_MEDIA_ROOT:-/srv/media}:/media:ro
+    # Uncomment on Intel/AMD VA-API/QSV hosts after confirming /dev/dri exists.
+    # devices:
+    #   - /dev/dri:/dev/dri
+
+  tvs:
+    <<: *manual-profile
+    image: zshall/television-simulator:latest
+    container_name: qctv-tvs99
+    restart: unless-stopped
+    depends_on:
+      - tunarr
+    ports:
+      - "${TVS_BIND:-127.0.0.1}:${TVS_HOST_PORT:-3099}:3000"
+    volumes:
+      - ./tvs99/config.tvs.yml:/home/static/config.tvs.yml:ro
+      - ./tvs99/content:/home/static/content:ro

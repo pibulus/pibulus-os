@@ -1,0 +1,32 @@
+{
+  "name": "quickcat-tv-transfer-kit",
+  "status": "dormant",
+  "createdFor": "future Quick Cat TV server transfer",
+  "recommendedBase": {
+    "channels": "Tunarr",
+    "visualShell": "Television Simulator '99",
+    "fallbackPlayer": "static hls.js player",
+    "couchRoom": "PartyKit"
+  },
+  "doNotActivateOnPi": true,
+  "knownPiData": {
+    "tunarrAppData": "/media/pibulus/passport/app-data/tunarr",
+    "oldJellyfinSource": "http://172.17.0.1:8096"
+  },
+  "ports": {
+    "tunarrContainer": 8000,
+    "tunarrExampleHost": 8100,
+    "tvsContainer": 3000,
+    "tvsExampleHost": 3099,
+    "ersatztvAlternate": 8409,
+    "partykitDev": 1999
+  },
+  "sourceRepos": {
+    "tunarr": "https://github.com/chrisbenincasa/tunarr",
+    "televisionSimulator99": "https://github.com/zshall/program-guide",
+    "televisionSimulatorDocker": "https://hub.docker.com/r/zshall/television-simulator",
+    "ersatztv": "https://github.com/ErsatzTV/legacy",
+    "partykit": "https://github.com/partykit/partykit",
+    "hlsjs": "https://github.com/video-dev/hls.js"
+  }
+}

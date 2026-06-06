@@ -1,0 +1,6 @@
+{
+  "$schema": "https://www.partykit.io/schema.json",
+  "name": "quickcat-couch-room",
+  "main": "src/server.ts",
+  "compatibilityDate": "2026-06-06"
+}
