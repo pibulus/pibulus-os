@@ -1,0 +1,59 @@
+defaultChannel: 2
+
+channelPreview: false
+
+scanlines: true
+noise: 0.008
+shadowMask: aperture-grille
+blur: 0
+bezel: flat
+
+channels:
+
+- number: 1
+  name: PIBULUS OS
+  abbr: TEST
+  generator: test-pattern
+
+- number: 2
+  name: PIBULUS PRIME
+  abbr: PRIME
+  video:
+    provider: hls
+    src: https://stream.quickcat.club/stream/channels/2.m3u8
+
+- number: 3
+  name: THE MARATHON
+  abbr: MRTHN
+  video:
+    provider: hls
+    src: https://stream.quickcat.club/stream/channels/3.m3u8
+
+- number: 4
+  name: CHANNEL Z
+  abbr: CHNLZ
+  video:
+    provider: hls
+    src: https://stream.quickcat.club/stream/channels/4.m3u8
+
+- number: 5
+  name: KPAB Radio
+  abbr: KPAB
+  generator: color
+  color: "#1a0a2e"
+  backgroundAudio: https://kpab.fm/listen/kpab.fm/radio.mp3
+
+- number: 12
+  name: Program Guide
+  abbr: GUIDE
+  v-split:
+    a:
+      video:
+        provider: hls
+        src: https://stream.quickcat.club/stream/channels/2.m3u8
+        volume: false
+    b:
+      guide:
+        primaryColor: white
+        secondaryColor: blue
+

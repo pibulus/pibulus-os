@@ -1,0 +1,19 @@
+# Historical ErsatzTV snippet, archived only.
+# Source commits:
+# - 3d83174 used jasonmcnew/ersatztv:latest-vaapi
+# - 52ab727 switched to jasongdove/ersatztv:latest
+#
+# This is not included by any active compose file.
+
+services:
+  ersatztv:
+    image: jasongdove/ersatztv:latest
+    container_name: ersatztv
+    user: 1000:1000
+    ports:
+      - "8000:8000"
+    volumes:
+      - /home/pibulus/.config/ersatztv:/config
+      - /media/pibulus/passport/Movies:/media/movies:ro
+      - /media/pibulus/passport/Shows:/media/shows:ro
+    restart: unless-stopped

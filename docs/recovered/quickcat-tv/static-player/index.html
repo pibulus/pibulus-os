@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quick Cat TV</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 100%; height: 100%;
+      background: #0D0F14;
+      overflow: hidden;
+      font-family: 'VT323', monospace;
+    }
+
+    #player-wrap {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      cursor: pointer;
+    }
+
+    /* Channel bar */
+    #channel-bar {
+      position: fixed;
+      top: 24px;
+      right: 32px;
+      font-size: 48px;
+      letter-spacing: 4px;
+      color: rgba(255,255,255,0.85);
+      text-shadow: 2px 2px 0 rgba(0,0,0,0.7), 0 0 20px rgba(0,200,255,0.3);
+      z-index: 15;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+
+    #channel-bar.visible {
+      opacity: 1;
+    }
+
+    /* Controls fade */
+    #controls {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      padding: 24px 32px;
+      background: linear-gradient(transparent, rgba(0,0,0,0.7));
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    #controls.visible {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    #btn-play {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: #fff;
+      font-family: 'VT323', monospace;
+      font-size: 20px;
+      letter-spacing: 1px;
+      padding: 6px 18px;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: background 0.2s;
+    }
+    #btn-play:hover { background: rgba(255,255,255,0.22); }
+
+    .ch-btn {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.7);
+      font-family: 'VT323', monospace;
+      font-size: 18px;
+      padding: 4px 12px;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: all 0.2s;
+    }
+    .ch-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+    .ch-btn.active { border-color: rgba(0,200,255,0.6); color: #fff; }
+
+    #volume-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #vol-label {
+      color: rgba(255,255,255,0.6);
+      font-size: 18px;
+      letter-spacing: 1px;
+    }
+
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 90px;
+      height: 3px;
+      background: rgba(255,255,255,0.3);
+      border-radius: 2px;
+      cursor: pointer;
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: #fff;
+    }
+
+    #status-pill {
+      margin-left: auto;
+      font-size: 16px;
+      letter-spacing: 2px;
+      color: rgba(255,255,255,0.45);
+    }
+
+    /* Watermark */
+    #watermark {
+      position: fixed;
+      bottom: 18px;
+      left: 20px;
+      font-size: 15px;
+      letter-spacing: 3px;
+      color: rgba(255,255,255,0.12);
+      pointer-events: none;
+      z-index: 5;
+      user-select: none;
+    }
+
+    /* OFF AIR screen */
+    #offair {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #0D0F14;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 24px;
+      z-index: 20;
+    }
+
+    #offair.active {
+      display: flex;
+    }
+
+    #offair::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.18) 2px,
+        rgba(0,0,0,0.18) 4px
+      );
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    #offair::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center,
+        transparent 50%,
+        rgba(0,0,0,0.55) 100%
+      );
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .offair-content {
+      position: relative;
+      z-index: 3;
+      text-align: center;
+    }
+
+    #offair-title {
+      font-size: clamp(72px, 14vw, 140px);
+      color: #e8e0cc;
+      letter-spacing: 12px;
+      line-height: 1;
+      text-shadow:
+        0 0 30px rgba(232,224,204,0.3),
+        0 0 60px rgba(232,224,204,0.12);
+      animation: flicker 4s infinite;
+    }
+
+    #offair-sub {
+      font-size: clamp(18px, 3vw, 28px);
+      color: rgba(232,224,204,0.4);
+      letter-spacing: 6px;
+      margin-top: 12px;
+    }
+
+    #offair-noise {
+      width: clamp(200px, 40vw, 360px);
+      height: clamp(120px, 22vw, 200px);
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(232,224,204,0.08);
+      margin-bottom: 8px;
+    }
+
+    canvas#noise-canvas {
+      width: 100%; height: 100%;
+      opacity: 0.25;
+    }
+
+    @keyframes flicker {
+      0%, 95%, 100% { opacity: 1; }
+      96% { opacity: 0.7; }
+      97% { opacity: 1; }
+      98% { opacity: 0.5; }
+      99% { opacity: 0.9; }
+    }
+
+    #retry-msg {
+      font-size: 16px;
+      letter-spacing: 3px;
+      color: rgba(232,224,204,0.25);
+      animation: blink 1.8s step-end infinite;
+      margin-top: 32px;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- OFF AIR screen -->
+  <div id="offair">
+    <div class="offair-content">
+      <div id="offair-noise">
+        <canvas id="noise-canvas"></canvas>
+      </div>
+      <div id="offair-title">OFF AIR</div>
+      <div id="offair-sub">NO SIGNAL</div>
+      <div id="retry-msg">RETRYING...</div>
+    </div>
+  </div>
+
+  <!-- Video player -->
+  <div id="player-wrap">
+    <video id="video" playsinline></video>
+  </div>
+
+  <!-- Channel number display -->
+  <div id="channel-bar"></div>
+
+  <!-- Controls -->
+  <div id="controls">
+    <button id="btn-play">PAUSE</button>
+    <button class="ch-btn active" data-ch="2">2 PRIME</button>
+    <button class="ch-btn" data-ch="3">3 MARATHON</button>
+    <button class="ch-btn" data-ch="4">4 CHNL Z</button>
+    <div id="volume-wrap">
+      <span id="vol-label">VOL</span>
+      <input type="range" id="volume" min="0" max="1" step="0.02" value="1">
+    </div>
+    <div id="status-pill">LIVE</div>
+  </div>
+
+  <!-- Watermark -->
+  <div id="watermark">QUICK CAT TV</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script>
+    const video = document.getElementById('video');
+    const offair = document.getElementById('offair');
+    const controls = document.getElementById('controls');
+    const btnPlay = document.getElementById('btn-play');
+    const volumeSlider = document.getElementById('volume');
+    const statusPill = document.getElementById('status-pill');
+    const channelBar = document.getElementById('channel-bar');
+    const noiseCanvas = document.getElementById('noise-canvas');
+    const noiseCtx = noiseCanvas.getContext('2d');
+
+    let currentChannel = 2;
+    const RETRY_DELAY = 6000;
+
+    let hideTimer = null;
+    let channelTimer = null;
+    let retryTimeout = null;
+    let noiseRaf = null;
+    let hlsInstance = null;
+
+    function getStreamURL(ch) {
+      return '/stream/channels/' + ch + '.m3u8';
+    }
+
+    // -- Channel switching --
+    function switchChannel(ch) {
+      currentChannel = ch;
+      // Update button states
+      document.querySelectorAll('.ch-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.ch === String(ch));
+      });
+      // Show channel number
+      channelBar.textContent = 'CH ' + ch;
+      channelBar.classList.add('visible');
+      clearTimeout(channelTimer);
+      channelTimer = setTimeout(() => channelBar.classList.remove('visible'), 2500);
+      // Restart stream
+      startStream();
+    }
+
+    // Channel button clicks
+    document.querySelectorAll('.ch-btn').forEach(btn => {
+      btn.addEventListener('click', () => switchChannel(parseInt(btn.dataset.ch)));
+    });
+
+    // Keyboard channel switching (number keys)
+    document.addEventListener('keydown', (e) => {
+      const ch = parseInt(e.key);
+      if (ch >= 2 && ch <= 4) switchChannel(ch);
+    });
+
+    // -- Noise animation --
+    function drawNoise() {
+      const w = noiseCanvas.width = noiseCanvas.offsetWidth;
+      const h = noiseCanvas.height = noiseCanvas.offsetHeight;
+      const imageData = noiseCtx.createImageData(w, h);
+      const buf = imageData.data;
+      for (let i = 0; i < buf.length; i += 4) {
+        const v = Math.random() * 255 | 0;
+        buf[i] = buf[i+1] = buf[i+2] = v;
+        buf[i+3] = 255;
+      }
+      noiseCtx.putImageData(imageData, 0, 0);
+      noiseRaf = requestAnimationFrame(drawNoise);
+    }
+
+    function showOffAir() {
+      offair.classList.add('active');
+      if (!noiseRaf) drawNoise();
+    }
+
+    function hideOffAir() {
+      offair.classList.remove('active');
+      if (noiseRaf) { cancelAnimationFrame(noiseRaf); noiseRaf = null; }
+    }
+
+    // -- Controls show/hide --
+    function showControls() {
+      controls.classList.add('visible');
+      clearTimeout(hideTimer);
+      hideTimer = setTimeout(() => controls.classList.remove('visible'), 3000);
+    }
+
+    document.addEventListener('mousemove', showControls);
+    document.addEventListener('touchstart', showControls, { passive: true });
+    video.addEventListener('click', showControls);
+
+    // -- Play/Pause --
+    btnPlay.addEventListener('click', () => {
+      if (video.paused) { video.play(); btnPlay.textContent = 'PAUSE'; }
+      else { video.pause(); btnPlay.textContent = 'PLAY'; }
+    });
+
+    // -- Volume --
+    volumeSlider.addEventListener('input', () => {
+      video.volume = parseFloat(volumeSlider.value);
+    });
+
+    // -- HLS init --
+    function startStream() {
+      clearTimeout(retryTimeout);
+      if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
+
+      const streamURL = getStreamURL(currentChannel);
+
+      if (Hls.isSupported()) {
+        const hls = new Hls({
+          enableWorker: true,
+          lowLatencyMode: false,
+          backBufferLength: 60,
+          maxBufferLength: 30,
+          maxMaxBufferLength: 60,
+          maxBufferSize: 30 * 1000 * 1000,
+          maxBufferHole: 0.5,
+          startFragPrefetch: true,
+          liveSyncDurationCount: 3,
+          liveMaxLatencyDurationCount: 6,
+          levelLoadingMaxRetry: 6,
+          fragLoadingMaxRetry: 6,
+        });
+        hlsInstance = hls;
+
+        hls.loadSource(streamURL);
+        hls.attachMedia(video);
+
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          hideOffAir();
+          statusPill.textContent = 'LIVE';
+          video.play().catch(() => {
+            video.muted = true;
+            volumeSlider.value = 0;
+            video.play().catch(() => {});
+          });
+        });
+
+        hls.on(Hls.Events.ERROR, (event, data) => {
+          if (data.fatal) {
+            console.warn('HLS fatal error:', data.type, data.details);
+            showOffAir();
+            statusPill.textContent = 'NO SIGNAL';
+            hls.destroy();
+            hlsInstance = null;
+            retryTimeout = setTimeout(startStream, RETRY_DELAY);
+          }
+        });
+
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = streamURL;
+        video.addEventListener('loadedmetadata', () => {
+          hideOffAir();
+          statusPill.textContent = 'LIVE';
+          video.play().catch(() => {});
+        }, { once: true });
+        video.addEventListener('error', () => {
+          showOffAir();
+          statusPill.textContent = 'NO SIGNAL';
+          retryTimeout = setTimeout(startStream, RETRY_DELAY);
+        }, { once: true });
+      } else {
+        showOffAir();
+        statusPill.textContent = 'UNSUPPORTED';
+      }
+    }
+
+    // Start
+    showOffAir();
+    startStream();
+  </script>
+</body>
+</html>
