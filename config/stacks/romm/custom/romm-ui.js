@@ -3,8 +3,8 @@
     window.__rommUiCleanup = true;
 
     window.EJS_paths = Object.assign({}, window.EJS_paths || {}, {
-        "emulator.min.css": "/assets/emulatorjs/data/emulator.css?rev=20260509a",
-        "emulator.css": "/assets/emulatorjs/data/emulator.css?rev=20260509a"
+        "emulator.min.css": "/assets/emulatorjs/data/emulator.css?rev=20260607a",
+        "emulator.css": "/assets/emulatorjs/data/emulator.css?rev=20260607a"
     });
 
     function patchViewportFit() {

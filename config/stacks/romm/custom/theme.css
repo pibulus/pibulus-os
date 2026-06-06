@@ -676,6 +676,18 @@ body.quickcat-ejs-launch .play-button {
   background: linear-gradient(135deg, #39d98a 0%, #8ddbf7 100%) !important;
   color: #06130c !important;
   box-shadow: 0 14px 38px rgba(0, 0, 0, 0.34), 0 0 0 1px rgba(255, 255, 255, 0.14) inset !important;
+  transition: transform 0.14s ease, box-shadow 0.14s ease, filter 0.14s ease !important;
+  touch-action: manipulation !important;
+}
+
+body.quickcat-ejs-launch .play-button:active {
+  transform: translateY(1px) scale(0.99) !important;
+  box-shadow: 0 9px 24px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(255, 255, 255, 0.18) inset !important;
+}
+
+body.quickcat-ejs-launch .play-button:focus-visible {
+  outline: 3px solid rgba(6, 19, 12, 0.72) !important;
+  outline-offset: 4px !important;
 }
 
 body.quickcat-ejs-launch .play-button .text-h6 {

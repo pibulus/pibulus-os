@@ -73,10 +73,27 @@
         emulator.elements.menu.classList.remove(menuVisibleClass);
     }
 
+    function polishResumePrompt(parent) {
+        Array.from(parent.querySelectorAll(".ejs_menu_button, button, a")).forEach(function(element) {
+            if (normalize(element.textContent) !== "click to resume emulator") return;
+            element.textContent = "Tap to resume";
+            element.setAttribute("data-quickcat-resume-button", "true");
+            element.setAttribute("aria-label", "Tap to resume emulator");
+        });
+
+        Array.from(parent.querySelectorAll(".ejs_popup_container h1, .ejs_popup_container h2, .ejs_popup_container h3, .ejs_popup_container h4")).forEach(function(element) {
+            if (normalize(element.textContent) !== "undefined") return;
+            element.style.setProperty("display", "none", "important");
+            element.setAttribute("data-quickcat-ejs-hidden", "undefined-heading");
+        });
+    }
+
     function simplifyEmulatorChrome(emulator) {
         if (!emulator || !emulator.elements || !emulator.elements.parent) return;
 
         var parent = emulator.elements.parent;
+        polishResumePrompt(parent);
+
         var loading = parent.querySelector(".ejs_loading_text");
         if (loading) {
             var text = loading.textContent || "";
