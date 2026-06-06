@@ -169,9 +169,30 @@ else
 fi
 
 if [ -d /media/pibulus/passport/app-data/romm/resources ]; then
-    rsync -a --delete \
-      /media/pibulus/passport/app-data/romm/resources/ "$BACKUP_DIR/volumes/romm-resources/" >> "$LOG" 2>&1
-    log "  romm-resources: OK"
+    ROMM_RESOURCES_STAMP="$BACKUP_DIR/volumes/.romm-resources-last-attempt"
+    ROMM_RESOURCES_INTERVAL_SECONDS=$((14 * 24 * 60 * 60))
+    ROMM_RESOURCES_NOW=$(date +%s)
+    ROMM_RESOURCES_LAST=0
+
+    if [ -f "$ROMM_RESOURCES_STAMP" ]; then
+        ROMM_RESOURCES_LAST=$(stat -c %Y "$ROMM_RESOURCES_STAMP" 2>/dev/null || printf '0')
+    fi
+
+    ROMM_RESOURCES_AGE=$((ROMM_RESOURCES_NOW - ROMM_RESOURCES_LAST))
+    if [ "$ROMM_RESOURCES_LAST" -eq 0 ] || [ "$ROMM_RESOURCES_AGE" -ge "$ROMM_RESOURCES_INTERVAL_SECONDS" ]; then
+        log "  romm-resources: syncing (fortnightly)"
+        if rsync -a --delete \
+          /media/pibulus/passport/app-data/romm/resources/ "$BACKUP_DIR/volumes/romm-resources/" >> "$LOG" 2>&1; then
+            touch "$ROMM_RESOURCES_STAMP"
+            log "  romm-resources: OK"
+        else
+            touch "$ROMM_RESOURCES_STAMP"
+            log "  romm-resources: FAILED"
+        fi
+    else
+        ROMM_RESOURCES_REMAINING=$(( (ROMM_RESOURCES_INTERVAL_SECONDS - ROMM_RESOURCES_AGE + 86399) / 86400 ))
+        log "  romm-resources: SKIP (fortnightly; ${ROMM_RESOURCES_REMAINING} day(s) until next attempt)"
+    fi
 else
     log "  romm-resources: SKIP (not found)"
 fi
