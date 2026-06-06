@@ -19,6 +19,10 @@ Status: archived only. These files are not wired into nginx, cloudflared, Docker
   - Source: commits `3d83174` and `52ab727`
   - Purpose: the old tracked ErsatzTV service snippet before the stack moved on.
 
+## Known-Good Proof
+
+This was not only theoretical. ALF previously ran through the retro TV setup with the old-school effects on the Pi, so the basic playback/overlay idea worked. The problem was load: effects plus channel streaming/transcoding were too much for the Pi as a long-running host.
+
 ## Likely Stack
 
 The recovered pieces point to a split system:

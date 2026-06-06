@@ -17,6 +17,7 @@ The stack should be split:
 - The Tunarr database contains four existing channels: Quick Cat TV, PIBULUS PRIME, THE MARATHON, and CHANNEL Z.
 - The old TVS config used HLS URLs like `https://stream.quickcat.club/stream/channels/2.m3u8`.
 - The old static player used `hls.js` and `/stream/channels/{n}.m3u8`.
+- ALF previously played through the retro TV setup with effects on the Pi, proving the basic TV experience worked.
 - The old logs showed Pi CPU transcodes timing out or being killed, so the backend should move to stronger hardware.
 
 ## Upstream Notes Checked
@@ -46,6 +47,7 @@ FieldStation42 is worth revisiting if the goal becomes a full local cable-box si
 
 - Keep public ingress off until stream playback is stable locally.
 - Do not ask the Pi to do multiple FFmpeg channel transcodes.
+- Treat the Pi ALF run as proof-of-life only; reactivation belongs on stronger hardware.
 - Prefer one channel backend at a time.
 - Keep chat/bookings independent from stream playback.
 - Store channel config and room config in Git, but keep media/app data outside Git.
