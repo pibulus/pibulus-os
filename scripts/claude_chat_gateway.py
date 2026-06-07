@@ -100,6 +100,18 @@ active_run: dict[str, Any] | None = None
 full_arm_tokens: dict[str, dict[str, Any]] = {}
 
 
+def active_run_public(run: dict[str, Any] | None) -> dict[str, Any] | None:
+    if not run:
+        return None
+    return {
+        "chat_id": run.get("chat_id") or "",
+        "model": run.get("model") or "",
+        "mode": run.get("mode") or "",
+        "workspace": run.get("workspace") or "",
+        "started": run.get("started") or 0,
+    }
+
+
 def ensure_data_dir() -> None:
     DATA_DIR.mkdir(mode=0o700, parents=True, exist_ok=True)
 
@@ -560,7 +572,7 @@ class Handler(BaseHTTPRequestHandler):
         if self.path == "/api/bootstrap":
             token = self.csrf_token_from_cookie() or make_cookie_token()
             with active_lock:
-                is_active = active_run is not None
+                active_info = active_run_public(active_run)
             claude_auth = claude_auth_status()
             workspaces = [
                 {"key": key, "label": str(item["label"])}
@@ -585,7 +597,8 @@ class Handler(BaseHTTPRequestHandler):
                     "models": available_models(claude_auth),
                     "workspaces": workspaces,
                     "modes": modes,
-                    "active": is_active,
+                    "active": active_info is not None,
+                    "active_run": active_info,
                     "pulse": system_pulse(),
                     "max_prompt_chars": MAX_PROMPT_CHARS,
                 },
@@ -724,7 +737,14 @@ class Handler(BaseHTTPRequestHandler):
                 if active_run is not None:
                     self.send_json({"error": "another run is active"}, HTTPStatus.CONFLICT)
                     return
-                active_run = {"chat_id": "", "process": None, "started": time.time()}
+                active_run = {
+                    "chat_id": "",
+                    "process": None,
+                    "started": time.time(),
+                    "model": model_key,
+                    "mode": mode_key,
+                    "workspace": workspace_key,
+                }
 
             with sessions_lock:
                 sessions = load_sessions()
@@ -782,7 +802,14 @@ class Handler(BaseHTTPRequestHandler):
                 start_new_session=True,
             )
             with active_lock:
-                active_run = {"chat_id": chat_id, "process": proc, "started": time.time()}
+                active_run = {
+                    "chat_id": chat_id,
+                    "process": proc,
+                    "started": time.time(),
+                    "model": model_key,
+                    "mode": mode_key,
+                    "workspace": workspace_key,
+                }
             audit(
                 "start",
                 chat_id=chat_id,
@@ -942,10 +969,17 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("X-Accel-Buffering", "no")
         self.end_headers()
 
-    def stream_event(self, data: dict[str, Any]) -> None:
-        with self.stream_write_lock:
-            self.wfile.write(json_bytes(data) + b"\n")
-            self.wfile.flush()
+    def stream_event(self, data: dict[str, Any]) -> bool:
+        if getattr(self, "stream_client_disconnected", False):
+            return False
+        try:
+            with self.stream_write_lock:
+                self.wfile.write(json_bytes(data) + b"\n")
+                self.wfile.flush()
+            return True
+        except (BrokenPipeError, ConnectionResetError, OSError):
+            self.stream_client_disconnected = True
+            return False
 
     def stream_process(
         self,
@@ -958,7 +992,11 @@ class Handler(BaseHTTPRequestHandler):
         timeout_seconds: int,
     ) -> None:
         self.stream_write_lock = threading.Lock()
-        self.send_ndjson_headers()
+        self.stream_client_disconnected = False
+        try:
+            self.send_ndjson_headers()
+        except (BrokenPipeError, ConnectionResetError, OSError):
+            self.stream_client_disconnected = True
         self.stream_event(
             {
                 "type": "started",
@@ -1050,9 +1088,8 @@ class Handler(BaseHTTPRequestHandler):
                 timed_out = True
                 os.killpg(proc.pid, signal.SIGKILL)
                 code = proc.wait(timeout=5)
-        except BrokenPipeError:
-            if proc.poll() is None:
-                os.killpg(proc.pid, signal.SIGTERM)
+        except (BrokenPipeError, ConnectionResetError):
+            self.stream_client_disconnected = True
             code = proc.wait(timeout=5)
         except Exception as exc:
             if proc.poll() is None:
@@ -1060,7 +1097,15 @@ class Handler(BaseHTTPRequestHandler):
             code = proc.wait(timeout=5)
             self.stream_event({"type": "error", "text": str(exc)})
 
-        audit("finish", chat_id=chat_id, session_id=session_id, model=model_key, code=code, timed_out=timed_out)
+        audit(
+            "finish",
+            chat_id=chat_id,
+            session_id=session_id,
+            model=model_key,
+            code=code,
+            timed_out=timed_out,
+            client_disconnected=getattr(self, "stream_client_disconnected", False),
+        )
         done_event = {
             "type": "done",
             "chat_id": chat_id,
