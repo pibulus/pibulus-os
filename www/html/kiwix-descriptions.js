@@ -94,4 +94,34 @@
       });
     });
   };
+
+  function tidyResultsLabel() {
+    const label = document.querySelector(".kiwixHomeBody__results");
+    if (!label) return;
+
+    const match = label.textContent.trim().match(/^(\d+)\s+BOOK\(S\)$/i);
+    if (!match) return;
+
+    label.textContent = match[1] + " LOCAL COPIES";
+  }
+
+  function installResultsLabelTidy() {
+    const label = document.querySelector(".kiwixHomeBody__results");
+    tidyResultsLabel();
+
+    if (!label || !window.MutationObserver) return;
+
+    const observer = new MutationObserver(tidyResultsLabel);
+    observer.observe(label, {
+      characterData: true,
+      childList: true,
+      subtree: true
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", installResultsLabelTidy);
+  } else {
+    installResultsLabelTidy();
+  }
 })();

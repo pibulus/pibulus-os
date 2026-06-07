@@ -1,19 +1,20 @@
-/* Quick Cat Library - Kiwix Theme v5 */
+/* Quick Cat Library - Kiwix Theme v6 */
 :root {
-  --qc-bg: #07080b;
-  --qc-bg-soft: #101217;
-  --qc-panel: #171a21;
-  --qc-panel-2: #1f232c;
-  --qc-text: #f4f1e8;
-  --qc-text-muted: #c7c2b7;
-  --qc-text-soft: #8d95a3;
-  --qc-line: rgba(244, 241, 232, 0.14);
-  --qc-line-strong: rgba(126, 220, 207, 0.42);
-  --qc-cyan: #7edccf;
-  --qc-pink: #f072b6;
+  --qc-bg: #090806;
+  --qc-bg-soft: #12100d;
+  --qc-panel: #181713;
+  --qc-panel-2: #242117;
+  --qc-text: #f2ead7;
+  --qc-text-muted: #d4c7b2;
+  --qc-text-soft: #938a7c;
+  --qc-line: rgba(242, 234, 215, 0.15);
+  --qc-line-strong: rgba(240, 201, 106, 0.34);
+  --qc-cyan: #78ded1;
+  --qc-pink: #ef72ad;
   --qc-yellow: #f0c96a;
-  --qc-green: #8bd18b;
-  --qc-shadow: 0 18px 42px rgba(0, 0, 0, 0.38);
+  --qc-green: #95d878;
+  --qc-amber: #f39f55;
+  --qc-shadow: 0 18px 38px rgba(0, 0, 0, 0.34);
 }
 
 html,
@@ -23,11 +24,12 @@ body {
 
 body {
   background:
-    linear-gradient(180deg, #11131a 0%, var(--qc-bg) 380px, #050609 100%) !important;
+    linear-gradient(180deg, #14110d 0%, var(--qc-bg) 390px, #070604 100%) !important;
   color: var(--qc-text) !important;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
   font-size: 16px !important;
   line-height: 1.5 !important;
+  color-scheme: dark;
   text-rendering: optimizeLegibility;
 }
 
@@ -60,7 +62,7 @@ a:hover {
   gap: 12px !important;
   align-items: center !important;
   padding: 16px 18px !important;
-  background: rgba(7, 8, 11, 0.94) !important;
+  background: rgba(9, 8, 6, 0.94) !important;
   border-bottom: 1px solid var(--qc-line-strong) !important;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.32) !important;
   backdrop-filter: blur(14px) !important;
@@ -71,9 +73,9 @@ a:hover {
   height: 48px !important;
   display: grid !important;
   place-items: center !important;
-  border: 1px solid rgba(240, 114, 182, 0.45) !important;
+  border: 1px solid rgba(240, 201, 106, 0.44) !important;
   border-radius: 8px !important;
-  background: rgba(240, 114, 182, 0.14) !important;
+  background: rgba(240, 201, 106, 0.12) !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
 }
 
@@ -135,7 +137,7 @@ a:hover {
   width: 100% !important;
   border: 1px solid rgba(126, 220, 207, 0.36) !important;
   border-radius: 8px !important;
-  background: #0d1016 !important;
+  background: #100f0c !important;
   color: var(--qc-text) !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
   font: 650 15px/1.35 inherit !important;
@@ -144,7 +146,7 @@ a:hover {
 }
 
 .kiwixSearch::placeholder {
-  color: #a9a1b6 !important;
+  color: #9f978b !important;
 }
 
 .kiwixSearch:focus {
@@ -157,7 +159,7 @@ a:hover {
   min-width: 96px !important;
   border: 1px solid rgba(126, 220, 207, 0.5) !important;
   border-radius: 8px !important;
-  background: linear-gradient(180deg, #18363a, #10292d) !important;
+  background: linear-gradient(180deg, #153634, #0f2826) !important;
   color: var(--qc-text) !important;
   font: 800 14px/1 inherit !important;
   cursor: pointer !important;
@@ -166,7 +168,7 @@ a:hover {
 .kiwixButton:hover,
 .kiwixButton:focus {
   border-color: var(--qc-cyan) !important;
-  background: linear-gradient(180deg, #1f464b, #12343a) !important;
+  background: linear-gradient(180deg, #1b4541, #12322f) !important;
 }
 
 /* Page body */
@@ -174,19 +176,48 @@ a:hover {
   display: block !important;
   width: min(1180px, calc(100% - 40px)) !important;
   margin: 0 auto !important;
-  padding: 34px 0 56px !important;
+  padding: 30px 0 56px !important;
 }
 
 .kiwixHomeBody__results {
   grid-column: 1 / -1 !important;
   width: auto !important;
   height: auto !important;
-  margin: 0 0 16px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  margin: 0 0 22px !important;
+  padding: 4px 0 22px !important;
+  border-bottom: 1px dashed rgba(240, 201, 106, 0.28) !important;
   color: var(--qc-yellow) !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace !important;
   font-size: 13px !important;
   font-weight: 850 !important;
-  letter-spacing: 0.13em !important;
+  letter-spacing: 0 !important;
   text-transform: uppercase !important;
+}
+
+.kiwixHomeBody__results::before {
+  content: "Quick Cat Library" !important;
+  color: var(--qc-text) !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace !important;
+  font-size: 52px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+.kiwixHomeBody__results::after {
+  content: "Local copies for outages, weird research, and slow days. No cloud required." !important;
+  max-width: 720px !important;
+  color: var(--qc-text-muted) !important;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 15px !important;
+  font-weight: 650 !important;
+  line-height: 1.45 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
 }
 
 /* Book grid */
@@ -219,7 +250,7 @@ a:hover {
   overflow: hidden !important;
   border: 1px solid var(--qc-line) !important;
   border-radius: 8px !important;
-  background: rgba(23, 26, 33, 0.96) !important;
+  background: linear-gradient(180deg, rgba(31, 29, 23, 0.98), rgba(21, 20, 17, 0.98)) !important;
   color: var(--qc-text) !important;
   box-shadow: var(--qc-shadow) !important;
   transition: transform 160ms ease, border-color 160ms ease, background 160ms ease !important;
@@ -231,15 +262,15 @@ a:hover {
   top: 0 !important;
   left: 0 !important;
   right: 0 !important;
-  height: 3px !important;
-  background: linear-gradient(90deg, var(--qc-cyan), var(--qc-pink), var(--qc-yellow)) !important;
+  height: 4px !important;
+  background: linear-gradient(90deg, var(--qc-cyan) 0 32%, var(--qc-yellow) 32% 68%, var(--qc-pink) 68% 100%) !important;
 }
 
 .book__wrapper:hover,
 .book__wrapper:focus-within {
   transform: translateY(-2px) !important;
-  border-color: rgba(126, 220, 207, 0.58) !important;
-  background: #1d222b !important;
+  border-color: rgba(240, 201, 106, 0.48) !important;
+  background: linear-gradient(180deg, rgba(37, 34, 27, 0.98), rgba(25, 24, 20, 0.98)) !important;
 }
 
 .book__link {
@@ -267,9 +298,9 @@ a:hover {
   width: 64px !important;
   height: 64px !important;
   align-self: start !important;
-  border: 1px solid rgba(244, 241, 232, 0.12) !important;
-  border-radius: 8px !important;
-  background-color: #2b2130 !important;
+  border: 1px solid rgba(242, 234, 215, 0.16) !important;
+  border-radius: 6px !important;
+  background-color: #271f29 !important;
   background-position: center !important;
   background-repeat: no-repeat !important;
   background-size: cover !important;
@@ -331,12 +362,13 @@ a:hover {
   display: inline-grid !important;
   place-items: center !important;
   border: 1px solid rgba(240, 114, 182, 0.55) !important;
-  border-radius: 999px !important;
-  background: rgba(240, 114, 182, 0.14) !important;
+  border-radius: 6px !important;
+  background: rgba(240, 114, 182, 0.12) !important;
   color: #ffd7ed !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace !important;
   font-size: 11px !important;
   font-weight: 850 !important;
-  letter-spacing: 0.03em !important;
+  letter-spacing: 0 !important;
 }
 
 .book__tags {
@@ -359,12 +391,13 @@ a:hover {
 .book__download > span {
   max-width: 100% !important;
   border: 1px solid rgba(126, 220, 207, 0.36) !important;
-  border-radius: 999px !important;
+  border-radius: 6px !important;
   background: rgba(126, 220, 207, 0.1) !important;
   color: #d7fbf7 !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace !important;
   font-size: 10px !important;
   font-weight: 850 !important;
-  letter-spacing: 0.06em !important;
+  letter-spacing: 0 !important;
   line-height: 1.1 !important;
   text-transform: uppercase !important;
   text-decoration: none !important;
@@ -385,7 +418,7 @@ a:hover {
 
 .kiwixfooter {
   border-top: 1px solid var(--qc-line) !important;
-  background: #07080b !important;
+  background: #090806 !important;
   color: var(--qc-text-soft) !important;
   font-size: 13px !important;
   font-weight: 600 !important;
@@ -405,7 +438,7 @@ a:hover {
   color: var(--qc-yellow) !important;
   font-size: 11px !important;
   font-weight: 850 !important;
-  letter-spacing: 0.16em !important;
+  letter-spacing: 0 !important;
   text-transform: uppercase !important;
 }
 
@@ -481,6 +514,20 @@ a:hover {
     padding: 24px 0 42px !important;
   }
 
+  .kiwixHomeBody__results {
+    gap: 7px !important;
+    margin-bottom: 18px !important;
+    padding-bottom: 18px !important;
+  }
+
+  .kiwixHomeBody__results::before {
+    font-size: 38px !important;
+  }
+
+  .kiwixHomeBody__results::after {
+    font-size: 14px !important;
+  }
+
   .book__list,
   .library {
     grid-template-columns: 1fr !important;
@@ -524,6 +571,14 @@ a:hover {
 
   .kiwixHomeBody {
     width: calc(100% - 20px) !important;
+  }
+
+  .kiwixHomeBody__results {
+    width: calc(100% - 8px) !important;
+  }
+
+  .kiwixHomeBody__results::before {
+    font-size: 32px !important;
   }
 
   .book__tags {
