@@ -24,6 +24,9 @@ This is the sane starting map for both humans and AI agents.
 - [docs/INGRESS_METRICS_MAP.md](./docs/INGRESS_METRICS_MAP.md)
   Public routing, nginx coverage, and what the live counters really mean.
 
+- [docs/EMOJI_APP_ICONS.md](./docs/EMOJI_APP_ICONS.md)
+  Default favicon/PWA identity pattern: emoji first, custom icon later only when there is a real product reason.
+
 - [docs/MEMORY_CPU_PROFILE.md](./docs/MEMORY_CPU_PROFILE.md)
   Current load, pressure points, and Pi capacity reality.
 
