@@ -1816,6 +1816,17 @@
     function beepDone() { blip([[pulseTone(3, 1.5), 0, .065, 'triangle', .035], [pulseTone(1, 1.25), 82, .07, 'sine', .03]]); }
     function beepArm() { blip([[pulseTone(-3, .72), 0, .08, 'sawtooth', .02], [pulseTone(0), 95, .06, 'triangle', .034], [pulseTone(4, 1.6), 170, .045, 'sine', .034]]); }
     function beepError() { blip([[pulseTone(-4, .68), 0, .08, 'square', .018], [pulseTone(-5, .58), 100, .09, 'square', .015]]); }
+    function radioChime(kind = 'open') {
+      const cues = {
+        open: () => beepArm(),
+        close: () => beepDone(),
+        play: () => beepSend(),
+        pause: () => beepThinking(),
+        station: () => blip([[pulseTone(2, 1.2), 0, .04, 'triangle', .016], [pulseTone(4, 1.35), 52, .042, 'sine', .014]]),
+        error: () => beepError()
+      };
+      (cues[kind] || cues.open)();
+    }
 
     const keyClicker = {
           enabled: localStorage.getItem('pibulus.deck.keyclicks') === '1',
@@ -1930,10 +1941,11 @@
     }
 
     radioBtn?.addEventListener('click', () => {
-      setRayaOpen(!rayaDock?.classList.contains('show'));
+      const nextOpen = !rayaDock?.classList.contains('show');
+      setRayaOpen(nextOpen);
       pulseAt(radioBtn, 'blue');
       haptic(12);
-      blip([[pulseTone(1, 1.35), 0, .045, 'triangle', .018]]);
+      radioChime(nextOpen ? 'open' : 'close');
     });
 
     rayaDock?.addEventListener('pointerenter', clearRayaCollapse);
@@ -1957,17 +1969,24 @@
           syncRayaOrb({ playing: true, loading: false });
           pulseAt(radioBtn, 'soft');
           haptic([10, 18, 10]);
+          radioChime('play');
           scheduleRayaCollapse(900);
         } else if (name === 'loading') {
           clearRayaCollapse();
           syncRayaOrb({ loading: true });
         } else if (name === 'error') {
           syncRayaOrb({ playing: false, loading: false });
+          radioChime('error');
           beepError();
           pulseAt(radioBtn, 'danger');
           scheduleRayaCollapse(3200);
-        } else if (name === 'pause' || name === 'channelchange') {
+        } else if (name === 'pause') {
           syncRayaOrb();
+          radioChime('pause');
+          scheduleRayaCollapse(900);
+        } else if (name === 'channelchange') {
+          syncRayaOrb();
+          radioChime('station');
           scheduleRayaCollapse(900);
         } else {
           syncRayaOrb();
