@@ -737,3 +737,139 @@ body.login .well > form .form-control {
   background: rgba(255, 255, 255, 0.26) !important;
   border-color: rgba(255, 255, 255, 0.42) !important;
 }
+
+/* Reader calm pass: one title, fewer browse choices, less top chrome. */
+body > div.container-fluid > div.row-fluid > div.col-sm-2,
+body > div.container-fluid > div.row-fluid > div.col-sm-10 {
+  top: 0 !important;
+  height: 100% !important;
+}
+
+body > div.container-fluid > div.row-fluid > div.col-sm-10 {
+  padding-top: 0 !important;
+}
+
+body.newest > div.container-fluid > div > div.col-sm-10 > div.discover.load-more {
+  width: auto !important;
+  margin: 0 !important;
+  padding: 24px 28px 48px 36px !important;
+}
+
+body.newest > div.container-fluid > div > div.col-sm-10 > div.discover.load-more > h2.Books {
+  display: none !important;
+}
+
+body.newest .filterheader {
+  margin: 0 0 22px !important;
+  padding: 6px !important;
+  background: rgba(255, 255, 255, 0.035) !important;
+}
+
+body.newest .filterheader .btn:not(.active) {
+  background: rgba(246, 238, 222, 0.9) !important;
+  border-color: rgba(50, 43, 34, 0.16) !important;
+  color: #332b22 !important;
+}
+
+body.newest .filterheader .btn:not(.active):hover,
+body.newest .filterheader .btn:not(.active):focus {
+  background: #fff8e8 !important;
+  border-color: rgba(73, 199, 177, 0.38) !important;
+  color: #17120d !important;
+}
+
+body.newest .filterheader #auth_az,
+body.newest .filterheader #auth_za,
+body.newest .filterheader #pub_new,
+body.newest .filterheader #pub_old {
+  display: none !important;
+}
+
+#query_submit {
+  background: var(--qc-teal) !important;
+  border-color: var(--qc-teal) !important;
+  color: #071211 !important;
+  font-weight: 800 !important;
+}
+
+#query_submit::before {
+  background: transparent !important;
+}
+
+body.newest .container-fluid .book .meta .title,
+body.newest .container-fluid .book .meta .title a {
+  color: #2b251c !important;
+  text-shadow: none !important;
+}
+
+body.newest .container-fluid .book .meta .author,
+body.newest .container-fluid .book .meta .author > a,
+body.newest .container-fluid .book .meta .series,
+body.newest .container-fluid .book .meta .series > a {
+  color: #74695b !important;
+  text-shadow: none !important;
+}
+
+.navigation li:has(a[href^="/downloadlist"]),
+.navigation li:has(a[href^="/rated"]),
+.navigation li:has(a[href^="/read"]),
+.navigation li:has(a[href^="/unread"]),
+.navigation li:has(a[href^="/category"]),
+.navigation li:has(a[href^="/publisher"]),
+.navigation li:has(a[href^="/language"]),
+.navigation li:has(a[href^="/ratings"]),
+.navigation li:has(a[href^="/formats"]),
+.navigation li:has(a[href^="/archived"]),
+.navigation li:has(a[href^="/table"]),
+.navigation li.create-shelf,
+.navigation .nav-head.public-shelves {
+  display: none !important;
+}
+
+@media only screen and (max-width: 767px) {
+  body > div.navbar.navbar-default.navbar-static-top > div > form {
+    display: none !important;
+  }
+
+  .navbar-default,
+  .navbar > .container-fluid,
+  .navbar-header {
+    min-height: 48px !important;
+    height: 48px !important;
+  }
+
+  .navbar-header {
+    position: relative !important;
+    overflow: hidden !important;
+  }
+
+  body > div.navbar.navbar-default.navbar-static-top > div > div.navbar-header > a {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 48px !important;
+    line-height: 48px !important;
+    padding-left: 0 !important;
+    text-align: center !important;
+    pointer-events: none !important;
+  }
+
+  .navbar-toggle,
+  .home-btn,
+  .home-btn > a {
+    z-index: 2 !important;
+  }
+
+  body > div.container-fluid > div.row-fluid > div.col-sm-2,
+  body > div.container-fluid > div.row-fluid > div.col-sm-10 {
+    height: auto !important;
+  }
+
+  body.newest > div.container-fluid > div > div.col-sm-10 > div.discover.load-more {
+    padding: 18px 12px 36px !important;
+  }
+
+  body.newest .filterheader {
+    margin-bottom: 16px !important;
+  }
+}
