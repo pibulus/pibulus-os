@@ -27,6 +27,9 @@ This is the sane starting map for both humans and AI agents.
 - [docs/MEMORY_CPU_PROFILE.md](./docs/MEMORY_CPU_PROFILE.md)
   Current load, pressure points, and Pi capacity reality.
 
+- [docs/KPAB_AZURACAST_RECOVERY.md](./docs/KPAB_AZURACAST_RECOVERY.md)
+  KPAB.FM/AzuraCast outage recovery: Liquidsoap crash symptoms, safe-mode settings, and copy-paste repair commands.
+
 - [docs/BACKUP_REDUNDANCY_PLAN.md](./docs/BACKUP_REDUNDANCY_PLAN.md)
   Recovery posture now and the Pi vs EliteDesk split.
 

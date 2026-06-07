@@ -1,7 +1,9 @@
 services:
   web:
     cpu_shares: 2048
-    mem_reservation: 512m
+    cpus: 1.5
+    mem_reservation: 768m
+    mem_limit: 1536m
     volumes:
       - /media/pibulus/passport/Music:/var/azuracast/stations/kpab.fm/media/My_Library:ro
       - /media/pibulus/passport/Soulseek:/var/azuracast/stations/kpab.fm/media/Soulseek_New:ro

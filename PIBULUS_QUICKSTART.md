@@ -9,6 +9,7 @@ Read this first, then use:
 - `FIELD_MANUAL.md` for operator commands and access tiers
 - `APP_DEPLOYMENT_MAP.md` for TalkType, ZipList, Stargram, Ghost Note, and other custom apps
 - `docs/INGRESS_METRICS_MAP.md` for public routing truth
+- `docs/KPAB_AZURACAST_RECOVERY.md` if KPAB.FM is offline or `/radio.mp3` returns 404
 
 ## Identity
 
@@ -65,6 +66,16 @@ curl -sS -o /dev/null -w 'jellyfin %{http_code} %{time_total}\n' http://127.0.0.
 systemctl show -p ActiveState -p SubState -p Result -p TimeoutStartUSec cloudflared
 journalctl -u cloudflared -n 80 --no-pager
 ```
+
+KPAB.FM special case: if `https://kpab.fm` is up but `https://kpab.fm/radio.mp3` returns 404, the web layer is fine and the likely failure is the AzuraCast station backend. Start with:
+
+```bash
+cd /home/pibulus/pibulus-os
+scripts/kpab_azuracast_recovery.sh status
+scripts/kpab_azuracast_recovery.sh verify
+```
+
+Use `docs/KPAB_AZURACAST_RECOVERY.md` before touching AzuraCast. The 2026-06-07 known-good recovery mode uses static playlists/manual AutoDJ, keeps now-playing metadata alive through a Liquidsoap `process.run` + `curl` feedback bridge, and keeps the AzuraCast container at a `1536m` memory limit.
 
 ## Hard Guardrails
 
