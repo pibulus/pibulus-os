@@ -1,7 +1,7 @@
 {
-  "name": "Quick Cat",
-  "short_name": "Quick Cat",
-  "description": "A self-hosted sanctuary for movies, books, games and radio.",
+  "name": "Quick Deck",
+  "short_name": "Quick Deck",
+  "description": "Personal Quick Cat cyberdeck.",
   "id": "/",
   "start_url": "/",
   "scope": "/",
