@@ -33,6 +33,9 @@ This is the sane starting map for both humans and AI agents.
 - [docs/KPAB_AZURACAST_RECOVERY.md](./docs/KPAB_AZURACAST_RECOVERY.md)
   KPAB.FM/AzuraCast outage recovery: Liquidsoap crash symptoms, safe-mode settings, and copy-paste repair commands.
 
+- [docs/ROMM_STYLING_EDITING.md](./docs/ROMM_STYLING_EDITING.md)
+  RomM styling/editing map: custom CSS/JS injection, EmulatorJS player surface, safe workflow, and the known database startup race.
+
 - [docs/BACKUP_REDUNDANCY_PLAN.md](./docs/BACKUP_REDUNDANCY_PLAN.md)
   Recovery posture now and the Pi vs EliteDesk split.
 
