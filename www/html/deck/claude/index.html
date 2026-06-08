@@ -1642,7 +1642,7 @@
             <span class="spending-amount" id="spendingAmount">$0.00</span>
           </div>
       <form class="compose-row" id="form">
-        <textarea id="input" rows="1" maxlength="12000" placeholder="Message deck" enterkeyhint="send" autocomplete="off" autocapitalize="sentences" spellcheck="true"></textarea>
+        <textarea id="input" rows="1" maxlength="12000" aria-label="Message" enterkeyhint="send" autocomplete="off" autocapitalize="sentences" spellcheck="true"></textarea>
         <button class="mic" id="micBtn" type="button" aria-label="Dictate">◉</button>
         <button class="send" id="sendBtn" type="submit" aria-label="Send">›</button>
       </form>
@@ -1661,25 +1661,20 @@
         <div class="deck-familiar" id="deckFamiliar" aria-hidden="true">=^..^=</div>
       </main>
 
-      <div class="setup-modal" id="setupModal" role="dialog" aria-modal="true" aria-labelledby="setupTitle">
+      <div class="setup-modal" id="setupModal" role="dialog" aria-modal="true" aria-label="Deck setup">
         <section class="setup-panel">
           <div class="setup-mark" aria-hidden="true"></div>
-          <h2 class="setup-title" id="setupTitle">Choose the deck</h2>
-          <label class="setup-label" for="modelSelect">Model</label>
           <div class="control-row" aria-label="Deck controls">
             <select class="select" id="modelSelect" aria-label="Model"></select>
             <select class="select" id="modeSelect" aria-label="Mode"></select>
             <select class="select workspace-select" id="workspaceSelect" aria-label="Workspace"></select>
           </div>
-          <div class="setup-label" id="modeChoiceLabel">Access</div>
-          <div class="mode-choice" role="group" aria-labelledby="modeChoiceLabel">
+          <div class="mode-choice" role="group" aria-label="Access">
             <button class="mode-option" type="button" data-mode-option="default">
               <strong>Ask</strong>
-              <span>Read, reason, check first.</span>
             </button>
             <button class="mode-option" type="button" data-mode-option="full">
               <strong>Full access</strong>
-              <span>Edit when the job needs it.</span>
             </button>
           </div>
           <button class="setup-start" id="setupStartBtn" type="button">Enter chat</button>
@@ -2146,7 +2141,7 @@
           statusPill.classList.toggle('bad', !ready);
           const detail = activeModel.detail ? ` · ${activeModel.detail}` : '';
           emptyKicker.textContent = ready ? 'ready' : 'offline';
-          input.placeholder = ready ? 'Message deck' : `${shortModelLabel(activeModel)} unavailable`;
+          input.placeholder = '';
           statusText.textContent = ready ? 'online' : (activeModel.detail || 'unavailable');
           statusPill.title = ready ? `${activeModel.label}${detail}` : (activeModel.detail || 'unavailable');
           armCopy.textContent = `Full gives ${shortModelLabel(activeModel)} write access in ${workspace} for the next send.`;
@@ -2548,7 +2543,7 @@
       recognition.onstart = () => {
         dictating = true;
         dictationHadResult = false;
-        input.placeholder = 'listening';
+        input.placeholder = '';
         syncMicButton();
       };
 
@@ -2599,7 +2594,7 @@
       dictationHadResult = false;
       const recognizer = ensureRecognition();
       dictating = true;
-      input.placeholder = 'listening';
+      input.placeholder = '';
       syncMicButton();
       try {
         recognizer.start();
@@ -2608,7 +2603,7 @@
         setTimeout(() => {
           if (!authReady || running) return;
           dictating = true;
-          input.placeholder = 'listening';
+          input.placeholder = '';
           syncMicButton();
           try {
             recognizer.start();
