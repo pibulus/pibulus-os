@@ -8,6 +8,7 @@ This documents the 2026-06-07 outage. The public web/proxy layer was healthy, Ic
 
 The current safe recovery mode is:
 
+- AzuraCast container CPU: no hard `cpus`/`NanoCpus` cap; `cpu_shares` only
 - AzuraCast container memory cap: `1536m`
 - station backend config:
   - `audio_processing_method = none`
@@ -15,13 +16,32 @@ The current safe recovery mode is:
   - `write_playlists_to_liquidsoap = true`
   - `use_manual_autodj = true`
   - `crossfade = 0`
+  - `custom_config_pre_playlists` sets `settings.request.prefetch := 4` so Liquidsoap resolves upcoming playlist files before track boundaries
   - `custom_config_pre_fade` replaces AzuraCast's native feedback callback with a `process.run` + `curl` bridge
+  - the bridge must preserve annotated `media_id`, `song_id`, `sq_id`, `playlist_id`, and `duration`, otherwise AzuraCast falls back to text-only song history and now-playing art becomes the generic image
 
-Why: Liquidsoap 2.4.3 snapshot in the current AzuraCast image segfaulted when using its native HTTP client for AzuraCast callbacks (`nextsong` and `feedback`). Static playlist/manual AutoDJ avoids `nextsong`. The feedback bridge avoids Liquidsoap's native `http.post` by shelling out to `curl`, so AzuraCast can still update now-playing metadata.
+Why: Liquidsoap 2.4.3 snapshot in the current AzuraCast image segfaulted when using its native HTTP client for AzuraCast callbacks (`nextsong` and `feedback`). Static playlist/manual AutoDJ avoids `nextsong`. The feedback bridge avoids Liquidsoap's native `http.post` by shelling out to `curl`, so AzuraCast can still update now-playing metadata and bind plays back to station media rows for album art.
 
 AutoDJ is still running. It is using AzuraCast's generated playlist file at `/var/azuracast/stations/kpab.fm/playlists/playlist_default.m3u` instead of asking AzuraCast for the next track through the dynamic `nextsong` API. Existing playlists are intact; do not recreate them during recovery.
 
 Observed-good on 2026-06-07: stream `200`, backend `RUNNING`, feedback callback `200`, public API `is_online=True`, and now-playing advanced after a forced `radio.skip`.
+
+Stability note from 2026-06-09: frequent short listener reconnects correlated with `/media/pibulus/passport` blocking in the NTFS/FUSE USB path. Liquidsoap playlist prefetch is set before playlist generation to give the slow disk more time to resolve upcoming tracks.
+
+## Periodic Work
+
+Stability note from 2026-06-09: the 13:30 AEST stream dropout lined up with AzuraCast maintenance work and Liquidsoap latency warnings, not a container OOM kill. The radio should get CPU freely, while heavy scans should avoid daytime playback.
+
+Current live reductions:
+
+- `/home/pibulus/azuracast/patches/etc/cron.d/azuracast` runs AzuraCast `sync:run` every 5 minutes instead of every minute.
+- AzuraCast media scan, folder playlist scan, podcast playlist scan, and storage-size scan are patched to weekly quiet-window schedules.
+- AzuraCast cleanup, analytics, backup, and log rotation are patched to daily quiet-window schedules.
+- Host `status.sh` cron runs every 3 minutes and writes `interval_seconds: 180`.
+- Host request catalog, media counts, and standalone AzuraCast backup jobs are weekly. The main `nightly-backup.sh` remains daily.
+- Jellyfin and Kavita have no hard `cpus` cap; their RAM and swap caps remain in place.
+
+These live AzuraCast patches are bind-mounted from `/home/pibulus/azuracast/patches/...` by `/home/pibulus/azuracast/docker-compose.override.yml`. Recheck after AzuraCast image updates because upstream task files may change.
 
 ## Guardrails
 
@@ -74,11 +94,14 @@ scripts/kpab_azuracast_recovery.sh verify
 What `apply-safe-mode` does:
 
 - backs up `/home/pibulus/azuracast/docker-compose.override.yml`
+- removes any hard `cpus` limit from the live AzuraCast override
 - sets the live AzuraCast memory cap to `1536m`
 - applies the same cap to the running Docker container
 - stops the KPAB backend
 - moves Liquidsoap cache dirs aside and recreates empty ones
+- writes a pre-playlists Liquidsoap hook that prefetches 4 upcoming requests
 - writes the safe station backend JSON settings, including the curl feedback bridge
+- keeps `media_id` in the feedback payload so the public API returns real album art
 - regenerates/restarts KPAB
 - starts `station_1_backend` directly if AzuraCast leaves it stopped
 
@@ -98,7 +121,7 @@ Use these if the helper script is unavailable.
 ```bash
 cd /home/pibulus/azuracast
 cp docker-compose.override.yml docker-compose.override.yml.bak-$(date +%Y%m%d-%H%M%S)-kpab-recovery
-perl -0pi -e 's/mem_reservation:\s*\S+/mem_reservation: 768m/; if (s/mem_limit:\s*\S+/mem_limit: 1536m/) {} else { s/(mem_reservation: 768m\n)/$1    mem_limit: 1536m\n/ }' docker-compose.override.yml
+perl -0pi -e 's/^\s*cpus:\s*\S+\n//mg; s/mem_reservation:\s*\S+/mem_reservation: 768m/; if (s/mem_limit:\s*\S+/mem_limit: 1536m/) {} else { s/(mem_reservation: 768m\n)/$1    mem_limit: 1536m\n/ }' docker-compose.override.yml
 docker update --memory 1536m --memory-swap 2g azuracast
 
 docker exec azuracast supervisorctl stop station_1:station_1_backend || true
@@ -114,6 +137,21 @@ def azuracast.send_feedback(m) =
             j = json()
             j.add("artist", m["artist"])
             j.add("title", m["title"])
+            if (m["media_id"] != "") then
+                j.add("media_id", m["media_id"])
+            end
+            if (m["song_id"] != "") then
+                j.add("song_id", m["song_id"])
+            end
+            if (m["sq_id"] != "") then
+                j.add("sq_id", m["sq_id"])
+            end
+            if (m["playlist_id"] != "") then
+                j.add("playlist_id", m["playlist_id"])
+            end
+            if (m["duration"] != "") then
+                j.add("duration", m["duration"])
+            end
 
             payload = json.stringify(compact=true, j)
             cmd = "curl -sS --max-time 5 -o /dev/null -w '%{http_code}' -H 'Content-Type: application/json' -H 'User-Agent: Liquidsoap AzuraCast curl bridge' -H 'X-Liquidsoap-Api-Key: #{settings.azuracast.api_key()}' --data-binary \"$KPAB_FEEDBACK_PAYLOAD\" '#{settings.azuracast.api_url()}/feedback'"
@@ -124,7 +162,12 @@ def azuracast.send_feedback(m) =
 end
 LIQ
 )
-docker exec azuracast azuracast_cli dbal:run-sql "UPDATE station SET backend_config = JSON_SET(backend_config, '$.audio_processing_method', 'none', '$.enable_auto_cue', false, '$.write_playlists_to_liquidsoap', true, '$.use_manual_autodj', true, '$.crossfade', 0, '$.custom_config_pre_fade', CAST(FROM_BASE64('$bridge_b64') AS CHAR CHARACTER SET utf8mb4)), needs_restart = 1 WHERE id = 1;"
+prefetch_b64=$(cat <<'LIQ' | base64 | tr -d '\n'
+# Resolve upcoming playlist files early; Passport is NTFS/FUSE and can block at track boundaries.
+settings.request.prefetch := 4
+LIQ
+)
+docker exec azuracast azuracast_cli dbal:run-sql "UPDATE station SET backend_config = JSON_SET(backend_config, '$.audio_processing_method', 'none', '$.enable_auto_cue', false, '$.write_playlists_to_liquidsoap', true, '$.use_manual_autodj', true, '$.crossfade', 0, '$.custom_config_pre_playlists', CAST(FROM_BASE64('$prefetch_b64') AS CHAR CHARACTER SET utf8mb4), '$.custom_config_pre_fade', CAST(FROM_BASE64('$bridge_b64') AS CHAR CHARACTER SET utf8mb4)), needs_restart = 1 WHERE id = 1;"
 docker exec azuracast azuracast_cli azuracast:radio:restart kpab.fm || true
 docker exec azuracast supervisorctl start station_1:station_1_backend || true
 ```

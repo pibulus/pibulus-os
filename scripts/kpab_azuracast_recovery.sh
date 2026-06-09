@@ -38,6 +38,21 @@ def azuracast.send_feedback(m) =
             j = json()
             j.add("artist", m["artist"])
             j.add("title", m["title"])
+            if (m["media_id"] != "") then
+                j.add("media_id", m["media_id"])
+            end
+            if (m["song_id"] != "") then
+                j.add("song_id", m["song_id"])
+            end
+            if (m["sq_id"] != "") then
+                j.add("sq_id", m["sq_id"])
+            end
+            if (m["playlist_id"] != "") then
+                j.add("playlist_id", m["playlist_id"])
+            end
+            if (m["duration"] != "") then
+                j.add("duration", m["duration"])
+            end
 
             payload = json.stringify(compact=true, j)
             cmd = "curl -sS --max-time 5 -o /dev/null -w '%{http_code}' -H 'Content-Type: application/json' -H 'User-Agent: Liquidsoap AzuraCast curl bridge' -H 'X-Liquidsoap-Api-Key: #{settings.azuracast.api_key()}' --data-binary \"$KPAB_FEEDBACK_PAYLOAD\" '#{settings.azuracast.api_url()}/feedback'"
@@ -46,6 +61,13 @@ def azuracast.send_feedback(m) =
         end
     end
 end
+LIQ
+}
+
+playlist_prefetch_b64() {
+  cat <<'LIQ' | base64 | tr -d '\n'
+# Resolve upcoming playlist files early; Passport is NTFS/FUSE and can block at track boundaries.
+settings.request.prefetch := 4
 LIQ
 }
 
@@ -67,7 +89,7 @@ apply_safe_mode() {
 
   cd "$AZ_DIR"
   cp docker-compose.override.yml "docker-compose.override.yml.bak-$(date +%Y%m%d-%H%M%S)-kpab-recovery"
-  perl -0pi -e 's/mem_reservation:\s*\S+/mem_reservation: 768m/; if (s/mem_limit:\s*\S+/mem_limit: 1536m/) {} else { s/(mem_reservation: 768m\n)/$1    mem_limit: 1536m\n/ }' docker-compose.override.yml
+  perl -0pi -e 's/^\s*cpus:\s*\S+\n//mg; s/mem_reservation:\s*\S+/mem_reservation: 768m/; if (s/mem_limit:\s*\S+/mem_limit: 1536m/) {} else { s/(mem_reservation: 768m\n)/$1    mem_limit: 1536m\n/ }' docker-compose.override.yml
   docker update --memory 1536m --memory-swap 2g "$CONTAINER" >/dev/null
 
   docker exec "$CONTAINER" supervisorctl stop station_1:station_1_backend || true
@@ -83,7 +105,8 @@ install -d -o azuracast -g azuracast -m 755 /tmp/liquidsoap_cache
 install -d -o azuracast -g azuracast -m 700 /var/azuracast/www_tmp/liquidsoap_cache'
 
   bridge_b64=$(feedback_bridge_b64)
-  docker exec "$CONTAINER" azuracast_cli dbal:run-sql "UPDATE station SET backend_config = JSON_SET(backend_config, '$.audio_processing_method', 'none', '$.enable_auto_cue', false, '$.write_playlists_to_liquidsoap', true, '$.use_manual_autodj', true, '$.crossfade', 0, '$.custom_config_pre_fade', CAST(FROM_BASE64('$bridge_b64') AS CHAR CHARACTER SET utf8mb4)), needs_restart = 1 WHERE id = 1;"
+  prefetch_b64=$(playlist_prefetch_b64)
+  docker exec "$CONTAINER" azuracast_cli dbal:run-sql "UPDATE station SET backend_config = JSON_SET(backend_config, '$.audio_processing_method', 'none', '$.enable_auto_cue', false, '$.write_playlists_to_liquidsoap', true, '$.use_manual_autodj', true, '$.crossfade', 0, '$.custom_config_pre_playlists', CAST(FROM_BASE64('$prefetch_b64') AS CHAR CHARACTER SET utf8mb4), '$.custom_config_pre_fade', CAST(FROM_BASE64('$bridge_b64') AS CHAR CHARACTER SET utf8mb4)), needs_restart = 1 WHERE id = 1;"
 
   docker exec "$CONTAINER" azuracast_cli azuracast:radio:restart "$STATION" || true
   docker exec "$CONTAINER" supervisorctl start station_1:station_1_backend || true

@@ -17,13 +17,22 @@ STATUS_TMP="$STATUS_FILE.tmp.$$"
 GENERATED_AT=$(date '+%s')
 trap 'rm -f "$STATUS_TMP"' EXIT
 
-TEMP=$(vcgencmd measure_temp | grep -oP '[0-9.]+')
+TEMP_RAW=$(cat /sys/class/thermal/thermal_zone0/temp 2>/dev/null)
+if [ -n "$TEMP_RAW" ] && [ "$TEMP_RAW" -gt 0 ] 2>/dev/null; then
+  TEMP="$((TEMP_RAW / 1000)).$(( (TEMP_RAW % 1000) / 100 ))"
+else
+  TEMP="?"
+fi
 UPTIME=$(uptime -p | sed 's/up //; s/ days\?/d/g; s/ hours\?/h/g; s/ minutes\?/m/g; s/,//g')
 
 # Power/Throttle check
-THROTTLED_HEX=$(vcgencmd get_throttled | cut -d'=' -f2)
-POWER_STATUS="OK"
-[[ "$THROTTLED_HEX" != "0x0" ]] && POWER_STATUS="THROTTLED"
+THROTTLED_HEX=$(vcgencmd get_throttled 2>/dev/null | cut -d'=' -f2)
+if [[ "$THROTTLED_HEX" =~ ^0x[0-9a-fA-F]+$ ]]; then
+  POWER_STATUS="OK"
+  [[ "$THROTTLED_HEX" != "0x0" ]] && POWER_STATUS="THROTTLED"
+else
+  POWER_STATUS="?"
+fi
 
 # Disk
 DISK_PCT=$(df -h /media/pibulus/passport 2>/dev/null | awk 'NR==2 {print $5}' | tr -d '%')
@@ -68,7 +77,7 @@ mkdir -p "$STATUS_DIR"
 cat > "$STATUS_TMP" <<JSON
 {
   "generated_at": ${GENERATED_AT},
-  "interval_seconds": 60,
+  "interval_seconds": 180,
   "temp": "${TEMP}",
   "uptime": "$UPTIME",
   "power": "$POWER_STATUS",
