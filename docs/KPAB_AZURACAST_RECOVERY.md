@@ -28,29 +28,6 @@ Observed-good on 2026-06-07: stream `200`, backend `RUNNING`, feedback callback 
 
 Stability note from 2026-06-09: frequent short listener reconnects correlated with `/media/pibulus/passport` blocking in the NTFS/FUSE USB path. Liquidsoap playlist prefetch is set before playlist generation to give the slow disk more time to resolve upcoming tracks.
 
-## Hot Cache
-
-Emergency stabilization from 2026-06-09: KPAB can run from a small ext4-backed hot cache instead of reading every track directly from the Passport NTFS/FUSE media mounts.
-
-The helper is:
-
-```bash
-/home/pibulus/pibulus-os/scripts/kpab_hotcache.sh status
-/home/pibulus/pibulus-os/scripts/kpab_hotcache.sh build
-/home/pibulus/pibulus-os/scripts/kpab_hotcache.sh activate
-/home/pibulus/pibulus-os/scripts/kpab_hotcache.sh verify
-```
-
-Default cache size is 4 GiB or 120 tracks, whichever comes first. The cache lives at `/var/azuracast/stations/kpab.fm/kpab_hotcache` inside the AzuraCast container, currently backed by the Pi root ext4 filesystem. `activate` replaces `playlist_default.m3u` with cached file paths and restarts only `station_1_backend`; do not run `azuracast:radio:restart` afterward unless you are ready to reactivate the cache, because a full AzuraCast radio restart may regenerate the playlist from database media rows.
-
-Verification signal:
-
-```bash
-docker logs --since 5m azuracast 2>&1 | grep kpab_hotcache | tail
-```
-
-Expected prepared tracks should look like `/var/azuracast/stations/kpab.fm/kpab_hotcache/media/00070.flac`.
-
 ## Periodic Work
 
 Stability note from 2026-06-09: the 13:30 AEST stream dropout lined up with AzuraCast maintenance work and Liquidsoap latency warnings, not a container OOM kill. The radio should get CPU freely, while heavy scans should avoid daytime playback.
