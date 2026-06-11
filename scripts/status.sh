@@ -35,14 +35,14 @@ else
 fi
 
 # Disk
-DISK_PCT=$(df -h /media/pibulus/passport 2>/dev/null | awk 'NR==2 {print $5}' | tr -d '%')
-DISK_USED=$(df -h /media/pibulus/passport 2>/dev/null | awk 'NR==2 {print $3}')
-DISK_TOTAL=$(df -h /media/pibulus/passport 2>/dev/null | awk 'NR==2 {print $2}')
-ROOT_PCT=$(df -h / 2>/dev/null | awk 'NR==2 {print $5}' | tr -d '%')
+DISK_PCT=$(df -h /media/pibulus/passport 2>/dev/null | busybox awk 'NR==2 {print $5}' | tr -d '%')
+DISK_USED=$(df -h /media/pibulus/passport 2>/dev/null | busybox awk 'NR==2 {print $3}')
+DISK_TOTAL=$(df -h /media/pibulus/passport 2>/dev/null | busybox awk 'NR==2 {print $2}')
+ROOT_PCT=$(df -h / 2>/dev/null | busybox awk 'NR==2 {print $5}' | tr -d '%')
 
 # RAM
-RAM_USED=$(free -m | awk '/Mem:/ {print $3}')
-RAM_TOTAL=$(free -m | awk '/Mem:/ {print $2}')
+RAM_USED=$(free -m | busybox awk '/Mem:/ {print $3}')
+RAM_TOTAL=$(free -m | busybox awk '/Mem:/ {print $2}')
 RAM_PCT=$((RAM_USED * 100 / RAM_TOTAL))
 
 # Containers
@@ -63,7 +63,7 @@ WATCHING=$(curl -s --max-time 3 -H "X-Emby-Token: $JF_TOKEN" "$JF_URL/Sessions" 
   python3 -c "import sys,json; s=json.load(sys.stdin); print(len([x for x in s if x.get('NowPlayingItem')]))" 2>/dev/null || echo "0")
 
 # Load average
-LOAD=$(uptime | awk -F'load average:' '{print $2}' | awk -F',' '{print $1}' | tr -d ' ')
+LOAD=$(uptime | busybox awk -F'load average:' '{print $2}' | busybox awk -F',' '{print $1}' | tr -d ' ')
 
 # Connected web visitors — unique IPs seen by web_host in the last 10 minutes.
 # This is intentionally narrower than "everyone using the Pi" because services

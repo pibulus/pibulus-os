@@ -48,7 +48,7 @@ add_check() {
 }
 
 percent_used() {
-  df -P "$1" 2>/dev/null | awk 'NR==2 {gsub(/%/,"",$5); print $5}'
+  df -P "$1" 2>/dev/null | busybox awk 'NR==2 {gsub(/%/,"",$5); print $5}'
 }
 
 check_disk() {
@@ -220,9 +220,13 @@ checks = []
 rank = {"ok": 0, "warn": 1, "fail": 2}
 worst = "ok"
 for raw in open(sys.argv[1], encoding="utf-8"):
-    key, status, summary, detail = raw.rstrip("\n").split("\t", 3)
+    parts = raw.rstrip("\n").split("\t")
+    if len(parts) < 3:
+        continue
+    key, status, summary = parts[:3]
+    detail = " ".join(parts[3:])
     checks.append({"key": key, "status": status, "summary": summary, "detail": detail})
-    if rank[status] > rank[worst]:
+    if rank.get(status, 1) > rank[worst]:
         worst = status
 
 payload = {

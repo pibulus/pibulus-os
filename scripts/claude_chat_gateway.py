@@ -37,6 +37,9 @@ PORT = int(os.environ.get("CLAUDE_CHAT_PORT", "9016"))
 MAX_PROMPT_CHARS = int(os.environ.get("CLAUDE_CHAT_MAX_PROMPT_CHARS", "12000"))
 ENABLE_FULL = os.environ.get("CLAUDE_CHAT_ENABLE_FULL", "1") == "1"
 FULL_ARM_TTL = int(os.environ.get("CLAUDE_CHAT_FULL_ARM_TTL", "75"))
+MIN_AVAILABLE_MB = int(os.environ.get("CLAUDE_CHAT_MIN_AVAILABLE_MB", "650"))
+MAX_LOAD_1 = float(os.environ.get("CLAUDE_CHAT_MAX_LOAD_1", "5.0"))
+REQUIRE_SWAP = os.environ.get("CLAUDE_CHAT_REQUIRE_SWAP", "1") == "1"
 ALLOWED_ORIGINS = {
     item.strip()
     for item in os.environ.get(
@@ -179,6 +182,35 @@ def read_meminfo() -> dict[str, int]:
     except Exception:
         pass
     return values
+
+
+def swap_is_available() -> bool:
+    try:
+        lines = Path("/proc/swaps").read_text().splitlines()[1:]
+    except Exception:
+        return False
+    return any(line.split() and int(line.split()[2]) > 0 for line in lines if len(line.split()) >= 3)
+
+
+def launch_preflight(model_key: str, mode_key: str) -> list[str]:
+    reasons: list[str] = []
+    meminfo = read_meminfo()
+    available_mb = meminfo.get("MemAvailable", 0) // (1024 * 1024)
+    if available_mb and available_mb < MIN_AVAILABLE_MB:
+        reasons.append(f"only {available_mb}MB RAM available; need {MIN_AVAILABLE_MB}MB")
+    try:
+        load1 = float(Path("/proc/loadavg").read_text().split()[0])
+    except Exception:
+        load1 = 0.0
+    if load1 > MAX_LOAD_1:
+        reasons.append(f"load {load1:.2f} is above limit {MAX_LOAD_1:.2f}")
+    if REQUIRE_SWAP and not swap_is_available():
+        reasons.append("swap/zram is not active")
+    if mode_key == "full":
+        reasons.append("Full mode is disabled on the Pi until crash hardening is proven")
+    if model_key in {"deepseek", "deepseek-flash", "deepseek-pro"} and mode_key != "plan":
+        reasons.append("DeepSeek/OpenCode is restricted to Plan mode on the Pi for now")
+    return reasons
 
 
 def disk_usage(path: Path) -> dict[str, float | bool]:
@@ -360,6 +392,11 @@ def deck_system_prompt(model_key: str, mode_key: str, cwd: Path) -> str:
     return "\n".join(parts)
 
 
+def exposed_modes(modes: list[str]) -> list[str]:
+    out = [mode for mode in modes if ENABLE_FULL or mode != "full"]
+    return out or ["plan"]
+
+
 def available_models(claude_auth: dict[str, Any] | None = None) -> list[dict[str, Any]]:
     claude_auth = claude_auth or claude_auth_status()
     gemini_installed = command_available("gemini")
@@ -372,7 +409,7 @@ def available_models(claude_auth: dict[str, Any] | None = None) -> list[dict[str
             "label": "Claude Code",
             "detail": CLAUDE_MODEL or claude_version(),
             "enabled": command_available("claude") and bool(claude_auth.get("ok")),
-            "modes": ["plan", "default", "auto", "full"],
+            "modes": exposed_modes(["plan", "default", "auto", "full"]),
             "default_mode": "auto",
         },
         {
@@ -380,7 +417,7 @@ def available_models(claude_auth: dict[str, Any] | None = None) -> list[dict[str
             "label": "Codex CLI",
             "detail": CODEX_MODEL,
             "enabled": command_available("codex"),
-            "modes": ["plan", "default", "full"],
+            "modes": exposed_modes(["plan", "default", "full"]),
             "default_mode": "plan",
         },
         {
@@ -388,7 +425,7 @@ def available_models(claude_auth: dict[str, Any] | None = None) -> list[dict[str
             "label": "DeepSeek Flash",
             "detail": DEEPSEEK_FLASH_MODEL if deepseek_key else "needs key",
             "enabled": opencode_installed and deepseek_key,
-            "modes": ["plan", "default", "full"],
+            "modes": ["plan"],
             "default_mode": "plan",
         },
         {
@@ -396,7 +433,7 @@ def available_models(claude_auth: dict[str, Any] | None = None) -> list[dict[str
             "label": "DeepSeek Pro",
             "detail": DEEPSEEK_PRO_MODEL if deepseek_key else "needs key",
             "enabled": opencode_installed and deepseek_key,
-            "modes": ["plan", "default", "full"],
+            "modes": ["plan"],
             "default_mode": "plan",
         },
         {
@@ -404,7 +441,7 @@ def available_models(claude_auth: dict[str, Any] | None = None) -> list[dict[str
             "label": "Gemini CLI",
             "detail": (GEMINI_MODEL or gemini_version()) if gemini_installed and gemini_key else "needs fresh key",
             "enabled": gemini_installed and gemini_key,
-            "modes": ["plan", "default", "full"],
+            "modes": exposed_modes(["plan", "default", "full"]),
             "default_mode": "plan",
         },
     ]
@@ -729,6 +766,12 @@ class Handler(BaseHTTPRequestHandler):
 
         if mode_key == "full" and not consume_full_arm_token(str(request.get("arm_token") or ""), workspace_key):
             self.send_json({"error": "full mode not armed"}, HTTPStatus.FORBIDDEN)
+            return
+
+        preflight_reasons = launch_preflight(model_key, mode_key)
+        if preflight_reasons:
+            self.send_json({"error": "Pi is not clear for this AI run", "reasons": preflight_reasons}, HTTPStatus.SERVICE_UNAVAILABLE)
+            audit("blocked", model=model_key, mode=mode_key, workspace=workspace_key, reasons=preflight_reasons)
             return
 
         global active_run
