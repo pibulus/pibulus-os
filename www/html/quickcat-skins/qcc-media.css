@@ -30,7 +30,7 @@ body::before {
   background:
     linear-gradient(90deg, rgba(8, 12, 13, 0.84), rgba(8, 12, 13, 0.46) 52%, rgba(8, 12, 13, 0.78)),
     linear-gradient(180deg, rgba(8, 12, 13, 0.30), rgba(8, 12, 13, 0.84)),
-    url("https://quickcat.club/quickcat-skins/qccbg.png") center / cover no-repeat;
+    url("https://quickcat.club/quickcat-skins/qccbg.png?v=20260612-qcc") center / cover no-repeat;
 }
 
 body::after {
@@ -328,4 +328,203 @@ app-login h2::after,
   [role="button"] {
     min-height: 44px;
   }
+}
+
+/* Kavita brand replacement */
+.login,
+.container.login,
+app-login .login {
+  position: relative !important;
+  min-height: 100vh !important;
+  background:
+    linear-gradient(90deg, rgba(3, 5, 10, 0.82), rgba(3, 5, 10, 0.34) 48%, rgba(3, 5, 10, 0.78)),
+    linear-gradient(180deg, rgba(3, 5, 10, 0.18), rgba(3, 5, 10, 0.78)),
+    url("https://quickcat.club/quickcat-skins/qccbg.png?v=20260612-qcc") center / cover no-repeat !important;
+}
+
+.login::before,
+.login::after,
+.container.login::before,
+.container.login::after {
+  content: none !important;
+  display: none !important;
+  background: none !important;
+}
+
+.login > .logo-container:first-child,
+.container.login > .logo-container:first-child {
+  gap: 16px !important;
+  margin-bottom: 24px !important;
+}
+
+.login > .logo-container:first-child .logo,
+.container.login > .logo-container:first-child .logo {
+  position: relative !important;
+  width: 64px !important;
+  height: 64px !important;
+  flex: 0 0 64px !important;
+  overflow: hidden !important;
+  border-radius: 8px !important;
+  background:
+    linear-gradient(135deg, rgba(73, 199, 177, 0.94), rgba(244, 196, 95, 0.86)) !important;
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.34), 0 0 32px rgba(73, 199, 177, 0.22) !important;
+}
+
+.login > .logo-container:first-child .logo::before,
+.container.login > .logo-container:first-child .logo::before {
+  content: "QCC" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  color: #071211 !important;
+  font-size: 18px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+}
+
+.login > .logo-container:first-child h2,
+.container.login > .logo-container:first-child h2 {
+  width: auto !important;
+  min-width: max-content !important;
+  color: transparent !important;
+  font-size: 0 !important;
+  line-height: 1 !important;
+  text-shadow: none !important;
+}
+
+.login > .logo-container:first-child h2::after,
+.container.login > .logo-container:first-child h2::after {
+  content: "Quick Cat Comics" !important;
+  display: block !important;
+  color: var(--qcc-text) !important;
+  font-size: clamp(30px, 4.2vw, 46px) !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+}
+
+.login .card h2,
+.login .card .logo-container h2,
+.login-container .card h2 {
+  font-size: 0 !important;
+  line-height: 1 !important;
+  color: transparent !important;
+}
+
+.login .card h2::after,
+.login .card .logo-container h2::after,
+.login-container .card h2::after {
+  content: "Step Inside" !important;
+  color: var(--qcc-text) !important;
+  display: block !important;
+  font-size: clamp(20px, 3vw, 26px) !important;
+  font-weight: 800 !important;
+  line-height: 1.1 !important;
+}
+
+.login .card,
+.login-container .card {
+  background: rgba(7, 11, 14, 0.78) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.48), 0 0 48px rgba(255, 54, 199, 0.12) !important;
+}
+
+.login form,
+.login-container form {
+  background: rgba(4, 8, 10, 0.58) !important;
+  border-color: rgba(73, 199, 177, 0.22) !important;
+}
+
+@media (max-width: 720px) {
+  .login > .logo-container:first-child,
+  .container.login > .logo-container:first-child {
+    gap: 12px !important;
+    margin-bottom: 18px !important;
+  }
+
+  .login > .logo-container:first-child .logo,
+  .container.login > .logo-container:first-child .logo {
+    width: 52px !important;
+    height: 52px !important;
+    flex-basis: 52px !important;
+  }
+
+  .login > .logo-container:first-child .logo::before,
+  .container.login > .logo-container:first-child .logo::before {
+    font-size: 15px !important;
+  }
+}
+
+
+/* Kavita mobile fit pass */
+.login .card,
+.login form,
+.login input,
+.login button,
+.login-container .card,
+.login-container form,
+.login-container input,
+.login-container button {
+  box-sizing: border-box !important;
+}
+
+.login form,
+.login-container form {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+@media (max-width: 720px) {
+  .login > .logo-container:first-child,
+  .container.login > .logo-container:first-child {
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    max-width: calc(100vw - 32px) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    text-align: center !important;
+  }
+
+  .login > .logo-container:first-child h2,
+  .container.login > .logo-container:first-child h2 {
+    min-width: 0 !important;
+    max-width: calc(100vw - 32px) !important;
+    white-space: normal !important;
+  }
+
+  .login > .logo-container:first-child h2::after,
+  .container.login > .logo-container:first-child h2::after {
+    font-size: clamp(28px, 10vw, 38px) !important;
+    line-height: 0.98 !important;
+  }
+
+  app-login form,
+  app-login .login-card,
+  app-login .card,
+  .login-container form,
+  .login-container .card,
+  .login-wrapper form,
+  .login-wrapper .card {
+    width: min(343px, calc(100vw - 32px)) !important;
+    max-width: calc(100vw - 32px) !important;
+  }
+
+  .login form,
+  .login-container form {
+    padding: 22px 18px !important;
+  }
+}
+
+/* Kavita nested form containment */
+.login .card form,
+.login-container .card form,
+.login-wrapper .card form,
+app-login .card form {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
 }
