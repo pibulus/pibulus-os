@@ -187,19 +187,69 @@ app-reader,
   background: transparent !important;
 }
 
+app-login,
 app-login .login-container,
 app-login .container,
-app-login form,
 .login-container,
 .login-wrapper {
-  max-width: min(520px, calc(100vw - 32px));
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
 }
 
+app-login form,
 app-login .login-card,
 app-login .card,
+.login-container form,
 .login-container .card,
+.login-wrapper form,
 .login-wrapper .card {
+  display: block !important;
+  width: min(440px, calc(100vw - 32px)) !important;
+  max-width: 440px !important;
+  min-width: 0 !important;
   padding: clamp(18px, 4vw, 30px) !important;
+  white-space: normal !important;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+}
+
+app-login .form-group,
+app-login .form-control,
+app-login input,
+app-login button,
+.login-container .form-group,
+.login-container .form-control,
+.login-container input,
+.login-container button,
+.login-wrapper .form-group,
+.login-wrapper .form-control,
+.login-wrapper input,
+.login-wrapper button {
+  width: 100% !important;
+  min-width: 0 !important;
+  white-space: normal !important;
+  word-break: normal !important;
+}
+
+app-login label,
+app-login p,
+app-login a,
+app-login span,
+.login-container label,
+.login-container p,
+.login-container a,
+.login-container span,
+.login-wrapper label,
+.login-wrapper p,
+.login-wrapper a,
+.login-wrapper span {
+  white-space: normal !important;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
 }
 
 app-login h1::after,
