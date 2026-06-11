@@ -1,0 +1,281 @@
+/* Quick Cat Club media-app skin. Injected by nginx for app shells that do not expose stable theming hooks. */
+:root {
+  --qcc-bg: #101314;
+  --qcc-panel: rgba(17, 22, 24, 0.88);
+  --qcc-panel-solid: #151c1e;
+  --qcc-line: rgba(255, 255, 255, 0.14);
+  --qcc-text: #f4f0e8;
+  --qcc-muted: rgba(244, 240, 232, 0.68);
+  --qcc-teal: #49c7b1;
+  --qcc-amber: #f4c45f;
+  --qcc-coral: #ff7d5c;
+  --qcc-shadow: 0 18px 46px rgba(0, 0, 0, 0.38);
+}
+
+* { letter-spacing: 0 !important; }
+
+html,
+body {
+  min-height: 100%;
+  color: var(--qcc-text) !important;
+  background: var(--qcc-bg) !important;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(8, 12, 13, 0.84), rgba(8, 12, 13, 0.46) 52%, rgba(8, 12, 13, 0.78)),
+    linear-gradient(180deg, rgba(8, 12, 13, 0.30), rgba(8, 12, 13, 0.84)),
+    url("https://quickcat.club/quickcat-skins/qccbg.png") center / cover no-repeat;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 14% 12%, rgba(73, 199, 177, 0.22), transparent 28rem),
+    radial-gradient(circle at 82% 0%, rgba(244, 196, 95, 0.16), transparent 25rem);
+}
+
+body,
+button,
+input,
+select,
+textarea {
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+}
+
+a,
+.MuiLink-root,
+.nav-link {
+  color: var(--qcc-teal) !important;
+}
+
+a:hover,
+.nav-link:hover {
+  color: #ffffff !important;
+}
+
+button,
+.btn,
+.MuiButton-root,
+[role="button"] {
+  min-height: 40px;
+  border-radius: 6px !important;
+  text-transform: none !important;
+}
+
+input,
+.form-control,
+.MuiInputBase-root,
+.MuiOutlinedInput-root,
+.MuiInputBase-input {
+  border-radius: 6px !important;
+  color: var(--qcc-text) !important;
+}
+
+.card,
+.modal-content,
+.dropdown-menu,
+.popover,
+.offcanvas,
+.toast,
+.list-group-item,
+.MuiPaper-root,
+.MuiDrawer-paper,
+.MuiMenu-paper,
+.MuiPopover-paper,
+[class*="login" i] .card,
+[class*="login" i] form,
+[class*="Login" i] .MuiPaper-root {
+  color: var(--qcc-text) !important;
+  background: var(--qcc-panel) !important;
+  border: 1px solid var(--qcc-line) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--qcc-shadow) !important;
+  backdrop-filter: blur(16px);
+}
+
+.navbar,
+.navbar-custom,
+.side-nav,
+.sidebar,
+.sidenav,
+.MuiAppBar-root,
+.MuiToolbar-root,
+.MuiDrawer-paper,
+app-side-nav,
+app-nav-header,
+app-header {
+  color: var(--qcc-text) !important;
+  background: rgba(10, 14, 15, 0.88) !important;
+  border-color: var(--qcc-line) !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28) !important;
+  backdrop-filter: blur(16px);
+}
+
+.MuiTypography-root,
+.MuiListItemText-primary,
+.MuiListItemText-secondary,
+.text-muted,
+small,
+label,
+.form-label,
+.form-check-label,
+.card-text,
+.card-title,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+span,
+li,
+td,
+th {
+  color: inherit;
+}
+
+.text-muted,
+.MuiListItemText-secondary,
+.MuiFormHelperText-root,
+small {
+  color: var(--qcc-muted) !important;
+}
+
+.btn-primary,
+.btn-success,
+.MuiButton-containedPrimary,
+.MuiButton-contained,
+button[type="submit"] {
+  color: #071211 !important;
+  background: var(--qcc-teal) !important;
+  border-color: var(--qcc-teal) !important;
+  font-weight: 800 !important;
+}
+
+.btn-primary:hover,
+.btn-success:hover,
+.MuiButton-containedPrimary:hover,
+.MuiButton-contained:hover,
+button[type="submit"]:hover {
+  color: #180b07 !important;
+  background: var(--qcc-coral) !important;
+  border-color: var(--qcc-coral) !important;
+}
+
+/* Kavita */
+app-root,
+app-login,
+app-dashboard,
+app-library-detail,
+app-series-detail,
+app-reader,
+.main-container,
+.content-container,
+.library-container,
+.dashboard-container {
+  background: transparent !important;
+}
+
+app-login .login-container,
+app-login .container,
+app-login form,
+.login-container,
+.login-wrapper {
+  max-width: min(520px, calc(100vw - 32px));
+}
+
+app-login .login-card,
+app-login .card,
+.login-container .card,
+.login-wrapper .card {
+  padding: clamp(18px, 4vw, 30px) !important;
+}
+
+app-login h1::after,
+app-login h2::after,
+.login-container h1::after,
+.login-wrapper h1::after {
+  content: "Quick Cat Comics";
+  display: block;
+  margin-top: 8px;
+  color: var(--qcc-amber);
+  font-size: clamp(18px, 4vw, 26px);
+  line-height: 1.15;
+}
+
+/* Navidrome / React Admin */
+#root,
+.RaLayout-root,
+.RaLayout-appFrame,
+.RaLayout-content,
+[class*="RaLayout"] {
+  background: transparent !important;
+}
+
+.MuiCssBaseline-root,
+.MuiBox-root,
+.MuiContainer-root {
+  color: var(--qcc-text) !important;
+}
+
+.MuiCard-root,
+.MuiDialog-paper,
+.MuiTableContainer-root,
+.MuiList-root,
+.MuiDataGrid-root,
+[class*="MuiCard"],
+[class*="MuiDialog-paper"] {
+  background: var(--qcc-panel) !important;
+  border: 1px solid var(--qcc-line) !important;
+  border-radius: 8px !important;
+}
+
+.MuiInputBase-root,
+.MuiOutlinedInput-notchedOutline {
+  background: rgba(255, 255, 255, 0.09) !important;
+  border-color: rgba(255, 255, 255, 0.22) !important;
+}
+
+.MuiSvgIcon-root,
+.MuiIconButton-root {
+  color: var(--qcc-muted) !important;
+}
+
+.Mui-selected,
+.MuiListItemButton-root:hover,
+.MuiMenuItem-root:hover {
+  color: var(--qcc-text) !important;
+  background: rgba(73, 199, 177, 0.16) !important;
+}
+
+@media (max-width: 720px) {
+  body::before {
+    background-position: center top;
+  }
+
+  .card,
+  .MuiPaper-root,
+  .MuiDrawer-paper,
+  app-login .card,
+  .login-container .card {
+    border-radius: 8px !important;
+  }
+
+  button,
+  .btn,
+  .MuiButton-root,
+  [role="button"] {
+    min-height: 44px;
+  }
+}

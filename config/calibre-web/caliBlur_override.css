@@ -873,3 +873,56 @@ body.newest .container-fluid .book .meta .series > a {
     margin-bottom: 16px !important;
   }
 }
+
+/* Quick Cat shared backdrop pass */
+body:not(.read-frame)::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(8, 12, 13, 0.88), rgba(8, 12, 13, 0.52) 48%, rgba(8, 12, 13, 0.82)),
+    linear-gradient(180deg, rgba(8, 12, 13, 0.28), rgba(8, 12, 13, 0.86)),
+    url("https://quickcat.club/quickcat-skins/qccbg.png") center / cover no-repeat;
+}
+
+body:not(.read-frame)::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 12% 10%, rgba(73, 199, 177, 0.22), transparent 30rem),
+    radial-gradient(circle at 82% 2%, rgba(244, 196, 95, 0.14), transparent 26rem);
+}
+
+body:not(.read-frame) {
+  position: relative;
+  background: #101314 !important;
+}
+
+body.login .well > form::before {
+  content: "Quick Cat Library";
+  display: block;
+  margin: 0 0 18px;
+  color: var(--qc-amber);
+  font-size: clamp(22px, 4vw, 32px);
+  font-weight: 800;
+  line-height: 1.05;
+}
+
+body.login .well > form {
+  background: rgba(18, 24, 26, 0.9) !important;
+  backdrop-filter: blur(16px);
+}
+
+.navbar-default,
+body > div.container-fluid > div.row-fluid > div.col-sm-2,
+body > div.container-fluid > div > div.col-sm-10 > div.container1,
+body > div.container-fluid > div > div.col-sm-10 > div.single,
+.modal-content {
+  backdrop-filter: blur(16px);
+}
+
