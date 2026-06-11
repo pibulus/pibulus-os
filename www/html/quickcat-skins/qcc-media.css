@@ -937,3 +937,230 @@ body:has(.MuiCard-root a[href*="navidrome"]) form > div:first-child::after {
     font-size: clamp(28px, 9vw, 36px) !important;
   }
 }
+
+/* RomM QCC auth skin */
+body:has(.v-card .v-form) {
+  min-height: 100vh !important;
+  overflow-x: hidden !important;
+}
+
+body:has(.v-card .v-form),
+body:has(.v-card .v-form) #app,
+body:has(.v-card .v-form) .v-application,
+body:has(.v-card .v-form) .v-application__wrap,
+body:has(.v-card .v-form) main {
+  background:
+    linear-gradient(90deg, rgba(3, 5, 10, 0.82), rgba(3, 5, 10, 0.42) 48%, rgba(3, 5, 10, 0.80)),
+    linear-gradient(180deg, rgba(3, 5, 10, 0.22), rgba(3, 5, 10, 0.82)),
+    url("https://quickcat.club/quickcat-skins/qccbg.png?v=20260612-qcc") center / cover no-repeat fixed !important;
+}
+
+body:has(.v-card .v-form) .v-card {
+  box-sizing: border-box !important;
+  width: min(392px, calc(100vw - 32px)) !important;
+  max-width: 392px !important;
+  min-height: 0 !important;
+  padding: 24px !important;
+  border-radius: 8px !important;
+  color: var(--qcc-text) !important;
+  background: rgba(6, 10, 13, 0.78) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  box-shadow: 0 20px 52px rgba(0, 0, 0, 0.46) !important;
+  backdrop-filter: blur(16px) !important;
+}
+
+body:has(.v-card .v-form) .v-card .v-img {
+  position: relative !important;
+  width: 44px !important;
+  height: 44px !important;
+  margin: -46px auto 14px !important;
+  border-radius: 8px !important;
+  overflow: visible !important;
+  background: linear-gradient(135deg, rgba(73, 199, 177, 0.94), rgba(244, 196, 95, 0.86)) !important;
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.32), 0 0 22px rgba(73, 199, 177, 0.18) !important;
+}
+
+body:has(.v-card .v-form) .v-card .v-img::before {
+  content: "QCC" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  color: #071211 !important;
+  font-size: 13px !important;
+  font-weight: 900 !important;
+}
+
+body:has(.v-card .v-form) .v-card .v-img img {
+  display: none !important;
+}
+
+body:has(.v-card .v-form) .v-card::before {
+  content: "Quick Cat Arcade" !important;
+  display: block !important;
+  margin: 0 0 22px !important;
+  color: var(--qcc-text) !important;
+  font-size: clamp(26px, 3vw, 34px) !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+}
+
+body:has(.v-card .v-form) .v-form {
+  width: min(328px, 100%) !important;
+  margin: 0 auto !important;
+}
+
+body:has(.v-card .v-form) .v-field,
+body:has(.v-card .v-form) .v-input,
+body:has(.v-card .v-form) .v-btn {
+  border-radius: 6px !important;
+}
+
+body:has(.v-card .v-form) .v-field {
+  min-height: 40px !important;
+  background: rgba(255, 255, 255, 0.10) !important;
+  color: var(--qcc-text) !important;
+}
+
+body:has(.v-card .v-form) .v-btn {
+  min-height: 40px !important;
+  background: var(--qcc-teal) !important;
+  color: #071211 !important;
+  font-weight: 800 !important;
+  text-transform: none !important;
+}
+
+body:has(.v-card .v-form) .v-label,
+body:has(.v-card .v-form) .v-icon {
+  color: var(--qcc-muted) !important;
+}
+
+body:has(.v-card .v-form) .v-select,
+body:has(.v-card .v-form) footer,
+body:has(.v-card .v-form) .text-caption {
+  opacity: 0.55 !important;
+}
+
+@media (max-width: 720px) {
+  body:has(.v-card .v-form) .v-card {
+    width: min(343px, calc(100vw - 32px)) !important;
+    padding: 22px 18px 24px !important;
+  }
+
+  body:has(.v-card .v-form) .v-form {
+    width: min(305px, 100%) !important;
+  }
+}
+
+/* RomM final auth correction */
+body:has(.v-card .v-form)::before {
+  z-index: 0 !important;
+  background:
+    linear-gradient(90deg, rgba(3, 5, 10, 0.82), rgba(3, 5, 10, 0.42) 48%, rgba(3, 5, 10, 0.80)),
+    linear-gradient(180deg, rgba(3, 5, 10, 0.22), rgba(3, 5, 10, 0.82)),
+    url("https://quickcat.club/quickcat-skins/qccbg.png?v=20260612-qcc") center / cover no-repeat !important;
+}
+
+body:has(.v-card .v-form) #app,
+body:has(.v-card .v-form) .v-application,
+body:has(.v-card .v-form) .v-application__wrap,
+body:has(.v-card .v-form) main,
+body:has(.v-card .v-form) main > div,
+body:has(.v-card .v-form) .v-container,
+body:has(.v-card .v-form) .v-row {
+  background: transparent !important;
+  background-image: none !important;
+}
+
+body:has(.v-card .v-form) .v-card {
+  position: relative !important;
+  z-index: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+}
+
+body:has(.v-card .v-form) .v-card .v-img {
+  order: 0 !important;
+  margin: -46px auto 14px !important;
+}
+
+body:has(.v-card .v-form) .v-card::before {
+  order: 1 !important;
+  width: 100% !important;
+  margin: 0 0 22px !important;
+  font-size: clamp(26px, 3vw, 34px) !important;
+}
+
+body:has(.v-card .v-form) .v-form {
+  order: 2 !important;
+}
+
+/* RomM explicit auth layout */
+body:has(.v-card .v-form) .v-card {
+  position: relative !important;
+  display: block !important;
+  padding: 92px 24px 24px !important;
+}
+
+body:has(.v-card .v-form) .v-card .v-img {
+  position: absolute !important;
+  top: -22px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  margin: 0 !important;
+}
+
+body:has(.v-card .v-form) .v-card::before {
+  position: absolute !important;
+  top: 30px !important;
+  left: 18px !important;
+  right: 18px !important;
+  margin: 0 !important;
+  width: auto !important;
+  text-align: center !important;
+}
+
+body:has(.v-card .v-form) .v-form {
+  display: block !important;
+  width: min(328px, 100%) !important;
+  max-width: min(328px, 100%) !important;
+  margin: 0 auto !important;
+}
+
+body:has(.v-card .v-form) .v-input,
+body:has(.v-card .v-form) .v-btn {
+  width: 100% !important;
+}
+
+@media (max-width: 720px) {
+  body:has(.v-card .v-form) .v-card {
+    padding: 88px 18px 22px !important;
+  }
+
+  body:has(.v-card .v-form) .v-form {
+    width: min(305px, 100%) !important;
+    max-width: min(305px, 100%) !important;
+  }
+}
+
+/* RomM form width correction */
+body:has(.v-card .v-form) .v-form {
+  width: 328px !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+
+body:has(.v-card .v-form) .v-form > * {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+@media (max-width: 720px) {
+  body:has(.v-card .v-form) .v-form {
+    width: 305px !important;
+    max-width: 100% !important;
+  }
+}
