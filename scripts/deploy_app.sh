@@ -71,8 +71,9 @@ case "$APP" in
     ;;
 esac
 
-STAGING_ROOT="${PIBULUS_APP_STAGING_ROOT:-/media/pibulus/passport/app-data/apps-staging}"
+STAGING_ROOT="${PIBULUS_APP_STAGING_ROOT:-/home/pibulus/apps-staging}"
 BACKUP_ROOT="/media/pibulus/passport/app-data/apps-backups"
+NPM_CACHE_DIR="${PIBULUS_NPM_CACHE:-/home/pibulus/.cache/pibulus-npm}"
 STAMP="$(date +%Y%m%d-%H%M%S)"
 SRC_DIR="$STAGING_ROOT/${APP}-src-$STAMP"
 STAGE_DIR="$STAGING_ROOT/${APP}-stage-$STAMP"
@@ -233,7 +234,7 @@ deploy_node_build() {
     exit 0
   fi
 
-  (cd "$SRC_DIR" && npm ci && npm run build)
+  (cd "$SRC_DIR" && npm ci --cache "$NPM_CACHE_DIR" && npm run build)
   mkdir -p "$STAGE_DIR"
   rsync -a --delete "$SRC_DIR/build/" "$STAGE_DIR/"
   cp "$SRC_DIR/package.json" "$SRC_DIR/package-lock.json" "$STAGE_DIR/"
@@ -242,7 +243,7 @@ deploy_node_build() {
     find "$LIVE_DIR" -maxdepth 1 -type f \( -name ".env" -o -name ".env.*" \) -exec cp -p {} "$STAGE_DIR/" \;
   fi
 
-  (cd "$STAGE_DIR" && npm ci --omit=dev --ignore-scripts --no-audit --no-fund)
+  (cd "$STAGE_DIR" && npm ci --omit=dev --ignore-scripts --no-audit --no-fund --cache "$NPM_CACHE_DIR")
   test -s "$STAGE_DIR/index.js"
   local zero_file=""
   zero_file="$(find "$STAGE_DIR/client" "$STAGE_DIR/server" -type f -size 0 -print -quit 2>/dev/null || true)"
@@ -310,7 +311,7 @@ deploy_deno_checkout() {
 }
 
 validate_staging_root
-mkdir -p "$STAGING_ROOT" "$BACKUP_ROOT"
+mkdir -p "$STAGING_ROOT" "$BACKUP_ROOT" "$NPM_CACHE_DIR"
 
 case "$KIND" in
   node-build) deploy_node_build ;;

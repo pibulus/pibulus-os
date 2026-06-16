@@ -133,3 +133,83 @@ journalctl -u ziplist -n 80 --no-pager
 journalctl -u stargram -n 80 --no-pager
 journalctl -u ghostnote -n 80 --no-pager
 ```
+
+---
+
+## ⚡ Fast Deploy Notes (updated 2026-06-16)
+
+### TL;DR — how to deploy without the grind
+
+```bash
+# ALWAYS run detached so a dropped SSH connection can't choke the build:
+LOG=/home/pibulus/deploy-talktype-$(date +%s).log
+nohup /home/pibulus/pibulus-os/scripts/deploy_app.sh talktype > "$LOG" 2>&1 &
+# then poll:  tail -f "$LOG"
+```
+
+`deploy_app.sh` was sped up from **~12 min → ~3.5 min** for SvelteKit apps.
+
+### What was slow and what changed
+
+The build itself was always fast (~15s-1m40s). The grind came from staging on the
+**Passport USB HDD** (`/dev/sdc1`), which forced:
+- the build to run on slow spinning USB storage, and
+- the final `mv stage → live` to be a **cross-filesystem copy** of node_modules
+  (Passport → SD card), ~4 min of file-by-file USB I/O.
+
+**Fix (in `deploy_app.sh`):**
+- `STAGING_ROOT` now defaults to `/home/pibulus/apps-staging` — **same filesystem as
+  the live dir** (`/dev/mmcblk0p2`). The swap is now an instant atomic rename.
+- Persistent npm cache at `/home/pibulus/.cache/pibulus-npm` (`NPM_CACHE_DIR`), so
+  `npm ci` reuses downloaded packages across deploys.
+- **Backups still go to the Passport** (`apps-backups`) — correct, keeps the backup
+  history off the boot SD card.
+- Overrides if ever needed: `PIBULUS_APP_STAGING_ROOT`, `PIBULUS_NPM_CACHE`.
+- Original script saved as `deploy_app.sh.bak-20260616-143510`.
+
+Measured (talktype --force, 2026-06-16): vite build 15s, npm ci --omit=dev 11s,
+swap instant, total 219s (the remaining time is the safety backup to Passport).
+
+### Why detach matters (the SSH-choke gotcha)
+
+`deploy_app.sh` builds **synchronously**. If an interactive SSH session holds the
+deploy and the connection is interrupted, the build keeps grinding but on a 4GB Pi it
+can spike RAM/load until SSH "appears dead" (banner-exchange timeouts). It self-recovers
+(watchdog every 5min; the deploy is atomic so the live app is never left half-swapped),
+but it wastes time. **Always `nohup ... &` and poll the log.**
+
+### A `curl: (7) ... port 90xx` line in the log is usually harmless
+
+The post-restart health check fires its first retry the instant before the service binds
+the port. The loop retries for ~20s. If the deploy ends with `EXIT=0` /
+`commit=<sha>`, it succeeded.
+
+---
+
+## 📋 Full Live App Roster (2026-06-16)
+
+The original map above documents only 4 apps. The Pi actually runs **11 live app
+services**. Full list (all systemd services under `/home/pibulus/apps`):
+
+| App | Service | Port | Runtime | Branch | Repo |
+| --- | --- | ---: | --- | --- | --- |
+| TalkType | talktype | 9002 | Node/SvelteKit build | main | pibulus/talktype |
+| ZipList | ziplist | 9003 | Node/SvelteKit build | main | pibulus/ziplist |
+| RiffRap | riffrap | — | Node/SvelteKit build | **master** | pibulus/riffrap |
+| QRBuddy | qrbuddy | — | Deno/Fresh checkout | main | pibulus/qrbuddy |
+| Stargram | stargram | 9012 | Deno/Fresh checkout | main | pibulus/stargram |
+| Ghost Note | ghostnote | 9013 | Deno/Fresh checkout | main | pibulus/ouija |
+| Button Studio | button-studio | — | Deno/Fresh checkout | main | pibulus/button-studio |
+| Hexbloop Site | hexbloop-site | — | Deno/Fresh checkout | main | pibulus/hexbloop-site |
+| Is It Going To Rain | isitgoingtorain | — | static checkout | main | pibulus/isitgoingtorain |
+| Spellbreak Site | spellbreak-site | — | Deno/Fresh checkout | main | pibulus/spellbreak-site |
+| Plenum Engine | plenum-engine | — | Deno/Fresh build | — | (no remote/meta on Pi) |
+
+Notes:
+- **RiffRap uses `master`, not `main`** — `git ls-remote ... refs/heads/main` returns
+  empty for it. Use `refs/heads/master`.
+- `project-mapper.service` runs but its dir shows inactive deploy state — minor drift.
+- To check if an app is behind: read `.pibulus-meta` (DEPLOYED_COMMIT) or `git rev-parse
+  HEAD` for checkouts, vs `git ls-remote <repo> refs/heads/<branch>`.
+- Several live checkouts have been `git pull`'d in place since their last
+  `deploy_app.sh` run, so their `.pibulus-meta` can be stale — trust git HEAD for those.
