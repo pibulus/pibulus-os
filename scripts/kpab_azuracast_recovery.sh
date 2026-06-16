@@ -67,7 +67,9 @@ LIQ
 playlist_prefetch_b64() {
   cat <<'LIQ' | base64 | tr -d '\n'
 # Resolve upcoming playlist files early; Passport is NTFS/FUSE and can block at track boundaries.
-settings.request.prefetch := 4
+settings.request.prefetch := 8
+# Avoid expensive recoding of huge embedded metadata tags at track handoff.
+settings.request.metadata_decoders.recode.exclude := ["acoustid_fingerprint", "description", "comment", "unsyncedlyrics", "lyrics"]
 LIQ
 }
 

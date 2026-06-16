@@ -1819,6 +1819,9 @@
 
     const API_URL    = '/api/nowplaying/kpab.fm';
     const STREAM_URL = '/radio.mp3';
+    function streamUrl() {
+      return STREAM_URL + '?_ic2=' + Date.now();
+    }
     const POLL_MS    = 3000;
 
     let isPlaying    = false;
@@ -2233,7 +2236,7 @@
         audioEl.src = '';
         setPlaying(false);
       } else {
-        audioEl.src = STREAM_URL;
+        audioEl.src = streamUrl();
         audioEl.load();
         playBtn.textContent = '...';
         playBtn.disabled = true;
@@ -2298,7 +2301,7 @@
       setPlaying(false);
       reconnectTimer = setTimeout(() => {
         reconnectTimer = null;
-        audioEl.src = STREAM_URL;
+        audioEl.src = streamUrl();
         audioEl.play().catch(() => {});
       }, ms);
     }

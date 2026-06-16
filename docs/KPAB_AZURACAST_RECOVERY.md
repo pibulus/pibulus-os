@@ -16,7 +16,8 @@ The current safe recovery mode is:
   - `write_playlists_to_liquidsoap = true`
   - `use_manual_autodj = true`
   - `crossfade = 0`
-  - `custom_config_pre_playlists` sets `settings.request.prefetch := 4` so Liquidsoap resolves upcoming playlist files before track boundaries
+  - `custom_config_pre_playlists` sets `settings.request.prefetch := 8` so Liquidsoap resolves upcoming playlist files before track boundaries
+  - `custom_config_pre_playlists` also excludes large embedded metadata fields from recoding (`acoustid_fingerprint`, `description`, `comment`, `unsyncedlyrics`, `lyrics`)
   - `custom_config_pre_fade` replaces AzuraCast's native feedback callback with a `process.run` + `curl` bridge
   - the bridge must preserve annotated `media_id`, `song_id`, `sq_id`, `playlist_id`, and `duration`, otherwise AzuraCast falls back to text-only song history and now-playing art becomes the generic image
 
@@ -99,7 +100,7 @@ What `apply-safe-mode` does:
 - applies the same cap to the running Docker container
 - stops the KPAB backend
 - moves Liquidsoap cache dirs aside and recreates empty ones
-- writes a pre-playlists Liquidsoap hook that prefetches 4 upcoming requests
+- writes a pre-playlists Liquidsoap hook that prefetches 8 upcoming requests and skips expensive recoding for huge metadata tags
 - writes the safe station backend JSON settings, including the curl feedback bridge
 - keeps `media_id` in the feedback payload so the public API returns real album art
 - regenerates/restarts KPAB
@@ -164,7 +165,9 @@ LIQ
 )
 prefetch_b64=$(cat <<'LIQ' | base64 | tr -d '\n'
 # Resolve upcoming playlist files early; Passport is NTFS/FUSE and can block at track boundaries.
-settings.request.prefetch := 4
+settings.request.prefetch := 8
+# Avoid expensive recoding of huge embedded metadata tags at track handoff.
+settings.request.metadata_decoders.recode.exclude := ["acoustid_fingerprint", "description", "comment", "unsyncedlyrics", "lyrics"]
 LIQ
 )
 docker exec azuracast azuracast_cli dbal:run-sql "UPDATE station SET backend_config = JSON_SET(backend_config, '$.audio_processing_method', 'none', '$.enable_auto_cue', false, '$.write_playlists_to_liquidsoap', true, '$.use_manual_autodj', true, '$.crossfade', 0, '$.custom_config_pre_playlists', CAST(FROM_BASE64('$prefetch_b64') AS CHAR CHARACTER SET utf8mb4), '$.custom_config_pre_fade', CAST(FROM_BASE64('$bridge_b64') AS CHAR CHARACTER SET utf8mb4)), needs_restart = 1 WHERE id = 1;"
