@@ -14,14 +14,37 @@ Read this first for `talktype.app`, `ziplist.app`, `stargram.app`,
 7. Never build multiple Node apps in parallel on the Pi. It can exhaust RAM/swap and make SSH appear dead.
 8. Prefer `/home/pibulus/pibulus-os/scripts/deploy_app.sh <app>` for local Pi deploys. It has a lock, capacity checks, Passport-backed staging, backup, smoke test, rollback, and metadata.
 
-## App Map
+## App Map — verified 2026-06-21 (all 19 services `active`)
 
-| App | Domain | Port | Service | Live path | Runtime | Source |
-| --- | --- | ---: | --- | --- | --- | --- |
-| TalkType | `talktype.app` | 9002 | `talktype.service` | `/home/pibulus/apps/talktype` | Node/SvelteKit adapter-node build output | `https://github.com/pibulus/talktype` |
-| ZipList | `ziplist.app` | 9003 | `ziplist.service` | `/home/pibulus/apps/ziplist` | Node/SvelteKit adapter-node build output | `https://github.com/pibulus/ziplist` |
-| Stargram | `stargram.app` | 9012 | `stargram.service` | `/home/pibulus/apps/stargram` | Deno/Fresh source checkout | `https://github.com/pibulus/stargram` |
-| Ghost Note | `ghostnote.rip` | 9013 | `ghostnote.service` | `/home/pibulus/apps/ghostnote` | Deno/Fresh source checkout | `https://github.com/pibulus/ouija` |
+Ports/domains/runtime pulled live from unit files + cloudflared ingress. Live path is `/home/pibulus/apps/<dir>` (dir = service name unless noted).
+
+| App | Domain | Port | Service | Runtime | Source / Branch |
+| --- | --- | ---: | --- | --- | --- |
+| Plenum Engine | `madebypablo.app` | 9001 | `plenum-engine` | Deno/Fresh build | (no remote/meta on Pi) |
+| TalkType | `talktype.app` | 9002 | `talktype` | Node build-output | pibulus/talktype · main |
+| ZipList | `ziplist.app` | 9003 | `ziplist` | Node build-output | pibulus/ziplist · main |
+| RiffRap | `riffrap.app` | 9004 | `riffrap` | Node build-output | pibulus/riffrap · **master** |
+| Project/ProMapper | `promapper.app` | 9005 | `project-mapper` | Node build-output | pibulus/**project_mapper** · main (dir=`project_mapper`; NOT the `promapper` repo) |
+| Button Studio | `buttonspa.app` | 9006 | `button-studio` | Deno/Fresh checkout | pibulus/button-studio · main |
+| Hexbloop Site | `hexbloop.app` | 9010 | `hexbloop-site` | Deno/Fresh checkout | pibulus/hexbloop-site · main |
+| Spellbreak Site | `spellbreak.app` | 9011 | `spellbreak-site` | Deno/Fresh checkout | pibulus/spellbreak-site · main |
+| Stargram | `stargram.app` | 9012 | `stargram` | Deno/Fresh checkout | pibulus/stargram · main |
+| Ghost Note | `ghostnote.rip` | 9013 | `ghostnote` | Deno/Fresh checkout | pibulus/**ouija** · main |
+| Dr Shrink | `drshrink.app` | 9017 | `drshrink` | Node build-output | pibulus/**dr_shrink** · main |
+| Icon Make It | `iconmakeit.app` | 9018 | `iconmakeit` | Node build-output | pibulus/iconmakeit · main |
+| DaySay | `daysay.app` | 9019 | `daysay` | Node build-output | pibulus/daysay · main (NOT in deploy_app.sh case block) |
+| Cryptkeep | `cryptkeep.app` | 9020 | `cryptkeep` | Node build-output | pibulus/cryptkeep · main |
+| Metasplash | `metasplash.app` | 9021 | `metasplash` | Node build-output | pibulus/metasplash · main |
+| Metaflush | `metaflush.app` | 9022 | `metaflush` | Node build-output | pibulus/metaflush · main |
+| Corruptor | `corruptor.app` | 9023 | `corruptor` | Node build-output | pibulus/corruptor · main |
+| QRBuddy | `qrbuddy.app` | **8004** | `qrbuddy` | Deno/Fresh checkout | pibulus/qrbuddy · main |
+| Is It Going To Rain | `isitgoingtorain.app` | static | `isitgoingtorain` | static checkout | pibulus/isitgoingtorain · main |
+
+**Port gotchas:** QRBuddy is on **8004**, not a 90xx port. Plenum/IsItGoingToRain have no `PORT=` env (static/self-assigned). Node build-output apps run `node index.js` from the live-dir root (adapter-node `build/` rsync'd to root). Deno checkouts run via `~/.deno/bin/deno`.
+
+**Restart policy (set 2026-06-21):** all app units are now `Restart=always` + `RestartSec=5` (were `on-failure`, which ignored clean exits → apps silently stayed dead after the boot load-storm; see [[pi_app_restart_policy]]).
+
+**RiffRap adapter fix (2026-06-21):** riffrap's repo shipped `adapter-cloudflare` (no `build/` dir → deploy_app.sh failed). Committed adapter-node to master (e27fc0e); now deploys normally. **All Pi node apps must use default adapter-node.**
 
 ## Fast Orientation
 
@@ -186,29 +209,17 @@ the port. The loop retries for ~20s. If the deploy ends with `EXIT=0` /
 
 ---
 
-## 📋 Full Live App Roster (2026-06-16)
+## 📋 Full Live App Roster
 
-The original map above documents only 4 apps. The Pi actually runs **11 live app
-services**. Full list (all systemd services under `/home/pibulus/apps`):
+**→ See the [App Map](#app-map--verified-2026-06-21-all-19-services-active) table at the top of this doc — that is the canonical, verified roster (19 apps, 2026-06-21).** The old 11-app table that lived here was superseded; do not maintain two lists.
 
-| App | Service | Port | Runtime | Branch | Repo |
-| --- | --- | ---: | --- | --- | --- |
-| TalkType | talktype | 9002 | Node/SvelteKit build | main | pibulus/talktype |
-| ZipList | ziplist | 9003 | Node/SvelteKit build | main | pibulus/ziplist |
-| RiffRap | riffrap | — | Node/SvelteKit build | **master** | pibulus/riffrap |
-| QRBuddy | qrbuddy | — | Deno/Fresh checkout | main | pibulus/qrbuddy |
-| Stargram | stargram | 9012 | Deno/Fresh checkout | main | pibulus/stargram |
-| Ghost Note | ghostnote | 9013 | Deno/Fresh checkout | main | pibulus/ouija |
-| Button Studio | button-studio | — | Deno/Fresh checkout | main | pibulus/button-studio |
-| Hexbloop Site | hexbloop-site | — | Deno/Fresh checkout | main | pibulus/hexbloop-site |
-| Is It Going To Rain | isitgoingtorain | — | static checkout | main | pibulus/isitgoingtorain |
-| Spellbreak Site | spellbreak-site | — | Deno/Fresh checkout | main | pibulus/spellbreak-site |
-| Plenum Engine | plenum-engine | — | Deno/Fresh build | — | (no remote/meta on Pi) |
+History: this map originally documented 4 apps; a 2026-06-16 pass found 11; the 2026-06-21 audit found 19 (added drshrink, iconmakeit, cryptkeep, metasplash, metaflush, corruptor, daysay, project-mapper to the tracked set) and verified every port/domain live.
 
 Notes:
 - **RiffRap uses `master`, not `main`** — `git ls-remote ... refs/heads/main` returns
-  empty for it. Use `refs/heads/master`.
-- `project-mapper.service` runs but its dir shows inactive deploy state — minor drift.
+  empty for it. (`git clone --depth 1` grabs the default branch = master, so deploy_app.sh needs no override.)
+- **project-mapper** serves `promapper.app` but builds from the `pibulus/project_mapper` repo — NOT the divergent abandoned `pibulus/promapper` repo. Live dir is `apps/project_mapper`.
+- **deploy_app.sh case block** covers: talktype, ziplist, iconmakeit, drshrink, stargram, ghostnote, cryptkeep, metasplash, metaflush, corruptor, riffrap. **NOT yet added:** project_mapper, daysay (still manual).
 - To check if an app is behind: read `.pibulus-meta` (DEPLOYED_COMMIT) or `git rev-parse
   HEAD` for checkouts, vs `git ls-remote <repo> refs/heads/<branch>`.
 - Several live checkouts have been `git pull`'d in place since their last
