@@ -31,6 +31,8 @@
 | **URL Shortener** | shortener | 8088 | utilities.yml |
 | **Immich** | (stopped) | — | immich.yml (RAM-heavy, start manually) |
 
+> **Custom web apps (systemd, not Docker):** 19 live Node/Deno app services on ports 9001–9023 + qrbuddy 8004 (talktype, ziplist, riffrap, iconmakeit, …). Full roster + domains in **APP_DEPLOYMENT_MAP.md** / **REGISTRY.md**.
+
 ---
 
 ## 🌐 Public URLs (quickcat.club)
@@ -224,4 +226,4 @@ pibulus-os/
 
 ---
 
-*Updated: 2026-03-29*
+*Updated: 2026-06-21*

@@ -21,6 +21,9 @@ This is the sane starting map for both humans and AI agents.
 - [APP_DEPLOYMENT_MAP.md](./APP_DEPLOYMENT_MAP.md)
   Live custom app map: app dirs, domains, ports, systemd services, and deploy shape.
 
+- [REGISTRY.md](./REGISTRY.md)
+  Auto-generated app registry (port/domain/status) from `apps-registry.json` — the machine source of truth. Regenerate via `gen-registry.sh`.
+
 - [docs/INGRESS_METRICS_MAP.md](./docs/INGRESS_METRICS_MAP.md)
   Public routing, nginx coverage, and what the live counters really mean.
 

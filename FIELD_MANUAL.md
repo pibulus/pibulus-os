@@ -36,6 +36,8 @@
 | 8096 | Jellyfin | Movies & TV |
 | 8500 | AzuraCast (web) | Radio admin & API |
 
+> **Custom web apps (systemd):** the 19 live app services on ports 9001–9023 + qrbuddy 8004 are NOT listed above — see **APP_DEPLOYMENT_MAP.md** / **REGISTRY.md** for the full roster. Restart one with `sudo systemctl restart <app>.service` (all use `Restart=always` since 2026-06-21).
+
 ### 💾 DRIVES
 | Device | Mount | Type | Size | Notes |
 |--------|-------|------|------|-------|

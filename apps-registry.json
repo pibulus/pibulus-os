@@ -1,0 +1,121 @@
+{
+  "_comment": "Pibulus OS app registry \u2014 SOURCE OF TRUTH for ports/domains/status. deploy_app.sh reads+writes this. Regenerate REGISTRY.md via gen-registry.sh. Tunnel id: c79eb8a2-9791-4ece-8b54-bc9d0e6d01cd",
+  "tunnel": "c79eb8a2-9791-4ece-8b54-bc9d0e6d01cd",
+  "port_range": "9001-9099",
+  "apps": {
+    "madebypablo": {
+      "port": 9001,
+      "domain": "madebypablo.app",
+      "status": "live"
+    },
+    "talktype": {
+      "port": 9002,
+      "domain": "talktype.app",
+      "status": "live"
+    },
+    "ziplist": {
+      "port": 9003,
+      "domain": "ziplist.app",
+      "status": "live"
+    },
+    "riffrap": {
+      "port": 9004,
+      "domain": "riffrap.app",
+      "status": "live"
+    },
+    "promapper": {
+      "port": 9005,
+      "domain": "promapper.app",
+      "status": "live"
+    },
+    "button-studio": {
+      "port": 9006,
+      "domain": "buttonspa.app",
+      "status": "live"
+    },
+    "isitgoingtorain": {
+      "port": 9007,
+      "domain": "isitgoingtorain.app",
+      "status": "live"
+    },
+    "hexbloop": {
+      "port": 9010,
+      "domain": "hexbloop.app",
+      "status": "live"
+    },
+    "spellbreak": {
+      "port": 9011,
+      "domain": "spellbreak.app",
+      "status": "live"
+    },
+    "stargram": {
+      "port": 9012,
+      "domain": "stargram.app",
+      "status": "live"
+    },
+    "ghostnote": {
+      "port": 9013,
+      "domain": "ghostnote.rip",
+      "status": "live"
+    },
+    "vault-talktype": {
+      "port": 9014,
+      "domain": "vault.talktype.app",
+      "status": "live",
+      "note": "live via deno process, not a standalone systemd unit (part of talktype stack)"
+    },
+    "notebro": {
+      "port": 9015,
+      "domain": "notebro.app",
+      "status": "retired",
+      "note": "no systemd service, port 9015 not listening \u2014 retired 2026-06-21"
+    },
+    "_python_service": {
+      "port": 9016,
+      "domain": null,
+      "status": "reserved",
+      "note": "non-app python3 service \u2014 do not use"
+    },
+    "drshrink": {
+      "port": 9017,
+      "domain": "drshrink.app",
+      "status": "live",
+      "repo": "pibulus/dr_shrink"
+    },
+    "iconmakeit": {
+      "port": 9018,
+      "domain": "iconmakeit.app",
+      "status": "live",
+      "repo": "pibulus/iconmakeit"
+    },
+    "daysay": {
+      "port": 9019,
+      "domain": "daysay.app",
+      "status": "live"
+    },
+    "cryptkeep": {
+      "port": 9020,
+      "domain": "cryptkeep.app",
+      "status": "live",
+      "repo": "pibulus/cryptkeep"
+    },
+    "metasplash": {
+      "port": 9021,
+      "domain": "metasplash.app",
+      "status": "live",
+      "repo": "pibulus/metasplash"
+    },
+    "metaflush": {
+      "port": 9022,
+      "domain": "metaflush.app",
+      "status": "live",
+      "repo": "pibulus/metaflush"
+    },
+    "corruptor": {
+      "port": 9023,
+      "domain": "corruptor.app",
+      "status": "live",
+      "repo": "pibulus/corruptor"
+    }
+  }
+}

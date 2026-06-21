@@ -19,8 +19,10 @@
 ## WHAT IS THIS
 
 A 4GB Raspberry Pi 5 and a 5.5TB hard drive under a desk in Melbourne
-running 11 Docker containers, 13 domains, 39 scripts, and a 24/7 pirate
-radio station. No cloud. No tracking. No subscriptions. No permission.
+running ~13 Docker containers, ~29 domains, a fleet of self-built web apps
+(TalkType, ZipList, RiffRap, IconMakeIt and ~15 more, as systemd services on
+ports 9001–9023), and a 24/7 pirate radio station. No cloud. No tracking.
+No subscriptions. No permission. (Live app roster: REGISTRY.md / APP_DEPLOYMENT_MAP.md.)
 
 It replaces Netflix, Spotify, Kindle, and a dozen other subscriptions
 with a single computer that costs less than one month of the services
