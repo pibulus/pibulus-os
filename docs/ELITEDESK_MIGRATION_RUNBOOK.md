@@ -128,6 +128,61 @@ MIGRATION FAILURE MODES to bake into the build (all verified plausible):
 
 ALSO: Tailscale (tailscaled active but "Logged out") = dead weight. DON'T install on new box unless used.
 
+## Phase 3.8 — DRY-RUN CORRECTIONS (DeepSeek 4th pass, VERIFIED 2026-06-23) — the most accurate pass
+These FIX the steps above. All verified against the live Pi.
+
+COMMAND/PATH FIXES:
+- ❌ `apt install nodejs` → gives Node 18, apps need Node 22 (Pi runs v22.22.1). Install Node 22 explicitly
+     (fnm OR nodesource OR direct). Pi's node is at /usr/bin/node (NOT fnm despite DeepSeek's guess) — just
+     make sure new box gets 22.x.
+- ❌ `apt install cloudflared` → cloudflared is NOT a deb on the Pi (it's a direct binary at
+     /usr/local/bin/cloudflared). Install via Cloudflare's apt repo OR download the linux-amd64 binary.
+- ❌ `apt install intel-media-va-driver-non-free` → verify exact pkg name on Debian 13 x86
+     (`apt-cache search intel-media-va`); may be `intel-media-va-driver` + enable non-free in sources.
+- ❌ `docker compose -f pirate.yml` → real path is `config/stacks/pirate.yml`. ADD `ntfs-3g` to pkg install.
+- ❌ azuracast backup cmd → `docker exec azuracast azuracast_cli azuracast:backup /var/azuracast/backups/azuracast_$(date +%Y%m%d_%H%M%S).zip --exclude-media` (not `azurcast backup`).
+- ❌ `dpkg --get-selections` dumps 2000+ pkgs incl Pi-arm junk → use the captured pkg list or `apt-mark showmanual`.
+- ⚠️ Gotchas line says "Debian Bookworm" — WRONG, Pi is Debian 13 trixie. Jellyfin DB is 273MB (not 360MB).
+
+🔴 KIWIX HAS NO COMPOSE FILE (best catch — VERIFIED compose-project=[]). It's a manual `docker run` serving
+   13 ZIMs from /media/pibulus/passport/kiwix on :8084 → wiki.quickcat.club. A blanket `compose up` will
+   SILENTLY never recreate it. FIX: create config/stacks/wiki.yml (kiwix-serve:latest, port 8084:8080,
+   volume /media/pibulus/passport/kiwix:/data, command /data/*.zim). Verify: curl localhost:8084/catalog/v2/entries.
+
+EXACT COMPOSE-PROJECT MAP (the 13 live containers — VERIFIED):
+   pirate (8): jellyfin web_host kavita filebrowser audiobookshelf calibre-web navidrome qbittorrent
+   romm (2): romm romm-db   |   azuracast (1): azuracast   |   social (1): memos   |   kiwix: MANUAL (needs wiki.yml)
+   Dead stack FILES that run nothing (leave behind): admin.yml immich.yml scummvm.yml utilities.yml
+
+ORDERING FIXES (these cause silent failures if wrong):
+1. Write /etc/docker/daemon.json with {"bip":"172.17.0.1/16"} BEFORE first `systemctl enable --now docker`
+   (changing bridge IP after = docker network prune + recreate everything).
+2. Mount passport BEFORE any restore: `mountpoint /media/pibulus/passport || exit 1` (else writes go to NVMe silently).
+3. STOP cloudflared on the PI first (`ssh pi systemctl stop+disable cloudflared`) BEFORE enabling on new box (tunnel flap).
+4. After copying the 42 systemd units → `systemctl daemon-reload` BEFORE any enable/start.
+5. gluetun + qbittorrent: `compose up` WILL try to start gluetun (restart:"no" but still created) and it fails on
+   empty PUREVPN creds → comment them out / add a `disabled` profile until VPN is configured.
+6. Restore pibulus-startup.service (staggered Docker startup orchestration via scripts/startup.sh) — it's active, needed.
+7. AzuraCast restore = NOT one bullet. Sequence: compose up azuracast → `docker stop azuracast` → restore
+   station_data.tar.gz into the named volume via alpine tar → `docker start` → sleep 30 → copy CLI backup zip
+   into azuracast_backups volume → `azuracast_cli azuracast:restore`. (Skip the separate mariadb-dump — the CLI
+   zip already has the DB.)
+
+VERIFY-BEFORE-PROCEEDING checks (paste output back if unsure):
+   docker0 IP: `ip addr show docker0 | grep 172.17.0.1`
+   passport mounted: `mountpoint /media/pibulus/passport`
+   azuracast media restored: `du -sh /var/lib/docker/volumes/azuracast_station_data/_data` (>1GB)
+   kiwix: `curl -s localhost:8084/catalog/v2/entries | grep -c entry` (~13)
+   failed units: `systemctl list-units --state=failed`
+   FINAL cutover gate — loop all hostnames, none should 502/000:
+   for h in watch music read comics audiobooks memo go vault wiki radio deck tv stream; do
+     echo "$h: $(curl -s -o /dev/null -w '%{http_code}' --max-time 10 https://$h.quickcat.club)"; done
+
+ONE-COMMAND-RESTORE strategy (the 80/20): write restore.sh ON the EliteDesk AS you migrate — run each step
+manually, append it to the script once it works. By the end you have a tested one-command rebuild. Only pre-work
+= the path manifest. Things that CAN'T be scripted: Jellyfin HW-transcode toggle (dashboard UI), QSV driver +
+renderD128 render-group perms, the 51-hostname click-through, removing /dev/video19 from pirate.yml (do in git).
+
 ## Phase 4 — CUTOVER & VERIFY
 - [ ] Test every domain (watch/music/read/photos/deck/etc) through the tunnel from EliteDesk.
 - [ ] Verify Jellyfin HW transcode works (play a file, check dashboard shows QSV).
