@@ -183,6 +183,39 @@ manually, append it to the script once it works. By the end you have a tested on
 = the path manifest. Things that CAN'T be scripted: Jellyfin HW-transcode toggle (dashboard UI), QSV driver +
 renderD128 render-group perms, the 51-hostname click-through, removing /dev/video19 from pirate.yml (do in git).
 
+## Phase 3.9 — FINAL PASS: THE SHARED BLIND SPOT (DeepSeek 5th/red-team pass, VERIFIED 2026-06-23)
+Verdict: "You're ready. Stop auditing. Ship it." — and after verification, AGREED.
+
+THE BLIND SPOT all 4 prior passes shared: they treated the Pi as a TRUSTWORTHY SOURCE. But the SD is
+HARD-failing NOW (verified: kernel `task kworker blocked for more than 120 seconds` = hung-task detector,
+SD controller locking up 2+ min). The nightly backup does `rsync --delete` SD→passport, so a corrupted
+config file could PROPAGATE to the backup and overwrite the clean copy. Window was open.
+→ ACTION TAKEN (the one thing that mattered tonight): captured to migration-capture/ —
+   azuracast.env (40 lines MySQL creds, was 775/world-readable, runbook had MISSED it — backup scripts need it),
+   fresh ~/.config snapshot (config-snapshot-20260623/, closed the Jun-21→Jun-23 2-day staleness gap),
+   filebrowser-db+config (UID 911, needed sudo). Jellyfin DB verified `PRAGMA integrity_check = ok` (NOT corrupted — beat the clock).
+
+POST-MIGRATION TIME BOMBS (fix AFTER cutover, NOT before — don't delay the migration):
+- azuracast has `restart: unless-stopped` → auto-starts on boot BEFORE pibulus-startup.service's tiered order
+  → the tier ordering for azuracast is fake. Set azuracast `restart: "no"` to match others, OR accept it (MariaDB
+  in-process, probably harmless).
+- cloudflare-watchdog.sh cron: reads $CF_WATCHDOG_TOKEN from pibulus-os.env but CRON DOESN'T SOURCE PROFILES →
+  empty token, silently failing for MONTHS (Cloudflare self-heals so no impact). Fix: prepend
+  `. /home/pibulus/pibulus-os/pibulus-os.env &&` to the cron line, OR just delete it.
+- qb_unstick (hourly) + curator.py --apply (Fri 10am) + slskd-stop (9am) → all touch the stopped qBittorrent /
+  dead slskd → log spam / failed torrent-adds. Comment out until qbit+VPN rebuilt.
+- Pi-specific systemd units that fail on x86: `systemctl mask rpi-eeprom-update sshswitch`. nethack-common/
+  slashem-common harmless but pointless.
+- pibulus-startup.service tier delays (sleep 20/8 + wait_for_calm on /proc/loadavg) were tuned for slow SD I/O;
+  on NVMe+6-core they become near-noops. Ordering still fine, just the waits are vestigial.
+
+ROLLBACK REALITY: real for ~1-2 hrs post-cutover. After that, rolling back loses since-cutover memos/hearts/
+watch-progress (~minutes of data, fine for a home server) AND requires cloudflared to restart cleanly on the
+DYING Pi (the thing you're fleeing) with a 1-2 min all-hostnames-down window. Don't dither at cutover — commit.
+
+ONE-WAY DOOR: only one, and it's the SD's finite clock. Everything else (images re-pull, packages reinstall,
+config is now captured) is recoverable. Migrate SOON — the SD won't wait.
+
 ## Phase 4 — CUTOVER & VERIFY
 - [ ] Test every domain (watch/music/read/photos/deck/etc) through the tunnel from EliteDesk.
 - [ ] Verify Jellyfin HW transcode works (play a file, check dashboard shows QSV).
