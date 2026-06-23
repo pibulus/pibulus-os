@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no, maximum-scale=1">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="CatDeck">
+  <meta name="apple-mobile-web-app-title" content="Bishop">
   <meta name="theme-color" content="#11121a">
   <meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
-  <title>CatDeck</title>
+  <title>Bishop</title>
   <link rel="icon" href="/deck/favicon.svg" type="image/svg+xml">
   <style>
     :root {
@@ -89,7 +89,6 @@
       --stream-glow-px: 32px;
       --stream-glow-alpha: .12;
       --reply-speed: 1.4s;
-      --spending-alpha: .04;
       --hold-hue: 0deg;
       --bubble-hue: 0deg;
       --rail-opacity: .4;
@@ -292,10 +291,12 @@
 
     h1 {
       margin: 0;
-      font-size: 18px;
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: .2px;
       line-height: 1;
-      color: var(--amber);
-      text-shadow: 0 0 16px rgba(var(--rose-rgb),.2);
+      color: var(--cream);
+      text-shadow: 0 1px 2px rgba(0,0,0,.55), 0 0 14px rgba(var(--gold-rgb),.22);
     }
 
     .title {
@@ -814,60 +815,6 @@
       animation: messageComplete 0.8s ease-out;
     }
 
-        .spending-bar {
-          width: min(100%, 760px);
-          margin: 0 auto 7px;
-          display: none;
-          justify-content: flex-end;
-          align-items: center;
-          gap: 5px;
-          padding: 0 2px;
-          border: 0;
-          border-radius: var(--radius);
-          background: transparent;
-          font-size: 11px;
-          opacity: .76;
-          overflow: hidden;
-          white-space: nowrap;
-        }
-
-        body.cost-visible .spending-bar {
-          display: flex;
-        }
-
-        .spending-bar::before {
-          content: "";
-          width: 5px;
-          height: 5px;
-          border-radius: 50%;
-          background: rgba(var(--gold-rgb),.78);
-          box-shadow: 0 0 9px rgba(var(--gold-rgb),.2);
-        }
-
-    .spending-label {
-      color: var(--soft);
-      font-weight: 600;
-    }
-
-        .spending-amount {
-          flex: 0 0 auto;
-          color: var(--amber);
-          font-weight: 800;
-          display: inline-block;
-          transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.3s ease;
-        }
-
-        .spending-amount.tick {
-          animation: spendingTick 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-          color: var(--green);
-        }
-
-    @keyframes spendingTick {
-      0% { transform: scale(0.8); }
-      50% { transform: scale(1.15); }
-      100% { transform: scale(1); }
-    }
-
     .msg.system {
       justify-items: center;
     }
@@ -915,12 +862,25 @@
       opacity: 1;
     }
 
-    @media (max-width: 520px) {
-      .spending-bar {
-        justify-content: center;
-        font-size: 10px;
+    @media (min-width: 768px) {
+      .setup-panel {
+        width: min(100%, 560px);
+        padding: 26px 28px;
       }
+      .setup-title { font-size: 20px; }
+      .mode-choice { gap: 10px; }
+    }
 
+    @media (prefers-reduced-motion: reduce) {
+      .empty::before,
+      .empty-sigil,
+      .sigil-stage::before,
+      .setup-panel::before {
+        animation: none !important;
+      }
+    }
+
+    @media (max-width: 520px) {
       .topbar {
         padding-left: 10px;
         padding-right: 10px;
@@ -955,6 +915,18 @@
         opacity: .72;
         right: 6px;
         top: 6px;
+      }
+
+      .setup-panel {
+        padding: 14px;
+      }
+
+      .setup-title {
+        font-size: 16px;
+      }
+
+      .select {
+        font-size: 16px; /* prevent iOS zoom on focus */
       }
     }
 
@@ -1067,8 +1039,8 @@
 
         .setup-panel {
           position: relative;
-          width: min(100%, 430px);
-          max-height: min(520px, calc(100dvh - 32px));
+          width: min(100%, 480px);
+          max-height: min(560px, calc(100dvh - 32px));
           overflow: hidden;
           padding: 18px;
           border: 1px solid rgba(var(--cream-rgb),.18);
@@ -1086,13 +1058,13 @@
         .setup-panel::before {
           content: "";
           position: absolute;
-          inset: -38% -18% auto;
-          height: 320px;
+          inset: -28% -10% auto;
+          height: 280px;
           pointer-events: none;
           background:
             conic-gradient(from var(--moon-angle), rgba(var(--rose-rgb),.24), rgba(var(--gold-rgb),.12), rgba(var(--green-rgb),.18), rgba(var(--blue-rgb),.22), rgba(var(--rose-rgb),.24));
           filter: blur(24px) saturate(1.22);
-          opacity: .48;
+          opacity: .4;
           mix-blend-mode: screen;
         }
 
@@ -1138,15 +1110,11 @@
           margin: 0;
         }
 
-        .setup-modal #modeSelect,
-        .setup-modal .workspace-select {
-          display: none;
-        }
-
         .mode-choice {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 8px;
+          gap: 10px;
+          margin-top: 4px;
         }
 
         .mode-option {
@@ -1606,7 +1574,7 @@
       <div class="topline">
         <a class="icon-btn" href="/deck/" aria-label="Back">‹</a>
         <div class="title">
-          <h1>catdeck</h1>
+          <h1>Bishop</h1>
           <div class="status" id="statusPill"><span class="dot"></span><span id="statusText">checking</span></div>
         </div>
         <div class="top-actions">
@@ -1633,14 +1601,6 @@
     </section>
 
         <footer class="composer">
-          <div class="full-arm" id="fullArm">
-            <div class="arm-copy" id="armCopy">Full mode can edit in pibulus-os.</div>
-            <button class="hold" id="holdBtn" type="button">HOLD</button>
-          </div>
-          <div class="spending-bar" id="spendingBar" aria-live="polite">
-            <span class="spending-label">chat cost:</span>
-            <span class="spending-amount" id="spendingAmount">$0.00</span>
-          </div>
       <form class="compose-row" id="form">
         <textarea id="input" rows="1" maxlength="12000" aria-label="Message" enterkeyhint="send" autocomplete="off" autocapitalize="sentences" spellcheck="true"></textarea>
         <button class="mic" id="micBtn" type="button" aria-label="Dictate">◉</button>
@@ -1661,21 +1621,15 @@
         <div class="deck-familiar" id="deckFamiliar" aria-hidden="true">=^..^=</div>
       </main>
 
-      <div class="setup-modal" id="setupModal" role="dialog" aria-modal="true" aria-label="Deck setup">
+      <div class="setup-modal" id="setupModal" role="dialog" aria-modal="true" aria-label="Bishop setup">
         <section class="setup-panel">
           <div class="setup-mark" aria-hidden="true"></div>
-          <div class="control-row" aria-label="Deck controls">
+          <h2 class="setup-title">New session</h2>
+          <div class="control-row" aria-label="Bishop controls">
+            <label class="setup-label" for="modelSelect">Model</label>
             <select class="select" id="modelSelect" aria-label="Model"></select>
-            <select class="select" id="modeSelect" aria-label="Mode"></select>
+            <label class="setup-label" for="workspaceSelect">Context</label>
             <select class="select workspace-select" id="workspaceSelect" aria-label="Workspace"></select>
-          </div>
-          <div class="mode-choice" role="group" aria-label="Access">
-            <button class="mode-option" type="button" data-mode-option="default">
-              <strong>Ask</strong>
-            </button>
-            <button class="mode-option" type="button" data-mode-option="full">
-              <strong>Full access</strong>
-            </button>
           </div>
           <button class="setup-start" id="setupStartBtn" type="button">Enter chat</button>
         </section>
@@ -1701,19 +1655,12 @@
     const speakerBtn = document.getElementById('speakerBtn');
     const newBtn = document.getElementById('newBtn');
     const stopBtn = document.getElementById('stopBtn');
-    const fullArm = document.getElementById('fullArm');
-    const armCopy = document.getElementById('armCopy');
-    const holdBtn = document.getElementById('holdBtn');
         const statusPill = document.getElementById('statusPill');
         const statusText = document.getElementById('statusText');
-        const spendingBar = document.getElementById('spendingBar');
-        const spendingAmount = document.getElementById('spendingAmount');
         const modelSelect = document.getElementById('modelSelect');
-        const modeSelect = document.getElementById('modeSelect');
         const workspaceSelect = document.getElementById('workspaceSelect');
         const setupModal = document.getElementById('setupModal');
         const setupStartBtn = document.getElementById('setupStartBtn');
-        const modeOptionButtons = [...document.querySelectorAll('[data-mode-option]')];
         const rayaDock = document.getElementById('rayaDock');
     const rayaRadio = document.getElementById('rayaRadio');
     const radioBtn = document.getElementById('radioBtn');
@@ -1726,7 +1673,7 @@
     let workspaces = [];
     let model = localStorage.getItem('pibulus.deck.model') || 'claude';
     if (model === 'deepseek') model = 'deepseek-flash';
-    let mode = localStorage.getItem('pibulus.deck.mode') || 'default';
+    let mode = 'full'; // Bishop always runs full access
     let workspace = localStorage.getItem('pibulus.deck.workspace') || 'pibulus-os';
     let chatId = '';
     let running = false;
@@ -1742,7 +1689,6 @@
     let threadMessages = [];
     let streamDisconnected = false;
     let lifecycleNoticeAt = 0;
-    let chatCost = 0;
     let speakEnabled = localStorage.getItem('pibulus.claude.speak') === '1';
     let speaking = false;
     let preferredVoice = null;
@@ -2119,12 +2065,6 @@
       const enabledModel = models.find(item => item.key === model && item.enabled) || models.find(item => item.enabled);
       if (enabledModel) model = enabledModel.key;
 
-      const activeModel = selectedModelConfig();
-      const visibleModes = visibleModesFor(activeModel);
-      if (!visibleModes.some(item => item.key === mode)) {
-        mode = visibleModes.some(item => item.key === 'default') ? 'default' : (visibleModes[0]?.key || 'default');
-      }
-
       if (!workspaces.some(item => item.key === workspace)) {
         workspace = workspaces[0]?.key || 'pibulus-os';
       }
@@ -2147,59 +2087,12 @@
           armCopy.textContent = `Full gives ${shortModelLabel(activeModel)} write access in ${workspace} for the next send.`;
         }
 
-        function modelHasCost(modelKey = model) {
-          return modelKey === 'claude' || String(modelKey || '').startsWith('deepseek');
-        }
-
-        function syncSpendingVisibility() {
-          const visible = modelHasCost();
-          document.body.classList.toggle('cost-visible', visible);
-          spendingBar?.setAttribute('aria-hidden', String(!visible));
-        }
-
-        function pulseSpending(value, modelKey = model) {
-          const cost = Number(value);
-          if (!Number.isFinite(cost) || cost <= 0 || !modelHasCost(modelKey)) return;
-          chatCost += cost;
-          spendingAmount.textContent = formatCost(chatCost);
-          spendingAmount.classList.remove('tick');
-          void spendingAmount.offsetWidth;
-          spendingAmount.classList.add('tick');
-          setTimeout(() => spendingAmount.classList.remove('tick'), 400);
-        }
-
-        function formatCost(cost) {
-          if (cost > 0 && cost < 0.01) return '$' + cost.toFixed(4);
-          return '$' + cost.toFixed(2);
-        }
-
-    function syncFullArmVisibility() {
-      fullArm.classList.remove('show');
-      clearFullArm();
-    }
-
         function renderControls() {
           const activeModel = selectedModelConfig();
-          const allowedModes = new Set(activeModel.modes || []);
           const enabledModels = models.filter(item => item.enabled !== false);
           fillSelect(modelSelect, enabledModels.length ? enabledModels : models, model);
-      fillSelect(
-        modeSelect,
-        visibleModesFor(activeModel).map(item => ({ ...item, enabled: item.enabled !== false && allowedModes.has(item.key) })),
-        mode
-          );
           fillSelect(workspaceSelect, workspaces, workspace);
-          modeOptionButtons.forEach(btn => {
-            const key = btn.dataset.modeOption;
-            const available = visibleModesFor(activeModel).some(item => item.key === key);
-            btn.hidden = !available;
-            btn.disabled = running || !authReady || !available;
-            btn.classList.toggle('active', mode === key);
-            btn.setAttribute('aria-pressed', String(mode === key));
-          });
-          syncFullArmVisibility();
           syncDeckMeta();
-          syncSpendingVisibility();
           syncControls();
           renderAgentLights();
         }
@@ -2394,7 +2287,6 @@
       setVar('--stream-glow-px', `${(28 + loadGlow * 40).toFixed(2)}px`);
       setVar('--stream-glow-alpha', (.08 + loadGlow * .2).toFixed(4));
       setVar('--reply-speed', `${(1.2 + load * 1.2).toFixed(2)}s`);
-      setVar('--spending-alpha', (load * .12).toFixed(4));
       setVar('--hold-hue', `${Math.round(hue * .12)}deg`);
       setVar('--bubble-hue', `${Math.round(hue * .08)}deg`);
       setVar('--rail-opacity', (.38 + load * .22).toFixed(4));
@@ -2714,12 +2606,8 @@
           newBtn.classList.toggle('disabled', running);
           newBtn.setAttribute('aria-disabled', String(running));
           modelSelect.disabled = running || models.filter(item => item.enabled).length <= 1;
-          modeSelect.disabled = running || !authReady;
           workspaceSelect.disabled = running || !authReady || workspaces.length <= 1;
           setupStartBtn.disabled = running || !authReady;
-          modeOptionButtons.forEach(btn => {
-            if (!btn.hidden) btn.disabled = running || !authReady;
-          });
           syncMicButton();
           promptChips.forEach(btn => { btn.disabled = !authReady; });
         }
@@ -2741,10 +2629,6 @@
       armToken = '';
       armExpiresAt = 0;
       armPending = false;
-      if (holdTimer) clearTimeout(holdTimer);
-      holdTimer = null;
-      holdBtn.classList.remove('armed', 'charging', 'pending');
-      holdBtn.textContent = 'HOLD';
     }
 
         function setSetupOpen(value) {
@@ -2980,44 +2864,17 @@
           });
         });
 
-        function chooseMode(nextMode) {
-          const activeModel = selectedModelConfig();
-          const allowed = visibleModesFor(activeModel).some(item => item.key === nextMode);
-          if (!allowed || running) return;
-          mode = nextMode;
-          persistSelections();
-          clearFullArm();
-          renderControls();
-        }
-
         modelSelect.addEventListener('change', () => {
           model = modelSelect.value;
       const activeModel = selectedModelConfig();
       if (!activeModel.enabled) {
         normalizeSelections();
       } else {
-        const visibleModes = visibleModesFor(activeModel);
-        if (!visibleModes.some(item => item.key === mode)) {
-          mode = visibleModes.some(item => item.key === 'default') ? 'default' : (visibleModes[0]?.key || 'default');
-        }
         persistSelections();
         loadChatId();
         restoreThreadSurface();
       }
-          clearFullArm();
           renderControls();
-        });
-
-        modeSelect.addEventListener('change', () => {
-          chooseMode(modeSelect.value);
-        });
-
-        modeOptionButtons.forEach(btn => {
-          btn.addEventListener('click', () => {
-            chooseMode(btn.dataset.modeOption);
-            haptic(10);
-            blip([[pulseTone(btn.dataset.modeOption === 'full' ? -1 : 1, 1.2), 0, .04, 'triangle', .014]]);
-          });
         });
 
         workspaceSelect.addEventListener('change', () => {
@@ -3025,7 +2882,6 @@
       persistSelections();
       loadChatId();
       restoreThreadSurface();
-      clearFullArm();
           renderControls();
         });
 
@@ -3033,75 +2889,13 @@
           if (!authReady || running) return;
           persistSelections();
           setSetupOpen(false);
-          pulseAt(setupStartBtn, mode === 'full' ? 'danger' : 'blue');
-          haptic(mode === 'full' ? [18, 20, 18] : 14);
-          blip([[pulseTone(mode === 'full' ? -2 : 2, 1.15), 0, .045, 'triangle', .016]]);
+          pulseAt(setupStartBtn, 'danger');
+          haptic([18, 20, 18]);
+          blip([[pulseTone(-2, 1.15), 0, .045, 'triangle', .016]]);
         });
 
     input.addEventListener('input', fitInput);
     input.addEventListener('keydown', event => keyClicker.play(event));
-
-    async function armFullMode() {
-      if (armPending || running) return;
-      armPending = true;
-      holdBtn.classList.remove('charging');
-      holdBtn.classList.add('pending');
-      holdBtn.textContent = '...';
-      try {
-        const res = await fetch(`${api}/arm`, {
-          method: 'POST',
-          credentials: 'same-origin',
-          headers: { 'Content-Type': 'application/json', 'X-PIBULUS-CSRF': csrf },
-          body: JSON.stringify({ workspace })
-        });
-        if (!res.ok) throw new Error(`arm ${res.status}`);
-        const data = await res.json();
-        armToken = data.arm_token || '';
-        armExpiresAt = Date.now() + ((data.expires_in || 60) * 1000);
-        fullArmed = Boolean(armToken);
-        holdBtn.classList.toggle('armed', fullArmed);
-        holdBtn.textContent = fullArmed ? 'NEXT' : 'HOLD';
-        if (fullArmed) {
-          beepArm();
-          haptic([28, 28, 70]);
-        }
-      } catch (err) {
-        clearFullArm();
-        beepError();
-        haptic([70, 40, 30]);
-        addSystem('Full could not arm.');
-      } finally {
-        armPending = false;
-        holdBtn.classList.remove('pending');
-      }
-    }
-
-    holdBtn.addEventListener('pointerdown', () => {
-      clearFullArm();
-      holdBtn.textContent = 'HOLD';
-      holdBtn.classList.add('charging');
-      haptic(40);
-      let hapticCount = 0;
-      const hapticInterval = setInterval(() => {
-        if (hapticCount++ > 8) clearInterval(hapticInterval);
-        haptic(30 + hapticCount * 5);
-      }, 110);
-      holdTimer = setTimeout(() => {
-        clearInterval(hapticInterval);
-        haptic([50, 50, 100]);
-        armFullMode();
-      }, 900);
-    });
-
-    ['pointerup', 'pointercancel', 'pointerleave'].forEach(name => {
-      holdBtn.addEventListener(name, () => {
-        if (holdTimer) clearTimeout(holdTimer);
-        holdTimer = null;
-        holdBtn.classList.remove('charging');
-        if (!fullArmed) holdBtn.textContent = 'HOLD';
-        haptic(20);
-      });
-    });
 
     async function stopRun() {
       if (!running) return;
@@ -3159,10 +2953,8 @@
           chatId = '';
           currentBubble = null;
           currentReplyText = '';
-          chatCost = 0;
           threadMessages = [];
           localStorage.removeItem(threadStorageKey());
-          spendingAmount.textContent = '$0.00';
           stopDictation({ abort: true });
       cancelSpeech();
       clearFullArm();
@@ -3178,9 +2970,8 @@
     async function sendMessage(text) {
       if (running) return;
       stopDictation({ abort: true });
-      const wantsFull = mode === 'full';
-      let fullToken = wantsFull && armToken && Date.now() < armExpiresAt ? armToken : '';
-      if (wantsFull && !fullToken) {
+      let fullToken = armToken && Date.now() < armExpiresAt ? armToken : '';
+      if (!fullToken) {
         try {
           const res = await fetch(`${api}/arm`, {
             method: 'POST',
@@ -3205,21 +2996,20 @@
         }
       }
       beepSend();
-      haptic(wantsFull ? [18, 28, 18] : 16);
+      haptic([18, 28, 18]);
       setSetupOpen(false);
 
       addMessage('user', text, 'you');
       currentBubble = null;
       currentReplyText = '';
       setRunning(true);
-      const sendMode = wantsFull ? 'full' : mode;
       const payload = {
         message: text,
         chat_id: chatId,
         model,
-        mode: sendMode,
+        mode: 'full',
         workspace,
-        arm_token: wantsFull ? fullToken : ''
+        arm_token: fullToken
       };
       clearFullArm();
 
@@ -3286,7 +3076,6 @@
           } else if (event.type === 'done') {
             beepDone();
             haptic([14, 34, 18]);
-                if (event.result && event.result.cost_usd) pulseSpending(event.result.cost_usd, event.model);
             settleCurrentAssistant({ persist: true, speak: true });
             streamDisconnected = false;
             setRunning(false);

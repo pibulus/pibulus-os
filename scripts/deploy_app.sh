@@ -3,7 +3,7 @@ set -euo pipefail
 
 usage() {
   cat <<'EOF'
-Usage: deploy_app.sh <talktype|ziplist|stargram|ghostnote> [--force]
+Usage: deploy_app.sh <talktype|ziplist|drshrink|stargram|ghostnote> [--force]
 
 Deploys one Pi-hosted app at a time. This script is intentionally sequential:
 it takes a lock, checks memory/disk, builds in Passport-backed staging by
@@ -48,6 +48,22 @@ case "$APP" in
     SMOKE_PORT="19003"
     KIND="node-build"
     ;;
+  iconmakeit)
+    REPO="https://github.com/pibulus/iconmakeit.git"
+    SERVICE="iconmakeit"
+    LIVE_DIR="/home/pibulus/apps/iconmakeit"
+    PORT="9018"
+    SMOKE_PORT="19018"
+    KIND="node-build"
+    ;;
+  drshrink)
+    REPO="https://github.com/pibulus/dr_shrink.git"
+    SERVICE="drshrink"
+    LIVE_DIR="/home/pibulus/apps/drshrink"
+    PORT="9017"
+    SMOKE_PORT="19017"
+    KIND="node-build"
+    ;;
   stargram)
     REPO="https://github.com/pibulus/stargram.git"
     SERVICE="stargram"
@@ -63,6 +79,46 @@ case "$APP" in
     PORT="9013"
     SMOKE_PORT=""
     KIND="deno-checkout"
+    ;;
+  cryptkeep)
+    REPO="https://github.com/pibulus/cryptkeep.git"
+    SERVICE="cryptkeep"
+    LIVE_DIR="/home/pibulus/apps/cryptkeep"
+    PORT="9020"
+    SMOKE_PORT="19020"
+    KIND="node-build"
+    ;;
+  metasplash)
+    REPO="https://github.com/pibulus/metasplash.git"
+    SERVICE="metasplash"
+    LIVE_DIR="/home/pibulus/apps/metasplash"
+    PORT="9021"
+    SMOKE_PORT="19021"
+    KIND="node-build"
+    ;;
+  metaflush)
+    REPO="https://github.com/pibulus/metaflush.git"
+    SERVICE="metaflush"
+    LIVE_DIR="/home/pibulus/apps/metaflush"
+    PORT="9022"
+    SMOKE_PORT="19022"
+    KIND="node-build"
+    ;;
+  riffrap)
+    REPO="https://github.com/pibulus/riffrap.git"
+    SERVICE="riffrap"
+    LIVE_DIR="/home/pibulus/apps/riffrap"
+    PORT="9004"
+    SMOKE_PORT="19004"
+    KIND="node-build"
+    ;;
+  corruptor)
+    REPO="https://github.com/pibulus/corruptor.git"
+    SERVICE="corruptor"
+    LIVE_DIR="/home/pibulus/apps/corruptor"
+    PORT="9023"
+    SMOKE_PORT="19023"
+    KIND="node-build"
     ;;
   *)
     echo "Unknown app: $APP" >&2
@@ -240,7 +296,12 @@ deploy_node_build() {
   cp "$SRC_DIR/package.json" "$SRC_DIR/package-lock.json" "$STAGE_DIR/"
 
   if [[ -d "$LIVE_DIR" ]]; then
-    find "$LIVE_DIR" -maxdepth 1 -type f \( -name ".env" -o -name ".env.*" \) -exec cp -p {} "$STAGE_DIR/" \;
+    # .env carry-over via glob loop (find -exec cp segfaulted on this box)
+    shopt -s nullglob dotglob
+    for envf in "$LIVE_DIR"/.env "$LIVE_DIR"/.env.*; do
+      [ -f "$envf" ] && cp -p "$envf" "$STAGE_DIR/"
+    done
+    shopt -u nullglob dotglob
   fi
 
   (cd "$STAGE_DIR" && npm ci --omit=dev --ignore-scripts --no-audit --no-fund --cache "$NPM_CACHE_DIR")
@@ -293,7 +354,7 @@ deploy_deno_checkout() {
   if [[ "$before" != "$after" ]]; then
     git -C "$LIVE_DIR" pull --ff-only origin main
   fi
-  (cd "$LIVE_DIR" && /home/pibulus/.deno/bin/deno task build)
+  (cd "$LIVE_DIR" && if [ -f "dev.ts" ]; then /home/pibulus/.deno/bin/deno run -A --node-modules-dir=none dev.ts build; else /home/pibulus/.deno/bin/deno task build; fi)
   write_meta "$after"
   sudo -n systemctl restart "$SERVICE"
   systemctl is-active "$SERVICE"
@@ -317,3 +378,14 @@ case "$KIND" in
   node-build) deploy_node_build ;;
   deno-checkout) deploy_deno_checkout ;;
 esac
+
+# --- auto-wire: make it actually reachable (DNS + tunnel ingress + verify) ---
+# The "once and for all" step. Reads port/domain from apps-registry.json.
+WIRE="$HOME/pibulus-os/scripts/wire-app.sh"
+if [ -x "$WIRE" ] && grep -q "\"$APP\"" "$HOME/pibulus-os/apps-registry.json" 2>/dev/null; then
+  echo "→ auto-wiring $APP (DNS + ingress)..."
+  bash "$WIRE" "$APP" || echo "  ! wire-app failed — run manually: bash $WIRE $APP"
+  bash "$HOME/pibulus-os/gen-registry.sh" >/dev/null 2>&1 || true
+else
+  echo "ℹ deployed but not auto-wired (no registry entry). Add to apps-registry.json + run wire-app.sh $APP"
+fi

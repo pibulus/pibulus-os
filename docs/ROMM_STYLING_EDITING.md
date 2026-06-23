@@ -48,7 +48,7 @@ It does three important things:
 - injects `romm-ui.js`, `emulator-touch.js`, and `theme.css` before `</head>`
 - applies cross-origin isolation headers only on EmulatorJS launch routes so threaded cores can work without changing every RomM page
 
-Current cache token: `rev=20260607a`. If a browser is holding stale styling, update the token in both `default.conf.template` and any matching asset override in `romm-ui.js`, then recreate the container.
+Current cache token: `rev=20260616g`. If a browser is holding stale styling, update the token in both `default.conf.template` and any matching asset override in `romm-ui.js`, then recreate the container.
 
 ## File Roles
 

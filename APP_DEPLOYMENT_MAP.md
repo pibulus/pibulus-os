@@ -224,3 +224,70 @@ Notes:
   HEAD` for checkouts, vs `git ls-remote <repo> refs/heads/<branch>`.
 - Several live checkouts have been `git pull`'d in place since their last
   `deploy_app.sh` run, so their `.pibulus-meta` can be stale — trust git HEAD for those.
+
+## 🔑 API Keys & Secrets — the fuck-up-proof system (added 2026-06-21)
+
+> **Read this before touching ANY app's Gemini/API key.** This section exists because
+> keys silently broke for MONTHS ("works when I check, dead when I demo"). The causes
+> are now killed structurally. Do NOT hand-edit keys the old way — use the tooling.
+
+### THE ONE LAW
+Every key lives in **ONE file on the Mac: `~/.config/fleet/keys.env`** (chmod 600, never
+in a repo). You edit only that file. Everything downstream is rewritten from it by
+`keys-sync`. There is no second editable copy anywhere.
+
+### Daily commands (on the Mac, in `~/.claude/scripts/fleet/`)
+- `keys-status` — FREE read-only: does each Pi app's running key match keys.env? Run anytime.
+- `keys-sync <app|all>` — push key → writes `/etc/<app>.env`, collapses to single source, restarts.
+- `key-doctor` — REAL audio → every live endpoint, GREEN/RED. **RUN BEFORE EVERY DEMO.**
+
+### How keys are wired on the Pi (the canonical pattern — match this for every app)
+- The systemd unit reads **exactly ONE** `EnvironmentFile=/etc/<app>.env` (root:root, 600).
+- **NO** inline `Environment=GEMINI_API_KEY=` in the unit.
+- **NO** key-bearing drop-ins (`<app>.service.d/env.conf`, `30-envfile.conf`) — those were
+  the orphaned files that silently stomped every deploy. `keys-sync` deletes them each run.
+- `/etc/<app>.env` is **outside the app dir**, so a code deploy can never touch it.
+
+### THE THREE GREMLINS that caused the months of pain (all killed — keep them dead)
+1. **Duplicate key copies that disagreed.** A key defined in the unit AND a drop-in AND a
+   `.env`, with the dead one winning. → Fixed: ONE `EnvironmentFile`. `keys-status` flags any
+   app where the key is defined in >1 place.
+2. **The deploy seam re-planted a stale `.env`.** Each app's `scripts/deploy-pi.sh` used to
+   `cp` the app-dir `.env` forward into every release; systemd then loaded it and it shadowed
+   the real key. → Fixed: that block is removed from every Gemini app's deploy-pi.sh, and the
+   deploy now `rm`s any app-dir `.env`. PROVEN: a dead `.env` planted in an app dir does NOT
+   break the app anymore.
+3. **`@google/genai` SDK prefers `GOOGLE_API_KEY`.** A `GOOGLE_API_KEY` in ANY env (the Mac
+   shell, a systemd unit) overrides the app's own key — EVEN a key passed explicitly to
+   `new GoogleGenAI({apiKey})`. Verified message: "Both GOOGLE_API_KEY and GEMINI_API_KEY are
+   set. Using GOOGLE_API_KEY." → Fixed: no `GOOGLE_API_KEY` in the Mac shell or any unit env.
+   `/etc/<app>.env` sets ONLY `GEMINI_API_KEY`. **NEVER add `GOOGLE_API_KEY` to a unit or the
+   shell** — it will silently poison every Gemini app.
+
+### Editing/rotating a key (the ONLY procedure)
+1. Edit `~/.config/fleet/keys.env` on the Mac.
+2. `keys-sync <app>` (writes `/etc/<app>.env`, restarts the service).
+3. `key-doctor` to prove it's live. 🟢 = done. **Never `sudo nano` a unit or /etc/<app>.env by hand.**
+
+### Anti-drift seatbelts (don't undo these)
+- Model is the rolling alias **`gemini-flash-lite-latest`** (auto-follows current model, can't
+  404-rot). Never pin a preview/dated model id — those die on a schedule.
+- Keys MUST be the new **`AQ.`** format (legacy `AIza` keys die ~Sept 2026). `keys-sync` refuses
+  to push a non-`AQ.` key.
+
+### Per-app extra env (Deepgram, rate limits, etc.)
+Apps needing more than the Gemini key declare `<APP>_EXTRA_ENV` in `keys.env` (newline
+`KEY=VALUE` list; may reference `${OTHER_VAR}`). `keys-sync` writes these into `/etc/<app>.env`
+alongside the key, so a sync NEVER drops needed config. (talktype needs `DEEPGRAM_API_KEY` +
+`ALLOWED_ORIGINS` + rate limits; ziplist needs `ALLOWED_ORIGINS` + limits + `MAX_UPLOAD_BYTES`.
+A sync that wrote only the Gemini key once broke talktype — caught by `key-doctor`, not by
+`keys-status`. **The live `key-doctor` is the real oracle; status alone can show false green.**)
+
+### Scope
+- **In the system (Gemini):** daysay, talktype, ziplist (Pi), riffrap (Cloudflare — needs a
+  Pages:Edit token to sync via CLI; current CF token is DNS-only), slideomatic (Netlify).
+- **Excluded (no Gemini key):** cryptkeep, project-mapper/promapper, stargram (stargram uses
+  EXTERNAL horoscope APIs — `freehoroscopeapi.com` + a leftover `ohmanda.com` fallback still
+  half-wired from a migration; separate cleanup, not done).
+
+Full reference + scripts: `~/.claude/scripts/fleet/README.md` on the Mac.

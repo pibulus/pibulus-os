@@ -44,6 +44,7 @@ def download(url, output_dir, dry_run=False):
         "-x",                          # Extract audio only
         "--audio-format", "mp3",       # Convert to mp3
         "--audio-quality", "0",        # Best quality
+        "--max-filesize", "500M",      # Pi guard: skip oversized files
         "--embed-thumbnail",           # Embed cover art if available
         "--add-metadata",              # Add metadata tags
         "--no-playlist" if "sets/" not in url and "playlist" not in url else "--yes-playlist",

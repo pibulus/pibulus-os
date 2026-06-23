@@ -2,6 +2,19 @@
 
 This is shared orientation for Claude Code, Codex CLI, Gemini CLI, DeepSeek/OpenCode, and any other agent launched from the PIBULUS Deck.
 
+## HARD STOPS -- READ FIRST (this is a 4GB Raspberry Pi, swap-tight)
+
+You are running on a Raspberry Pi 5, 4GB RAM, with compressed zram swap that runs near-full. A single careless command can lock the whole box and force a reboot. Before anything heavy, these are non-negotiable:
+
+- NEVER run broad/recursive `rg`, `find`, `ls -R`, `du`, `tree`, or `grep -r` across `/`, `$HOME`, or any large tree. Scope every search to a specific known subdir.
+- NEVER scan, walk, `du`, or recursively list `/media/pibulus/passport` (a 5.5TB drive over slow USB/FUSE). It will stall the Pi. Use `find_media.py "query"` for media -- it is the only sanctioned passport search and is now bounded.
+- ALWAYS run `free -h` and glance at `cat /proc/loadavg` before any build, container start, download, model spawn, or multi-file operation. If available RAM is under ~500MB or swap is near-full, STOP and say so -- do not proceed.
+- Prefer the single smallest useful move. No speculative wide reads "to understand the codebase." Read the specific file you need.
+- No `docker compose pull`, no image-tag changes, no `docker system prune -a`, no large downloads without Pablo's explicit OK.
+- If a task would require a broad scan to answer, say that out loud and ask for a narrower target instead of running it.
+
+These override any instinct to be thorough. On this box, restraint IS competence.
+
 ## Fast Boot
 
 Run `/home/pibulus/pibulus-os/scripts/ai_bootstrap.sh` at the start of serious Pi work. It is read-only, makes no model calls, writes nothing, and gives the current repo/doctor/tools/read-order snapshot.

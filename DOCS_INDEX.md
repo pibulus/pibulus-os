@@ -24,6 +24,8 @@ This is the sane starting map for both humans and AI agents.
 - [REGISTRY.md](./REGISTRY.md)
   Auto-generated app registry (port/domain/status) from `apps-registry.json` — the machine source of truth. Regenerate via `gen-registry.sh`.
 
+
+- **🔑 API Keys & Secrets** → see [APP_DEPLOYMENT_MAP.md](./APP_DEPLOYMENT_MAP.md#-api-keys--secrets--the-fuck-up-proof-system-added-2026-06-21). THE ONE LAW: keys live in ~/.config/fleet/keys.env on the Mac; edit there → keys-sync <app> → key-doctor. Never hand-edit a unit or add GOOGLE_API_KEY anywhere (it shadows every Gemini app).
 - [docs/INGRESS_METRICS_MAP.md](./docs/INGRESS_METRICS_MAP.md)
   Public routing, nginx coverage, and what the live counters really mean.
 

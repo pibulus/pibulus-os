@@ -72,10 +72,29 @@ def score_match(query_tokens: list[str], candidate: str, media_type: str) -> int
     return score
 
 
+# --- Pi safety guards (4GB box, 5.5TB passport over FUSE) ---
+MAX_WALK_DEPTH = 6          # prune trees deeper than this
+MAX_WALK_FILES = 20000      # stop the whole search after examining this many entries
+MIN_MEM_AVAIL_MB = 350      # bail out if the box is already memory-tight
+
+
+def _mem_available_mb() -> int:
+    try:
+        for line in open("/proc/meminfo"):
+            if line.startswith("MemAvailable:"):
+                return int(line.split()[1]) // 1024
+    except Exception:
+        pass
+    return 99999  # if unreadable, do not block
+
+
 def iter_candidates(root: SearchRoot):
     if not root.path.exists():
         return
     for dirpath, dirnames, filenames in os.walk(root.path):
+        depth = dirpath[len(str(root.path)):].count(os.sep)
+        if depth >= MAX_WALK_DEPTH:
+            dirnames[:] = []
         for name in filenames:
             path = Path(dirpath) / name
             if path.suffix.lower() in TEXT_EXTS or root.media_type in {"movie", "show", "download", "library"}:
@@ -85,11 +104,19 @@ def iter_candidates(root: SearchRoot):
 
 
 def search(query: str, limit: int) -> list[dict]:
+    if _mem_available_mb() < MIN_MEM_AVAIL_MB:
+        return []
     query_tokens = tokenize(query)
     results = []
+    examined = 0
 
     for root in ROOTS:
+        if examined > MAX_WALK_FILES:
+            break
         for path in iter_candidates(root) or []:
+            examined += 1
+            if examined > MAX_WALK_FILES:
+                break
             rel = str(path.relative_to(root.path))
             score = score_match(query_tokens, rel, root.media_type)
             if score <= 0:

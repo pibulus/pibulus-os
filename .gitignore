@@ -32,3 +32,5 @@ bunny.backup-*/
 *.sqlite
 __pycache__/
 *.pyc
+*.bak.*
+*.bak2*

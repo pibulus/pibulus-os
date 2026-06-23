@@ -104,6 +104,26 @@ else
   add_check passport_disk fail "Passport path missing" "$PASSPORT"
 fi
 
+# Memory pressure (mirrors the claude-chat gateway launch gate thresholds)
+check_memory() {
+  local avail swapfree swaptotal
+  avail=$(awk "/^MemAvailable:/{print int(\$2/1024)}" /proc/meminfo 2>/dev/null)
+  swapfree=$(awk "/^SwapFree:/{print int(\$2/1024)}" /proc/meminfo 2>/dev/null)
+  swaptotal=$(awk "/^SwapTotal:/{print int(\$2/1024)}" /proc/meminfo 2>/dev/null)
+  if [[ -z "$avail" ]]; then
+    add_check memory warn "meminfo unavailable" ""
+    return
+  fi
+  if (( avail < 500 )); then
+    add_check memory warn "only ${avail}MB RAM available" "floor=500MB"
+  elif [[ -n "$swaptotal" && "$swaptotal" -gt 0 && -n "$swapfree" ]] && (( swapfree < 300 )); then
+    add_check memory warn "only ${swapfree}MB swap free" "floor=300MB"
+  else
+    add_check memory ok "${avail}MB RAM / ${swapfree:-0}MB swap free" ""
+  fi
+}
+check_memory
+
 check_unit docker.service
 check_unit cloudflared.service
 check_unit claude-chat.service

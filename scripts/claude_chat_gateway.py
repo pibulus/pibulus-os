@@ -40,6 +40,7 @@ FULL_ARM_TTL = int(os.environ.get("CLAUDE_CHAT_FULL_ARM_TTL", "75"))
 MIN_AVAILABLE_MB = int(os.environ.get("CLAUDE_CHAT_MIN_AVAILABLE_MB", "650"))
 MAX_LOAD_1 = float(os.environ.get("CLAUDE_CHAT_MAX_LOAD_1", "5.0"))
 REQUIRE_SWAP = os.environ.get("CLAUDE_CHAT_REQUIRE_SWAP", "1") == "1"
+MIN_SWAP_FREE_MB = int(os.environ.get("CLAUDE_CHAT_MIN_SWAP_FREE_MB", "300"))
 ALLOWED_ORIGINS = {
     item.strip()
     for item in os.environ.get(
@@ -198,6 +199,10 @@ def launch_preflight(model_key: str, mode_key: str) -> list[str]:
     available_mb = meminfo.get("MemAvailable", 0) // (1024 * 1024)
     if available_mb and available_mb < MIN_AVAILABLE_MB:
         reasons.append(f"only {available_mb}MB RAM available; need {MIN_AVAILABLE_MB}MB")
+    swap_free_mb = meminfo.get("SwapFree", 0) // (1024 * 1024)
+    swap_total_mb = meminfo.get("SwapTotal", 0) // (1024 * 1024)
+    if swap_total_mb and swap_free_mb < MIN_SWAP_FREE_MB:
+        reasons.append(f"only {swap_free_mb}MB swap free; need {MIN_SWAP_FREE_MB}MB headroom")
     try:
         load1 = float(Path("/proc/loadavg").read_text().split()[0])
     except Exception:
@@ -369,7 +374,7 @@ def collective_context() -> str:
         text = CONTEXT_FILE.read_text(encoding="utf-8", errors="replace").strip()
     except Exception:
         return ""
-    return text[:9000]
+    return text[:11000]
 
 
 def deck_system_prompt(model_key: str, mode_key: str, cwd: Path) -> str:

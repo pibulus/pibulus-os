@@ -53,3 +53,10 @@
 - **All services down**: `sudo systemctl restart kpab-services`
 - **SD card corruption**: Reflash from golden image at `/media/pibulus/passport/Backups/Golden_Images/`, restore configs from git repo
 - **Tunnel down**: `sudo systemctl restart cloudflared`
+
+## 🔑 API Keys (the ONE way)
+
+- Source of truth: `~/.config/fleet/keys.env` on the Mac (chmod 600). Edit ONLY there.
+- Push: `keys-sync <app>` → writes /etc/<app>.env, restarts. Verify: `key-doctor` (real audio, GREEN before any demo).
+- NEVER add `GOOGLE_API_KEY` to a unit or shell — the @google/genai SDK prefers it and it shadows every app key.
+- Pi pattern: one `EnvironmentFile=/etc/<app>.env` per unit, no inline keys, no key drop-ins. Full doc: APP_DEPLOYMENT_MAP.md.

@@ -2,14 +2,19 @@
    QUICKCAT ROMM THEME — Clean, minimal, let the art breathe
    ═══════════════════════════════════════════════════════ */
 
-/* ── Dark palette override ── */
-.v-theme--dark {
+/* ── QuickCat palette override ── */
+.v-theme--dark,
+.v-theme--light {
   --v-theme-background: 10, 12, 16 !important;
   --v-theme-surface: 16, 19, 26 !important;
   --v-theme-surface-variant: 22, 26, 35 !important;
   --v-theme-primary: 160, 140, 220 !important;
   --v-theme-on-background: 200, 210, 225 !important;
   --v-theme-on-surface: 200, 210, 225 !important;
+}
+
+.v-theme--light {
+  color-scheme: dark;
 }
 
 /* ── Global feel ── */
@@ -152,6 +157,28 @@ body {
 }
 
 /* ── Homepage platform strip — keep consoles near the top and close gaps ── */
+body.quickcat-home .v-main .v-container {
+  padding-top: 14px !important;
+}
+
+[data-quickcat-home-section] {
+  margin-bottom: 14px !important;
+  scroll-margin-top: 18px !important;
+}
+
+[data-quickcat-home-section] > .v-card:first-child,
+[data-quickcat-home-section] > .v-sheet:first-child,
+[data-quickcat-home-section] > div:first-child:not(.v-row) {
+  background: rgba(16, 19, 26, 0.96) !important;
+  color: rgba(226, 233, 242, 0.96) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-quickcat-home-section] > :first-child .v-icon,
+[data-quickcat-home-section] > :first-child i {
+  color: rgba(226, 233, 242, 0.96) !important;
+}
+
 [data-quickcat-platforms-section="true"] {
   margin-bottom: 8px !important;
   scroll-margin-top: 16px !important;
@@ -168,7 +195,139 @@ body {
   margin-right: 0 !important;
 }
 
+[data-quickcat-platforms-section="true"] .v-card {
+  background: rgba(22, 26, 35, 0.82) !important;
+}
+
+[data-quickcat-home-section="recent"] .game-card,
+[data-quickcat-home-section="continue"] .game-card {
+  background: rgba(18, 22, 30, 0.92) !important;
+}
+
 @media (max-width: 700px) {
+  .v-main .v-container .v-card,
+  .v-main .v-container .v-sheet {
+    background-color: rgba(16, 19, 26, 0.96) !important;
+    color: rgba(226, 233, 242, 0.96) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+  }
+
+  .v-main .v-card .v-toolbar.bg-toplayer,
+  .v-main .v-card header.v-toolbar {
+    background: rgba(16, 19, 26, 0.98) !important;
+    color: rgba(226, 233, 242, 0.98) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  }
+
+  .v-main .v-card .v-toolbar-title,
+  .v-main .v-card .v-toolbar-title__placeholder {
+    color: rgba(226, 233, 242, 0.98) !important;
+  }
+
+  .md-editor.md-editor-previewOnly,
+  .md-editor-preview-wrapper,
+  .md-editor-preview {
+    background: rgba(16, 19, 26, 0.96) !important;
+    color: rgba(205, 216, 230, 0.94) !important;
+  }
+
+  .md-editor-preview p,
+  .md-editor-preview li,
+  .md-editor-preview span {
+    color: rgba(205, 216, 230, 0.94) !important;
+  }
+
+  .v-main .v-container .v-card .v-icon,
+  .v-main .v-container .v-sheet .v-icon,
+  .v-main .v-container .v-card i,
+  .v-main .v-container .v-sheet i {
+    color: rgba(226, 233, 242, 0.96) !important;
+  }
+
+  .v-navigation-drawer {
+    display: none !important;
+  }
+
+  .v-main {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .v-app-bar,
+  .v-toolbar {
+    min-height: 56px !important;
+    height: 56px !important;
+  }
+
+  .v-app-bar .v-btn,
+  .v-toolbar .v-btn {
+    width: 44px !important;
+    min-width: 44px !important;
+    height: 44px !important;
+  }
+
+  .v-app-bar .v-avatar,
+  .v-toolbar .v-avatar {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  body.quickcat-home .v-main .v-container {
+    padding: 8px 8px 18px !important;
+  }
+
+  body.quickcat-home .v-main h1,
+  body.quickcat-home .v-main h2,
+  body.quickcat-home .v-main h3,
+  body.quickcat-home .v-main .text-h4,
+  body.quickcat-home .v-main .text-h5,
+  body.quickcat-home .v-main .text-h6 {
+    font-size: 18px !important;
+    line-height: 1.18 !important;
+    letter-spacing: 0 !important;
+  }
+
+  [data-quickcat-home-section] {
+    margin-bottom: 10px !important;
+  }
+
+  [data-quickcat-platforms-section="true"] {
+    margin-top: 2px !important;
+  }
+
+  [data-quickcat-platforms-section="true"] .v-card {
+    min-height: 72px !important;
+    border-radius: 7px !important;
+  }
+
+  [data-quickcat-platforms-section="true"] .v-card .v-card-text,
+  [data-quickcat-platforms-section="true"] .v-card .v-card-title {
+    padding: 8px 10px !important;
+  }
+
+  [data-quickcat-platforms-section="true"] .v-card-title,
+  [data-quickcat-platforms-section="true"] .text-h6,
+  [data-quickcat-platforms-section="true"] .text-h5 {
+    font-size: 16px !important;
+    line-height: 1.15 !important;
+    letter-spacing: 0 !important;
+  }
+
+  [data-quickcat-platforms-section="true"] .v-slide-group__content,
+  [data-quickcat-platforms-section="true"] [class*="v-slide-group__content"] {
+    gap: 6px !important;
+  }
+
+  [data-quickcat-home-section="recent"] .v-row,
+  [data-quickcat-home-section="continue"] .v-row {
+    margin: -4px !important;
+  }
+
+  [data-quickcat-home-section="recent"] .game-card,
+  [data-quickcat-home-section="continue"] .game-card {
+    border-radius: 7px !important;
+  }
+
   [data-quickcat-hidden="nds"] {
     display: none !important;
   }
@@ -201,11 +360,11 @@ body {
   }
 }
 
-[data-quickcat-platforms-section="true"] .v-card {
-  background: rgba(22, 26, 35, 0.82) !important;
+[data-quickcat-hidden="update-nag"] {
+  display: none !important;
 }
 
-[data-quickcat-hidden="update-nag"] {
+[data-quickcat-hidden="home-autogenerated-collections"] {
   display: none !important;
 }
 
@@ -770,7 +929,7 @@ iframe[src*="youtube-nocookie.com/embed"] {
   }
 
   .v-main {
-    padding-bottom: 88px !important;
+    padding-bottom: 24px !important;
   }
 
   body.quickcat-rom-detail .v-chip {
@@ -778,14 +937,24 @@ iframe[src*="youtube-nocookie.com/embed"] {
   }
 
   .quickcat-primary-play {
-    left: 16px !important;
-    right: 16px !important;
-    bottom: calc(74px + env(safe-area-inset-bottom)) !important;
-    width: auto !important;
+    position: static !important;
+    z-index: 1 !important;
+    width: 100% !important;
     min-width: 0 !important;
-    min-height: 62px !important;
+    min-height: 56px !important;
+    margin-top: 10px !important;
     padding: 0 18px !important;
-    font-size: 19px !important;
+    font-size: 18px !important;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.34), 0 0 0 1px rgba(255, 255, 255, 0.16) inset !important;
+  }
+
+  .quickcat-primary-play--inline {
+    display: flex !important;
+    align-self: stretch !important;
+  }
+
+  body.quickcat-rom-detail #artwork-container {
+    padding-bottom: 4px !important;
   }
 }
 
@@ -883,4 +1052,33 @@ iframe[src*="youtube-nocookie.com/embed"] {
     font-size: 12px !important;
     filter: saturate(0.7) !important;
   }
+}
+
+/* ── Smorgasboard discover grid ── */
+.quickcat-smorgasboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+#smorgasboard-refresh {
+  cursor: pointer;
+  transition: transform 0.3s ease, color 0.2s ease;
+}
+
+#smorgasboard-refresh:hover {
+  color: rgba(226, 233, 242, 1) !important;
+  transform: scale(1.15);
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spin-active {
+  animation: spin 0.8s linear infinite;
+  transform-origin: center;
+  display: inline-block;
 }

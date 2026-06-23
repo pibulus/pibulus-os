@@ -1079,6 +1079,12 @@ drop_magnet_or_url() {
 
   elif [[ "$link" == http* ]]; then
     local dest_dir="/media/pibulus/passport/The_Bucket"
+    # Pi guard: bail if destination disk has under 2GB free (avoid filling a tight box)
+    avail_kb=$(df -P "$dest_dir" 2>/dev/null | awk "NR==2{print \$4}")
+    if [ -n "$avail_kb" ] && [ "$avail_kb" -lt 2097152 ]; then
+      echo "Refusing: only $((avail_kb/1024))MB free on destination disk. Free space first."
+      return
+    fi
     echo "Downloading via aria2c → $dest_dir"
     aria2c \
       --dir="$dest_dir" \

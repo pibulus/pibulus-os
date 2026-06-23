@@ -77,7 +77,6 @@ services:
   calibre-web:
     image: lscr.io/linuxserver/calibre-web:0.6.26-ls378  # pinned 2026-04-15
     container_name: calibre-web
-    environment:
       - PUID=1000
       - PGID=1000
       - TZ=Australia/Melbourne
@@ -204,7 +203,6 @@ services:
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:5.1.4-r3-ls450  # pinned 2026-04-15
     container_name: qbittorrent
-    environment:
       - PUID=1000
       - PGID=1000
       - TZ=Australia/Melbourne
@@ -232,7 +230,6 @@ services:
     container_name: gluetun
     cap_add:
       - NET_ADMIN
-    environment:
       - VPN_SERVICE_PROVIDER=purevpn
       - VPN_TYPE=openvpn
       - OPENVPN_USER=${PUREVPN_USER}
